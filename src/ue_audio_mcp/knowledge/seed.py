@@ -83,76 +83,20 @@ def _seed_wwise_types(db: KnowledgeDB) -> int:
 
 
 def _seed_waapi_functions(db: KnowledgeDB) -> int:
-    """Seed core WAAPI functions from research data."""
-    functions = [
-        {"uri": "ak.wwise.core.getInfo", "namespace": "core", "operation": "getInfo",
-         "description": "Get Wwise application info and version"},
-        {"uri": "ak.wwise.core.object.create", "namespace": "core.object", "operation": "create",
-         "description": "Create a Wwise object in the hierarchy"},
-        {"uri": "ak.wwise.core.object.delete", "namespace": "core.object", "operation": "delete",
-         "description": "Delete a Wwise object"},
-        {"uri": "ak.wwise.core.object.get", "namespace": "core.object", "operation": "get",
-         "description": "Query objects using WAQL"},
-        {"uri": "ak.wwise.core.object.set", "namespace": "core.object", "operation": "set",
-         "description": "Set object properties in bulk"},
-        {"uri": "ak.wwise.core.object.setProperty", "namespace": "core.object", "operation": "setProperty",
-         "description": "Set a single property on an object"},
-        {"uri": "ak.wwise.core.object.setReference", "namespace": "core.object", "operation": "setReference",
-         "description": "Set a reference (e.g. OutputBus) on an object"},
-        {"uri": "ak.wwise.core.object.setAttenuationCurve", "namespace": "core.object", "operation": "setAttenuationCurve",
-         "description": "Set attenuation curve points"},
-        {"uri": "ak.wwise.core.object.getTypes", "namespace": "core.object", "operation": "getTypes",
-         "description": "Get all available object types"},
-        {"uri": "ak.wwise.core.object.getPropertyInfo", "namespace": "core.object", "operation": "getPropertyInfo",
-         "description": "Get property metadata for a type"},
-        {"uri": "ak.wwise.core.object.copy", "namespace": "core.object", "operation": "copy",
-         "description": "Copy an object to a new location"},
-        {"uri": "ak.wwise.core.object.move", "namespace": "core.object", "operation": "move",
-         "description": "Move an object to a new location"},
-        {"uri": "ak.wwise.core.audio.import", "namespace": "core.audio", "operation": "import",
-         "description": "Import audio files into Wwise"},
-        {"uri": "ak.wwise.core.project.save", "namespace": "core.project", "operation": "save",
-         "description": "Save the Wwise project"},
-        {"uri": "ak.wwise.core.transport.create", "namespace": "core.transport", "operation": "create",
-         "description": "Create a transport for playback"},
-        {"uri": "ak.wwise.core.transport.destroy", "namespace": "core.transport", "operation": "destroy",
-         "description": "Destroy a transport"},
-        {"uri": "ak.wwise.core.transport.executeAction", "namespace": "core.transport", "operation": "executeAction",
-         "description": "Play/stop/pause a transport"},
-        {"uri": "ak.wwise.core.transport.getList", "namespace": "core.transport", "operation": "getList",
-         "description": "List all active transports"},
-        {"uri": "ak.wwise.core.soundbank.generate", "namespace": "core.soundbank", "operation": "generate",
-         "description": "Generate SoundBanks"},
-        {"uri": "ak.wwise.core.undo.beginGroup", "namespace": "core.undo", "operation": "beginGroup",
-         "description": "Begin an undo group for atomic operations"},
-        {"uri": "ak.wwise.core.undo.endGroup", "namespace": "core.undo", "operation": "endGroup",
-         "description": "End an undo group"},
-        {"uri": "ak.wwise.core.undo.cancelGroup", "namespace": "core.undo", "operation": "cancelGroup",
-         "description": "Cancel an undo group and rollback"},
-        {"uri": "ak.wwise.core.switchContainer.addAssignment", "namespace": "core.switchContainer", "operation": "addAssignment",
-         "description": "Assign a child to a switch value"},
-        {"uri": "ak.wwise.core.switchContainer.removeAssignment", "namespace": "core.switchContainer", "operation": "removeAssignment",
-         "description": "Remove a switch assignment"},
-        {"uri": "ak.wwise.core.remote.connect", "namespace": "core.remote", "operation": "connect",
-         "description": "Connect to a remote Wwise instance"},
-        {"uri": "ak.wwise.core.remote.disconnect", "namespace": "core.remote", "operation": "disconnect",
-         "description": "Disconnect from remote Wwise"},
-        {"uri": "ak.wwise.core.remote.getAvailableConsoles", "namespace": "core.remote", "operation": "getAvailableConsoles",
-         "description": "List available remote consoles"},
-        {"uri": "ak.wwise.core.profiler.startCapture", "namespace": "core.profiler", "operation": "startCapture",
-         "description": "Start profiler capture"},
-        {"uri": "ak.wwise.core.profiler.stopCapture", "namespace": "core.profiler", "operation": "stopCapture",
-         "description": "Stop profiler capture"},
-        {"uri": "ak.wwise.core.profiler.getVoices", "namespace": "core.profiler", "operation": "getVoices",
-         "description": "Get active voices from profiler"},
-        {"uri": "ak.wwise.ui.getSelectedObjects", "namespace": "ui", "operation": "getSelectedObjects",
-         "description": "Get currently selected objects in Wwise UI"},
-        {"uri": "ak.wwise.ui.commands.execute", "namespace": "ui.commands", "operation": "execute",
-         "description": "Execute a Wwise UI command"},
-    ]
-    for func in functions:
-        db.insert_waapi(func)
-    return len(functions)
+    """Seed WAAPI functions from the waapi_functions catalogue."""
+    from ue_audio_mcp.knowledge.waapi_functions import WAAPI_FUNCTIONS
+
+    for uri, func in WAAPI_FUNCTIONS.items():
+        operation = uri.rsplit(".", 1)[-1]
+        db.insert_waapi({
+            "uri": uri,
+            "namespace": func["namespace"],
+            "operation": operation,
+            "description": func["description"],
+            "params": func.get("params", []),
+            "returns": func.get("returns"),
+        })
+    return len(WAAPI_FUNCTIONS)
 
 
 def _seed_audio_patterns(db: KnowledgeDB) -> int:
@@ -251,60 +195,29 @@ def _seed_game_examples(db: KnowledgeDB) -> int:
 
 
 def _seed_blueprint_audio(db: KnowledgeDB) -> int:
-    """Seed Blueprint audio functions from UGameplayStatics + UAudioComponent."""
-    functions = [
-        {"name": "PlaySound2D", "class_name": "UGameplayStatics", "category": "playback",
-         "description": "Play a sound at the listener location (no attenuation)", "tags": ["ui", "2d", "play"]},
-        {"name": "PlaySoundAtLocation", "class_name": "UGameplayStatics", "category": "playback",
-         "description": "Play sound at a world location with optional attenuation", "tags": ["3d", "spatial", "play"]},
-        {"name": "SpawnSoundAtLocation", "class_name": "UGameplayStatics", "category": "playback",
-         "description": "Spawn audio component at location (returns handle)", "tags": ["3d", "spawn", "persistent"]},
-        {"name": "SpawnSoundAttached", "class_name": "UGameplayStatics", "category": "playback",
-         "description": "Spawn audio component attached to a scene component", "tags": ["attached", "follow", "spawn"]},
-        {"name": "SetBaseSoundMix", "class_name": "UGameplayStatics", "category": "mixing",
-         "description": "Set the base sound mix for the game", "tags": ["mix", "global"]},
-        {"name": "PushSoundMixModifier", "class_name": "UGameplayStatics", "category": "mixing",
-         "description": "Push a sound mix modifier onto the stack", "tags": ["mix", "modifier", "push"]},
-        {"name": "PopSoundMixModifier", "class_name": "UGameplayStatics", "category": "mixing",
-         "description": "Pop a sound mix modifier from the stack", "tags": ["mix", "modifier", "pop"]},
-        {"name": "SetSoundMixClassOverride", "class_name": "UGameplayStatics", "category": "mixing",
-         "description": "Override a sound class with new properties", "tags": ["mix", "class", "override"]},
-        {"name": "ActivateReverbEffect", "class_name": "UGameplayStatics", "category": "effects",
-         "description": "Activate a reverb effect with priority", "tags": ["reverb", "effect", "activate"]},
-        {"name": "DeactivateReverbEffect", "class_name": "UGameplayStatics", "category": "effects",
-         "description": "Deactivate a reverb effect", "tags": ["reverb", "effect", "deactivate"]},
-        {"name": "Play", "class_name": "UAudioComponent", "category": "component",
-         "description": "Play the audio component", "tags": ["play", "component"]},
-        {"name": "Stop", "class_name": "UAudioComponent", "category": "component",
-         "description": "Stop the audio component", "tags": ["stop", "component"]},
-        {"name": "SetPaused", "class_name": "UAudioComponent", "category": "component",
-         "description": "Pause/unpause the audio component", "tags": ["pause", "component"]},
-        {"name": "SetFloatParameter", "class_name": "UAudioComponent", "category": "parameter",
-         "description": "Set a float parameter on MetaSound", "tags": ["parameter", "float", "metasound"]},
-        {"name": "SetIntParameter", "class_name": "UAudioComponent", "category": "parameter",
-         "description": "Set an int parameter on MetaSound", "tags": ["parameter", "int", "metasound"]},
-        {"name": "SetBoolParameter", "class_name": "UAudioComponent", "category": "parameter",
-         "description": "Set a bool parameter on MetaSound", "tags": ["parameter", "bool", "metasound"]},
-        {"name": "SetTriggerParameter", "class_name": "UAudioComponent", "category": "parameter",
-         "description": "Execute a trigger parameter on MetaSound", "tags": ["parameter", "trigger", "metasound"]},
-        {"name": "SetWaveParameter", "class_name": "UAudioComponent", "category": "parameter",
-         "description": "Set a wave asset parameter on MetaSound", "tags": ["parameter", "wave", "metasound"]},
-        {"name": "SetVolumeMultiplier", "class_name": "UAudioComponent", "category": "property",
-         "description": "Set volume multiplier (0.0-1.0)", "tags": ["volume", "property"]},
-        {"name": "SetPitchMultiplier", "class_name": "UAudioComponent", "category": "property",
-         "description": "Set pitch multiplier", "tags": ["pitch", "property"]},
-        {"name": "AdjustAttenuation", "class_name": "UAudioComponent", "category": "spatialization",
-         "description": "Change attenuation settings at runtime", "tags": ["attenuation", "spatial"]},
-        {"name": "SetSubmixSend", "class_name": "UAudioComponent", "category": "routing",
-         "description": "Set send level to a submix", "tags": ["submix", "routing", "send"]},
-        {"name": "GetPlayState", "class_name": "UAudioComponent", "category": "query",
-         "description": "Get current play state (playing/stopped/paused)", "tags": ["state", "query"]},
-        {"name": "IsPlaying", "class_name": "UAudioComponent", "category": "query",
-         "description": "Check if audio component is currently playing", "tags": ["state", "query", "check"]},
-    ]
-    for f in functions:
-        db.insert_blueprint_audio(f)
-    return len(functions)
+    """Seed Blueprint audio functions from the blueprint_audio catalogue."""
+    from ue_audio_mcp.knowledge.blueprint_audio import BLUEPRINT_AUDIO_FUNCTIONS
+
+    # Source uses 'category' for class name (GameplayStatics, AudioComponent, etc.)
+    # Map to UE5 class prefixes for the class_name DB column
+    _CLASS_MAP = {
+        "GameplayStatics": "UGameplayStatics",
+        "AudioComponent": "UAudioComponent",
+        "AudioVolume": "AAudioVolume",
+        "Quartz": "UQuartzSubsystem",
+    }
+    for name, func in BLUEPRINT_AUDIO_FUNCTIONS.items():
+        source_cat = func["category"]
+        db.insert_blueprint_audio({
+            "name": name,
+            "class_name": _CLASS_MAP.get(source_cat, source_cat),
+            "category": source_cat.lower(),
+            "description": func["description"],
+            "params": func.get("params", []),
+            "returns": func.get("returns"),
+            "tags": func.get("tags", []),
+        })
+    return len(BLUEPRINT_AUDIO_FUNCTIONS)
 
 
 def _seed_blueprint_core(db: KnowledgeDB) -> int:
