@@ -49,7 +49,7 @@ Add to your MCP client config (Claude Desktop, Cursor, etc.):
 ### Test
 
 ```bash
-pytest tests/ -v    # 48 tests, all passing
+pytest tests/ -v    # 107 tests, all passing
 ```
 
 ---
@@ -201,9 +201,53 @@ One-call generators for complete game audio patterns. All wrapped in **undo grou
 | `template_ui_sound` | ActorMixer(UI) + Sound + OutputBus routing + Play Event |
 | `template_weather_states` | StateGroup + SwitchContainer + per-state looped Sounds + assignments + Play Event |
 
-### Knowledge Base
+### Knowledge Base (Phase 2 — Shipped)
 
-Static validation data used by all tools (migrates to Cloudflare D1 in Phase 2):
+1,209 entries across 8 SQLite tables. Semantic search via TF-IDF embeddings (<1ms queries, no ML deps).
+
+7 MCP tools: `ms_list_nodes`, `ms_node_info`, `ms_search_nodes`, `ms_list_categories`, `ms_validate_graph`, `ms_graph_to_commands`, `ms_graph_from_template`.
+
+#### Data Sources & Counts
+
+| Table | Entries | Source | What It Contains |
+|-------|---------|--------|-----------------|
+| `metasound_nodes` | 112 | [MetaSounds docs](https://dev.epicgames.com/documentation/en-us/unreal-engine/metasounds-reference-guide-in-unreal-engine) + Editor node browser | 16 categories, full pin specs (name/type/default), complexity ratings |
+| `blueprint_core` | 946 | [Epic Blueprint API Reference](https://dev.epicgames.com/documentation/en-us/unreal-engine/BlueprintAPI) | 61 categories, 45 UE5 C++ classes, 11 sub-modules |
+| `waapi_functions` | 66 | [Audiokinetic WAAPI Reference](https://www.audiokinetic.com/en/library/edge/?source=SDK&id=waapi__reference.html) | 11 namespaces, params/returns per function |
+| `blueprint_audio` | 55 | Epic Blueprint API + Audiokinetic Wwise UE5 Integration | 4 classes: GameplayStatics, AudioComponent, Quartz, AudioVolume |
+| `wwise_types` | 19 | WAAPI docs + Wwise Authoring reference | Real descriptions, property lists, category mapping |
+| `audio_patterns` | 6 | Hand-authored from game audio patterns | gunshot, footsteps, ambient, spatial, ui_sound, weather |
+| `ue_game_examples` | 5 | Lyra Starter Game source analysis | Whizby, dovetail, ambient, music, submix architectures |
+| `error_patterns` | 0 (grows at runtime) | SIDKIT-pattern error learning | error_signature → fix mapping with success_count |
+
+#### Blueprint Node Modules (946 nodes)
+
+| Module | Nodes | UE5 C++ Source |
+|--------|-------|---------------|
+| `math_spatial.py` | 231 | `UKismetMathLibrary` (vector/rotator/quat/transform) |
+| `math_core.py` | 143 | `UKismetMathLibrary` (bool/byte/int/float/trig) |
+| `math_utility.py` | 114 | `UKismetMathLibrary` (interp/random/noise/color/datetime) |
+| `gameplay.py` | 100 | `UGameplayStatics` (damage/player/actor/level/time) |
+| `string_array.py` | 92 | `UKismetStringLibrary`, `UKismetArrayLibrary` |
+| `system.py` | 80 | `UKismetSystemLibrary` (debug/system/console/asset) |
+| `audio.py` | 60 | `UGameplayStatics`, `UAkGameplayStatics` (Wwise) |
+| `flow_control.py` | 59 | `UK2Node_*`, `UKismetSystemLibrary` |
+| `collision_physics.py` | 32 | `UKismetSystemLibrary` (traces/overlaps) |
+| `rendering.py` | 20 | `UMaterialInstanceDynamic` |
+| `input_nodes.py` | 15 | `UEnhancedInputComponent` |
+
+#### MetaSounds Graph Templates (6 patterns)
+
+| Template | Nodes | Key DSP Chain |
+|----------|-------|--------------|
+| `gunshot` | 5 | Array Random Get → Wave Player → ADSR → Multiply |
+| `footsteps` | 6 | Trigger Route → Random Get → Wave Player → AD Envelope → LPF |
+| `ambient` | 3 | Wave Player (Stereo) → LFO modulation → Stereo Mixer |
+| `spatial` | 2 | Wave Player (Mono) → ITD Panner (binaural) |
+| `ui_sound` | 3 | Sine → AD Envelope → Multiply (procedural click) |
+| `weather` | 5 | Wave Player → InterpTo → Map Range → Biquad Filter L/R |
+
+#### Wwise Static Knowledge (Phase 1)
 
 | Data | Count | Used By |
 |------|-------|---------|
@@ -214,8 +258,6 @@ Static validation data used by all tools (migrates to Cloudflare D1 in Phase 2):
 | Event actions | 18 | `wwise_create_event` validation |
 | Curve types | 7 | `wwise_set_attenuation` validation |
 | Curve shapes | 9 | RTPC + attenuation point validation |
-| Import operations | 3 | `wwise_import_audio` validation |
-| Name conflict modes | 4 | `wwise_create_object` validation |
 
 ---
 
@@ -234,7 +276,6 @@ ms_add_output              Expose output
 ms_audition                Play the graph NOW
 ms_live_update             Modify while playing (UE 5.5+)
 ms_save_asset              Export to .uasset
-ms_list_nodes              Browse available node types
 ```
 
 ## Blueprint Tools (Phase 3 — Planned)
@@ -279,37 +320,61 @@ No manual configuration. Install once, use what you have.
 ## Project Structure
 
 ```
-pyproject.toml                          → Package config, pip install -e ".[dev]"
+pyproject.toml                              → Package config, pip install -e ".[dev]"
 src/ue_audio_mcp/
-├── __init__.py
-├── server.py                           → FastMCP entry point + lifespan + tool wiring
-├── connection.py                       → WwiseConnection singleton (WAAPI WebSocket)
+├── server.py                               → FastMCP entry point + lifespan + tool wiring
+├── connection.py                           → WwiseConnection singleton (WAAPI WebSocket)
 ├── tools/
-│   ├── core.py                         → 5 tools: connect, info, query, save, execute
-│   ├── objects.py                      → 4 tools: create, set property/reference, import
-│   ├── events.py                       → 4 tools: events, RTPC, switch assign, attenuation
-│   ├── preview.py                      → 2 tools: transport preview, soundbank generation
-│   └── templates.py                    → 5 tools: gunshot, footsteps, ambient, UI, weather
+│   ├── utils.py                            → Shared _ok/_error JSON helpers
+│   ├── core.py                             → 5 tools: connect, info, query, save, execute
+│   ├── objects.py                          → 4 tools: create, set property/reference, import
+│   ├── events.py                           → 4 tools: events, RTPC, switch assign, attenuation
+│   ├── preview.py                          → 2 tools: transport preview, soundbank generation
+│   ├── templates.py                        → 5 tools: gunshot, footsteps, ambient, UI, weather
+│   ├── metasounds.py                       → 4 tools: list/info/search/categories (TF-IDF cached)
+│   └── ms_graph.py                         → 3 tools: validate, to_commands, from_template
 ├── knowledge/
-│   └── wwise_types.py                  → 19 types, 24 props, 18 actions, 9 paths, curves
-└── templates/wwise/
-    ├── gunshot.json                    → Declarative spec for gunshot pattern
-    ├── footsteps.json                  → Declarative spec for footstep pattern
-    ├── ambient.json                    → Declarative spec for ambient pattern
-    ├── ui_sound.json                   → Declarative spec for UI sound pattern
-    └── weather_states.json             → Declarative spec for weather pattern
-tests/
-├── conftest.py                         → MockWaapiClient fixture (shared by all tests)
-├── test_connection.py                  → 6 tests
-├── test_core_tools.py                  → 6 tests
-├── test_object_tools.py                → 10 tests
-├── test_event_tools.py                 → 10 tests
-├── test_preview_tools.py               → 6 tests
-└── test_templates.py                   → 10 tests
+│   ├── db.py                               → SQLite KnowledgeDB (8 tables, LIKE-escaped queries)
+│   ├── seed.py                             → Seeds all tables from static catalogues
+│   ├── embeddings.py                       → TF-IDF + cosine similarity, save/load .npz
+│   ├── graph_schema.py                     → GraphSpec validator (7 stages) + Builder API commands
+│   ├── wwise_types.py                      → 19 types, 24 props, 18 actions, 9 paths, curves
+│   ├── waapi_functions.py                  → 87 WAAPI functions, 11 namespaces
+│   ├── metasound_nodes.py                  → 112 nodes, 16 categories, full pin specs
+│   ├── metasound_data_types.py             → Pin types, asset types, interfaces, compatibility
+│   ├── blueprint_audio.py                  → 55 UE5 audio Blueprint functions
+│   └── blueprint_nodes/                    → 946 UE5 Blueprint nodes (11 sub-modules)
+│       ├── __init__.py                     → Registry + query helpers
+│       ├── flow_control.py                 → 59 nodes (UK2Node_*, timers, comparison, conversion)
+│       ├── math_core.py                    → 143 nodes (bool/byte/int/float/trig)
+│       ├── math_spatial.py                 → 231 nodes (vector/rotator/quat/transform)
+│       ├── math_utility.py                 → 114 nodes (interp/random/noise/color/datetime)
+│       ├── string_array.py                 → 92 nodes (string ops, array ops)
+│       ├── audio.py                        → 60 nodes (UE audio + Wwise integration)
+│       ├── gameplay.py                     → 100 nodes (damage/player/actor/level/time)
+│       ├── collision_physics.py            → 32 nodes (traces/overlaps)
+│       ├── input_nodes.py                  → 15 nodes (Enhanced Input)
+│       ├── rendering.py                    → 20 nodes (materials/meshes)
+│       └── system.py                       → 80 nodes (debug/console/asset/platform)
+├── templates/
+│   ├── wwise/                              → 5 Wwise declarative pattern specs
+│   └── metasounds/                         → 6 MetaSounds graph templates (JSON)
+tests/                                      → 107 tests, all passing
+├── conftest.py                             → MockWaapiClient + seeded KnowledgeDB fixtures
+├── test_connection.py                      → 6 tests
+├── test_core_tools.py                      → 8 tests
+├── test_object_tools.py                    → 10 tests
+├── test_event_tools.py                     → 8 tests
+├── test_preview_tools.py                   → 7 tests
+├── test_templates.py                       → 10 tests
+├── test_db.py                              → 14 tests (LIKE escaping, seeding, embeddings)
+├── test_graph_schema.py                    → 13 tests (validation, builder commands)
+├── test_metasound_knowledge.py             → 11 tests (search caching, category+tag)
+└── test_ms_graph_tools.py                  → 17 tests (6 parametrized templates, round-trip)
 research/
-├── research_waapi_mcp_server.md        → 69KB — 87 WAAPI functions, all patterns
-├── research_metasounds_game_audio.md   → 11KB — 80+ nodes, Builder API
-└── research_unreal_mcp_landscape.md    → 10 repos analysed, build-vs-fork decision
+├── research_waapi_mcp_server.md            → 69KB — 87 WAAPI functions, all patterns
+├── research_metasounds_game_audio.md       → 11KB — 80+ nodes, Builder API
+└── research_unreal_mcp_landscape.md        → 10 repos analysed, build-vs-fork decision
 ```
 
 ---
@@ -317,8 +382,8 @@ research/
 ## Development Phases
 
 ```
-Phase 1: Wwise MCP (standalone, WAAPI)     ✅ SHIPPED — 20 tools, 48 tests
-Phase 2: MetaSounds Knowledge Base          → ships alone
+Phase 1: Wwise MCP (standalone, WAAPI)     ✅ SHIPPED — 20 tools, 52 tests
+Phase 2: MetaSounds + Blueprint Knowledge   ✅ SHIPPED — 7 tools, 1209 entries, 107 total tests
 Phase 3: UE5 Audio Plugin (Builder API)     → needs Phase 2
 Phase 4: Systems Layer (orchestration)      → needs Phase 1+3
 Phase 5: A2HW Protocol Spec                → parallel
@@ -367,9 +432,9 @@ One prompt. Multiple render targets. The protocol is the standard — implementa
 | MCP Server | Python (FastMCP) | Shipped |
 | Wwise Bridge | `waapi-client` (official Audiokinetic lib) | Shipped |
 | UE5 Bridge | Custom C++ plugin + TCP (port 9877) | Planned |
-| Knowledge (structured) | Cloudflare D1 | Planned (static Python dicts in Phase 1) |
-| Knowledge (semantic) | Cloudflare Vectorize | Planned |
-| Templates | Parameterised JSON + Python generators | Shipped (5 patterns) |
+| Knowledge (structured) | SQLite (8 tables, 1,209 entries) | Shipped — local-first, no latency |
+| Knowledge (semantic) | TF-IDF + numpy cosine similarity | Shipped — <1ms queries, no ML deps |
+| Templates | Parameterised JSON + Python generators | Shipped (5 Wwise + 6 MetaSounds patterns) |
 
 **Requirements:** Python 3.10+, Wwise 2024/2025 with WAAPI enabled
 

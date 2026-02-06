@@ -44,7 +44,7 @@ def _seed_wwise_types(db: KnowledgeDB) -> int:
     from ue_audio_mcp.knowledge.wwise_types import (
         OBJECT_TYPES,
         COMMON_PROPERTIES,
-        DEFAULT_PATHS,
+        WWISE_TYPE_DESCRIPTIONS,
     )
 
     count = 0
@@ -71,11 +71,12 @@ def _seed_wwise_types(db: KnowledgeDB) -> int:
     }
     for type_name in OBJECT_TYPES:
         cat = type_categories.get(type_name, "other")
-        path = DEFAULT_PATHS.get(type_name.lower(), "")
         db.insert_wwise_type({
             "type_name": type_name,
             "category": cat,
-            "description": "Wwise {} object".format(type_name),
+            "description": WWISE_TYPE_DESCRIPTIONS.get(
+                type_name, "Wwise {} object".format(type_name)
+            ),
             "properties": list(COMMON_PROPERTIES.keys()),
         })
         count += 1
@@ -221,81 +222,15 @@ def _seed_blueprint_audio(db: KnowledgeDB) -> int:
 
 
 def _seed_blueprint_core(db: KnowledgeDB) -> int:
-    """Seed essential Blueprint core nodes for audio integration."""
-    nodes = [
-        {"name": "Branch", "class_name": "UK2Node_IfThenElse", "category": "flow_control",
-         "description": "Conditional branching based on bool", "tags": ["if", "condition", "branch"]},
-        {"name": "Sequence", "class_name": "UK2Node_ExecutionSequence", "category": "flow_control",
-         "description": "Execute outputs in sequence", "tags": ["sequence", "order", "sequential"]},
-        {"name": "ForEachLoop", "class_name": "UK2Node_ForEachLoop", "category": "flow_control",
-         "description": "Iterate over an array", "tags": ["loop", "array", "iterate"]},
-        {"name": "Delay", "class_name": "UK2Node_Delay", "category": "flow_control",
-         "description": "Delay execution by time", "tags": ["delay", "timer", "wait"]},
-        {"name": "DoOnce", "class_name": "UK2Node_DoOnce", "category": "flow_control",
-         "description": "Execute only once until reset", "tags": ["once", "gate"]},
-        {"name": "Gate", "class_name": "UK2Node_Gate", "category": "flow_control",
-         "description": "Open/close execution gate", "tags": ["gate", "control"]},
-        {"name": "FlipFlop", "class_name": "UK2Node_FlipFlop", "category": "flow_control",
-         "description": "Alternate between two outputs", "tags": ["toggle", "alternate"]},
-        {"name": "Select", "class_name": "UK2Node_Select", "category": "flow_control",
-         "description": "Select output based on index", "tags": ["select", "switch", "index"]},
-        {"name": "SwitchOnInt", "class_name": "UK2Node_SwitchInteger", "category": "flow_control",
-         "description": "Switch execution based on integer value", "tags": ["switch", "integer"]},
-        {"name": "SwitchOnString", "class_name": "UK2Node_SwitchString", "category": "flow_control",
-         "description": "Switch execution based on string value", "tags": ["switch", "string"]},
-        {"name": "SwitchOnEnum", "class_name": "UK2Node_SwitchEnum", "category": "flow_control",
-         "description": "Switch execution based on enum value", "tags": ["switch", "enum"]},
-        {"name": "EventBeginPlay", "class_name": "UK2Node_Event", "category": "events",
-         "description": "Called when actor begins play", "tags": ["begin", "start", "init"]},
-        {"name": "EventTick", "class_name": "UK2Node_Event", "category": "events",
-         "description": "Called every frame", "tags": ["tick", "frame", "update"]},
-        {"name": "EventActorBeginOverlap", "class_name": "UK2Node_Event", "category": "events",
-         "description": "Called when actor begins overlapping", "tags": ["overlap", "trigger", "collision"]},
-        {"name": "EventActorEndOverlap", "class_name": "UK2Node_Event", "category": "events",
-         "description": "Called when actor stops overlapping", "tags": ["overlap", "end", "collision"]},
-        {"name": "EventHit", "class_name": "UK2Node_Event", "category": "events",
-         "description": "Called when actor is hit by something", "tags": ["hit", "collision", "impact"]},
-        {"name": "CustomEvent", "class_name": "UK2Node_CustomEvent", "category": "events",
-         "description": "Custom event that can be called from other blueprints", "tags": ["custom", "event", "call"]},
-        {"name": "SetTimerByFunctionName", "class_name": "UKismetSystemLibrary", "category": "timer",
-         "description": "Set a timer to call a function", "tags": ["timer", "delay", "repeat"]},
-        {"name": "ClearTimer", "class_name": "UKismetSystemLibrary", "category": "timer",
-         "description": "Clear an active timer", "tags": ["timer", "clear", "stop"]},
-        {"name": "LineTraceByChannel", "class_name": "UKismetSystemLibrary", "category": "trace",
-         "description": "Cast a ray and return hit results", "tags": ["raycast", "trace", "collision", "surface"]},
-        {"name": "SphereTraceByChannel", "class_name": "UKismetSystemLibrary", "category": "trace",
-         "description": "Cast a sphere and return hit results", "tags": ["trace", "sphere", "collision"]},
-        {"name": "GetPhysicalMaterial", "class_name": "UPrimitiveComponent", "category": "physics",
-         "description": "Get physical material from hit result (for surface detection)", "tags": ["material", "surface", "footstep"]},
-        {"name": "GetActorLocation", "class_name": "AActor", "category": "transform",
-         "description": "Get actor world location", "tags": ["location", "position", "world"]},
-        {"name": "GetActorRotation", "class_name": "AActor", "category": "transform",
-         "description": "Get actor world rotation", "tags": ["rotation", "orientation"]},
-        {"name": "GetDistanceTo", "class_name": "AActor", "category": "transform",
-         "description": "Get distance between two actors", "tags": ["distance", "attenuation"]},
-        {"name": "MakeArray", "class_name": "UK2Node_MakeArray", "category": "utility",
-         "description": "Create an array from individual values", "tags": ["array", "create"]},
-        {"name": "MakeStruct", "class_name": "UK2Node_MakeStruct", "category": "utility",
-         "description": "Create a struct from individual values", "tags": ["struct", "create"]},
-        {"name": "SpawnActor", "class_name": "UGameplayStatics", "category": "spawn",
-         "description": "Spawn an actor in the world", "tags": ["spawn", "create", "actor"]},
-        {"name": "GetPlayerController", "class_name": "UGameplayStatics", "category": "player",
-         "description": "Get the player controller", "tags": ["player", "controller"]},
-        {"name": "GetPlayerCameraManager", "class_name": "UGameplayStatics", "category": "player",
-         "description": "Get the player camera manager (listener position)", "tags": ["camera", "listener", "spatial"]},
-        {"name": "RandomFloatInRange", "class_name": "UKismetMathLibrary", "category": "math",
-         "description": "Random float between min and max", "tags": ["random", "float", "range"]},
-        {"name": "RandomIntegerInRange", "class_name": "UKismetMathLibrary", "category": "math",
-         "description": "Random integer between min and max", "tags": ["random", "integer", "range"]},
-        {"name": "Lerp", "class_name": "UKismetMathLibrary", "category": "math",
-         "description": "Linear interpolation between two values", "tags": ["interpolation", "lerp", "blend"]},
-        {"name": "FInterpTo", "class_name": "UKismetMathLibrary", "category": "math",
-         "description": "Float interpolation with speed", "tags": ["interpolation", "smooth", "transition"]},
-        {"name": "MapRangeClamped", "class_name": "UKismetMathLibrary", "category": "math",
-         "description": "Map value from one range to another (clamped)", "tags": ["map", "range", "remap", "normalize"]},
-        {"name": "Clamp", "class_name": "UKismetMathLibrary", "category": "math",
-         "description": "Clamp value between min and max", "tags": ["clamp", "limit"]},
-    ]
-    for n in nodes:
-        db.insert_blueprint_core(n)
-    return len(nodes)
+    """Seed Blueprint core nodes from the blueprint_nodes catalogue."""
+    from ue_audio_mcp.knowledge.blueprint_nodes import BLUEPRINT_NODES
+
+    for name, node in BLUEPRINT_NODES.items():
+        db.insert_blueprint_core({
+            "name": name,
+            "class_name": node["class_name"],
+            "category": node["category"],
+            "description": node["description"],
+            "tags": node.get("tags", []),
+        })
+    return len(BLUEPRINT_NODES)

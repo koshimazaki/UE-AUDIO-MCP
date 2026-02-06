@@ -127,8 +127,58 @@ def test_seed_database():
     assert counts["wwise_types"] >= 15
     assert counts["audio_patterns"] == 6
     assert counts["blueprint_audio"] >= 20
-    assert counts["blueprint_core"] >= 30
-    assert sum(counts.values()) >= 200
+    assert counts["blueprint_core"] >= 900  # 946 verified nodes from official Epic docs
+    assert sum(counts.values()) >= 1100
+    db.close()
+
+
+def test_wwise_type_descriptions_not_generic():
+    from ue_audio_mcp.knowledge.seed import seed_database
+    db = KnowledgeDB(":memory:")
+    seed_database(db)
+    rows = db._fetch("SELECT type_name, description FROM wwise_types")
+    for row in rows:
+        assert not row["description"].startswith("Wwise "), (
+            "Generic description for {}: {}".format(row["type_name"], row["description"])
+        )
+    db.close()
+
+
+def test_like_escape_percent():
+    db = KnowledgeDB(":memory:")
+    db.insert_node({
+        "name": "Test%Node", "category": "Generators",
+        "description": "Has percent in name",
+        "inputs": [], "outputs": [], "tags": ["weird%tag"], "complexity": 1,
+    })
+    db.insert_node({
+        "name": "TestXNode", "category": "Generators",
+        "description": "Normal node",
+        "inputs": [], "outputs": [], "tags": ["normal"], "complexity": 1,
+    })
+    # A naive LIKE with unescaped % would match both; escaped should match only the literal %
+    results = db.query_nodes(tag="weird%tag")
+    assert len(results) == 1
+    assert results[0]["name"] == "Test%Node"
+    db.close()
+
+
+def test_like_escape_underscore():
+    db = KnowledgeDB(":memory:")
+    db.insert_node({
+        "name": "A_B", "category": "Filters",
+        "description": "Has underscore",
+        "inputs": [], "outputs": [], "tags": ["a_b"], "complexity": 1,
+    })
+    db.insert_node({
+        "name": "AXB", "category": "Filters",
+        "description": "No underscore",
+        "inputs": [], "outputs": [], "tags": ["axb"], "complexity": 1,
+    })
+    # Unescaped _ matches any char; escaped should only match literal _
+    results = db.query_nodes(tag="a_b")
+    assert len(results) == 1
+    assert results[0]["name"] == "A_B"
     db.close()
 
 

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import json
 
+import pytest
+
 from ue_audio_mcp.tools.ms_graph import (
     ms_validate_graph,
     ms_graph_to_commands,
@@ -92,3 +94,55 @@ def test_graph_from_template_invalid_params(knowledge_db):
     result = _parse(ms_graph_from_template("gunshot", "not-json"))
     assert result["status"] == "error"
     assert "Invalid params" in result["message"]
+
+
+# -- Step 5: param override tests ------------------------------------------
+
+def test_graph_from_template_with_params(knowledge_db):
+    result = _parse(ms_graph_from_template(
+        "gunshot", '{"adsr.Attack": 0.01, "random_pitch.Min": -2.0}'
+    ))
+    assert result["status"] == "ok"
+    spec = result["graph_spec"]
+    nodes_by_id = {n["id"]: n for n in spec["nodes"]}
+    assert nodes_by_id["adsr"]["defaults"]["Attack"] == 0.01
+    assert nodes_by_id["random_pitch"]["defaults"]["Min"] == -2.0
+
+
+def test_graph_from_template_unknown_param_ignored(knowledge_db):
+    result = _parse(ms_graph_from_template(
+        "gunshot", '{"nonexistent_node.Foo": 99}'
+    ))
+    assert result["status"] == "ok"
+    assert result["valid"] is True
+
+
+# -- Step 6: positive template tests ---------------------------------------
+
+ALL_TEMPLATES = ["gunshot", "footsteps", "ambient", "spatial", "ui_sound", "weather"]
+
+
+@pytest.mark.parametrize("template_name", ALL_TEMPLATES)
+def test_template_loads_and_validates(knowledge_db, template_name):
+    result = _parse(ms_graph_from_template(template_name))
+    assert result["status"] == "ok"
+    assert result["template"] == template_name
+    spec = result["graph_spec"]
+    assert spec["name"]
+    assert spec["asset_type"] in ("Source", "Patch", "Preset")
+    assert len(spec["nodes"]) >= 1
+    assert len(spec["connections"]) >= 1
+    assert result["valid"] is True, "Validation errors: {}".format(result["validation_errors"])
+
+
+def test_template_to_commands_roundtrip(knowledge_db):
+    """Every template should produce valid Builder API commands."""
+    for template_name in ALL_TEMPLATES:
+        tmpl_result = _parse(ms_graph_from_template(template_name))
+        assert tmpl_result["valid"] is True, "{} invalid".format(template_name)
+        spec_json = json.dumps(tmpl_result["graph_spec"])
+        cmd_result = _parse(ms_graph_to_commands(spec_json))
+        assert cmd_result["status"] == "ok", "{} commands failed".format(template_name)
+        actions = [c["action"] for c in cmd_result["commands"]]
+        assert actions[0] == "create_builder"
+        assert actions[-1] == "build_to_asset"

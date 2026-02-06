@@ -32,6 +32,31 @@ OBJECT_TYPES: set[str] = {
 }
 
 # ---------------------------------------------------------------------------
+# Human-readable descriptions for each object type
+# ---------------------------------------------------------------------------
+WWISE_TYPE_DESCRIPTIONS: dict[str, str] = {
+    "Sound": "Base audio object that references a source file or plugin for playback",
+    "RandomSequenceContainer": "Container that plays children randomly or sequentially with configurable repetition",
+    "SwitchContainer": "Container that selects children based on a Switch or State value at runtime",
+    "BlendContainer": "Container that crossfades between children using RTPC-driven blend curves",
+    "ActorMixer": "Grouping container for applying shared properties (volume, bus, effects) to children",
+    "Event": "Named trigger that executes one or more Actions (play, stop, pause, set RTPC, etc.)",
+    "Action": "Single operation executed by an Event, targeting a specific sound object",
+    "Bus": "Audio bus for mixing, applying effects, and metering a group of voices",
+    "AuxBus": "Auxiliary bus for send-based effects like reverb, delay, and environmental processing",
+    "WorkUnit": "File-level container for organising Wwise objects into manageable units",
+    "Folder": "Logical folder for grouping objects within a Work Unit hierarchy",
+    "Attenuation": "ShareSet defining distance-based volume, filter, and spread curves for 3D sounds",
+    "SoundBank": "Packaged binary containing media and metadata for runtime loading",
+    "GameParameter": "Continuous RTPC parameter (0-100 default) driven by game code to modulate properties",
+    "SwitchGroup": "Group of mutually exclusive Switch values used by SwitchContainers",
+    "Switch": "Single value within a SwitchGroup, typically mapped to a game state",
+    "StateGroup": "Group of mutually exclusive State values that affect properties globally",
+    "State": "Single value within a StateGroup, applying property overrides to all subscribed objects",
+    "Trigger": "Named game event that fires Stingers or other one-shot responses",
+}
+
+# ---------------------------------------------------------------------------
 # Common property names for ak.wwise.core.object.setProperty
 # ---------------------------------------------------------------------------
 COMMON_PROPERTIES: dict[str, str] = {

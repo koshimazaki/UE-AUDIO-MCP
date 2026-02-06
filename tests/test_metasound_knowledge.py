@@ -9,6 +9,8 @@ from ue_audio_mcp.tools.metasounds import (
     ms_node_info,
     ms_search_nodes,
     ms_list_categories,
+    _get_search_index,
+    _reset_search_index,
 )
 
 
@@ -70,3 +72,29 @@ def test_ms_list_categories(knowledge_db):
     assert result["total_nodes"] >= 100
     assert "Filters" in result["categories"]
     assert "Generators" in result["categories"]
+
+
+def test_search_index_cached(knowledge_db):
+    _reset_search_index()
+    idx1 = _get_search_index()
+    idx2 = _get_search_index()
+    assert idx1 is idx2
+    _reset_search_index()
+
+
+def test_reset_search_index(knowledge_db):
+    _reset_search_index()
+    idx1 = _get_search_index()
+    _reset_search_index()
+    idx2 = _get_search_index()
+    assert idx1 is not idx2
+    _reset_search_index()
+
+
+def test_ms_list_nodes_by_category_and_tag(knowledge_db):
+    result = _parse(ms_list_nodes(category="Filters", tag="lowpass"))
+    assert result["status"] == "ok"
+    assert result["count"] >= 1
+    for n in result["nodes"]:
+        assert n["category"] == "Filters"
+        assert "lowpass" in [t.lower() for t in n["tags"]]

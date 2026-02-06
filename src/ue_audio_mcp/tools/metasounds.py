@@ -9,7 +9,6 @@ import json
 
 from ue_audio_mcp.server import mcp
 from ue_audio_mcp.tools.utils import _ok, _error
-from ue_audio_mcp.knowledge.db import get_knowledge_db
 from ue_audio_mcp.knowledge.metasound_nodes import (
     METASOUND_NODES,
     get_all_categories,
@@ -18,14 +17,22 @@ from ue_audio_mcp.knowledge.metasound_nodes import (
     search_nodes,
 )
 
+_search_index = None
 
-def _get_db():
-    """Get the knowledge DB, seeding if needed."""
-    db = get_knowledge_db()
-    if not db.is_seeded():
-        from ue_audio_mcp.knowledge.seed import seed_database
-        seed_database(db)
-    return db
+
+def _get_search_index():
+    """Return the cached TF-IDF search index, building it once on first call."""
+    global _search_index
+    if _search_index is None:
+        from ue_audio_mcp.knowledge.embeddings import build_index_from_nodes
+        _search_index = build_index_from_nodes(METASOUND_NODES)
+    return _search_index
+
+
+def _reset_search_index():
+    """Reset the cached search index (for testing)."""
+    global _search_index
+    _search_index = None
 
 
 @mcp.tool()
@@ -43,8 +50,10 @@ def ms_list_nodes(
         JSON with node list including name, category, description, and pin counts.
     """
     if category and tag:
-        db = _get_db()
-        nodes = db.query_nodes(category=category, tag=tag)
+        nodes = [
+            n for n in get_nodes_by_category(category)
+            if tag.lower() in [t.lower() for t in n.get("tags", [])]
+        ]
     elif category:
         nodes = [n for n in get_nodes_by_category(category)]
     elif tag:
@@ -102,8 +111,7 @@ def ms_search_nodes(query: str) -> str:
         JSON with ranked results (name, score, category, description).
     """
     try:
-        from ue_audio_mcp.knowledge.embeddings import build_index_from_nodes
-        idx = build_index_from_nodes(METASOUND_NODES)
+        idx = _get_search_index()
         results = idx.search(query, top_k=10)
         ranked = []
         for name, score in results:

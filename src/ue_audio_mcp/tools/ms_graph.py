@@ -104,17 +104,20 @@ def ms_graph_from_template(
         return _error("Template file not found: {}".format(template_name))
 
     with open(template_path) as f:
-        template_content = f.read()
+        spec = json.load(f)
 
-    # Substitute parameters
-    for key, value in param_dict.items():
-        placeholder = "{{{" + key + "}}}"
-        template_content = template_content.replace(placeholder, json.dumps(value) if not isinstance(value, str) else value)
-
-    try:
-        spec = json.loads(template_content)
-    except (json.JSONDecodeError, ValueError):
-        return _error("Template produced invalid JSON after parameter substitution")
+    # Apply JSON-level param overrides: {"node_id.input_name": value}
+    if param_dict:
+        node_map = {n["id"]: n for n in spec.get("nodes", [])}
+        for key, value in param_dict.items():
+            parts = key.split(".", 1)
+            if len(parts) != 2:
+                continue
+            node_id, input_name = parts
+            node = node_map.get(node_id)
+            if node is None:
+                continue
+            node.setdefault("defaults", {})[input_name] = value
 
     from ue_audio_mcp.knowledge.graph_schema import validate_graph
     errors = validate_graph(spec)

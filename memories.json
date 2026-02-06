@@ -202,23 +202,169 @@
       "status": "fresh"
     },
     {
-      "id": "mem_1770390635425_z6vr5roxj",
-      "content": "## UE5-WWISE Phase 1 Code Review Completed (2026-02-06)\n\n### Summary\n- 48/48 tests passing, install works clean\n- 20 tools across 5 modules (claims match reality)\n- Code is generally clean and well-structured for Phase 1\n\n### Critical Issues Found\n1. `wwise_set_rtpc` doesn't actually bind RTPC curves — accepts target_path/property_name/curve_points but only creates GameParameter\n2. `template_gunshot` accepts pitch_randomization but never applies it to any Wwise object\n3. `_begin_undo` ignores its `label` parameter, `_end_undo` hardcodes \"MCP Template\"\n4. Dead code: `kwargs` dict built in connection.py:call() but never used (lines 68-72)\n5. `_ok()` helper vulnerable to status override if data contains \"status\" key\n\n### High Issues\n- _ok/_error helpers duplicated across 5 modules (DRY violation)\n- wwise_preview \"stop\" action ignores object_path, stops ALL transports\n- Template JSON files (5 files) never loaded by any code — dead data\n- No wwise_connect test exists\n- Singleton not thread-safe\n- execute_waapi is unrestricted escape hatch (no docs on risk)\n\n### Documentation Discrepancies\n- CLAUDE.md shows tools under tools/wwise/ but actual code is flat under tools/\n- README calls template JSONs \"Declarative spec\" but they're not machine-read\n- CLAUDE.md lists 16 object types but wwise_types.py has 19",
-      "type": "warning",
+      "id": "mem_1770390564940_mc6034jus",
+      "content": "## Phase 2: MetaSounds Knowledge Base - Complete Scope (2026-02-06)\n\n### What Phase 2 Delivers\n**Goal**: Build a node database + graph specification format for MetaSounds. Generates JSON intermediate representation (independent of UE5 at runtime) that maps 1:1 to Builder API calls. Works offline.\n\n**Timeline**: 1-2 days\n**Deliverable**: MetaSounds knowledge base + graph spec generator. Output: JSON specs documenting exact graph structure, useful even without UE5.\n\n### What Data Needs to be in Knowledge Base\n**Source**: research/research_metasounds_game_audio.md (80+ nodes catalogued)\n\n#### Categories (13):\n1. **Generators** (5): Additive Synth, Saw, Sine, Square, Triangle\n2. **Generators Advanced** (5): SuperOscillator, WaveTable Oscillator, WaveTable Player, Low Frequency Noise, LFO, Noise (pink/white), Perlin Noise\n3. **Wave Players** (7): Wave Player Mono/Stereo/Quad/5.1/7.1, properties (Loop, LoopStart, LoopDuration, StartTime, PitchShift)\n4. **Envelopes** (5): AD, ADSR, Crossfade, WaveTable Envelope, Evaluate WaveTable (audio-rate + float-rate versions)\n5. **Filters** (8): Biquad, Dynamic, Ladder, State Variable, One-Pole HP/LP, Sample And Hold, Bitcrusher, Mono/Stereo Band Splitter\n6. **Delays** (4): Delay, Stereo Delay, Delay Pitch Shift, Diffuser, Grain Delay\n7. **Dynamics** (4): Compressor, Limiter, Decibels to Linear Gain, Linear Gain to Decibels\n8. **Triggers** (12): Accumulate, Any, Compare, Control, Counter, Delay, Filter, Once, On Threshold, On Value Change, Pipe, Repeat, Route\n9. **Arrays** (6): Get, Set, Num, Random Get (w/ weight), Shuffle, Concatenate, Subset\n10. **Math** (13): Add, Subtract, Multiply, Divide, Abs, Clamp, Log, Power, Modulo, Map Range, Min, Max, Filter Q To Bandwidth, Linear To Log Frequency\n11. **Mix** (2): Mono Mixer (N→1), Stereo Mixer (N stereo→1)\n12. **Spatialization** (3): ITD Panner, Stereo Panner, Mid-Side Encode/Decode\n13. **Music/Utility** (12+): Frequency To MIDI, MIDI To Frequency, MIDI Note Quantizer, Scale to Note Array, BPM To Seconds, Random Bool/Float/Int/Time, Get Wave Info, Print Log, Audio Bus Reader, Wave Writer, Envelope Follower, Flanger, RingMod, WaveShaper, InterpTo, Get WaveTable From Bank\n\n**Data Per Node**:\n- Node class name (from Builder API discovery via Shift+hover)\n- Category\n- Inputs (pin name, data type: Audio/Trigger/Float/Int32/Bool/Time/String/UObject/Enum/WaveAsset/Array variants)\n- Outputs (same types)\n- Default values\n- Tags/capabilities (e.g., \"synthesis\", \"modulation\", \"spatial\", \"percussive\")\n\n### D1 Schema (6 Tables)\n**Database**: `ue-audio-knowledge` (independent from SIDKIT)\n\n**Table 1: metasound_nodes** (~80 rows)\n```sql\nid (TEXT PK)\nname (TEXT) -- e.g., \"Sine\", \"Biquad Filter\"\ncategory (TEXT) -- Generators, Filters, Envelopes, etc.\nclass_name (TEXT) -- Full C++ class for Builder API, e.g., \"Metasound::FSineNode\"\ndescription (TEXT)\ndata_type (TEXT) -- Primary output type: Audio/Trigger/Float/Int32/Bool\ninputs (JSON) -- [{pin_name, type, default_value}, ...]\noutputs (JSON) -- [{pin_name, type}, ...]\ntags (JSON) -- [\"modulation\", \"percussive\", \"spatial\", ...]\ncomplexity (INT) -- 1-5 for difficulty\n```\n\n**Table 2: waapi_functions** (87 rows from WAAPI reference)\n```sql\nid (TEXT PK)\nnamespace (TEXT) -- e.g., \"ak.wwise.core.object\"\noperation (TEXT) -- e.g., \"create\"\nfull_name (TEXT) -- \"ak.wwise.core.object.create\"\ndescription (TEXT)\nparameters (JSON) -- [{param_name, type, required, description}, ...]\nreturns (JSON) -- [{field_name, type}, ...]\nobject_types (JSON) -- Array of object types it applies to\nexamples (JSON) -- Code snippets\n```\n\n**Table 3: wwise_types** (16 rows)\n```sql\ntype_name (TEXT PK) -- Sound, RandomSequenceContainer, SwitchContainer, etc.\ndescription (TEXT)\nproperties (JSON) -- [{prop_name, type, default, description}, ...]\nhierarchy_allowed (BOOL) -- Can it have children?\nevents_applicable (BOOL) -- Can events play it?\ngame_parameters (JSON) -- [\"Volume\", \"Pitch\", ...]\n```\n\n**Table 4: audio_patterns** (6 rows initially)\n```sql\npattern_type (TEXT PK) -- gunshot, footsteps, ambient, spatial, ui_sound, weather\ndescription (TEXT)\nmetasounds_graph (JSON) -- Template graph spec (nodes + connections)\nwwise_equivalent (JSON) -- Equivalent Wwise structure\nblueprint_logic (TEXT) -- Blueprint trigger/parameter setup\ncomplexity (INT) -- 1-5\ngame_examples (JSON) -- [\"Lyra\", \"Fortnite\", ...]\n```\n\n**Table 5: error_patterns** (grows over time)\n```sql\nerror_hash (TEXT PK) -- hash(error_signature + template + params)\nerror_signature (TEXT) -- e.g., \"node_type_mismatch\"\ntemplate_used (TEXT) -- Which pattern failed\nparameters (JSON) -- What was being generated\nsuccessful_fix (TEXT) -- What worked\nsuccess_rate (FLOAT) -- % of times this fix works\nmetadata (JSON) -- {\"first_seen\": date, \"last_seen\": date}\n```\n\n**Table 6: ue_game_examples** (reference only)\n```sql\ngame_name (TEXT PK)\nsystem_type (TEXT) -- footsteps, weapons, ambient, etc.\ndescription (TEXT)\nreference_docs (JSON) -- Links to source files\nmetasounds_patches (JSON) -- Which patches used\nwwise_hierarchy (JSON) -- Wwise structure\ncomplexity (INT)\n```\n\n### Vectorize Semantic Search\n**Index**: `ue-audio-index` (independent embeddings)\n**Purpose**: Semantic queries alongside D1 structured queries\n\n**Embedding strategy**:\n- Embed node descriptions + tags → `metasound_nodes` index\n- Embed pattern descriptions + use cases → `audio_patterns` index\n- Embed error signatures + fixes → `error_patterns` index\n\n**Example queries**:\n- \"make it sound underwater\" → finds [Lowpass, Biquad, wet reverb pattern]\n- \"add spatial movement\" → finds [ITD Panner, Stereo Panner, Doppler effect]\n- \"weapon fire repetition issue\" → finds stored fixes for gunshot repetition\n\n**Implementation**: \n- Use Cloudflare's built-in embeddings API (same as SIDKIT)\n- Vectorize at seed time (one-time from research data)\n- Update incrementally as errors are learned\n\n### Cloudflare Workers Needed\n**Purpose**: API endpoints for MCP server to query D1 + Vectorize\n\n**Worker 1: D1 Query Endpoint** (`/api/d1-query`)\n```\nPOST /api/d1-query\nBody: {\n  table: \"metasound_nodes\",\n  where: {category: \"Filters\"},\n  limit: 50\n}\nReturns: JSON rows from D1\n```\n\n**Worker 2: Vectorize Search Endpoint** (`/api/vectorize-search`)\n```\nPOST /api/vectorize-search\nBody: {\n  index: \"ue-audio-index\",\n  query: \"make it underwater\",\n  limit: 10\n}\nReturns: Top 10 semantic matches with scores\n```\n\n**Worker 3: Knowledge Upsert** (`/api/upsert-knowledge`)\n```\nPOST /api/upsert-knowledge\nBody: {\n  table: \"metasound_nodes\",\n  data: {...node definition...}\n}\nWrites to D1 + re-embeds for Vectorize\n```\n\n**Worker 4: Error Learning** (`/api/store-error`)\n```\nPOST /api/store-error\nBody: {\n  error_signature: \"...\",\n  template_used: \"...\",\n  successful_fix: \"...\"\n}\nStores to error_patterns table + updates success_rate\n```\n\n### D1 Seeding Strategy\n**One-time bootstrap** (2-3 hours):\n1. Parse `research_metasounds_game_audio.md` → extract 80+ nodes\n2. Generate structured JSON for each node\n3. Parse `research_waapi_mcp_server.md` section 4 (87 WAAPI functions)\n4. Extract Wwise types from CLAUDE.md (16 object types)\n5. Build 6 pattern templates (gunshot, footsteps, etc.) as graph specs\n6. Upload all to D1 via Worker\n7. Run Vectorize embeddings via Cloudflare API\n\n**Ongoing growth**:\n- Each build failure stores error_signature + fix in `error_patterns`\n- New patterns discovered in Phase 4 added to `audio_patterns`\n- Custom nodes from community projects indexed as needed\n\n### Phase 2 Dependencies & Blockers\n**No blockers**: Knowledge base is purely data + offline.\n\n**Dependencies on Phase 2**:\n- Phase 3 (UE5 Plugin) needs Phase 2's node database + graph spec format (to feed to Builder API)\n- Phase 4 (Systems Layer) needs Phase 2's pattern templates + error learning\n\n**External dependencies**:\n- Cloudflare account setup (D1 database + Vectorize index) — ALREADY DONE in previous work\n- waapi-client library documentation (for WAAPI function params) — available\n- UE5 source code access (for node class names) — public, can Shift+hover in Editor\n\n### Key Questions Answered\n1. **\"What goes in the knowledge base?\"** → 80+ MetaSounds nodes, 87 WAAPI functions, 16 Wwise types, 6 game patterns, error→fix mappings, game examples\n2. **\"How is it structured?\"** → 6 D1 tables, Vectorize index for semantic search, Cloudflare Workers for API endpoints\n3. **\"How does it serve Phase 3?\"** → UE5 plugin queries D1 for node class names, validates graph specs against schema before sending to Builder API\n4. **\"How does error learning work?\"** → Same SIDKIT pattern: error_signature (hash of error + context) → successful_fix mapping, stored in D1, queryable for next generation attempt\n5. **\"Cloudflare setup?\"** → Own D1 database `ue-audio-knowledge` + own Vectorize index `ue-audio-index`, separate Workers, fully independent from SIDKIT at runtime\n",
+      "type": "config",
       "tags": [
-        "warning",
-        "code-review",
-        "ue5-wwise",
-        "phase1",
-        "findings"
+        "config",
+        "database",
+        "api",
+        "phase-2",
+        "metasounds",
+        "knowledge-base",
+        "d1-schema",
+        "vectorize",
+        "cloudflare-workers",
+        "architecture"
       ],
-      "timestamp": "2026-02-06T15:10:35.425Z",
-      "context": "Phase 1 code review findings for UE5-WWISE project",
+      "timestamp": "2026-02-06T15:09:24.940Z",
+      "context": "Phase 2 comprehensive analysis for UE5-WWISE MCP project",
       "accessCount": 0,
-      "lastAccessed": "2026-02-06T15:10:35.425Z",
-      "lastVerified": "2026-02-06T15:10:35.425Z",
+      "lastAccessed": "2026-02-06T15:09:24.940Z",
+      "lastVerified": "2026-02-06T15:09:24.940Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770393132925_d8harfuq3",
+      "content": "Phase 2 (MetaSounds Knowledge Base) COMPLETE — 2026-02-06. 7 new MCP tools, 40 new tests, 92 total passing. SQLite DB with 8 tables (234 entries), TF-IDF semantic search via numpy, 7-stage graph validator, 6 MetaSounds templates. Total project: 27 tools (20 Wwise + 7 MetaSounds). Next: Phase 3 (UE5 C++ Plugin with TCP server on port 9877, UEdGraphSchema_K2 for runtime node discovery).",
+      "type": "general",
+      "tags": [
+        "general",
+        "ue5-wwise",
+        "phase2",
+        "milestone",
+        "complete"
+      ],
+      "timestamp": "2026-02-06T15:52:12.925Z",
+      "context": "Phase 2 implementation of UE Audio MCP project",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-06T15:52:12.925Z",
+      "lastVerified": "2026-02-06T15:52:12.925Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770394913628_hmzbx2fol",
+      "content": "MetaSound Builder API (UMetaSoundBuilderBase) - 113 public methods documented at dev.epicgames.com. Key functions: CreateSourceBuilder, CreatePatchBuilder, AddNodeByClassName, AddInterface, ConnectNodes, FindNodeInputByName, FindNodeOutputByName, AddGraphInputNode, AddGraphOutputNode, SetNodeInputDefault, SetNodeLocation, BuildNewMetaSound, Build, Audition. Key UStructs: FMetaSoundNodeHandle, FMetaSoundBuilderNodeInputHandle, FMetaSoundBuilderNodeOutputHandle. Limitations: no variable support, paged inputs limited, live updates beta (5.5+). Template nodes only in C++ not Blueprint.",
+      "type": "general",
+      "tags": [
+        "general",
+        "api",
+        "ue5-wwise",
+        "builder-api",
+        "phase3",
+        "metasounds",
+        "api-reference"
+      ],
+      "timestamp": "2026-02-06T16:21:53.628Z",
+      "context": "Builder API research from official UE5 docs for Phase 3 C++ plugin implementation",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-06T16:21:53.628Z",
+      "lastVerified": "2026-02-06T16:21:53.628Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770395566744_uo1j7e0fj",
+      "content": "Completed comprehensive UE5 Blueprint node research covering 7 systems with 100+ nodes documented. File at /Users/radek/Documents/GIthub/UE5-WWISE/research/research_ue5_blueprint_nodes.md. Systems covered: Enhanced Input (UEnhancedInputComponent, triggers, modifiers), Save Game (USaveGame, sync/async save/load), Collision/Traces (line/sphere/box/capsule traces + overlaps, FHitResult 19 fields), Material Parameters (UMaterialInstanceDynamic, full C++ API), Subsystems (5 types: Engine/Editor/GameInstance/World/LocalPlayer), DataTables (10 nodes), Struct operations (Make/Break for FVector, FRotator, FTransform, FLinearColor, FHitResult). All verified against UE 5.7 official docs at dev.epicgames.com.",
+      "type": "general",
+      "tags": [
+        "general",
+        "api",
+        "ue5",
+        "blueprint",
+        "research",
+        "nodes",
+        "enhanced-input",
+        "save-game",
+        "collision",
+        "materials",
+        "subsystems",
+        "datatables",
+        "structs"
+      ],
+      "timestamp": "2026-02-06T16:32:46.744Z",
+      "context": "UE5-WWISE project research for building MCP server knowledge base",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-06T16:32:46.744Z",
+      "lastVerified": "2026-02-06T16:32:46.744Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770395869075_kyszk57eb",
+      "content": "UE5 Blueprint Nodes research file at /Users/radek/Documents/GIthub/UE5-WWISE/research/research_ue5_blueprint_nodes.md is already comprehensive with 580+ lines covering: Enhanced Input (UEnhancedInputComponent, UInputAction, UInputMappingContext, triggers, modifiers), Save Game (USaveGame, 7 Blueprint nodes), Collision/Traces (24 trace nodes, 11 overlap nodes, full FHitResult), Material Parameters (MID create/set/get, MPC nodes), Subsystems (5 types with C++ accessors), DataTables (9 nodes), and Struct Break/Make operations. All verified against UE 5.7 docs.",
+      "type": "general",
+      "tags": [
+        "general",
+        "ue5",
+        "blueprint-nodes",
+        "research",
+        "documentation"
+      ],
+      "timestamp": "2026-02-06T16:37:49.075Z",
+      "context": "Research validation - the file already existed and is complete",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-06T16:37:49.075Z",
+      "lastVerified": "2026-02-06T16:37:49.075Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770396006090_05ggmyyxc",
+      "content": "Completed research on Wwise UE5 Blueprint integration nodes. File: /Users/radek/Documents/GIthub/UE5-WWISE/research/research_wwise_ue5_blueprint_nodes.md\n\nKey findings:\n- UAkGameplayStatics: 40+ static BlueprintCallable functions (PostEvent, SetRTPCValue, SetState, SetSwitch, LoadBank, StopActor, SpawnAkComponentAtLocation, etc.)\n- UAkComponent: 17+ instance functions (PostAkEvent, PostAssociatedAkEvent, Stop, SetRTPCValue, SetSwitch, SeekOnEventBySeconds, SetAttenuationScalingFactor, etc.)\n- Wwise 2022.1+ introduced typed asset classes: UAkRtpc, UAkStateValue, UAkSwitchValue, UAkAudioEvent, UAkTrigger, UAkAuxBus, UAkAudioBank\n- Verified against 3 SDK source dumps (Satisfactory, RadicalHeights, PUBG) + 8 tutorial/blog sources\n- Header: Plugins/Wwise/Source/AkAudio/Classes/AkGameplayStatics.h\n- 85+ total functions documented across all classes",
+      "type": "general",
+      "tags": [
+        "general",
+        "wwise",
+        "ue5",
+        "blueprint",
+        "research",
+        "api-reference"
+      ],
+      "timestamp": "2026-02-06T16:40:06.090Z",
+      "context": "Research task for UE5-WWISE MCP project. These functions are what our MCP server needs to be able to trigger via the UE5 C++ plugin bridge on port 9877.",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-06T16:40:06.090Z",
+      "lastVerified": "2026-02-06T16:40:06.090Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770396033275_rv33wjk4m",
+      "content": "Expanded research_ue5_blueprint_nodes.md from 7 categories (580 lines) to 19 sections (1000+ lines) with 400+ Blueprint nodes. New sections added: Math Comparison (Section 8), Interpolation/Lerp (Section 9), Math Random (Section 10), Damage System (Section 11), Mesh/Static Mesh (Section 12), Audio-Adjacent (Section 13), Viewport/Screen (Section 14), Platform Detection (Section 15), EQS (Section 16), Collision/Overlap Events Extended (Section 17), Struct Operations Extended (Section 18), UGameplayStatics Extended (Section 19). All verified against UE 5.7 official docs at dev.epicgames.com.",
+      "type": "general",
+      "tags": [
+        "general",
+        "ue5",
+        "blueprint",
+        "research",
+        "nodes",
+        "documentation"
+      ],
+      "timestamp": "2026-02-06T16:40:33.275Z",
+      "context": "UE5-WWISE project blueprint node research expansion",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-06T16:40:33.275Z",
+      "lastVerified": "2026-02-06T16:40:33.275Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770396089625_s2evy82k8",
+      "content": "Created comprehensive UE5 Blueprint Function Libraries research at /Users/radek/Documents/GIthub/UE5-WWISE/research/research_ue5_blueprint_libraries.md. Covers 5 major Kismet libraries: UKismetMathLibrary (300+ functions across 15+ categories), UKismetStringLibrary (40+ functions), UKismetSystemLibrary (120+ functions), UKismetArrayLibrary (15+ generic functions), UGameplayStatics (100+ functions). Includes audio-relevant function summary for the UE Audio MCP project. All function names verified from official Epic source code mirrors, Python API, and documentation.",
+      "type": "code",
+      "tags": [
+        "code",
+        "python",
+        "api",
+        "ue5",
+        "blueprint",
+        "api-reference",
+        "kismet",
+        "research"
+      ],
+      "timestamp": "2026-02-06T16:41:29.625Z",
+      "context": "UE5-WWISE project research phase",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-06T16:41:29.625Z",
+      "lastVerified": "2026-02-06T16:41:29.625Z",
       "status": "fresh"
     }
   ],
-  "lastUpdated": "2026-02-06T15:10:35.425Z"
+  "lastUpdated": "2026-02-06T16:41:29.625Z"
 }

@@ -96,14 +96,19 @@ CREATE TABLE IF NOT EXISTS blueprint_core (
 """
 
 
+def _escape_like(value: str) -> str:
+    """Escape LIKE wildcard characters (%, _) in user input."""
+    return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
 def _like_param(value: str) -> str:
     """Build a SQL LIKE parameter for substring matching."""
-    return "%{}%".format(value)
+    return "%{}%".format(_escape_like(value))
 
 
 def _tag_param(tag: str) -> str:
     """Build a LIKE parameter matching a JSON-encoded tag string."""
-    return '%"{}"%'.format(tag)
+    return '%"{}"%'.format(_escape_like(tag))
 
 
 class KnowledgeDB:
@@ -170,7 +175,7 @@ class KnowledgeDB:
         if category and tag:
             return self._fetch(
                 "SELECT * FROM metasound_nodes "
-                "WHERE category = ? AND tags LIKE ? ORDER BY name",
+                "WHERE category = ? AND tags LIKE ? ESCAPE '\\' ORDER BY name",
                 (category, _tag_param(tag)),
             )
         if category:
@@ -182,7 +187,7 @@ class KnowledgeDB:
         if tag:
             return self._fetch(
                 "SELECT * FROM metasound_nodes "
-                "WHERE tags LIKE ? ORDER BY name",
+                "WHERE tags LIKE ? ESCAPE '\\' ORDER BY name",
                 (_tag_param(tag),),
             )
         return self._fetch(
@@ -222,7 +227,7 @@ class KnowledgeDB:
         if namespace and operation:
             return self._fetch(
                 "SELECT * FROM waapi_functions "
-                "WHERE namespace = ? AND operation LIKE ? ORDER BY uri",
+                "WHERE namespace = ? AND operation LIKE ? ESCAPE '\\' ORDER BY uri",
                 (namespace, _like_param(operation)),
             )
         if namespace:
@@ -234,7 +239,7 @@ class KnowledgeDB:
         if operation:
             return self._fetch(
                 "SELECT * FROM waapi_functions "
-                "WHERE operation LIKE ? ORDER BY uri",
+                "WHERE operation LIKE ? ESCAPE '\\' ORDER BY uri",
                 (_like_param(operation),),
             )
         return self._fetch(
