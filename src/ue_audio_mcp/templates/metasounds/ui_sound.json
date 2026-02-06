@@ -1,0 +1,45 @@
+{
+  "name": "UISound",
+  "asset_type": "Source",
+  "description": "Procedural UI click sound using sine oscillator with AD envelope shaping.",
+  "interfaces": ["UE.Source.OneShot"],
+  "inputs": [
+    {"name": "OnPlay", "type": "Trigger"},
+    {"name": "Frequency", "type": "Float", "default": 1000.0}
+  ],
+  "outputs": [
+    {"name": "Out Mono", "type": "Audio"},
+    {"name": "Out Stereo L", "type": "Audio"},
+    {"name": "Out Stereo R", "type": "Audio"},
+    {"name": "OnFinished", "type": "Trigger"}
+  ],
+  "nodes": [
+    {
+      "id": "sine_osc",
+      "node_type": "Sine",
+      "position": [0, 0],
+      "defaults": {"Enabled": true}
+    },
+    {
+      "id": "ad_env",
+      "node_type": "AD Envelope (Audio)",
+      "position": [0, 200],
+      "defaults": {"Attack": 0.001, "Decay": 0.05}
+    },
+    {
+      "id": "amp_multiply",
+      "node_type": "Multiply (Audio)",
+      "position": [400, 0]
+    }
+  ],
+  "connections": [
+    {"from_node": "__graph__", "from_pin": "Frequency", "to_node": "sine_osc", "to_pin": "Frequency"},
+    {"from_node": "__graph__", "from_pin": "OnPlay", "to_node": "ad_env", "to_pin": "Trigger"},
+    {"from_node": "sine_osc", "from_pin": "Audio", "to_node": "amp_multiply", "to_pin": "A"},
+    {"from_node": "ad_env", "from_pin": "Envelope", "to_node": "amp_multiply", "to_pin": "B"},
+    {"from_node": "amp_multiply", "from_pin": "Result", "to_node": "__graph__", "to_pin": "Out Mono"},
+    {"from_node": "amp_multiply", "from_pin": "Result", "to_node": "__graph__", "to_pin": "Out Stereo L"},
+    {"from_node": "amp_multiply", "from_pin": "Result", "to_node": "__graph__", "to_pin": "Out Stereo R"},
+    {"from_node": "ad_env", "from_pin": "OnDone", "to_node": "__graph__", "to_pin": "OnFinished"}
+  ]
+}

@@ -28,8 +28,8 @@ async def lifespan(server: FastMCP) -> AsyncIterator[None]:
 
 mcp = FastMCP(
     "ue-audio-mcp",
-    instructions="MCP server for Wwise game audio — create objects, events, "
-    "mix buses, generate soundbanks via WAAPI",
+    instructions="MCP server for game audio — Wwise (WAAPI) + MetaSounds knowledge. "
+    "Create objects, events, mix buses, generate soundbanks, query nodes, validate graphs.",
     lifespan=lifespan,
 )
 
@@ -39,6 +39,8 @@ import ue_audio_mcp.tools.objects  # noqa: E402, F401
 import ue_audio_mcp.tools.events  # noqa: E402, F401
 import ue_audio_mcp.tools.preview  # noqa: E402, F401
 import ue_audio_mcp.tools.templates  # noqa: E402, F401
+import ue_audio_mcp.tools.metasounds  # noqa: E402, F401
+import ue_audio_mcp.tools.ms_graph  # noqa: E402, F401
 
 
 def main():

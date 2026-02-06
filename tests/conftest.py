@@ -8,6 +8,7 @@ from unittest.mock import MagicMock
 import pytest
 
 import ue_audio_mcp.connection as conn_module
+import ue_audio_mcp.knowledge.db as db_module
 
 
 class MockWaapiClient:
@@ -62,3 +63,21 @@ def wwise_conn(mock_waapi: MockWaapiClient, monkeypatch: pytest.MonkeyPatch):
     # Cleanup
     connection._client = None
     conn_module._connection = None
+
+
+@pytest.fixture()
+def knowledge_db():
+    """Provide a seeded in-memory KnowledgeDB for testing.
+
+    Resets the global singleton before and after each test.
+    """
+    from ue_audio_mcp.knowledge.db import KnowledgeDB
+    from ue_audio_mcp.knowledge.seed import seed_database
+
+    db_module._db = None
+    db = KnowledgeDB(":memory:")
+    seed_database(db)
+    db_module._db = db
+    yield db
+    db.close()
+    db_module._db = None

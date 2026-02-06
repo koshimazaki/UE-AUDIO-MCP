@@ -1,0 +1,51 @@
+{
+  "name": "Ambient",
+  "asset_type": "Source",
+  "description": "Looping ambient layer with LFO modulation and stereo mixing.",
+  "interfaces": ["UE.Source.Looping"],
+  "inputs": [
+    {"name": "OnPlay", "type": "Trigger"},
+    {"name": "OnStop", "type": "Trigger"},
+    {"name": "BaseLoop", "type": "WaveAsset"}
+  ],
+  "outputs": [
+    {"name": "Out Mono", "type": "Audio"},
+    {"name": "Out Stereo L", "type": "Audio"},
+    {"name": "Out Stereo R", "type": "Audio"},
+    {"name": "OnFinished", "type": "Trigger"},
+    {"name": "OnLooped", "type": "Trigger"}
+  ],
+  "nodes": [
+    {
+      "id": "wave_player",
+      "node_type": "Wave Player (Stereo)",
+      "position": [0, 0],
+      "defaults": {"Loop": true}
+    },
+    {
+      "id": "lfo",
+      "node_type": "Low-Frequency Oscillator",
+      "position": [0, 300],
+      "defaults": {"Frequency": 0.25, "Shape": "Sine", "MinValue": 0.6, "MaxValue": 1.0}
+    },
+    {
+      "id": "stereo_mixer",
+      "node_type": "Stereo Mixer",
+      "position": [400, 0],
+      "defaults": {}
+    }
+  ],
+  "connections": [
+    {"from_node": "__graph__", "from_pin": "OnPlay", "to_node": "wave_player", "to_pin": "Play"},
+    {"from_node": "__graph__", "from_pin": "OnStop", "to_node": "wave_player", "to_pin": "Stop"},
+    {"from_node": "__graph__", "from_pin": "BaseLoop", "to_node": "wave_player", "to_pin": "WaveAsset"},
+    {"from_node": "wave_player", "from_pin": "Audio L", "to_node": "stereo_mixer", "to_pin": "Audio L 0"},
+    {"from_node": "wave_player", "from_pin": "Audio R", "to_node": "stereo_mixer", "to_pin": "Audio R 0"},
+    {"from_node": "lfo", "from_pin": "Out", "to_node": "stereo_mixer", "to_pin": "Gain 0"},
+    {"from_node": "stereo_mixer", "from_pin": "Audio L", "to_node": "__graph__", "to_pin": "Out Stereo L"},
+    {"from_node": "stereo_mixer", "from_pin": "Audio R", "to_node": "__graph__", "to_pin": "Out Stereo R"},
+    {"from_node": "stereo_mixer", "from_pin": "Audio L", "to_node": "__graph__", "to_pin": "Out Mono"},
+    {"from_node": "wave_player", "from_pin": "OnFinished", "to_node": "__graph__", "to_pin": "OnFinished"},
+    {"from_node": "wave_player", "from_pin": "OnLooped", "to_node": "__graph__", "to_pin": "OnLooped"}
+  ]
+}
