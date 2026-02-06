@@ -14,21 +14,11 @@ from ue_audio_mcp.knowledge.wwise_types import (
     OBJECT_TYPES,
 )
 from ue_audio_mcp.server import mcp
+from ue_audio_mcp.tools.utils import _error, _ok
 
 log = logging.getLogger(__name__)
 
 BATCH_LIMIT = 100
-
-
-def _ok(data: dict | None = None) -> str:
-    result = {"status": "ok"}
-    if data:
-        result.update(data)
-    return json.dumps(result)
-
-
-def _error(message: str) -> str:
-    return json.dumps({"status": "error", "message": message})
 
 
 @mcp.tool()
@@ -150,8 +140,19 @@ def wwise_import_audio(
 
     if not isinstance(files, list):
         return _error("audio_files must be a JSON array")
+    if not files:
+        return _error("audio_files must be a non-empty JSON array")
     if len(files) > BATCH_LIMIT:
         return _error(f"Batch limit exceeded: {len(files)} > {BATCH_LIMIT}")
+
+    for i, entry in enumerate(files):
+        if not isinstance(entry, dict):
+            return _error(f"audio_files[{i}] must be an object, got {type(entry).__name__}")
+        if "audioFile" not in entry or "objectPath" not in entry:
+            return _error(
+                f"audio_files[{i}] missing required keys. "
+                "Each entry must have 'audioFile' and 'objectPath'."
+            )
 
     conn = get_wwise_connection()
     try:

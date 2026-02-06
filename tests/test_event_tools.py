@@ -7,8 +7,8 @@ import json
 from ue_audio_mcp.tools.events import (
     wwise_assign_switch,
     wwise_create_event,
+    wwise_create_game_parameter,
     wwise_set_attenuation,
-    wwise_set_rtpc,
 )
 
 
@@ -49,42 +49,32 @@ def test_create_event_invalid_action(wwise_conn):
     assert "Invalid action_type" in result["message"]
 
 
-def test_set_rtpc(wwise_conn, mock_waapi):
+def test_create_game_parameter(wwise_conn, mock_waapi):
     mock_waapi.set_response("ak.wwise.core.object.create", {"id": "gp-1"})
-    points = json.dumps([
-        {"x": 0, "y": -96, "shape": "SCurve"},
-        {"x": 100, "y": 0, "shape": "SCurve"},
-    ])
-    result = _parse(wwise_set_rtpc(
-        "RTPC_Wind",
-        "\\Actor-Mixer Hierarchy\\Default Work Unit\\Wind",
-        "Volume",
-        points,
-    ))
+    mock_waapi.set_response("ak.wwise.core.object.setProperty", None)
+    result = _parse(wwise_create_game_parameter("RTPC_Wind"))
     assert result["status"] == "ok"
     assert result["game_parameter_id"] == "gp-1"
+    assert result["name"] == "RTPC_Wind"
+    assert result["range"] == [0.0, 100.0]
+    assert result["default"] == 50.0
 
 
-def test_set_rtpc_invalid_points(wwise_conn):
-    result = _parse(wwise_set_rtpc("GP", "\\foo", "Volume", "not-json"))
-    assert result["status"] == "error"
-    assert "Invalid curve_points" in result["message"]
-
-
-def test_set_rtpc_too_few_points(wwise_conn):
-    result = _parse(wwise_set_rtpc("GP", "\\foo", "Volume", '[{"x":0,"y":0,"shape":"Linear"}]'))
-    assert result["status"] == "error"
-    assert "at least 2 points" in result["message"]
-
-
-def test_set_rtpc_invalid_shape(wwise_conn):
-    points = json.dumps([
-        {"x": 0, "y": 0, "shape": "Banana"},
-        {"x": 100, "y": 0, "shape": "Linear"},
-    ])
-    result = _parse(wwise_set_rtpc("GP", "\\foo", "Volume", points))
-    assert result["status"] == "error"
-    assert "Invalid curve shape" in result["message"]
+def test_create_game_parameter_custom_range(wwise_conn, mock_waapi):
+    mock_waapi.set_response("ak.wwise.core.object.create", {"id": "gp-2"})
+    mock_waapi.set_response("ak.wwise.core.object.setProperty", None)
+    result = _parse(wwise_create_game_parameter(
+        "RTPC_Speed", min_value=0.0, max_value=300.0, default_value=60.0,
+    ))
+    assert result["status"] == "ok"
+    assert result["range"] == [0.0, 300.0]
+    assert result["default"] == 60.0
+    # Verify setProperty was called for range/default (3 calls)
+    prop_calls = [
+        (args, opts) for uri, args, opts in mock_waapi.calls
+        if uri == "ak.wwise.core.object.setProperty"
+    ]
+    assert len(prop_calls) == 3
 
 
 def test_assign_switch(wwise_conn, mock_waapi):

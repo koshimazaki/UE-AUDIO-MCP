@@ -57,6 +57,14 @@ def test_template_gunshot(wwise_conn, mock_waapi):
     # Verify undo group lifecycle
     assert _has_call(mock_waapi, "ak.wwise.core.undo.beginGroup")
     assert _has_call(mock_waapi, "ak.wwise.core.undo.endGroup")
+    # Verify pitch randomization was actually applied to sounds
+    prop_calls = _get_calls(mock_waapi, "ak.wwise.core.object.setProperty")
+    pitch_min_calls = [a for a, _ in prop_calls if a and a.get("property") == "PitchModMin"]
+    pitch_max_calls = [a for a, _ in prop_calls if a and a.get("property") == "PitchModMax"]
+    assert len(pitch_min_calls) == 4  # one per variation
+    assert len(pitch_max_calls) == 4
+    assert pitch_min_calls[0]["value"] == -100  # half of 200 cents
+    assert pitch_max_calls[0]["value"] == 100
 
 
 def test_template_gunshot_invalid_variations(wwise_conn, mock_waapi):

@@ -7,19 +7,9 @@ import logging
 
 from ue_audio_mcp.connection import get_wwise_connection
 from ue_audio_mcp.server import mcp
+from ue_audio_mcp.tools.utils import _error, _ok
 
 log = logging.getLogger(__name__)
-
-
-def _ok(data: dict | None = None) -> str:
-    result = {"status": "ok"}
-    if data:
-        result.update(data)
-    return json.dumps(result)
-
-
-def _error(message: str) -> str:
-    return json.dumps({"status": "error", "message": message})
 
 
 @mcp.tool()

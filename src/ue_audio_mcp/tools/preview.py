@@ -8,19 +8,9 @@ import logging
 from ue_audio_mcp.connection import get_wwise_connection
 from ue_audio_mcp.knowledge.wwise_types import TRANSPORT_ACTIONS
 from ue_audio_mcp.server import mcp
+from ue_audio_mcp.tools.utils import _error, _ok
 
 log = logging.getLogger(__name__)
-
-
-def _ok(data: dict | None = None) -> str:
-    result = {"status": "ok"}
-    if data:
-        result.update(data)
-    return json.dumps(result)
-
-
-def _error(message: str) -> str:
-    return json.dumps({"status": "error", "message": message})
 
 
 @mcp.tool()
@@ -38,18 +28,37 @@ def wwise_preview(object_path: str, action: str = "play") -> str:
     conn = get_wwise_connection()
     try:
         if action == "stop":
-            # Get existing transports and stop them
+            # Get existing transports, optionally filtered by object_path
             transports = conn.call("ak.wwise.core.transport.getList")
             transport_list = transports.get("list", []) if transports else []
+
+            # Filter to matching object if path provided
+            if object_path:
+                transport_list = [
+                    t for t in transport_list
+                    if t.get("object") == object_path
+                ]
+
+            stopped = 0
+            errors = []
             for t in transport_list:
-                conn.call("ak.wwise.core.transport.executeAction", {
-                    "transport": t["transport"],
-                    "action": "stop",
-                })
-                conn.call("ak.wwise.core.transport.destroy", {
-                    "transport": t["transport"],
-                })
-            return _ok({"action": "stop", "transports_stopped": len(transport_list)})
+                tid = t["transport"]
+                try:
+                    conn.call("ak.wwise.core.transport.executeAction", {
+                        "transport": tid,
+                        "action": "stop",
+                    })
+                    conn.call("ak.wwise.core.transport.destroy", {
+                        "transport": tid,
+                    })
+                    stopped += 1
+                except Exception as exc:
+                    errors.append(f"transport {tid}: {exc}")
+
+            result_data = {"action": "stop", "transports_stopped": stopped}
+            if errors:
+                result_data["errors"] = errors
+            return _ok(result_data)
 
         # Create transport and execute action
         transport = conn.call("ak.wwise.core.transport.create", {

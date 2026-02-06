@@ -6,6 +6,7 @@ import json
 
 from ue_audio_mcp.tools.core import (
     execute_waapi,
+    wwise_connect,
     wwise_get_info,
     wwise_query,
     wwise_save,
@@ -14,6 +15,34 @@ from ue_audio_mcp.tools.core import (
 
 def _parse(result: str) -> dict:
     return json.loads(result)
+
+
+def test_wwise_connect_success(wwise_conn, mock_waapi, monkeypatch):
+    """wwise_connect returns version info on success."""
+    import ue_audio_mcp.connection as conn_mod
+
+    # Simulate a fresh connection by patching connect() to use the mock
+    def fake_connect(self, url=None):
+        self._client = mock_waapi
+        return mock_waapi.call("ak.wwise.core.getInfo")
+
+    monkeypatch.setattr(conn_mod.WwiseConnection, "connect", fake_connect)
+    result = _parse(wwise_connect())
+    assert result["status"] == "ok"
+    assert "Wwise 2024" in result["version"]
+
+
+def test_wwise_connect_failure(wwise_conn, monkeypatch):
+    """wwise_connect returns error when Wwise is not running."""
+    import ue_audio_mcp.connection as conn_mod
+
+    def fake_connect(self, url=None):
+        raise Exception("Connection refused")
+
+    monkeypatch.setattr(conn_mod.WwiseConnection, "connect", fake_connect)
+    result = _parse(wwise_connect())
+    assert result["status"] == "error"
+    assert "Cannot connect" in result["message"]
 
 
 def test_wwise_get_info(wwise_conn, mock_waapi):

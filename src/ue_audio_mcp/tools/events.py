@@ -7,25 +7,14 @@ import logging
 
 from ue_audio_mcp.connection import get_wwise_connection
 from ue_audio_mcp.knowledge.wwise_types import (
-    CURVE_SHAPES,
     CURVE_TYPES,
     DEFAULT_PATHS,
     EVENT_ACTION_TYPES,
 )
 from ue_audio_mcp.server import mcp
+from ue_audio_mcp.tools.utils import _error, _ok
 
 log = logging.getLogger(__name__)
-
-
-def _ok(data: dict | None = None) -> str:
-    result = {"status": "ok"}
-    if data:
-        result.update(data)
-    return json.dumps(result)
-
-
-def _error(message: str) -> str:
-    return json.dumps({"status": "error", "message": message})
 
 
 @mcp.tool()
@@ -74,55 +63,56 @@ def wwise_create_event(
 
 
 @mcp.tool()
-def wwise_set_rtpc(
-    game_parameter_name: str,
-    target_path: str,
-    property_name: str,
-    curve_points: str,
+def wwise_create_game_parameter(
+    name: str,
+    min_value: float = 0.0,
+    max_value: float = 100.0,
+    default_value: float = 50.0,
 ) -> str:
-    """Create a Game Parameter and bind an RTPC curve to a property.
+    """Create a Game Parameter (RTPC) in Wwise.
+
+    Creates the GameParameter object. To bind it as an RTPC curve on a
+    specific property, use execute_waapi with ak.wwise.core.object.setRTPCCurve
+    or configure the binding in the Wwise Authoring GUI.
 
     Args:
-        game_parameter_name: Name for the GameParameter (e.g. RTPC_Wind_Intensity)
-        target_path: Object path to bind the RTPC curve to
-        property_name: Property to modulate (Volume, Pitch, Lowpass, etc.)
-        curve_points: JSON array of {x, y, shape} points (e.g. [{"x":0,"y":-96,"shape":"SCurve"},{"x":100,"y":0,"shape":"SCurve"}])
+        name: GameParameter name (e.g. RTPC_Wind_Intensity)
+        min_value: Minimum range value
+        max_value: Maximum range value
+        default_value: Default value
     """
-    try:
-        points = json.loads(curve_points)
-    except json.JSONDecodeError:
-        return _error(f"Invalid curve_points JSON: {curve_points}")
-
-    if not isinstance(points, list) or len(points) < 2:
-        return _error("curve_points must be a JSON array with at least 2 points")
-
-    for pt in points:
-        shape = pt.get("shape", "Linear")
-        if shape not in CURVE_SHAPES:
-            return _error(f"Invalid curve shape '{shape}'. Valid: {sorted(CURVE_SHAPES)}")
-
     conn = get_wwise_connection()
     try:
-        # Create or get the GameParameter
         gp_result = conn.call("ak.wwise.core.object.create", {
             "parent": DEFAULT_PATHS["game_parameters"],
             "type": "GameParameter",
-            "name": game_parameter_name,
+            "name": name,
             "onNameConflict": "merge",
         })
         gp_id = gp_result.get("id")
 
-        # Bind RTPC curve — use setProperty with @RTPC binding
-        # Note: full RTPC binding via raw WAAPI requires the helper pattern;
-        # here we create the GP and return its ID for manual binding if needed.
+        # Set range properties
+        conn.call("ak.wwise.core.object.setProperty", {
+            "object": gp_id,
+            "property": "RangeMin",
+            "value": min_value,
+        })
+        conn.call("ak.wwise.core.object.setProperty", {
+            "object": gp_id,
+            "property": "RangeMax",
+            "value": max_value,
+        })
+        conn.call("ak.wwise.core.object.setProperty", {
+            "object": gp_id,
+            "property": "InitialValue",
+            "value": default_value,
+        })
+
         return _ok({
             "game_parameter_id": gp_id,
-            "game_parameter_name": game_parameter_name,
-            "target": target_path,
-            "property": property_name,
-            "points": points,
-            "note": "GameParameter created. RTPC curve binding requires Wwise Authoring GUI "
-            "or advanced WAAPI — use execute_waapi for full control.",
+            "name": name,
+            "range": [min_value, max_value],
+            "default": default_value,
         })
     except Exception as e:
         return _error(str(e))

@@ -65,12 +65,6 @@ class WwiseConnection:
         """Call a WAAPI function. Raises RuntimeError if not connected."""
         if self._client is None:
             raise RuntimeError("Not connected to Wwise. Use wwise_connect first.")
-        kwargs = {}
-        if args:
-            kwargs["args"] = args  # positional in waapi-client
-        if options:
-            kwargs["options"] = options
-        # waapi-client signature: call(uri, args=None, options=None)
         return self._client.call(uri, args, options)
 
 

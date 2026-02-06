@@ -11,28 +11,20 @@ import logging
 from ue_audio_mcp.connection import get_wwise_connection
 from ue_audio_mcp.knowledge.wwise_types import DEFAULT_PATHS, EVENT_ACTION_TYPES
 from ue_audio_mcp.server import mcp
+from ue_audio_mcp.tools.utils import _error, _ok
 
 log = logging.getLogger(__name__)
 
 
-def _ok(data: dict | None = None) -> str:
-    result = {"status": "ok"}
-    if data:
-        result.update(data)
-    return json.dumps(result)
-
-
-def _error(message: str) -> str:
-    return json.dumps({"status": "error", "message": message})
-
-
 def _begin_undo(conn, label: str) -> None:
     conn.call("ak.wwise.core.undo.beginGroup")
+    conn._undo_label = label
 
 
 def _end_undo(conn) -> None:
+    label = getattr(conn, "_undo_label", "MCP Template")
     conn.call("ak.wwise.core.undo.endGroup", {
-        "displayName": "MCP Template",
+        "displayName": label,
     })
 
 
@@ -103,11 +95,16 @@ def template_gunshot(
         _set_prop(conn, cid, "RandomOrSequence", 0)
         _set_prop(conn, cid, "NormalOrShuffle", 1)
 
-        # Create Sound children
+        # Create Sound children with pitch randomization
+        half_pitch = pitch_randomization // 2
         sound_ids = []
         for i in range(num_variations):
             sound = _create(conn, cid, "Sound", f"{weapon_name}_Shot_{i + 1:02d}")
-            sound_ids.append(sound["id"])
+            sid = sound["id"]
+            _set_prop(conn, sid, "EnableMidiNoteTracking", False)
+            _set_prop(conn, sid, "PitchModMin", -half_pitch)
+            _set_prop(conn, sid, "PitchModMax", half_pitch)
+            sound_ids.append(sid)
 
         # Create Play event
         event = _create_event(conn, f"Play_Gunshot_{weapon_name}", cid)

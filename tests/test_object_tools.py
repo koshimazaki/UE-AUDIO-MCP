@@ -112,3 +112,23 @@ def test_import_audio_invalid_operation(wwise_conn):
     result = _parse(wwise_import_audio("[]", import_operation="badMode"))
     assert result["status"] == "error"
     assert "Invalid import_operation" in result["message"]
+
+
+def test_import_audio_empty_array(wwise_conn):
+    result = _parse(wwise_import_audio("[]"))
+    assert result["status"] == "error"
+    assert "non-empty" in result["message"]
+
+
+def test_import_audio_missing_keys(wwise_conn):
+    files = json.dumps([{"wrong_key": "value"}])
+    result = _parse(wwise_import_audio(files))
+    assert result["status"] == "error"
+    assert "missing required keys" in result["message"]
+
+
+def test_import_audio_invalid_entry_type(wwise_conn):
+    files = json.dumps(["not_an_object"])
+    result = _parse(wwise_import_audio(files))
+    assert result["status"] == "error"
+    assert "must be an object" in result["message"]

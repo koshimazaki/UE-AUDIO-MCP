@@ -200,7 +200,25 @@
       "lastAccessed": "2026-02-06T14:47:03.394Z",
       "lastVerified": "2026-02-06T14:47:03.394Z",
       "status": "fresh"
+    },
+    {
+      "id": "mem_1770390635425_z6vr5roxj",
+      "content": "## UE5-WWISE Phase 1 Code Review Completed (2026-02-06)\n\n### Summary\n- 48/48 tests passing, install works clean\n- 20 tools across 5 modules (claims match reality)\n- Code is generally clean and well-structured for Phase 1\n\n### Critical Issues Found\n1. `wwise_set_rtpc` doesn't actually bind RTPC curves — accepts target_path/property_name/curve_points but only creates GameParameter\n2. `template_gunshot` accepts pitch_randomization but never applies it to any Wwise object\n3. `_begin_undo` ignores its `label` parameter, `_end_undo` hardcodes \"MCP Template\"\n4. Dead code: `kwargs` dict built in connection.py:call() but never used (lines 68-72)\n5. `_ok()` helper vulnerable to status override if data contains \"status\" key\n\n### High Issues\n- _ok/_error helpers duplicated across 5 modules (DRY violation)\n- wwise_preview \"stop\" action ignores object_path, stops ALL transports\n- Template JSON files (5 files) never loaded by any code — dead data\n- No wwise_connect test exists\n- Singleton not thread-safe\n- execute_waapi is unrestricted escape hatch (no docs on risk)\n\n### Documentation Discrepancies\n- CLAUDE.md shows tools under tools/wwise/ but actual code is flat under tools/\n- README calls template JSONs \"Declarative spec\" but they're not machine-read\n- CLAUDE.md lists 16 object types but wwise_types.py has 19",
+      "type": "warning",
+      "tags": [
+        "warning",
+        "code-review",
+        "ue5-wwise",
+        "phase1",
+        "findings"
+      ],
+      "timestamp": "2026-02-06T15:10:35.425Z",
+      "context": "Phase 1 code review findings for UE5-WWISE project",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-06T15:10:35.425Z",
+      "lastVerified": "2026-02-06T15:10:35.425Z",
+      "status": "fresh"
     }
   ],
-  "lastUpdated": "2026-02-06T14:47:03.394Z"
+  "lastUpdated": "2026-02-06T15:10:35.425Z"
 }
