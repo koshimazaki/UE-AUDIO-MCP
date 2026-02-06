@@ -65,7 +65,142 @@
       "lastAccessed": "2026-02-06T13:46:04.956Z",
       "lastVerified": "2026-02-06T13:46:04.956Z",
       "status": "fresh"
+    },
+    {
+      "id": "mem_1770385795551_sf7oos6bn",
+      "content": "UE MCP Landscape Research (2026-02-06):\n\nKEY REPOS:\n1. chongdashu/unreal-mcp (1,370 stars) - Leader. C++ plugin + Python FastMCP. TCP port 55557. Tools: blueprint, editor, node, project, umg. No audio.\n2. flopperam/unreal-engine-mcp (431 stars) - 40+ tools, blueprint analysis, 3D gen. No audio.\n3. kvick-games/UnrealMCP (493 stars) - Basic, inspired by blender-mcp. MetaSound on roadmap.\n4. runreal/unreal-mcp (70 stars) - NO PLUGIN needed, uses UE built-in Python remote execution. TypeScript MCP server.\n5. BilkentAudio/Wwise-MCP (23 stars) - Wwise-only MCP via WAAPI. Python/FastMCP. Comprehensive WAAPI wrapper in wwise_python_lib.py. Plan execution pattern.\n6. ahujasid/blender-mcp (16,899 stars) - Gold standard architecture. Two components: addon (socket server in Blender) + MCP server (FastMCP). JSON over TCP.\n\nDECISION: Build from scratch, NOT fork. Reasons:\n- No existing project combines Wwise + MetaSounds + Blueprint audio\n- Forking means maintaining 80% code we don't need + adding 100% audio code ourselves\n- Adopt PATTERNS not codebases: blender-mcp two-component architecture, chongdashu modular tools, BilkentAudio WAAPI wrapper reference, runreal plugin-free approach for Blueprints\n\nARCHITECTURE:\n- Python FastMCP server with 3 communication channels:\n  1. WAAPI WebSocket (port 8080) -> Wwise\n  2. TCP Socket (port 9877) -> Custom C++ UE Plugin (for MetaSounds Builder API)\n  3. Python Remote Execution -> UE5 Editor (for Blueprint tools, NO plugin needed)",
+      "type": "warning",
+      "tags": [
+        "warning",
+        "python",
+        "typescript",
+        "api",
+        "architecture",
+        "research",
+        "unreal-mcp",
+        "wwise-mcp",
+        "decision"
+      ],
+      "timestamp": "2026-02-06T13:49:55.551Z",
+      "context": "Research for UE5-WWISE project - deciding build vs fork strategy for game audio MCP server",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-06T13:49:55.551Z",
+      "lastVerified": "2026-02-06T13:49:55.551Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770386499116_3irvp8eno",
+      "content": "UE5-WWISE Knowledge Architecture Decision (2026-02-06):\n- Cloudflare D1 for structured knowledge storage (6 tables: metasound_nodes, waapi_functions, wwise_types, audio_patterns, error_patterns, ue_game_examples)\n- Cloudflare Vectorize for semantic search (embeddings over same D1 data)\n- Two search paths: agent queries by TYPE (D1 SQL) or by MEANING (Vectorize embeddings)\n- Share Cloudflare infrastructure with SIDKIT (same account, reuse embedding pipeline)\n- Error learning: SIDKIT pattern — store error_signature + successful_fix in D1, query before generating\n- All UE5 tools (MetaSounds + Blueprint) route through single C++ plugin on port 9877 (not split across Python remote exec)",
+      "type": "error",
+      "tags": [
+        "error",
+        "python",
+        "ue5-wwise",
+        "architecture",
+        "cloudflare",
+        "d1",
+        "vectorize",
+        "knowledge-base"
+      ],
+      "timestamp": "2026-02-06T14:01:39.116Z",
+      "context": "Architecture decision for UE Audio MCP knowledge storage",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-06T14:01:39.116Z",
+      "lastVerified": "2026-02-06T14:01:39.116Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770388164433_6bifylmv5",
+      "content": "WAAPI Python Code Examples - Exact Implementations\n\n1. WAAPI CONNECTION (waapi-client):\n```python\nfrom waapi import WaapiClient, CannotConnectToWaapiException\nwith WaapiClient() as client:\n    info = client.call(\"ak.wwise.core.getInfo\")\n    handler = client.subscribe(\"ak.wwise.core.object.created\", lambda obj: print(obj))\n```\n\n2. CREATE_OBJECT (ak.wwise.core.object.create):\n```python\nresult = client.call(\"ak.wwise.core.object.create\", {\n    \"parent\": \"\\\\Actor-Mixer Hierarchy\\\\Default Work Unit\",\n    \"type\": \"RandomSequenceContainer\",\n    \"name\": \"Gunshot_Variations\",\n    \"onNameConflict\": \"merge\"\n})\ncontainer_id = result[\"id\"]\n```\n\n3. SET_PROPERTY (ak.wwise.core.object.setProperty):\n```python\nclient.call(\"ak.wwise.core.object.setProperty\", {\n    \"object\": \"\\\\Actor-Mixer Hierarchy\\\\Default Work Unit\\\\Weapons\",\n    \"property\": \"Volume\",\n    \"value\": -3.0\n})\n```\n\n4. SET_REFERENCE (ak.wwise.core.object.setReference):\n```python\nclient.call(\"ak.wwise.core.object.setReference\", {\n    \"object\": \"\\\\Actor-Mixer Hierarchy\\\\Default Work Unit\\\\Weapons\",\n    \"reference\": \"OutputBus\",\n    \"value\": \"\\\\Master-Mixer Hierarchy\\\\Default Work Unit\\\\Master Audio Bus\\\\SFX\"\n})\n```\n\n5. IMPORT_AUDIO (ak.wwise.core.audio.import):\n```python\nresult = client.call(\"ak.wwise.core.audio.import\", {\n    \"importOperation\": \"useExisting\",\n    \"default\": {\"importLanguage\": \"SFX\"},\n    \"imports\": [\n        {\"audioFile\": \"C:\\\\Audio\\\\rifle_shot_01.wav\",\n         \"objectPath\": \"\\\\Actor-Mixer Hierarchy\\\\Default Work Unit\\\\Weapons\\\\Gunshot_Rifle\\\\<Sound>Rifle_Shot_01\"}\n    ]\n})\n```\n\n6. CREATE_EVENT (ak.wwise.core.object.create with Action child):\n```python\nevent_result = client.call(\"ak.wwise.core.object.create\", {\n    \"parent\": \"\\\\Events\\\\Default Work Unit\",\n    \"type\": \"Event\",\n    \"name\": \"Play_Gunshot_Rifle\",\n    \"onNameConflict\": \"merge\",\n    \"children\": [{\n        \"type\": \"Action\",\n        \"name\": \"\",\n        \"@ActionType\": 1,\n        \"@Target\": \"\\\\Actor-Mixer Hierarchy\\\\Default Work Unit\\\\Weapons\\\\Gunshot_Rifle\"\n    }]\n})\n```\n\n7. ASSIGN_SWITCH (ak.wwise.core.switchContainer.addAssignment):\n```python\nclient.call(\"ak.wwise.core.switchContainer.addAssignment\", {\n    \"child\": child_object_id,\n    \"stateOrSwitch\": switch_value_id\n})\n```\n\n8. SET_ATTENUATION (ak.wwise.core.object.setAttenuationCurve):\n```python\nclient.call(\"ak.wwise.core.object.setAttenuationCurve\", {\n    \"object\": attenuation_id,\n    \"curveType\": \"VolumeDryUsage\",\n    \"use\": \"Custom\",\n    \"points\": [\n        {\"x\": 0, \"y\": 0, \"shape\": \"Linear\"},\n        {\"x\": 50, \"y\": -6, \"shape\": \"Linear\"},\n        {\"x\": 100, \"y\": -200, \"shape\": \"Exp3\"}\n    ]\n})\n```\n\n9. SET_RTPC/GENERATE BANKS (ak.wwise.core.soundbank.setInclusions/generate):\n```python\nclient.call(\"ak.wwise.core.soundbank.setInclusions\", {\n    \"soundbank\": soundbank_id,\n    \"operation\": \"add\",\n    \"inclusions\": [{\"object\": event_id, \"filter\": [\"events\", \"structures\", \"media\"]}]\n})\nclient.call(\"ak.wwise.core.soundbank.generate\", {\n    \"soundbanks\": [{\"name\": \"Weapons_Bank\"}]\n})\n```\n\n10. TRANSPORT/PREVIEW (ak.wwise.core.transport.create/executeAction):\n```python\ntransport = client.call(\"ak.wwise.core.transport.create\", {\n    \"object\": \"\\\\Events\\\\Default Work Unit\\\\Play_Gunshot_Rifle\"\n})\nclient.call(\"ak.wwise.core.transport.executeAction\", {\n    \"transport\": transport[\"transport\"],\n    \"action\": \"play\"\n})\n```",
+      "type": "code",
+      "tags": [
+        "code",
+        "python",
+        "WAAPI",
+        "Python",
+        "code-examples",
+        "exact-specs"
+      ],
+      "timestamp": "2026-02-06T14:29:24.433Z",
+      "context": "Extracted from research_waapi_mcp_server.md - all 10 core WAAPI operations with exact code",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-06T14:29:24.433Z",
+      "lastVerified": "2026-02-06T14:29:24.433Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770388232999_vz3hyj07g",
+      "content": "WWISE-MCP AND BLENDER-MCP ARCHITECTURE PATTERNS\n\n## FastMCP Tool Registration Pattern (Wwise-MCP)\n- Single FastMCP instance instantiated without lifespan initially\n- Tools exposed: list_wwise_commands() and execute_plan(plan: list[str])\n- No decorator stacking - direct @mcp.tool() usage\n- Return types: dict with command metadata, dict with results and store\n\n## Blender-MCP Tool Registration Pattern  \n- FastMCP with lifespan context manager: mcp = FastMCP(\"BlenderMCP\", lifespan=server_lifespan)\n- Stacked decorators: @telemetry_tool(\"tool_name\") + @mcp.tool()\n- Global _blender_connection maintained at module level\n- Lazy initialization on first tool call via get_blender_connection()\n- Return types vary: strings, base64 images, JSON strings, exceptions\n\n## WAAPI Connection Management (Wwise-MCP)\n- Single global connection using WaapiClient\n- Thread-safe with locks (_client, _dispatcher, _reconnecting flag)\n- Priority queue-based request scheduling with due_in parameter\n- connect_to_waapi() phases: mark reconnecting → shutdown resources → create new instances → restore globals\n- Blocks new calls during reconnection with \"WAAPI is reconnecting\" error\n\n## WAAPI Wrapper Functions Available (wwise_python_lib.py - 62 KB)\nProject info: get_project_info(), get_all_languages(), get_all_platforms(), get_all_soundbanks()\nGame objects: ensure_game_obj(), set_game_obj_position(), start_position_ramp()\nEvent control: create_event(), list_all_event_names(), post_event(), stop_event()\nGame syncs: create_rtpc(), set_state(), set_switch(), ramp_rtpc()\nObject manipulation: get_object_at_path(), rename_objects(), move_object_by_path(), set_property()\nAudio import: import_audio_files(), list_audio_files_at_path_file_explorer()\nCustom exceptions: WwiseValidationError, WwiseObjectNotFoundError, WwiseApiError\n\n## Wwise-MCP Command Execution Pattern\n- Command dataclass-based registry\n- _run_plan_sync() maintains store dict for inter-step variables\n- Variable resolution: $variable (scalars), $last (previous), $last.id (attribute access), recursive dict/list resolution\n- Validates signatures before execution, logs each step\n\n## Project Configuration (pyproject.toml) Patterns\nWwise-MCP: Python 3.13+, FastMCP-based, modules in app/scripts/\nBlender-MCP: Python 3.10+, FastMCP with mcp[cli]≥1.3.0, src/blender_mcp/ layout\nEntry point format: package_name = \"module.submodule:function_name\"\nExample: blender-mcp = \"blender_mcp.server:main\"\n\n## Connection Health Checking (Blender-MCP)\n- Lazy init via get_blender_connection()\n- Verifies connection validity before reuse\n- Recreates if invalid\n- Socket implementation with chunked JSON handling and timeout resilience",
+      "type": "config",
+      "tags": [
+        "config",
+        "python",
+        "wwise-mcp",
+        "blender-mcp",
+        "fastmcp",
+        "waapi",
+        "architecture",
+        "patterns"
+      ],
+      "timestamp": "2026-02-06T14:30:32.998Z",
+      "context": "Research completed on BilkentAudio/Wwise-MCP and ahujasid/blender-mcp repositories to understand MCP server patterns for reference in UE5-WWISE project",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-06T14:30:32.998Z",
+      "lastVerified": "2026-02-06T14:30:32.998Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770388338005_1twg2y130",
+      "content": "Phase 1 Implementation Plan designed for UE Audio MCP Wwise server. 10 steps, 20 tools across 5 modules (core, objects, events, preview, templates). File structure: src/ue_audio_mcp/ with server.py, connection.py, tools/*.py, knowledge/wwise_types.py, templates/wwise/*.json. Key decisions: FastMCP + waapi-client, Python 3.10+, sync WAAPI (no async wrapping), JSON returns with status field, mock WaapiClient in tests, undo groups for templates. Must remove old empty scaffolding dirs (src/tools/, src/knowledge/, src/protocol/, src/systems/).",
+      "type": "general",
+      "tags": [
+        "general",
+        "python",
+        "ue5-wwise",
+        "phase1",
+        "implementation-plan",
+        "architecture"
+      ],
+      "timestamp": "2026-02-06T14:32:18.005Z",
+      "context": "Phase 1 implementation planning for UE5-WWISE project",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-06T14:32:18.005Z",
+      "lastVerified": "2026-02-06T14:32:18.005Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770388761637_6gi97qnig",
+      "content": "FastMCP (mcp>=1.26.0) uses `instructions` parameter, NOT `description`. The constructor signature changed from older versions.",
+      "type": "general",
+      "tags": [
+        "general",
+        "fastmcp",
+        "gotcha",
+        "api-change"
+      ],
+      "timestamp": "2026-02-06T14:39:21.637Z",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-06T14:39:21.637Z",
+      "lastVerified": "2026-02-06T14:39:21.637Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770389223394_mudx7ho3m",
+      "content": "Phase 1 Wwise MCP Server COMPLETE. 20 tools, 48 tests, all passing.\n\nFiles created (23):\n- pyproject.toml\n- src/ue_audio_mcp/__init__.py, server.py, connection.py\n- src/ue_audio_mcp/tools/__init__.py, core.py (5 tools), objects.py (4 tools), events.py (4 tools), preview.py (2 tools), templates.py (5 tools)\n- src/ue_audio_mcp/knowledge/__init__.py, wwise_types.py (19 types, 24 props, 18 actions, 9 paths)\n- src/ue_audio_mcp/templates/wwise/ (5 JSON specs)\n- tests/__init__.py, conftest.py, test_connection.py, test_core_tools.py, test_object_tools.py, test_event_tools.py, test_preview_tools.py, test_templates.py\n\nKey patterns:\n- FastMCP lifespan = asynccontextmanager yielding None\n- mcp defined BEFORE tool imports (blender-mcp pattern)\n- All tools return JSON: {\"status\": \"ok/error\", ...}\n- Templates wrapped in undo groups (beginGroup/endGroup/cancelGroup)\n- MockWaapiClient in conftest.py with set_response() for per-URI mocking",
+      "type": "error",
+      "tags": [
+        "error",
+        "phase1",
+        "wwise-mcp",
+        "complete",
+        "architecture"
+      ],
+      "timestamp": "2026-02-06T14:47:03.394Z",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-06T14:47:03.394Z",
+      "lastVerified": "2026-02-06T14:47:03.394Z",
+      "status": "fresh"
     }
   ],
-  "lastUpdated": "2026-02-06T13:46:04.956Z"
+  "lastUpdated": "2026-02-06T14:47:03.394Z"
 }

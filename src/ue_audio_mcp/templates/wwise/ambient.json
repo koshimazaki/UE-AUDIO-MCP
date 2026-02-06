@@ -1,0 +1,30 @@
+{
+  "name": "ambient",
+  "description": "RTPC-driven ambient blend system with looped layers",
+  "game_parameter": {
+    "type": "GameParameter",
+    "name_template": "RTPC_{rtpc_parameter_name}",
+    "parent_path": "\\Game Parameters\\Default Work Unit"
+  },
+  "hierarchy": {
+    "type": "BlendContainer",
+    "name_template": "Ambient_{rtpc_parameter_name}",
+    "children": {
+      "type": "Sound",
+      "names": "{layer_names}",
+      "properties": {
+        "IsLoopingEnabled": true,
+        "IsLoopingInfinite": true
+      }
+    }
+  },
+  "event": {
+    "name_template": "Play_Ambient_{rtpc_parameter_name}",
+    "action_type": "Play"
+  },
+  "defaults": {
+    "layer_names": ["Wind_Light", "Wind_Medium", "Wind_Heavy"],
+    "rtpc_parameter_name": "Wind_Intensity",
+    "parent_path": "\\Actor-Mixer Hierarchy\\Default Work Unit"
+  }
+}

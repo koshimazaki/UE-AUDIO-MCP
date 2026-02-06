@@ -1,0 +1,33 @@
+{
+  "name": "footsteps",
+  "description": "Surface-switched footstep system with per-surface random variations",
+  "switch_group": {
+    "type": "SwitchGroup",
+    "name": "Surface_Type",
+    "parent_path": "\\Switches\\Default Work Unit",
+    "values": "{surface_types}"
+  },
+  "hierarchy": {
+    "type": "SwitchContainer",
+    "name": "Footstep_Surface",
+    "reference": {
+      "SwitchGroupOrStateGroup": "Surface_Type"
+    },
+    "children_per_switch": {
+      "type": "RandomSequenceContainer",
+      "name_template": "Footstep_{surface}",
+      "properties": {
+        "RandomOrSequence": 0,
+        "NormalOrShuffle": 1
+      }
+    }
+  },
+  "event": {
+    "name_template": "Play_Footstep",
+    "action_type": "Play"
+  },
+  "defaults": {
+    "surface_types": ["Concrete", "Wood", "Grass", "Metal", "Gravel", "Water"],
+    "parent_path": "\\Actor-Mixer Hierarchy\\Default Work Unit"
+  }
+}

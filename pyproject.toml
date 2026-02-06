@@ -1,0 +1,16 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ue-audio-mcp"
+version = "0.1.0"
+description = "MCP server for Wwise game audio via WAAPI"
+requires-python = ">=3.10"
+dependencies = ["mcp[cli]>=1.3.0", "waapi-client>=0.7"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0", "pytest-asyncio>=0.21"]
+
+[project.scripts]
+ue-audio-mcp = "ue_audio_mcp.server:main"

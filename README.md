@@ -10,6 +10,50 @@ One MCP server. Three audio engines. Wwise + MetaSounds + Blueprint — wired to
 
 ---
 
+## Quick Start (Phase 1 — Wwise MCP)
+
+Phase 1 ships standalone — only Wwise required, no UE5 needed.
+
+### Install
+
+```bash
+git clone https://github.com/koshimazaki/UE5-WWISE.git
+cd UE5-WWISE
+pip install -e ".[dev]"
+```
+
+### Run
+
+```bash
+# Start the MCP server (auto-connects to Wwise on ws://127.0.0.1:8080/waapi)
+ue-audio-mcp
+```
+
+Wwise Authoring must be running with WAAPI enabled (`Project > User Preferences > Enable Wwise Authoring API`). If Wwise isn't running, the server starts anyway — connect later with `wwise_connect`.
+
+### MCP Client Configuration
+
+Add to your MCP client config (Claude Desktop, Cursor, etc.):
+
+```json
+{
+  "mcpServers": {
+    "ue-audio-mcp": {
+      "command": "ue-audio-mcp",
+      "transport": "stdio"
+    }
+  }
+}
+```
+
+### Test
+
+```bash
+pytest tests/ -v    # 48 tests, all passing
+```
+
+---
+
 ## The Problem
 
 Game audio systems take weeks to build. A weather ambient system needs:
@@ -106,28 +150,79 @@ Enter forest zone         →     Dense ambient layers     →     Zone crossfad
 
 ---
 
-## Tool Groups
+## Wwise Tools (Phase 1 — Shipped)
 
-### Wwise Tools (works standalone — just Wwise running)
-```
-wwise_connect              Connect to running Wwise instance
-wwise_get_info             Project info, version
-wwise_create_object        Create any Wwise object type
-wwise_import_audio         Import WAV files
-wwise_set_property         Set volume, pitch, filters
-wwise_set_reference        Assign buses, attenuation
-wwise_create_event         Create events with actions
-wwise_query                WAQL queries
-wwise_set_rtpc             Create/modify RTPC curves
-wwise_assign_switch        Switch container assignments
-wwise_set_attenuation      Attenuation curves
-wwise_generate_banks       Build soundbanks
-wwise_preview              Play/stop via transport
-wwise_save                 Save project
-execute_waapi              Generic escape hatch — any WAAPI call
-```
+20 tools across 5 modules. All return JSON `{"status": "ok/error", ...}` for consistent LLM parsing.
 
-### MetaSounds Tools (works with UE5 running)
+### Core (5 tools)
+
+| Tool | Description | WAAPI |
+|------|-------------|-------|
+| `wwise_connect` | Connect to Wwise (default `ws://127.0.0.1:8080/waapi`) | `ak.wwise.core.getInfo` |
+| `wwise_get_info` | Get Wwise version, platform, project info | `ak.wwise.core.getInfo` |
+| `wwise_query` | Query objects using WAQL with custom return fields | `ak.wwise.core.object.get` |
+| `wwise_save` | Save the current Wwise project | `ak.wwise.core.project.save` |
+| `execute_waapi` | Raw WAAPI escape hatch — call any of 87 WAAPI functions | Any URI |
+
+### Objects (4 tools)
+
+| Tool | Description | WAAPI |
+|------|-------------|-------|
+| `wwise_create_object` | Create any Wwise object (19 types, validated) | `ak.wwise.core.object.create` |
+| `wwise_set_property` | Set Volume, Pitch, Lowpass, IsLoopingEnabled, etc. (24 known properties) | `ak.wwise.core.object.setProperty` |
+| `wwise_set_reference` | Assign OutputBus, Attenuation, SwitchGroup, Effects | `ak.wwise.core.object.setReference` |
+| `wwise_import_audio` | Import WAV files (batch up to 100, 3 import modes) | `ak.wwise.core.audio.import` |
+
+### Events & Mixing (4 tools)
+
+| Tool | Description | WAAPI |
+|------|-------------|-------|
+| `wwise_create_event` | Create Event + Action (18 action types: Play, Stop, Pause, etc.) | `ak.wwise.core.object.create` |
+| `wwise_set_rtpc` | Create GameParameter for RTPC binding with curve points | `ak.wwise.core.object.create` |
+| `wwise_assign_switch` | Assign children to switch/state values in SwitchContainers | `ak.wwise.core.switchContainer.addAssignment` |
+| `wwise_set_attenuation` | Create Attenuation ShareSet with distance curves (7 curve types) | `ak.wwise.core.object.setAttenuationCurve` |
+
+### Preview (2 tools)
+
+| Tool | Description | WAAPI |
+|------|-------------|-------|
+| `wwise_preview` | Play/stop/pause via transport control | `ak.wwise.core.transport.*` |
+| `wwise_generate_banks` | Generate SoundBanks by name | `ak.wwise.core.soundbank.generate` |
+
+### Templates (5 tools)
+
+One-call generators for complete game audio patterns. All wrapped in **undo groups** for atomic rollback.
+
+| Tool | What It Creates |
+|------|----------------|
+| `template_gunshot` | RandomSequenceContainer + N variation Sounds + pitch randomization + Play Event |
+| `template_footsteps` | SwitchGroup + SwitchContainer + per-surface RandomSequenceContainers + Play Event |
+| `template_ambient` | GameParameter (RTPC) + BlendContainer + looped layer Sounds + Play Event |
+| `template_ui_sound` | ActorMixer(UI) + Sound + OutputBus routing + Play Event |
+| `template_weather_states` | StateGroup + SwitchContainer + per-state looped Sounds + assignments + Play Event |
+
+### Knowledge Base
+
+Static validation data used by all tools (migrates to Cloudflare D1 in Phase 2):
+
+| Data | Count | Used By |
+|------|-------|---------|
+| Object types | 19 | `wwise_create_object` validation |
+| Properties | 24 | `wwise_set_property` documentation |
+| References | 8 | `wwise_set_reference` documentation |
+| Default paths | 9 | All template tools |
+| Event actions | 18 | `wwise_create_event` validation |
+| Curve types | 7 | `wwise_set_attenuation` validation |
+| Curve shapes | 9 | RTPC + attenuation point validation |
+| Import operations | 3 | `wwise_import_audio` validation |
+| Name conflict modes | 4 | `wwise_create_object` validation |
+
+---
+
+## MetaSounds Tools (Phase 3 — Planned)
+
+Requires UE5 5.4+ with custom C++ plugin running on TCP port 9877.
+
 ```
 ms_create_source           New MetaSounds Source via Builder API
 ms_create_patch            New MetaSounds Patch
@@ -142,7 +237,8 @@ ms_save_asset              Export to .uasset
 ms_list_nodes              Browse available node types
 ```
 
-### Blueprint Tools (works with UE5 running)
+## Blueprint Tools (Phase 3 — Planned)
+
 ```
 bp_create_audio_manager    Generate audio manager Blueprint
 bp_create_trigger          Surface detector, zone volume, animation notify
@@ -150,7 +246,10 @@ bp_wire_params             Connect game state → MetaSounds/Wwise params
 bp_create_zone             Ambient zone with overlap + fade
 ```
 
-### Systems Tools (the differentiator — orchestrates all three)
+## Systems Tools (Phase 4 — Planned)
+
+The differentiator — orchestrates all three layers from a single prompt.
+
 ```
 build_system               "weather ambient" → generates all layers
 build_footsteps            Complete surface-reactive footstep system
@@ -169,11 +268,61 @@ The server detects what's available on startup:
 | Running | Available Tools |
 |---------|----------------|
 | Nothing | Knowledge base, template preview, A2HW protocol |
-| Wwise only | All Wwise tools |
+| Wwise only | All Wwise tools (20 tools — Phase 1) |
 | UE5 only | MetaSounds + Blueprint tools |
 | Wwise + UE5 | Everything, including AudioLink bridge and full Systems tools |
 
 No manual configuration. Install once, use what you have.
+
+---
+
+## Project Structure
+
+```
+pyproject.toml                          → Package config, pip install -e ".[dev]"
+src/ue_audio_mcp/
+├── __init__.py
+├── server.py                           → FastMCP entry point + lifespan + tool wiring
+├── connection.py                       → WwiseConnection singleton (WAAPI WebSocket)
+├── tools/
+│   ├── core.py                         → 5 tools: connect, info, query, save, execute
+│   ├── objects.py                      → 4 tools: create, set property/reference, import
+│   ├── events.py                       → 4 tools: events, RTPC, switch assign, attenuation
+│   ├── preview.py                      → 2 tools: transport preview, soundbank generation
+│   └── templates.py                    → 5 tools: gunshot, footsteps, ambient, UI, weather
+├── knowledge/
+│   └── wwise_types.py                  → 19 types, 24 props, 18 actions, 9 paths, curves
+└── templates/wwise/
+    ├── gunshot.json                    → Declarative spec for gunshot pattern
+    ├── footsteps.json                  → Declarative spec for footstep pattern
+    ├── ambient.json                    → Declarative spec for ambient pattern
+    ├── ui_sound.json                   → Declarative spec for UI sound pattern
+    └── weather_states.json             → Declarative spec for weather pattern
+tests/
+├── conftest.py                         → MockWaapiClient fixture (shared by all tests)
+├── test_connection.py                  → 6 tests
+├── test_core_tools.py                  → 6 tests
+├── test_object_tools.py                → 10 tests
+├── test_event_tools.py                 → 10 tests
+├── test_preview_tools.py               → 6 tests
+└── test_templates.py                   → 10 tests
+research/
+├── research_waapi_mcp_server.md        → 69KB — 87 WAAPI functions, all patterns
+├── research_metasounds_game_audio.md   → 11KB — 80+ nodes, Builder API
+└── research_unreal_mcp_landscape.md    → 10 repos analysed, build-vs-fork decision
+```
+
+---
+
+## Development Phases
+
+```
+Phase 1: Wwise MCP (standalone, WAAPI)     ✅ SHIPPED — 20 tools, 48 tests
+Phase 2: MetaSounds Knowledge Base          → ships alone
+Phase 3: UE5 Audio Plugin (Builder API)     → needs Phase 2
+Phase 4: Systems Layer (orchestration)      → needs Phase 1+3
+Phase 5: A2HW Protocol Spec                → parallel
+```
 
 ---
 
@@ -213,25 +362,16 @@ One prompt. Multiple render targets. The protocol is the standard — implementa
 
 ## Tech Stack
 
-- **MCP Server:** Python (FastMCP)
-- **Wwise Bridge:** `waapi-client` (official Audiokinetic Python library)
-- **UE5 Bridge:** Custom C++ plugin with TCP server (Builder API + Remote Control)
-- **Knowledge Base:** Node databases for MetaSounds (80+ nodes) and Wwise object types
-- **Templates:** Parameterised patterns for common game audio systems
+| Component | Technology | Status |
+|-----------|-----------|--------|
+| MCP Server | Python (FastMCP) | Shipped |
+| Wwise Bridge | `waapi-client` (official Audiokinetic lib) | Shipped |
+| UE5 Bridge | Custom C++ plugin + TCP (port 9877) | Planned |
+| Knowledge (structured) | Cloudflare D1 | Planned (static Python dicts in Phase 1) |
+| Knowledge (semantic) | Cloudflare Vectorize | Planned |
+| Templates | Parameterised JSON + Python generators | Shipped (5 patterns) |
 
----
-
-## Status
-
-**Early development.** Building in public.
-
-- [ ] Wwise MCP — standalone tools via WAAPI
-- [ ] MetaSounds knowledge base — node database + graph spec templates
-- [ ] UE5 audio plugin — Builder API bridge
-- [ ] Blueprint tools — trigger logic generation
-- [ ] Systems layer — multi-layer orchestration
-- [ ] A2HW protocol spec — published standard
-- [ ] AudioLink bridge — MetaSounds → Wwise routing
+**Requirements:** Python 3.10+, Wwise 2024/2025 with WAAPI enabled
 
 ---
 

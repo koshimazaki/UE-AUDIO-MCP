@@ -15,11 +15,40 @@ Building the **first MCP server for game audio** — generating complete Wwise +
 ## Tech Stack
 | Component | Technology | Notes |
 |-----------|-----------|-------|
-| MCP Server | Python (FastMCP) | Main server |
-| Wwise Bridge | `waapi-client` | Official Audiokinetic Python lib |
-| UE5 Bridge | C++ plugin + TCP (port 9877) | JSON command protocol |
-| Knowledge Base | JSON files | 80+ MetaSounds nodes, 16 Wwise types |
-| Templates | Parameterised JSON | 6 game audio patterns |
+| MCP Server | Python (FastMCP) | Main server, stdio transport |
+| Wwise Bridge | `waapi-client` | Official Audiokinetic Python lib, WebSocket :8080 |
+| UE5 Bridge | C++ plugin + TCP (port 9877) | JSON command protocol, all UE5 tools route through this |
+| Knowledge (structured) | Cloudflare D1 | Nodes, WAAPI functions, types, patterns, error fixes |
+| Knowledge (semantic) | Cloudflare Vectorize | Embeddings over same D1 data for meaning-based search |
+| Error Learning | Cloudflare D1 | SIDKIT pattern: error_signature → fix mapping |
+| Templates | Parameterised JSON | 6+ game audio patterns |
+
+## Knowledge Architecture (D1 + Vectorize)
+
+**Two search paths for two different needs:**
+- **D1 (structured)** — Source of truth. SQL queries by category, type, name, property.
+  - `WHERE category = 'filters'` → exact node list
+  - `WHERE type = 'SwitchContainer'` → Wwise object spec
+- **Vectorize (semantic)** — Same entries embedded for meaning-based search.
+  - "make it sound underwater" → finds Lowpass, Biquad, wet reverb pattern
+  - "add spatial movement" → finds ITD Panner, Stereo Panner, Doppler
+
+**D1 Tables:**
+| Table | Contents | Example Query |
+|---|---|---|
+| `metasound_nodes` | 80+ nodes, inputs/outputs/types | category, data_type, name |
+| `waapi_functions` | 87 WAAPI calls, params/returns | namespace, operation |
+| `wwise_types` | 16 object types, properties | type_name, property |
+| `audio_patterns` | Game audio patterns (gunshot, footstep...) | pattern_type, complexity |
+| `error_patterns` | error_signature → successful_fix | error_hash, success_rate |
+| `ue_game_examples` | Lyra, Fortnite, game audio references | game, system_type |
+
+**Cloudflare Setup (fully independent):**
+- Own D1 database: `ue-audio-knowledge` (no runtime link to SIDKIT)
+- Own Vectorize index: `ue-audio-index` (own embeddings)
+- Own Workers (same Cloudflare account, separate deployments)
+- **One-time seed**: Copy universal DSP knowledge from SIDKIT (oscillators, filters, envelopes, LFOs, effects) — then grows independently
+- No shared workers, no cross-reference, no A2HW dependency at runtime
 
 ## Key APIs
 - **WAAPI**: 87 functions, WAMP/WebSocket on :8080, HTTP on :8090. Wwise MUST be running.
@@ -75,27 +104,48 @@ Handles: WAAPI calls, Wwise object hierarchy, RTPC curves, switch containers, bu
 
 ### File Locations
 ```
-src/tools/wwise/       → WAAPI tool implementations
-src/tools/metasounds/  → MetaSounds Builder tools
-src/tools/blueprints/  → Blueprint generation tools
-src/knowledge/         → Node databases, type definitions
-src/protocol/          → A2HW protocol implementation
-src/systems/           → High-level system generators
-templates/             → Parameterised audio pattern templates
-research/              → API research docs (WAAPI, MetaSounds)
-tests/                 → Integration & unit tests
+src/ue_audio_mcp/
+├── server.py              → FastMCP entry point + lifespan
+├── connection.py          → WaapiConnection singleton + UE5 plugin connection
+├── tools/
+│   ├── wwise/             → WAAPI tool implementations
+│   ├── metasounds/        → MetaSounds Builder tools (via C++ plugin)
+│   ├── blueprints/        → Blueprint tools (via C++ plugin)
+│   └── systems/           → High-level system generators (orchestrator)
+├── knowledge/
+│   ├── d1_client.py       → Cloudflare D1 structured queries
+│   ├── vectorize_client.py → Cloudflare Vectorize semantic search
+│   ├── wwise_types.py     → Object types, properties, defaults
+│   └── metasound_nodes.py → Node catalogue, data types
+├── storage/
+│   └── error_learning.py  → SIDKIT-pattern error→fix storage (D1)
+├── protocol/              → A2HW protocol implementation
+└── templates/             → Parameterised audio pattern templates
+workers/                   → Cloudflare Workers (D1 + Vectorize API)
+research/                  → API research docs (WAAPI, MetaSounds, UE MCP landscape)
+tests/                     → Integration & unit tests
 ```
+
+### SIDKIT-Inspired Patterns
+- **Error learning**: When builds fail, store error_signature + fix in D1. Query before generating to avoid known mistakes.
+- **Agentic iteration**: Tools can retry with feedback (max 10 iterations, like SIDKIT's compile loop).
+- **Knowledge search**: Agent has `search_knowledge` tool — queries D1 by type OR Vectorize by meaning.
+- **Template system**: Parameterised patterns (gunshot, footstep, ambient, UI, weather, spatial) — like SIDKIT's game/synth/sequencer templates.
 
 ---
 
 ## Research Available
 - `research/research_waapi_mcp_server.md` — Complete WAAPI reference (87 functions, all object types, 5 game audio patterns with code, AudioLink setup)
 - `research/research_metasounds_game_audio.md` — MetaSounds nodes (80+), Builder API, 6 game audio patterns, Lyra reference architecture
+- `research/research_unreal_mcp_landscape.md` — 10 repos analysed, build-vs-fork decision, architecture synthesis
 
 ## Reference Implementations
-- **SIDKIT** — Agent-generated hardware synths (SysEx protocol)
+- **SIDKIT Agent** (`sidkit-agent/`) — Rust, agentic loop + ToolExecutor, 8 tools, error learning (SQLite), knowledge base (19 categories, semantic search), GCC compile→flash pipeline. **Primary architecture reference.**
+- **BilkentAudio/Wwise-MCP** (23 stars) — Existing Wwise MCP, FastMCP + WAAPI wrapper. Reference for WAAPI patterns, NOT forking.
+- **blender-mcp** (16.9k stars) — Gold standard: addon (socket server inside app) + MCP server (FastMCP). TCP+JSON pattern.
+- **chongdashu/unreal-mcp** (1,370 stars) — UE5 MCP leader. C++ plugin + Python. Modular tool files pattern. No audio.
+- **runreal/unreal-mcp** (70 stars) — No-plugin approach via UE Python remote exec. Lightweight but can't do Builder API.
 - **VibeComfy MCP** — 8,400+ ComfyUI nodes via MCP (node database pattern)
-- **Blender MCP** — Controls Blender via TCP+JSON plugin bridge (16.9k stars)
 - **Lyra Starter Game** — Epic's canonical UE5 audio reference
 
 ## Common Patterns (6 Game Audio Systems)

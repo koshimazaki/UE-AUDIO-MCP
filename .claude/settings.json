@@ -1,14 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "python3 -m pytest",
-      "python3 -c *",
-      "pip install *",
-      "pip list",
-      "git status",
-      "git diff",
-      "git log *",
-      "ls *"
+      "Bash(python3 -m pytest*)",
+      "Bash(python3 -c *)",
+      "Bash(pip install *)",
+      "Bash(pip list)",
+      "Bash(git status)",
+      "Bash(git diff*)",
+      "Bash(git log *)",
+      "Bash(ls *)"
     ]
   }
 }
