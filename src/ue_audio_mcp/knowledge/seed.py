@@ -25,7 +25,6 @@ def seed_database(db: KnowledgeDB) -> dict[str, int]:
     counts["audio_patterns"] = _seed_audio_patterns(db)
     counts["ue_game_examples"] = _seed_game_examples(db)
     counts["blueprint_audio"] = _seed_blueprint_audio(db)
-    counts["blueprint_core"] = _seed_blueprint_core(db)
     counts["blueprint_nodes_scraped"] = _seed_blueprint_scraped(db)
     counts["builder_api_functions"] = _seed_builder_api(db)
     counts["tutorial_workflows"] = _seed_tutorial_workflows(db)
@@ -227,34 +226,30 @@ def _seed_blueprint_audio(db: KnowledgeDB) -> int:
     return len(BLUEPRINT_AUDIO_FUNCTIONS)
 
 
-def _seed_blueprint_core(db: KnowledgeDB) -> int:
-    """Seed Blueprint core nodes from the blueprint_nodes catalogue."""
-    from ue_audio_mcp.knowledge.blueprint_nodes import BLUEPRINT_NODES
-
-    for name, node in BLUEPRINT_NODES.items():
-        db.insert_blueprint_core({
-            "name": name,
-            "class_name": node["class_name"],
-            "category": node["category"],
-            "description": node["description"],
-            "tags": node.get("tags", []),
-        })
-    return len(BLUEPRINT_NODES)
-
 
 def _seed_blueprint_scraped(db: KnowledgeDB) -> int:
     """Seed scraped Blueprint node specs (with full pin data)."""
     from ue_audio_mcp.knowledge.blueprint_scraped import load_scraped_nodes
 
     nodes = load_scraped_nodes()
-    for name, spec in nodes.items():
-        db.insert_blueprint_scraped({
+    if not nodes:
+        return 0
+    rows = [
+        {
             "name": name,
             "target": spec.get("target", ""),
+            "category": spec.get("category", ""),
+            "description": spec.get("description", ""),
             "inputs": spec.get("inputs", []),
             "outputs": spec.get("outputs", []),
-        })
-    return len(nodes)
+            "slug": spec.get("slug", ""),
+            "ue_version": spec.get("ue_version", ""),
+            "path": spec.get("path", ""),
+        }
+        for name, spec in nodes.items()
+    ]
+    db.insert_blueprint_scraped_batch(rows)
+    return len(rows)
 
 
 def _seed_builder_api(db: KnowledgeDB) -> int:

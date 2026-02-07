@@ -485,19 +485,33 @@ class KnowledgeDB:
             "INSERT OR REPLACE INTO blueprint_nodes_scraped "
             "(name, target, category, description, inputs, outputs, slug, ue_version, path) "
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            (
-                bp["name"],
-                bp.get("target", ""),
-                bp.get("category", ""),
-                bp.get("description", ""),
-                json.dumps(bp.get("inputs", [])),
-                json.dumps(bp.get("outputs", [])),
-                bp.get("slug", ""),
-                bp.get("ue_version", ""),
-                bp.get("path", ""),
-            ),
+            self._blueprint_scraped_params(bp),
         )
         self._conn.commit()
+
+    def insert_blueprint_scraped_batch(self, nodes: list[dict]) -> None:
+        """Insert many scraped nodes in a single transaction (fast for 1K+ rows)."""
+        self._conn.executemany(
+            "INSERT OR REPLACE INTO blueprint_nodes_scraped "
+            "(name, target, category, description, inputs, outputs, slug, ue_version, path) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            [self._blueprint_scraped_params(bp) for bp in nodes],
+        )
+        self._conn.commit()
+
+    @staticmethod
+    def _blueprint_scraped_params(bp: dict) -> tuple:
+        return (
+            bp["name"],
+            bp.get("target", ""),
+            bp.get("category", ""),
+            bp.get("description", ""),
+            json.dumps(bp.get("inputs", [])),
+            json.dumps(bp.get("outputs", [])),
+            bp.get("slug", ""),
+            bp.get("ue_version", ""),
+            bp.get("path", ""),
+        )
 
     def query_blueprint_scraped(
         self,

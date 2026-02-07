@@ -103,7 +103,6 @@ def test_table_counts():
     assert all(v == 0 for v in counts.values())
     assert "metasound_nodes" in counts
     assert "blueprint_audio" in counts
-    assert "blueprint_core" in counts
     assert "blueprint_nodes_scraped" in counts
     db.close()
 
@@ -128,9 +127,8 @@ def test_seed_database():
     assert counts["wwise_types"] >= 15
     assert counts["audio_patterns"] == 6
     assert counts["blueprint_audio"] >= 20
-    assert counts["blueprint_core"] >= 900  # 946 verified nodes from official Epic docs
     assert counts["blueprint_nodes_scraped"] >= 100  # 124 in sample data
-    assert sum(counts.values()) >= 1200
+    assert sum(counts.values()) >= 300
     db.close()
 
 
