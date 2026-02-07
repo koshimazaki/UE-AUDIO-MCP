@@ -26,6 +26,12 @@ def seed_database(db: KnowledgeDB) -> dict[str, int]:
     counts["ue_game_examples"] = _seed_game_examples(db)
     counts["blueprint_audio"] = _seed_blueprint_audio(db)
     counts["blueprint_core"] = _seed_blueprint_core(db)
+    counts["blueprint_nodes_scraped"] = _seed_blueprint_scraped(db)
+    counts["builder_api_functions"] = _seed_builder_api(db)
+    counts["tutorial_workflows"] = _seed_tutorial_workflows(db)
+    counts["audio_console_commands"] = _seed_console_commands(db)
+    counts["spatialization_methods"] = _seed_spatialization(db)
+    counts["attenuation_subsystems"] = _seed_attenuation(db)
 
     total = sum(counts.values())
     log.info("Seeded knowledge DB: %d total entries %s", total, counts)
@@ -234,3 +240,77 @@ def _seed_blueprint_core(db: KnowledgeDB) -> int:
             "tags": node.get("tags", []),
         })
     return len(BLUEPRINT_NODES)
+
+
+def _seed_blueprint_scraped(db: KnowledgeDB) -> int:
+    """Seed scraped Blueprint node specs (with full pin data)."""
+    from ue_audio_mcp.knowledge.blueprint_scraped import load_scraped_nodes
+
+    nodes = load_scraped_nodes()
+    for name, spec in nodes.items():
+        db.insert_blueprint_scraped({
+            "name": name,
+            "target": spec.get("target", ""),
+            "inputs": spec.get("inputs", []),
+            "outputs": spec.get("outputs", []),
+        })
+    return len(nodes)
+
+
+def _seed_builder_api(db: KnowledgeDB) -> int:
+    """Seed MetaSound Builder API functions from tutorials catalogue."""
+    from ue_audio_mcp.knowledge.tutorials import BUILDER_API_FUNCTIONS
+
+    for func in BUILDER_API_FUNCTIONS:
+        db.insert_builder_api(func)
+    return len(BUILDER_API_FUNCTIONS)
+
+
+def _seed_tutorial_workflows(db: KnowledgeDB) -> int:
+    """Seed tutorial workflow references."""
+    from ue_audio_mcp.knowledge.tutorials import TUTORIAL_WORKFLOWS
+
+    for wf in TUTORIAL_WORKFLOWS:
+        db.insert_tutorial_workflow(wf)
+    return len(TUTORIAL_WORKFLOWS)
+
+
+def _seed_console_commands(db: KnowledgeDB) -> int:
+    """Seed audio console commands from tutorials catalogue."""
+    from ue_audio_mcp.knowledge.tutorials import AUDIO_CONSOLE_COMMANDS
+
+    count = 0
+    for category, cmds in AUDIO_CONSOLE_COMMANDS.items():
+        for cmd in cmds:
+            row = {**cmd, "category": category}
+            db.insert_console_command(row)
+            count += 1
+    return count
+
+
+def _seed_spatialization(db: KnowledgeDB) -> int:
+    """Seed spatialization methods."""
+    from ue_audio_mcp.knowledge.tutorials import SPATIALIZATION_METHODS
+
+    for name, data in SPATIALIZATION_METHODS.items():
+        db.insert_spatialization({
+            "name": name,
+            "description": data["description"],
+            "details": {k: v for k, v in data.items() if k != "description"},
+        })
+    return len(SPATIALIZATION_METHODS)
+
+
+def _seed_attenuation(db: KnowledgeDB) -> int:
+    """Seed attenuation subsystems."""
+    from ue_audio_mcp.knowledge.tutorials import ATTENUATION_SUBSYSTEMS
+
+    for name, data in ATTENUATION_SUBSYSTEMS.items():
+        db.insert_attenuation({
+            "name": name,
+            "description": data["description"],
+            "params": data.get("params", []),
+            "details": {k: v for k, v in data.items()
+                        if k not in ("description", "params")},
+        })
+    return len(ATTENUATION_SUBSYSTEMS)

@@ -1,0 +1,49 @@
+{
+  "name": "Soundscape Ambient",
+  "type": "blueprint",
+  "description": "Procedural ambient soundscape using GameplayTags. Sets up Soundscape Palette with Colors (tagged sound layers), drives layer activation from game state via the Soundscape Subsystem.",
+  "source_url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/soundscape-quick-start",
+  "requires": ["Soundscape Palette asset", "Soundscape Color assets", "GameplayTags configured"],
+  "nodes": [
+    {
+      "id": "begin_play",
+      "node_type": "EventBeginPlay",
+      "position": [0, 0]
+    },
+    {
+      "id": "get_subsystem",
+      "node_type": "GetSoundscapeSubsystem",
+      "position": [300, 0]
+    },
+    {
+      "id": "set_palette",
+      "node_type": "SetActiveSoundscapePalette",
+      "position": [600, 0],
+      "defaults": {
+        "Palette": "<SoundscapePalette_Forest>"
+      }
+    },
+    {
+      "id": "overlap_begin",
+      "node_type": "ActorBeginOverlap",
+      "position": [0, 300],
+      "comment": "Trigger volume for zone change"
+    },
+    {
+      "id": "set_palette_zone",
+      "node_type": "SetActiveSoundscapePalette",
+      "position": [600, 300],
+      "defaults": {
+        "Palette": "<SoundscapePalette_Cave>"
+      },
+      "comment": "Switch palette on zone entry"
+    }
+  ],
+  "connections": [
+    {"from_node": "begin_play", "from_pin": "Exec", "to_node": "get_subsystem", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "get_subsystem", "from_pin": "ReturnValue", "to_node": "set_palette", "to_pin": "Target", "type": "data"},
+    {"from_node": "get_subsystem", "from_pin": "Exec", "to_node": "set_palette", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "overlap_begin", "from_pin": "Exec", "to_node": "set_palette_zone", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "get_subsystem", "from_pin": "ReturnValue", "to_node": "set_palette_zone", "to_pin": "Target", "type": "data"}
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "name": "Spatial Attenuation",
+  "type": "blueprint",
+  "description": "3D spatialized audio with attenuation settings. Spawns sound at actor location with custom attenuation (inner/outer radius, falloff, spatialization method, air absorption, occlusion).",
+  "source_url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/sound-attenuation-in-unreal-engine",
+  "requires": ["Sound Attenuation asset", "Sound Wave or MetaSound Source"],
+  "nodes": [
+    {
+      "id": "begin_play",
+      "node_type": "EventBeginPlay",
+      "position": [0, 0]
+    },
+    {
+      "id": "get_location",
+      "node_type": "GetActorLocation",
+      "position": [0, 200]
+    },
+    {
+      "id": "spawn_at_loc",
+      "node_type": "SpawnSoundAtLocation",
+      "position": [300, 0],
+      "defaults": {
+        "Sound": "<SpatializedSound>",
+        "AttenuationSettings": "<SoundAttenuation>"
+      }
+    },
+    {
+      "id": "event_tick",
+      "node_type": "EventTick",
+      "position": [0, 400]
+    },
+    {
+      "id": "get_loc_tick",
+      "node_type": "GetActorLocation",
+      "position": [300, 400]
+    },
+    {
+      "id": "set_world_loc",
+      "node_type": "SetWorldLocation",
+      "position": [600, 400],
+      "comment": "Move audio component with actor"
+    }
+  ],
+  "connections": [
+    {"from_node": "begin_play", "from_pin": "Exec", "to_node": "spawn_at_loc", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "get_location", "from_pin": "ReturnValue", "to_node": "spawn_at_loc", "to_pin": "Location", "type": "data"},
+    {"from_node": "event_tick", "from_pin": "Exec", "to_node": "set_world_loc", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "spawn_at_loc", "from_pin": "ReturnValue", "to_node": "set_world_loc", "to_pin": "Target", "type": "data"},
+    {"from_node": "get_loc_tick", "from_pin": "ReturnValue", "to_node": "set_world_loc", "to_pin": "NewLocation", "type": "data"}
+  ]
+}

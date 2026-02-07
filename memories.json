@@ -364,7 +364,47 @@
       "lastAccessed": "2026-02-06T16:41:29.625Z",
       "lastVerified": "2026-02-06T16:41:29.625Z",
       "status": "fresh"
+    },
+    {
+      "id": "mem_1770427490371_w859eaq88",
+      "content": "UE5 Audio MCP - Complete TCP Command Protocol Specification\n\nTCP CONNECTION PROTOCOL:\n- Host: 127.0.0.1 (default)\n- Port: 9877\n- Framing: 4-byte big-endian uint32 length prefix + UTF-8 JSON payload\n- Timeout: 30 seconds\n- Flow: Client sends JSON command → Plugin responds with JSON result\n\nCOMMAND FORMAT:\nAll commands are JSON objects with required \"action\" field. Response is always a JSON dict.\n\nCOMPLETE ACTION LIST (10 ACTIONS):\n\n1. PING (Connection Test)\n   Input:  {\"action\": \"ping\"}\n   Output: {\"status\": \"ok\", \"engine\": \"UnrealEngine\", \"version\": \"5.4.0\", \"project\": \"TestProject\", \"features\": [\"MetaSounds\", \"AudioLink\"]}\n\n2. CREATE_BUILDER (MetaSounds Graph Initialization)\n   Input:  {\"action\": \"create_builder\", \"asset_type\": \"Source|Patch|Preset\", \"name\": \"<string>\"}\n   Output: {\"status\": \"ok\"} (or varies by plugin implementation)\n   Note:   First command in any MetaSounds build sequence\n\n3. ADD_INTERFACE (Add Pre-defined Interface to Graph)\n   Input:  {\"action\": \"add_interface\", \"interface\": \"<string>\"}\n   Output: {\"status\": \"ok\"}\n   Purpose: Adds standard audio interfaces (Mono, Stereo, etc.) to graph\n\n4. ADD_GRAPH_INPUT (Declare Graph-level Input Pin)\n   Input:  {\"action\": \"add_graph_input\", \"name\": \"<string>\", \"type\": \"<DataType>\", \"default\": <optional>}\n   Output: {\"status\": \"ok\"}\n   Types:  Audio, Trigger, Float, Int32, Bool, Time, String, WaveAsset, UObject, Enum\n\n5. ADD_GRAPH_OUTPUT (Declare Graph-level Output Pin)\n   Input:  {\"action\": \"add_graph_output\", \"name\": \"<string>\", \"type\": \"<DataType>\"}\n   Output: {\"status\": \"ok\"}\n   Types:  Same as ADD_GRAPH_INPUT\n\n6. ADD_NODE (Add MetaSounds Node to Graph)\n   Input:  {\"action\": \"add_node\", \"id\": \"<string>\", \"node_type\": \"<string>\", \"position\": [<x: int>, <y: int>]}\n   Output: {\"status\": \"ok\"}\n   Fields: id = unique node instance ID, position = editor coordinates [0,0] default\n\n7. SET_DEFAULT (Set Input Pin Default Value)\n   Input:  {\"action\": \"set_default\", \"node_id\": \"<string>\", \"input\": \"<string>\", \"value\": <JSON-encoded>}\n   Output: {\"status\": \"ok\"}\n   Note:   Value can be number, bool, string, or object (JSON-parsed)\n\n8. CONNECT (Connect Two Node Pins)\n   Input:  {\"action\": \"connect\", \"from_node\": \"<string>\", \"from_pin\": \"<string>\", \"to_node\": \"<string>\", \"to_pin\": \"<string>\"}\n   Output: {\"status\": \"ok\"}\n   Special: from_node/to_node can be \"__graph__\" for graph-level I/O connections\n\n9. BUILD_TO_ASSET (Finalize & Save MetaSounds Asset)\n   Input:  {\"action\": \"build_to_asset\", \"name\": \"<string>\", \"path\": \"/Game/Audio/...\"}\n   Output: {\"status\": \"ok\"}\n   Note:   Last command in MetaSounds build sequence\n\n10. AUDITION (Preview MetaSounds in Editor)\n    Input:  {\"action\": \"audition\", \"name\": \"<string>\"}\n    Output: {\"status\": \"ok\"}\n    Note:   Preview/play current graph\n\n11. CALL_FUNCTION (Execute Blueprint Function)\n    Input:  {\"action\": \"call_function\", \"function\": \"<string>\", \"args\": {<dict>}}\n    Output: {\"status\": \"ok\", \"result\": <value>}\n    Purpose: Call Blueprint functions via plugin (e.g., PlaySound2D, SpawnSoundAtLocation)\n\nTYPICAL BUILD SEQUENCE (from graph_to_builder_commands):\n1. create_builder\n2. add_interface (zero or more)\n3. add_graph_input (zero or more)\n4. add_graph_output (zero or more)\n5. add_node (one per node)\n6. set_default (one per non-None default)\n7. connect (one per connection)\n8. build_to_asset\n\nExample Gunshot Graph: ~8-12 commands\nExample UI Sound: ~5-8 commands\n\nSENTINEL NODE ID:\n\"__graph__\" = special ID representing graph boundary for connecting internal nodes to graph I/O\n\nERROR HANDLING:\n- Errors returned in same JSON format: {\"status\": \"error\", \"message\": \"<string>\"}\n- Plugin MUST return valid JSON for every command\n- Connection lost raises ConnectionError(\"UE5 plugin connection closed unexpectedly\")\n\nIMPLEMENTED IN PYTHON VIA:\n- ue5_connection.py: UE5PluginConnection class, send_command(dict) → dict\n- ms_builder.py: 7 tools (ms_build_graph, ms_create_source, ms_add_node, ms_connect_pins, ms_set_default, ms_save_asset, ms_audition)\n- blueprints.py: bp_call_function tool\n- ue5_core.py: ue5_connect, ue5_get_info, ue5_status\n",
+      "type": "tip",
+      "tags": [
+        "tip",
+        "python",
+        "TCP-Protocol",
+        "UE5-Plugin",
+        "MetaSounds",
+        "Builder-API",
+        "Command-Schema"
+      ],
+      "timestamp": "2026-02-07T01:24:50.370Z",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-07T01:24:50.370Z",
+      "lastVerified": "2026-02-07T01:24:50.370Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770427554748_vrer3uzcg",
+      "content": "C++ Plugin Architecture Research - UE5 Audio MCP Phase 3\n\nKEY FINDINGS from research/research_unreal_mcp_landscape.md:\n\nREFERENCE ARCHITECTURES:\n1. blender-mcp (16.9k stars) - GOLD STANDARD\n   - Two-component pattern: Addon (socket server) + MCP Server (client)\n   - TCP socket server INSIDE the DCC app (port 9876 for Blender)\n   - JSON over TCP: {\"type\": \"command_name\", \"params\": {...}}\n   - Main thread scheduling via app timers (bpy.app.timers for Blender)\n   - Extension pattern: add command handler + JSON response\n   - Why 16.9k stars: simplicity, two files, clear separation\n\n2. chongdashu/unreal-mcp (1,370 stars) - UE5 LEADER\n   - Python MCP Server + C++ UE Plugin (TCP socket :55557)\n   - Tools in modular Python files (auto-registered at startup)\n   - Communication: unreal = get_unreal_connection(); response = unreal.send_command()\n   - Tool files: blueprint_tools.py, editor_tools.py, node_tools.py, project_tools.py, umg_tools.py\n   - NO audio capabilities - good reference for architecture, NOT for audio\n\n3. kvick-games/UnrealMCP (493 stars)\n   - TCP socket on port 13377 with JSON protocol\n   - Explicitly inspired by blender-mcp pattern\n   - Roadmap mentions MetaSound (not implemented)\n\nRECOMMENDED ARCHITECTURE FOR UE-AUDIO-MCP:\n```\nClaude/Cursor (AI Client)\n    |  MCP Protocol (stdio)\n    v\nPython MCP Server (FastMCP)\n    |  WAAPI WebSocket :8080\n    |  TCP Socket :9877 (C++ Plugin)\n    |  Python Remote Execution (Blueprint)\n    v\nMulti-Channel Bridge:\n  - Wwise App (WAAPI)\n  - C++ UE5 Plugin (MetaSounds Builder API)\n  - UE5 Editor Python (Blueprint tools)\n```\n\nKEY DESIGN DECISIONS:\n1. TCP Socket for C++ Plugin (port 9877) - proven pattern from chongdashu\n2. JSON protocol for simplicity and debuggability\n3. Main thread scheduling required (like Blender addon)\n4. Three communication channels: WAAPI (WebSocket), C++ plugin (TCP), Python remote exec\n\nPATTERN SYNTHESIS (Best of Each):\n- blender-mcp: Two-component architecture, JSON over TCP, socket server inside app\n- chongdashu: Modular tool files, @mcp.tool() decorator, tool auto-registration\n- BilkentAudio: WAAPI wrapper as reference library\n- runreal: Plugin-free Blueprint tools via Python remote execution (NO custom plugin needed for basic Blueprint work)\n\nBUILDER API CRITICAL DETAILS:\n- Experimental API (UE 5.4+) - may change between versions\n- Core classes: MetaSoundBuilderSubsystem, MetaSoundSourceBuilder, MetaSoundPatchBuilder\n- Key operations: CreateSourceBuilder(), AddNode(), ConnectNodes(), BuildToAsset(), SetNodeLocation()\n- Node class names NOT publicly documented - must discover via Shift+hover in Editor\n- No JSON-to-MetaSound path exists - must build it via Builder API or UAssetAPI\n\nTECHNICAL STACK:\n- MCP: Python FastMCP\n- Wwise: waapi-client (official Python lib, WebSocket)\n- UE5 MetaSounds: C++ plugin with Builder API calls via TCP\n- UE5 Blueprint: Python remote execution (runreal pattern, NO plugin needed)\n- Knowledge: SQLite (local, fast, <1K entries)\n- Templates: 6 parameterized JSON patterns (gunshot, footsteps, ambient, spatial, ui, weather)\n\nCRITICAL GOTCHAS:\n- Builder API is experimental - check UE version compatibility\n- Node class names change between UE versions - must use Shift+hover discovery\n- No template node support in Builder API (reroutes not available)\n- Handle IDs must not be serialized - change between versions\n- WaveAsset references require actual .wav files in project\n- SetNodeLocation() needed for editor visibility\n- LiveUpdateEnabled in beta 5.5 provides real-time topology changes\n\nPORT ASSIGNMENTS:\n- WAAPI: 8080 (Wwise)\n- TCP Plugin: 9877 (C++ UE5 Plugin)\n- (Python remote exec: uses built-in UE5 mechanism)",
+      "type": "warning",
+      "tags": [
+        "warning",
+        "python",
+        "api",
+        "c++_plugin",
+        "architecture",
+        "builder_api",
+        "reference",
+        "phase_3"
+      ],
+      "timestamp": "2026-02-07T01:25:54.748Z",
+      "context": "UE5-WWISE project Phase 3 planning - C++ Plugin architecture research completed",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-07T01:25:54.748Z",
+      "lastVerified": "2026-02-07T01:25:54.748Z",
+      "status": "fresh"
     }
   ],
-  "lastUpdated": "2026-02-06T16:41:29.625Z"
+  "lastUpdated": "2026-02-07T01:25:54.748Z"
 }

@@ -1,0 +1,46 @@
+{
+  "name": "Submix Recording",
+  "type": "blueprint",
+  "description": "Records audio output from a submix to a .wav file. BeginPlay starts recording, a timer or event stops it. Uses StartRecordingOutput/FinishRecordingOutput on a Sound Submix.",
+  "source_url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/overview-of-submixes-in-unreal-engine",
+  "requires": ["Sound Submix asset"],
+  "nodes": [
+    {
+      "id": "begin_play",
+      "node_type": "EventBeginPlay",
+      "position": [0, 0]
+    },
+    {
+      "id": "start_record",
+      "node_type": "StartRecordingOutput",
+      "position": [300, 0],
+      "defaults": {
+        "Target": "<SoundSubmix>",
+        "ExpectedDuration": 10.0
+      }
+    },
+    {
+      "id": "delay",
+      "node_type": "Delay",
+      "position": [600, 0],
+      "defaults": {
+        "Duration": 10.0
+      }
+    },
+    {
+      "id": "finish_record",
+      "node_type": "FinishRecordingOutput",
+      "position": [900, 0],
+      "defaults": {
+        "Target": "<SoundSubmix>",
+        "ExportType": "WAV",
+        "OutputName": "RecordedAudio"
+      }
+    }
+  ],
+  "connections": [
+    {"from_node": "begin_play", "from_pin": "Exec", "to_node": "start_record", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "start_record", "from_pin": "Exec", "to_node": "delay", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "delay", "from_pin": "Completed", "to_node": "finish_record", "to_pin": "Exec", "type": "exec"}
+  ]
+}

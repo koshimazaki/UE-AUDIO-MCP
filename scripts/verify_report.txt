@@ -1,0 +1,997 @@
+======================================================================
+BLUEPRINT NODE VERIFICATION REPORT
+======================================================================
+Our nodes:          948
+Official API names: 960
+Verified:           107
+Close matches:      547
+Unverified:         294
+Duplicates:         23
+
+----------------------------------------------------------------------
+DUPLICATES
+----------------------------------------------------------------------
+  BlueprintPredictProjectilePath_Advanced: collision_physics.py, gameplay.py
+  BlueprintPredictProjectilePath_ByObjectType: collision_physics.py, gameplay.py
+  BlueprintPredictProjectilePath_ByTraceChannel: collision_physics.py, gameplay.py
+  ClampAngle: math_core.py, math_spatial.py
+  Conv_RotatorToTransform: math_spatial.py, math_spatial.py
+  Conv_VectorToLinearColor: math_spatial.py, math_utility.py
+  Conv_VectorToTransform: math_spatial.py, math_spatial.py
+  DoesImplementInterface: flow_control.py, system.py
+  FInterpTo: audio.py, math_utility.py
+  GetAudioTimeSeconds: audio.py, gameplay.py
+  GetEnableWorldRendering: gameplay.py, system.py
+  GetObjectClass: gameplay.py, system.py
+  GetPlatformName: gameplay.py, system.py
+  GetWorldDeltaSeconds: audio.py, gameplay.py
+  IsValid: flow_control.py, system.py
+  MapRangeClamped: audio.py, math_core.py
+  PerlinNoise1D: audio.py, math_utility.py
+  RInterpTo: math_spatial.py, math_utility.py
+  RInterpTo_Constant: math_spatial.py, math_utility.py
+  RotatorFromAxisAndAngle: math_spatial.py, math_spatial.py
+  SetEnableWorldRendering: gameplay.py, system.py
+  SuggestProjectileVelocity: collision_physics.py, gameplay.py
+  TInterpTo: math_spatial.py, math_utility.py
+
+----------------------------------------------------------------------
+UNVERIFIED (not found in API scrape)
+----------------------------------------------------------------------
+NOTE: JS-rendered pages may cause false negatives.
+
+  UKismetMathLibrary (172):
+    - Abs_Int
+    - Abs_Int64
+    - Acos
+    - Add_Int64Int64
+    - Add_IntInt
+    - And_Int64Int64
+    - And_IntInt
+    - Asin
+    - Atan
+    - Atan2
+    - BMax
+    - BMin
+    - BreakRotIntoAxes
+    - CInterpTo
+    - Clamp
+    - ClampAngle
+    - ClampAxes2D
+    - ClampInt64
+    - Conv_IntToBool
+    - Cos
+    - CrossProduct2D
+    - DaysInMonth
+    - DaysInYear
+    - DegAcos
+    - DegAsin
+    - DegAtan
+    - DegAtan2
+    - DegCos
+    - DegSin
+    - DegTan
+    - DegreesToRadians
+    - Distance2D
+    - DistanceSquared2D
+    - Divide_Int64Int64
+    - Divide_IntInt
+    - DotProduct2D
+    - EqualEqual_BoolBool
+    - EqualEqual_Int64Int64
+    - EqualEqual_IntInt
+    - FCeil
+    - FCeil64
+    - FClamp
+    - FFloor
+    - FFloor64
+    - FInterpEaseInOut
+    - FInterpTo
+    - FInterpTo_Constant
+    - FMax
+    - FMin
+    - FMod
+    - FTrunc
+    - FTrunc64
+    - FWrap
+    - FindLookAtRotation
+    - FindNearestPointsOnLineSegments
+    - FixedTurn
+    - Fraction
+    - FromDays
+    - FromHours
+    - FromMilliseconds
+    - FromMinutes
+    - FromSeconds
+    - GetAbs2D
+    - GetAbsMax2D
+    - GetAzimuthAndElevation
+    - GetDay
+    - GetDayOfYear
+    - GetHour
+    - GetMax2D
+    - GetMaxElement
+    - GetMillisecond
+    - GetMin2D
+    - GetMinElement
+    - GetMinute
+    - GetMonth
+    - GetPointDistanceToLine
+    - GetPointDistanceToSegment
+    - GetRotated2D
+    - GetSecond
+    - GetTAU
+    - GetTotalDays
+    - GetTotalHours
+    - GetTotalMilliseconds
+    - GetTotalMinutes
+    - GetTotalSeconds
+    - GetYear
+    - GreaterEqual_Int64Int64
+    - GreaterEqual_IntInt
+    - Greater_Int
+    - Greater_Int64Int64
+    - Greater_IntInt
+    - HSVToRGB
+    - Hypotenuse
+    - InRange_Int64Int64
+    - InRange_IntInt
+    - IsLeapYear
+    - IsNearlyZero2D
+    - IsZero2D
+    - LessEqual_Int64Int64
+    - LessEqual_IntInt
+    - Less_Int
+    - Less_Int64Int64
+    - Less_IntInt
+    - Loge
+    - MakePulsatingValue
+    - MakeRotFromX
+    - MakeRotFromXY
+    - MakeRotFromXZ
+    - MakeRotFromY
+    - MakeRotFromYX
+    - MakeRotFromYZ
+    - MakeRotFromZ
+    - MakeRotFromZX
+    - MakeRotFromZY
+    - MaxInt64
+    - MinInt64
+    - MultiplyByPi
+    - Multiply_Int64Int64
+    - Multiply_IntInt
+    - Negated2D
+    - Normal2D
+    - NormalSafe2D
+    - Normalize2D
+    - NormalizeAxis
+    - NormalizeToRange
+    - NotEqual_BoolBool
+    - NotEqual_Int
+    - NotEqual_Int64Int64
+    - NotEqual_IntInt
+    - Not_Int
+    - Not_Int64
+    - Not_PreBool
+    - Now
+    - Or_Int64Int64
+    - Or_IntInt
+    - Percent_IntInt
+    - PerlinNoise1D
+    - REase
+    - RGBToHSV
+    - RInterpTo
+    - RInterpTo_Constant
+    - RLerp
+    - RadiansToDegrees
+    - RotateAngleAxis
+    - Round64
+    - SafeDivide
+    - Spherical2DToUnitCartesian
+    - Sqrt
+    - Square
+    - Subtract_Int64Int64
+    - Subtract_IntInt
+    - TEase
+    - TInterpTo
+    - TLerp
+    - ToDirectionAndLength2D
+    - ToRounded2D
+    - ToSign2D
+    - Today
+    - UtcNow
+    - VEase
+    - VInterpTo
+    - VInterpTo_Constant
+    - VLerp
+    - VSize
+    - VSize2D
+    - VSize2DSquared
+    - VSizeSquared
+    - VSizeXY
+    - VSizeXYSquared
+    - Wrap
+    - Xor_Int64Int64
+    - Xor_IntInt
+
+  UKismetSystemLibrary (33):
+    - BeginTransaction
+    - CanLaunchURL
+    - CancelTransaction
+    - CollectGarbage
+    - Conv_SoftClassReferenceToClass
+    - Conv_SoftObjectReferenceToObject
+    - ConvertToAbsolutePath
+    - ConvertToRelativePath
+    - Delay
+    - DoesImplementInterface
+    - EndTransaction
+    - EqualEqual_SoftClassReference
+    - EqualEqual_SoftObjectReference
+    - GetDefaultLanguage
+    - GetDefaultLocale
+    - GetDeviceId
+    - GetObjectClass
+    - GetProjectContentDirectory
+    - GetProjectDirectory
+    - GetProjectSavedDirectory
+    - GetUniqueDeviceId
+    - IsDedicatedServer
+    - IsServer
+    - IsStandalone
+    - LaunchURL
+    - LineTraceMulti
+    - LineTraceMultiByProfile
+    - LineTraceMultiForObjects
+    - LineTraceSingle
+    - LineTraceSingleByProfile
+    - LineTraceSingleForObjects
+    - PrintWarning
+    - TransactObject
+
+  UKismetStringLibrary (30):
+    - Concat_StrStr
+    - Contains
+    - Crc32
+    - EndsWith
+    - EqualEqual_StrStr
+    - EqualEqual_StriStri
+    - GetCharacterAsNumber
+    - GreaterEqual_StrStr
+    - Greater_StrStr
+    - IsEmpty
+    - IsNumeric
+    - Left
+    - LeftChop
+    - LeftPad
+    - LessEqual_StrStr
+    - Less_StrStr
+    - MatchesWildcard
+    - NotEqual_StrStr
+    - NotEqual_StriStri
+    - Replace
+    - Reverse
+    - Right
+    - RightChop
+    - RightPad
+    - StartsWith
+    - ToLower
+    - ToUpper
+    - Trim
+    - TrimTrailing
+    - TrimWhitespace
+
+  UGameplayStatics (19):
+    - AsyncLoadGameFromSlot
+    - AsyncSaveGameToSlot
+    - BeginDeferredActorSpawnFromClass
+    - BeginSpawningActorFromBlueprint
+    - BeginSpawningActorFromClass
+    - CreateSaveGameObject
+    - DeleteGameInSlot
+    - DoesSaveGameExist
+    - FinishSpawningActor
+    - GetIntOption
+    - GetKeyValue
+    - GetViewportMouseCaptureMode
+    - HasOption
+    - LoadGameFromSlot
+    - LoadStreamLevelBySoftObjectPtr
+    - ParseOption
+    - SaveGameToSlot
+    - SpawnObject
+    - UnloadStreamLevelBySoftObjectPtr
+
+  UAkGameplayStatics (10):
+    - Ak_GetRTPCValue
+    - Ak_GetSpeakerAngles
+    - Ak_LoadBank
+    - Ak_PostEvent
+    - Ak_PostEventAtLocation
+    - Ak_StartAllAmbientSounds
+    - Ak_StopActor
+    - Ak_StopAll
+    - Ak_StopAllAmbientSounds
+    - Ak_UnloadBank
+
+  AActor (4):
+    - GetActorLocation
+    - GetActorRotation
+    - GetDistanceTo
+    - GetVelocity
+
+  UEnhancedInputComponent (2):
+    - BindAction
+    - GetActionValue
+
+  APlayerController (2):
+    - EnableInput
+    - IsInputKeyDown
+
+  UAkComponent (1):
+    - AkComponent_PostEvent
+
+  UK2Node_IfThenElse (1):
+    - Branch
+
+  UK2Node_BreakExec (1):
+    - BreakExec
+
+  UK2Node_DoN (1):
+    - DoN
+
+  UK2Node_DoOnce (1):
+    - DoOnce
+
+  UK2Node_FlipFlop (1):
+    - FlipFlop
+
+  UK2Node_ForEachLoop (1):
+    - ForEachLoop
+
+  UK2Node_ForEachLoopWithBreak (1):
+    - ForEachLoopWithBreak
+
+  UK2Node_ForLoop (1):
+    - ForLoop
+
+  UK2Node_ForLoopWithBreak (1):
+    - ForLoopWithBreak
+
+  UK2Node_Gate (1):
+    - Gate
+
+  UMaterialInterface (1):
+    - GetBlendMode
+
+  USubsystemBlueprintLibrary (1):
+    - GetEngineSubsystem
+
+  UKismetArrayLibrary (1):
+    - GetLastIndex
+
+  UMovementComponent (1):
+    - GetMaxSpeed
+
+  UEnhancedInputLocalPlayerSubsystem (1):
+    - InjectInputForAction
+
+  UK2Node_TemporaryVariable (1):
+    - LocalVariable
+
+  UK2Node_MultiGate (1):
+    - MultiGate
+
+  UK2Node_ExecutionSequence (1):
+    - Sequence
+
+  UK2Node_SwitchClass (1):
+    - SwitchOnClass
+
+  UK2Node_SwitchInteger (1):
+    - SwitchOnInt
+
+  UK2Node_WhileLoop (1):
+    - WhileLoop
+
+----------------------------------------------------------------------
+CLOSE MATCHES (may need renaming)
+----------------------------------------------------------------------
+  Abs -> SetMieAbsorptionScale, SetAbsorptionScale, SetAbsorption
+  AddMappingContext -> Map, Text
+  Add_ByteByte -> Byte
+  Add_DateTimeTimespan -> Timespan, DateTime, Time
+  Add_FloatFloat -> Float
+  Add_IntPointInt -> IntPoint
+  Add_IntPointIntPoint -> IntPoint
+  Add_TimespanTimespan -> Timespan, Time
+  Add_Vector2DFloat -> Vector, Vector2D, Float
+  Add_Vector2DVector2D -> Vector, Vector2D
+  Add_VectorFloat -> Vector, Float
+  Add_VectorInt -> Vector
+  Add_VectorVector -> Vector
+  AkComponent_SetAttenuationScalingFactor -> Components, Set
+  AkComponent_SetOcclusionRefreshInterval -> Components, Set
+  AkComponent_SetRTPCValue -> Components, Set
+  AkComponent_SetSwitch -> Components, Set
+  AkComponent_Stop -> Components
+  Ak_PostEventByName -> Name
+  Ak_PostTrigger -> Trig
+  Ak_SetBusConfig -> Bus, Set
+  Ak_SetMultiplePositions -> Set
+  Ak_SetOutputBusVolume -> Bus, Set
+  Ak_SetRTPCValue -> Set
+  Ak_SetSpeakerAngles -> Set
+  Ak_SetState -> Set
+  Ak_SetSwitch -> Set
+  AnnounceAccessibleString -> String
+  ApplyDamage -> Damage
+  ApplyPointDamage -> Damage
+  ApplyRadialDamage -> Damage
+  ApplyRadialDamageWithFalloff -> Damage
+  AreSubtitlesEnabled -> Subtitles
+  Array_Add -> Array
+  Array_AddUnique -> Array
+  Array_Append -> Array
+  Array_Clear -> Array
+  Array_Contains -> Array
+  Array_Find -> Array
+  Array_Get -> Array
+  Array_Identical -> Array
+  Array_Insert -> Array
+  Array_IsValidIndex -> IsValid, Array
+  Array_LastIndex -> Array
+  Array_Length -> Array
+  Array_Random -> Array, Random
+  Array_RandomFromStream -> Array, Random
+  Array_Remove -> Array
+  Array_RemoveItem -> Array
+  Array_Resize -> Array
+  Array_Reverse -> Array
+  Array_Set -> Array, Set
+  Array_Shuffle -> Array
+  Array_Swap -> Array
+  BlueprintPredictProjectilePath_Advanced -> PredictProjectilePath_Advanced
+  BlueprintPredictProjectilePath_ByObjectType -> PredictProjectilePathByObjectTyp
+  BlueprintPredictProjectilePath_ByTraceChannel -> PredictProjectilePathByTraceChan
+  Blueprint_PredictProjectilePath_ByTraceChannel -> PredictProjectilePathByTraceChan
+  BooleanAND -> Boolean
+  BooleanNAND -> Boolean
+  BooleanNOR -> Boolean
+  BooleanOR -> Boolean
+  BooleanXOR -> Boolean
+  BoxTraceMulti -> Box
+  BoxTraceMultiByProfile -> Box
+  BoxTraceMultiForObjects -> Box
+  BoxTraceSingle -> Box
+  BoxTraceSingleByProfile -> Box
+  BoxTraceSingleForObjects -> Box
+  BreakColor -> Color
+  BreakDateTime -> DateTime, Time
+  BreakQuat -> Quat
+  BreakRandomStream -> Random
+  BreakRotator -> Rotator
+  BreakStruct -> Struct
+  BreakTimespan -> Timespan, Time
+  BreakTimespan2 -> Timespan, Time
+  BreakTransform -> Transform
+  BreakVector -> Vector
+  BreakVector2D -> Vector, Vector2D
+  BuildString_Bool -> String
+  BuildString_Color -> Color, String
+  BuildString_Float -> Float, String
+  BuildString_Int -> String
+  BuildString_IntVector -> Vector, String
+  BuildString_Name -> Name, String
+  BuildString_Object -> String
+  BuildString_Rotator -> Rotator, String
+  BuildString_Vector -> Vector, String
+  BuildString_Vector2D -> Vector, Vector2D, String
+  CInterpTo_Color -> Color
+  CapsuleTraceMulti -> Capsule
+  CapsuleTraceMultiByProfile -> Capsule
+  CapsuleTraceMultiForObjects -> Capsule
+  CapsuleTraceSingle -> Capsule
+  CapsuleTraceSingleByProfile -> Capsule
+  CapsuleTraceSingleForObjects -> Capsule
+  ClampVectorSize -> Vector
+  ClearAllMappings -> Map
+  ComposeRotators -> Rotator
+  ComposeTransforms -> Set, Transform
+  Conv_BoolToString -> String
+  Conv_ByteToInt -> Byte
+  Conv_ByteToString -> Byte, String
+  Conv_ClassToSoftClassReference -> ToSoftClassReference
+  Conv_ColorToLinearColor -> Color
+  Conv_ColorToString -> Color, String
+  Conv_FloatToInt -> Float
+  Conv_FloatToLinearColor -> Color, Float
+  Conv_FloatToString -> Float, String
+  Conv_FloatToText -> Text, Float
+  Conv_Int64ToString -> String
+  Conv_IntPointToVector2D -> Vector, Vector2D, IntPoint
+  Conv_IntToByte -> Byte
+  Conv_IntToFloat -> Float
+  Conv_IntToString -> String
+  Conv_IntToText -> Text
+  Conv_IntVectorToString -> Vector, String
+  Conv_LinearColorToColor -> Color
+  Conv_LinearColorToVector -> Color, Vector
+  Conv_MatrixToTransform -> Transform, Matrix
+  Conv_NameToString -> Name, String
+  Conv_ObjectToSoftObjectReference -> ToSoftObjectReference
+  Conv_ObjectToString -> String
+  Conv_PrimaryAssetIdToString -> Set, String
+  Conv_PrimaryAssetTypeToString -> Set, String
+  Conv_RotatorToString -> Rotator, String
+  Conv_RotatorToTransform -> Rotator, Transform
+  Conv_RotatorToVector -> Vector, Rotator
+  Conv_SoftClassReferenceToString -> String
+  Conv_SoftObjectReferenceToString -> String
+  Conv_StringToColor -> Color, String
+  Conv_StringToFloat -> Float, String
+  Conv_StringToInt -> String
+  Conv_StringToName -> Name, String
+  Conv_StringToRotator -> Rotator, String
+  Conv_StringToText -> Text, String
+  Conv_StringToVector -> Vector, String
+  Conv_StringToVector2D -> Vector, Vector2D, String
+  Conv_TransformToString -> String, Transform
+  Conv_Vector2DToIntPoint -> Vector, Vector2D, IntPoint
+  Conv_Vector2DToString -> Vector, Vector2D, String
+  Conv_Vector2DToVector -> Vector, Vector2D
+  Conv_VectorToLinearColor -> Color, Vector
+  Conv_VectorToQuaternion -> Quat, Vector
+  Conv_VectorToRotator -> Vector, Rotator
+  Conv_VectorToString -> Vector, String
+  Conv_VectorToTransform -> Vector, Transform
+  Conv_VectorToVector2D -> Vector, Vector2D
+  ConvertTransformToRelative -> Transform
+  CopyMaterialInstanceParameters -> Parameter, Copy, Material
+  CreateCopyForUndoBuffer -> Copy
+  CreateDynamicMaterialInstance -> Material
+  CreatePlayer -> Player
+  CreateVectorFromYawPitch -> Vector
+  Cross_VectorVector -> Vector
+  DateTimeFromIsoString -> DateTime, Time, String
+  DateTimeFromString -> DateTime, Time, String
+  DateTimeMaxValue -> DateTime, Time
+  DateTimeMinValue -> DateTime, Time
+  Delta_Rotator -> Rotator
+  DisableInput -> IsA
+  Divide_ByteByte -> Byte
+  Divide_FloatFloat -> Float
+  Divide_IntPointInt -> IntPoint
+  Divide_IntPointIntPoint -> IntPoint
+  Divide_TimespanFloat -> Timespan, Time, Float
+  Divide_Vector2DFloat -> Vector, Vector2D, Float
+  Divide_Vector2DVector2D -> Vector, Vector2D
+  Divide_VectorFloat -> Vector, Float
+  Divide_VectorInt -> Vector
+  Divide_VectorVector -> Vector
+  Dot_VectorVector -> Vector
+  DrawDebugArrow -> Arrow, Debug
+  DrawDebugBox -> Debug, Box
+  DrawDebugCamera -> Debug
+  DrawDebugCapsule -> Debug, Capsule
+  DrawDebugCircle -> Debug
+  DrawDebugCone -> Debug
+  DrawDebugConeInDegrees -> Debug
+  DrawDebugCoordinateSystem -> Debug
+  DrawDebugCylinder -> Debug
+  DrawDebugFloatHistoryLocation -> Debug, Float
+  DrawDebugFloatHistoryTransform -> Debug, Float, Transform
+  DrawDebugFrustum -> Debug
+  DrawDebugLine -> Debug
+  DrawDebugPlane -> Debug, Plane
+  DrawDebugPoint -> Debug
+  DrawDebugSphere -> Sphere, Debug
+  DrawDebugString -> Debug, String
+  DynamicWeightedMovingAverage_FRotator -> Rotator
+  DynamicWeightedMovingAverage_FVector -> Vector
+  DynamicWeightedMovingAverage_Float -> Float
+  Ease -> ReleaseRenderTarget2D, ReleasePlayerController
+  EqualEqual_ByteByte -> Byte
+  EqualEqual_FloatFloat -> Float
+  EqualEqual_PrimaryAssetId -> Set
+  EqualEqual_PrimaryAssetType -> Set
+  EqualEqual_RotatorRotator -> Rotator
+  EqualEqual_TransformTransform -> Transform
+  EqualEqual_Vector2DVector2D -> Vector, Vector2D
+  EqualEqual_VectorVector -> Vector
+  EqualExactly_Vector2DVector2D -> Vector, Vector2D
+  EqualExactly_VectorVector -> Vector
+  Equal_Float -> Float, AssertEqual_Float
+  Equal_Int -> AssertEqual_Integer
+  Equal_IntPointIntPoint -> IntPoint
+  Equal_String -> AssertEqual_String, AssertNotEqual_String, String
+  Exp -> SetMieExponentialDistribution, SetRayleighExponentialDistributi, ExportTexture2D
+  FTruncVector -> Vector
+  FilterArray -> Array
+  FindClosestPointOnLine -> Close
+  FindClosestPointOnSegment -> Close
+  FindSubstring -> String
+  FlushDebugStrings -> Debug, String
+  FlushPersistentDebugLines -> Debug
+  GetAccurateRealTime -> Time
+  GetActorArrayAverageLocation -> Array
+  GetAudioTimeSeconds -> Audio, Time
+  GetBaseMaterial -> Material
+  GetClassFromPrimaryAssetId -> Set, GetClass
+  GetDirectionUnitVector -> Vector
+  GetForwardVector -> Vector
+  GetGameInstanceSubsystem -> GetGameInstance
+  GetGlobalTimeDilation -> Time
+  GetLocalPlayerSubsystem -> Player
+  GetMaterial -> Material
+  GetMaterialSlotNames -> Material, Name
+  GetNumMaterials -> Material
+  GetPI -> ReadRenderTargetPixel
+  GetPathName -> Name
+  GetPlayerControllerFromID -> GetPlayerController, Player
+  GetPlayerControllerID -> GetPlayerController, Player
+  GetPrimaryAssetIdFromObject -> Set
+  GetRealTimeSeconds -> Time
+  GetReflectionVector -> Vector
+  GetRightVector -> Trig, Vector
+  GetScalarParameterValue -> Parameter
+  GetSoftClassReferenceFromPrimaryAssetId -> Set
+  GetSoftObjectReferenceFromPrimaryAssetId -> Set
+  GetSubstring -> String
+  GetSupportedFullscreenResolutions -> GetSupportedFullscreenResolution
+  GetTextureParameterValue -> Texture, GetTexture, Parameter
+  GetTimeSeconds -> Time
+  GetUnpausedTimeSeconds -> Time
+  GetUpVector -> Vector
+  GetVectorArrayAverage -> Array, Vector
+  GetVectorParameterValue -> Parameter, Vector
+  GetWorldDeltaSeconds -> World
+  GetWorldSubsystem -> World
+  GetYawPitchFromVector -> Vector
+  GrassOverlappingSphereCount -> Sphere
+  GreaterEqual_ByteByte -> Byte
+  GreaterEqual_FloatFloat -> Float
+  GreaterGreater_VectorRotator -> Vector, Rotator
+  Greater_ByteByte -> Byte
+  Greater_Float -> Float
+  Greater_FloatFloat -> Float
+  GridSnap_Float -> Float
+  HSVToRGB_Vector -> Vector
+  InRange_FloatFloat -> Float
+  IntPoint_Down -> IntPoint
+  IntPoint_Left -> IntPoint
+  IntPoint_One -> IntPoint
+  IntPoint_Right -> Trig, IntPoint
+  IntPoint_Up -> IntPoint
+  IntPoint_Zero -> IntPoint
+  InterpolateMaterialInstanceParameters -> Parameter, Material
+  InverseTransformDirection -> Set, Transform
+  InverseTransformLocation -> Set, Transform
+  InverseTransformRotation -> Set, Transform
+  InvertRotator -> Rotator
+  InvertTransform -> Transform
+  IsAlpha -> IsA
+  IsSplitscreenForceDisabled -> IsA
+  IsValidPrimaryAssetId -> IsValid, Set
+  IsValidPrimaryAssetType -> IsValid, Set
+  JoinStringArray -> Array, String
+  K2_ClearAndInvalidateTimerHandle -> DateTime, Time
+  K2_ClearTimer -> Time
+  K2_ClearTimerHandle -> Time
+  K2_GetTimerElapsedTime -> Time
+  K2_GetTimerRemainingTime -> Time
+  K2_IsTimerActive -> Time
+  K2_IsTimerPaused -> Time
+  K2_PauseTimer -> Time, Set
+  K2_SetTimer -> Time, Set
+  K2_SetTimerByFunctionName -> Time, Set, Name
+  K2_SetTimerForNextTick -> Tick, Time, Set
+  K2_TimerExists -> Time
+  K2_UnPauseTimer -> Time, Set
+  Len -> GetCollisionProfileName, BlendCameraEvaluationData, SetPhysicsBlendWeight
+  Lerp -> SetLocalPlayerControllerPlatform
+  LessEqual_ByteByte -> Byte
+  LessEqual_FloatFloat -> Float
+  LessLess_VectorRotator -> Vector, Rotator
+  Less_ByteByte -> Byte
+  Less_Float -> Float
+  Less_FloatFloat -> Float
+  LinearColorLerp -> Color
+  LinearColorLerpUsingHSV -> Color
+  LinearColor_Black -> Color
+  LinearColor_Blue -> Color
+  LinearColor_Desaturated -> Color
+  LinearColor_Distance -> Color
+  LinearColor_GetLuminance -> Color
+  LinearColor_GetMax -> Color
+  LinearColor_GetMin -> Color
+  LinearColor_Gray -> Color
+  LinearColor_Green -> Color
+  LinearColor_IsNearEqual -> Color
+  LinearColor_Quantize -> Color
+  LinearColor_QuantizeRound -> Color
+  LinearColor_Red -> Color
+  LinearColor_Set -> Color, Set
+  LinearColor_SetFromHSV -> Color, Set
+  LinearColor_SetFromPow22 -> Color, Set
+  LinearColor_SetFromSRGB -> Color, Set
+  LinearColor_SetRandomHue -> Color, Set, Random
+  LinearColor_SetTemperature -> Color, Set
+  LinearColor_ToNewOpacity -> Color
+  LinearColor_ToRGBE -> Color
+  LinearColor_Transparent -> Color
+  LinearColor_White -> Color
+  LinearColor_Yellow -> Color
+  LoadAsset -> AsyncLoadAsset, LoadAssetBlocking, AsyncLoadAssets
+  LoadClassAsset -> Set, LoadClassAssetBlocking, AsyncLoadClassAsset
+  LoadStreamLevel -> UnloadStreamLevel_byObjectRefere, LoadStreamLevel_byObjectReferenc, UnloadStreamLevel_byName
+  Log -> SpawnDialogue2D, SpawnDialogueatLocation, SpawnDialogueAttached
+  MakeArray -> Array
+  MakeColor -> Color
+  MakeDateTime -> DateTime, Time
+  MakePrimaryAssetIdFromString -> Set, String
+  MakeQuat -> Quat
+  MakeRandomStream -> Random
+  MakeRotator -> Rotator
+  MakeStruct -> Struct
+  MakeTimespan -> Timespan, Time
+  MakeTimespan2 -> Timespan, Time
+  MakeTransform -> Transform
+  MakeVector -> Vector
+  MakeVector2D -> Vector, Vector2D
+  MapRangeClamped -> Map
+  MapRangeUnclamped -> Map
+  Max -> GetMaxAudioChannelCount, SetMaxDepenetrationVelocity, GetMaxDepenetrationVelocity
+  MaxOfByteArray -> Byte, Array
+  MaxOfFloatArray -> Array, Float
+  MaxOfIntArray -> Array
+  Mid -> GetLocalPlayerControllerFromID
+  Min -> SetSkyLuminanceFactor, GetMinYResolutionforUI, GetStreamingLevel
+  MinOfByteArray -> Byte, Array
+  MinOfFloatArray -> Array, Float
+  MinOfIntArray -> Array
+  MirrorVectorByNormal -> Vector
+  MultiplyMultiply_FloatFloat -> Float
+  Multiply_ByteByte -> Byte
+  Multiply_FloatFloat -> Float
+  Multiply_IntFloat -> Float
+  Multiply_IntPointInt -> IntPoint
+  Multiply_IntPointIntPoint -> IntPoint
+  Multiply_TimespanFloat -> Timespan, Time, Float
+  Multiply_Vector2DFloat -> Vector, Vector2D, Float
+  Multiply_Vector2DVector2D -> Vector, Vector2D
+  Multiply_VectorFloat -> Vector, Float
+  Multiply_VectorInt -> Vector
+  Multiply_VectorVector -> Vector
+  NearlyEqual_FloatFloat -> Float
+  NegateRotator -> Rotator
+  NegateVector -> Vector
+  Normal -> GetNormalizedCompressionScalar
+  NormalizeFilename -> Name
+  NotEqualExactly_Vector2DVector2D -> Vector, Vector2D
+  NotEqualExactly_VectorVector -> Vector
+  NotEqual_ByteByte -> Byte
+  NotEqual_FloatFloat -> Float
+  NotEqual_IntPointIntPoint -> IntPoint
+  NotEqual_RotatorRotator -> Rotator
+  NotEqual_Vector2DVector2D -> Vector, Vector2D
+  NotEqual_VectorVector -> Vector
+  OpenLevel -> Open, OpenLevel_byName, OpenLevel_byObjectReference
+  OpenLevelBySoftObjectPtr -> Open
+  ParseIntoArray -> Array
+  Percent_ByteByte -> Byte
+  Percent_FloatFloat -> Float
+  PlayForceFeedback -> Feedback
+  ProjectPointOnToPlane -> Plane
+  ProjectVectorOnToPlane -> Vector, Plane
+  ProjectVectorOnToVector -> Vector
+  Quat_AngularDistance -> Quat
+  Quat_EnforceShortestArcWith -> Quat
+  Quat_Euler -> Quat
+  Quat_Exp -> Quat
+  Quat_Inversed -> Quat
+  Quat_IsIdentity -> Quat
+  Quat_IsNonFinite -> Quat
+  Quat_Log -> Quat
+  Quat_MakeFromEuler -> Quat
+  Quat_Normalized -> Quat
+  Quat_RotateVector -> Quat, Vector
+  Quat_Rotator -> Quat, Rotator
+  Quat_SetComponents -> Components, Quat, Set
+  Quat_SetFromEuler -> Quat, Set
+  Quat_Slerp -> Quat
+  Quat_UnrotateVector -> Quat, Vector
+  Quat_VectorForward -> Quat, Vector
+  Quat_VectorRight -> Quat, Vector
+  Quat_VectorUp -> Quat, Vector
+  RGBToHSV_Vector -> Vector
+  RandomBool -> Random
+  RandomBoolFromStream -> Random
+  RandomBoolWithWeight -> Random
+  RandomBoolWithWeightFromStream -> Random
+  RandomFloat -> Random, Float
+  RandomFloatFromStream -> Random, Float
+  RandomFloatInRange -> Random, Float
+  RandomFloatInRangeFromStream -> Random, Float
+  RandomInteger -> Random, Integer
+  RandomInteger64 -> Integer64, Random, Integer
+  RandomInteger64InRange -> Integer64, Random, Integer
+  RandomIntegerFromStream -> Random, Integer
+  RandomIntegerInRange -> Random, Integer
+  RandomIntegerInRangeFromStream -> Random, Integer
+  RandomPointInBoundingBox -> Random, Box
+  RandomRotator -> Random, Rotator
+  RandomRotatorFromStream -> Random, Rotator
+  RandomUnitVector -> Vector, Random
+  RandomUnitVectorFromStream -> Vector, Random
+  RemoveMappingContext -> Map, Text
+  RemovePlayer -> Player
+  RequestRebuildControlMappings -> Map
+  ResetRandomStream -> Set, Random
+  RetriggerableDelay -> Trig
+  Return -> ReturntoMainMenuHost
+  RotatorFromAxisAndAngle -> IsA, Rotator
+  Round -> SetGroundRadius, SetGroundAlbedo
+  SeedRandomStream -> Random
+  SelectRotator -> Rotator, Select
+  SelectTransform -> Select, Transform
+  Set2D -> Set
+  SetActorTickEnabled -> Tick, Set
+  SetArrayPropertyByName -> Array, Set, Name
+  SetColorParameterValueOnMaterials -> Parameter, Material, Color
+  SetConsoleVariableBool -> Set
+  SetConsoleVariableFloat -> Set, Float
+  SetConsoleVariableInt -> Set
+  SetCustomPrimitiveDataFloat -> Set, Float
+  SetForceDisableSplitscreen -> IsA, Set
+  SetGlobalTimeDilation -> Time, Set
+  SetIgnoreLookInput -> Set
+  SetIgnoreMoveInput -> Set
+  SetInputModeGameAndUI -> Set
+  SetInputModeGameOnly -> Set
+  SetInputModeUIOnly -> Set
+  SetOverlayMaterial -> Material, Set
+  SetPlayerControllerID -> Player, Set
+  SetRuntimeVirtualTextureParameterValue -> Texture, Parameter, Text
+  SetScalarParameterValue -> Parameter, Set
+  SetScalarParameterValueOnMaterials -> Parameter, Material, Set
+  SetSubtitlesEnabled -> Subtitles, Set
+  SetTextureParameterValue -> Texture, Parameter, Text
+  SetVectorParameterValue -> Parameter, Vector, Set
+  SignOfFloat -> Float
+  SignOfInteger -> Integer
+  SignOfInteger64 -> Integer64, Integer
+  Sin -> PrimeAllSoundsinSoundClass, GetGameTimeSinceCreation, UnRetainAllSoundsinSoundClass
+  SpawnDecalAtLocation -> Decal
+  SpawnDecalAttached -> Decal
+  SpawnForceFeedbackAtLocation -> Feedback
+  SpawnForceFeedbackAttached -> Feedback
+  SphereTraceMulti -> Sphere
+  SphereTraceMultiByProfile -> Sphere
+  SphereTraceMultiForObjects -> Sphere
+  SphereTraceSingle -> Sphere
+  SphereTraceSingleByProfile -> Sphere
+  SphereTraceSingleForObjects -> Sphere
+  Subtract_ByteByte -> Byte
+  Subtract_DateTimeTimespan -> Timespan, DateTime, Time
+  Subtract_FloatFloat -> Float
+  Subtract_IntPointInt -> IntPoint
+  Subtract_IntPointIntPoint -> IntPoint
+  Subtract_TimespanTimespan -> Timespan, Time
+  Subtract_Vector2DFloat -> Vector, Vector2D, Float
+  Subtract_Vector2DVector2D -> Vector, Vector2D
+  Subtract_VectorFloat -> Vector, Float
+  Subtract_VectorInt -> Vector
+  Subtract_VectorVector -> Vector
+  SwitchOnEnum -> Enum
+  SwitchOnName -> Name
+  SwitchOnString -> String
+  Tan -> GetWaterMaterialInstance, GetWaterStaticMeshMaterialInstan, SetAffectDistanceFieldLighting
+  TimeSecondsToString -> Time, String
+  TransformDirection -> Transform
+  TransformLocation -> Transform
+  Transform_Identity -> Transform
+  UnloadStreamLevel -> UnloadStreamLevel_byObjectRefere, UnloadStreamLevel_byName
+  Vector2DInterpTo -> Vector, Vector2D
+  Vector2DInterpTo_Constant -> Vector, Vector2D
+  Vector2D_One -> Vector, Vector2D
+  Vector2D_Unit45Deg -> Vector, Vector2D
+  Vector2D_Zero -> Vector, Vector2D
+  VectorLength -> Vector
+  VectorSpringInterp -> Spring, Vector
+  Vector_Assign -> Vector
+  Vector_Backward -> Vector
+  Vector_ClampSize2D -> Vector
+  Vector_ClampSizeMax -> Vector
+  Vector_ClampSizeMax2D -> Vector
+  Vector_ComponentMax -> Vector
+  Vector_ComponentMin -> Vector
+  Vector_CosineAngle2D -> Vector
+  Vector_Distance -> Vector
+  Vector_Distance2D -> Vector
+  Vector_Distance2DSquared -> Vector
+  Vector_DistanceSquared -> Vector
+  Vector_Down -> Vector
+  Vector_Forward -> Vector
+  Vector_GetAbs -> Vector
+  Vector_GetAbsMax -> Vector
+  Vector_GetAbsMin -> Vector
+  Vector_GetProjection -> Vector
+  Vector_GetSignVector -> Vector
+  Vector_HeadingAngle -> Vector
+  Vector_IsNAN -> Vector
+  Vector_IsNearlyZero -> Vector
+  Vector_IsNormal -> Vector
+  Vector_IsUniform -> Vector
+  Vector_IsUnit -> Vector
+  Vector_IsZero -> Vector
+  Vector_Left -> Vector
+  Vector_MirrorByPlane -> Vector, Plane
+  Vector_Normal2D -> Vector
+  Vector_NormalUnsafe -> Vector
+  Vector_Normalize -> Vector
+  Vector_One -> Vector
+  Vector_Reciprocal -> Vector
+  Vector_Right -> Vector
+  Vector_Set -> Vector, Set
+  Vector_SnappedToGrid -> Vector
+  Vector_ToDegrees -> Vector
+  Vector_ToRadians -> Vector
+  Vector_UnitCartesianToSpherical -> Vector
+  Vector_UnwindEuler -> Vector
+  Vector_Up -> Vector
+  Vector_Zero -> Vector
+  WeightedMovingAverage_FRotator -> Rotator
+  WeightedMovingAverage_FVector -> Vector
+  WeightedMovingAverage_Float -> Float
+
+----------------------------------------------------------------------
+BY CLASS
+----------------------------------------------------------------------
+  UKismetMathLibrary                          0/489  (  0.0%)
+  UKismetSystemLibrary                       32/140  ( 22.9%)
+  UGameplayStatics                           65/121  ( 53.7%)
+  UKismetStringLibrary                        0/69   (  0.0%)
+  UKismetArrayLibrary                         0/24   (  0.0%)
+  UAkGameplayStatics                          0/19   (  0.0%)
+  UMaterialInstanceDynamic                    0/9    (  0.0%)
+  APlayerController                           0/8    (  0.0%)
+  UDataTableFunctionLibrary                   7/7    (100.0%)
+  UAkComponent                                0/6    (  0.0%)
+  AActor                                      0/5    (  0.0%)
+  UEnhancedInputLocalPlayerSubsystem          0/5    (  0.0%)
+  UPrimitiveComponent                         1/5    ( 20.0%)
+  USubsystemBlueprintLibrary                  0/4    (  0.0%)
+  UKismetTextLibrary                          0/3    (  0.0%)
+  UEnhancedInputComponent                     0/2    (  0.0%)
+  UMeshComponent                              0/2    (  0.0%)
+  UKismetMaterialLibrary                      0/2    (  0.0%)
+  UMaterialInterface                          0/2    (  0.0%)
+  UK2Node_IfThenElse                          0/1    (  0.0%)
+  UK2Node_ExecutionSequence                   0/1    (  0.0%)
+  UK2Node_ForLoop                             0/1    (  0.0%)
+  UK2Node_ForLoopWithBreak                    0/1    (  0.0%)
+  UK2Node_ForEachLoop                         0/1    (  0.0%)
+  UK2Node_ForEachLoopWithBreak                0/1    (  0.0%)
+  UK2Node_WhileLoop                           0/1    (  0.0%)
+  UK2Node_DoOnce                              0/1    (  0.0%)
+  UK2Node_DoN                                 0/1    (  0.0%)
+  UK2Node_Gate                                0/1    (  0.0%)
+  UK2Node_FlipFlop                            0/1    (  0.0%)
+  UK2Node_MultiGate                           0/1    (  0.0%)
+  UK2Node_Select                              1/1    (100.0%)
+  UK2Node_SwitchInteger                       0/1    (  0.0%)
+  UK2Node_SwitchString                        0/1    (  0.0%)
+  UK2Node_SwitchName                          0/1    (  0.0%)
+  UK2Node_SwitchEnum                          0/1    (  0.0%)
+  UK2Node_SwitchClass                         0/1    (  0.0%)
+  UK2Node_DynamicCast                         1/1    (100.0%)
+  UK2Node_FunctionResult                      0/1    (  0.0%)
+  UK2Node_TemporaryVariable                   0/1    (  0.0%)
+  UK2Node_BreakExec                           0/1    (  0.0%)
+  UK2Node_MakeStruct                          0/1    (  0.0%)
+  UK2Node_BreakStruct                         0/1    (  0.0%)
+  UK2Node_MakeArray                           0/1    (  0.0%)
+  UMovementComponent                          0/1    (  0.0%)
+
+======================================================================

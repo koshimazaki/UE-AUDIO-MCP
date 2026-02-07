@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 from mcp.server.fastmcp import FastMCP
 
 from ue_audio_mcp.connection import get_wwise_connection
+from ue_audio_mcp.ue5_connection import get_ue5_connection
 
 log = logging.getLogger(__name__)
 
@@ -14,22 +15,32 @@ log = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(server: FastMCP) -> AsyncIterator[None]:
     """Try connecting to Wwise on startup; warn if unavailable."""
-    conn = get_wwise_connection()
+    wwise = get_wwise_connection()
     try:
-        info = conn.connect()
+        info = wwise.connect()
         log.info("Wwise ready: %s", info.get("version", {}).get("displayName", "?"))
     except Exception:
         log.warning("Wwise not available — use wwise_connect to connect later")
+
+    ue5 = get_ue5_connection()
+    try:
+        ue5.connect()
+        log.info("UE5 plugin ready")
+    except Exception:
+        log.warning("UE5 plugin not available — use ue5_connect to connect later")
+
     try:
         yield None
     finally:
-        conn.disconnect()
+        wwise.disconnect()
+        ue5.disconnect()
 
 
 mcp = FastMCP(
     "ue-audio-mcp",
-    instructions="MCP server for game audio — Wwise (WAAPI) + MetaSounds knowledge. "
-    "Create objects, events, mix buses, generate soundbanks, query nodes, validate graphs.",
+    instructions="MCP server for game audio — Wwise (WAAPI) + MetaSounds (Builder API) + UE5 Blueprints. "
+    "Create objects, events, mix buses, generate soundbanks, query nodes, validate graphs, "
+    "build MetaSounds patches, search Blueprint nodes, execute functions via UE5 plugin.",
     lifespan=lifespan,
 )
 
@@ -41,6 +52,9 @@ import ue_audio_mcp.tools.preview  # noqa: E402, F401
 import ue_audio_mcp.tools.templates  # noqa: E402, F401
 import ue_audio_mcp.tools.metasounds  # noqa: E402, F401
 import ue_audio_mcp.tools.ms_graph  # noqa: E402, F401
+import ue_audio_mcp.tools.ue5_core  # noqa: E402, F401
+import ue_audio_mcp.tools.ms_builder  # noqa: E402, F401
+import ue_audio_mcp.tools.blueprints  # noqa: E402, F401
 
 
 def main():

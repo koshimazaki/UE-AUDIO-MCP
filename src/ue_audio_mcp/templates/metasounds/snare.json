@@ -1,0 +1,170 @@
+{
+  "name": "Snare Drum",
+  "asset_type": "Source",
+  "description": "Imported from UE5 MetaSounds editor export (6 nodes)",
+  "inputs": [
+    {
+      "name": "UE.Source.OnPlay",
+      "type": "Trigger"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "UE.OutputFormat.Mono.Audio:0",
+      "type": "Audio"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "external_node_0",
+      "node_type": "Noise (Audio)",
+      "node_class": {
+        "namespace": "UE",
+        "name": "Noise",
+        "variant": "Audio"
+      },
+      "position": [
+        -336,
+        336
+      ],
+      "defaults": {
+        "Seed": -1,
+        "Type": 1
+      }
+    },
+    {
+      "id": "external_node_1",
+      "node_type": "State Variable Filter (Audio)",
+      "node_class": {
+        "namespace": "UE",
+        "name": "State Variable Filter",
+        "variant": "Audio"
+      },
+      "position": [
+        32,
+        336
+      ],
+      "defaults": {
+        "Cutoff Frequency": 1000.0,
+        "Resonance": 10.0,
+        "Band Stop Control": 0.0
+      }
+    },
+    {
+      "id": "external_node_2",
+      "node_type": "AD Envelope (Float)",
+      "node_class": {
+        "namespace": "AD Envelope",
+        "name": "AD Envelope",
+        "variant": "Float"
+      },
+      "position": [
+        48,
+        656
+      ],
+      "defaults": {
+        "Attack Time": 0.001,
+        "Decay Time": 0.19,
+        "Attack Curve": 0.1,
+        "Decay Curve": 0.4,
+        "Looping": false,
+        "Hard Reset": false
+      }
+    },
+    {
+      "id": "external_node_4",
+      "node_type": "Multiply (Audio by Float)",
+      "node_class": {
+        "namespace": "UE",
+        "name": "Multiply",
+        "variant": "Audio by Float"
+      },
+      "position": [
+        448,
+        392
+      ],
+      "defaults": {
+        "AdditionalOperands": 1.0
+      }
+    },
+    {
+      "id": "external_node_5",
+      "node_type": "TriggerRepeat",
+      "node_class": {
+        "namespace": "UE",
+        "name": "TriggerRepeat",
+        "variant": ""
+      },
+      "position": [
+        -416,
+        656
+      ],
+      "defaults": {
+        "Period": 0.2,
+        "Num Repeats": 0
+      }
+    },
+    {
+      "id": "external_node_6",
+      "node_type": "BPMToSeconds",
+      "node_class": {
+        "namespace": "UE",
+        "name": "BPMToSeconds",
+        "variant": ""
+      },
+      "position": [
+        -752,
+        736
+      ],
+      "defaults": {
+        "BPM": 90.0,
+        "Beat Multiplier": 1.0,
+        "Divisions of Whole Note": 4.0
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from_node": "__graph__",
+      "from_pin": "UE.Source.OnPlay",
+      "to_node": "external_node_5",
+      "to_pin": "Start"
+    },
+    {
+      "from_node": "external_node_0",
+      "from_pin": "Audio",
+      "to_node": "external_node_1",
+      "to_pin": "In"
+    },
+    {
+      "from_node": "external_node_1",
+      "from_pin": "High Pass Filter",
+      "to_node": "external_node_4",
+      "to_pin": "PrimaryOperand"
+    },
+    {
+      "from_node": "external_node_2",
+      "from_pin": "Out Envelope",
+      "to_node": "external_node_4",
+      "to_pin": "AdditionalOperands"
+    },
+    {
+      "from_node": "external_node_4",
+      "from_pin": "Out",
+      "to_node": "__graph__",
+      "to_pin": "UE.OutputFormat.Mono.Audio:0"
+    },
+    {
+      "from_node": "external_node_5",
+      "from_pin": "RepeatOut",
+      "to_node": "external_node_2",
+      "to_pin": "Trigger"
+    },
+    {
+      "from_node": "external_node_6",
+      "from_pin": "Seconds",
+      "to_node": "external_node_5",
+      "to_pin": "Period"
+    }
+  ]
+}

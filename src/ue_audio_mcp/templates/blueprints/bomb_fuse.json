@@ -1,0 +1,45 @@
+{
+  "name": "Bomb Fuse Timer",
+  "type": "blueprint",
+  "description": "Plays a MetaSound bomb with a fuse timer. BeginPlay spawns the sound, a 3-second delay triggers SetBoolParameter to detonate.",
+  "source_url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/metasounds-quick-start",
+  "requires": ["MetaSound Source with Detonate bool input"],
+  "nodes": [
+    {
+      "id": "begin_play",
+      "node_type": "EventBeginPlay",
+      "position": [0, 0]
+    },
+    {
+      "id": "spawn_sound",
+      "node_type": "SpawnSound2D",
+      "position": [300, 0],
+      "defaults": {
+        "Sound": "<MetaSound_Bomb_Source>"
+      }
+    },
+    {
+      "id": "delay",
+      "node_type": "Delay",
+      "position": [600, 0],
+      "defaults": {
+        "Duration": 3.0
+      }
+    },
+    {
+      "id": "set_detonate",
+      "node_type": "SetBoolParameter",
+      "position": [900, 0],
+      "defaults": {
+        "InName": "Detonate",
+        "InBool": true
+      }
+    }
+  ],
+  "connections": [
+    {"from_node": "begin_play", "from_pin": "Exec", "to_node": "spawn_sound", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "spawn_sound", "from_pin": "Exec", "to_node": "delay", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "spawn_sound", "from_pin": "ReturnValue", "to_node": "set_detonate", "to_pin": "Target", "type": "data"},
+    {"from_node": "delay", "from_pin": "Completed", "to_node": "set_detonate", "to_pin": "Exec", "type": "exec"}
+  ]
+}

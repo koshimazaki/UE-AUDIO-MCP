@@ -1,0 +1,60 @@
+{
+  "name": "Audio Modulation",
+  "type": "blueprint",
+  "description": "Audio modulation via Control Bus and Control Bus Mix. Creates a Control Bus for volume/pitch, applies a Control Bus Mix, and drives parameters from Blueprint variables.",
+  "source_url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/audio-modulation-quick-start-in-unreal-engine",
+  "requires": ["Control Bus asset", "Control Bus Mix asset", "Sound with modulation patch"],
+  "nodes": [
+    {
+      "id": "begin_play",
+      "node_type": "EventBeginPlay",
+      "position": [0, 0]
+    },
+    {
+      "id": "activate_mix",
+      "node_type": "ActivateBusMix",
+      "position": [300, 0],
+      "defaults": {
+        "BusMix": "<ControlBusMix>"
+      }
+    },
+    {
+      "id": "play_sound",
+      "node_type": "SpawnSound2D",
+      "position": [600, 0],
+      "defaults": {
+        "Sound": "<ModulatedSound>"
+      }
+    },
+    {
+      "id": "event_tick",
+      "node_type": "EventTick",
+      "position": [0, 300]
+    },
+    {
+      "id": "set_bus_value",
+      "node_type": "SetControlBusValue",
+      "position": [300, 300],
+      "defaults": {
+        "Bus": "<VolumeControlBus>",
+        "Value": 1.0
+      },
+      "comment": "Drive control bus from game state"
+    },
+    {
+      "id": "get_param",
+      "node_type": "GetFloatVariable",
+      "position": [0, 500],
+      "defaults": {
+        "VariableName": "HealthPercent"
+      },
+      "comment": "Blueprint variable driving the modulation"
+    }
+  ],
+  "connections": [
+    {"from_node": "begin_play", "from_pin": "Exec", "to_node": "activate_mix", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "activate_mix", "from_pin": "Exec", "to_node": "play_sound", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "event_tick", "from_pin": "Exec", "to_node": "set_bus_value", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "get_param", "from_pin": "ReturnValue", "to_node": "set_bus_value", "to_pin": "Value", "type": "data"}
+  ]
+}

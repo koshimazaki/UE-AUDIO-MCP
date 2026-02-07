@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 from typing import Any
-from unittest.mock import MagicMock
 
 import pytest
 
 import ue_audio_mcp.connection as conn_module
 import ue_audio_mcp.knowledge.db as db_module
+import ue_audio_mcp.ue5_connection as ue5_module
 
 
 class MockWaapiClient:
@@ -63,6 +63,57 @@ def wwise_conn(mock_waapi: MockWaapiClient, monkeypatch: pytest.MonkeyPatch):
     # Cleanup
     connection._client = None
     conn_module._connection = None
+
+
+class MockUE5Plugin:
+    """Mimics the UE5 C++ plugin TCP server for testing."""
+
+    def __init__(self) -> None:
+        self._responses: dict[str, Any] = {
+            "ping": {
+                "status": "ok",
+                "engine": "UnrealEngine",
+                "version": "5.4.0",
+                "project": "TestProject",
+                "features": ["MetaSounds", "AudioLink"],
+            },
+        }
+        self.commands: list[dict] = []
+
+    def set_response(self, action: str, response: Any) -> None:
+        """Pre-program a response for a command action."""
+        self._responses[action] = response
+
+    def send_command(self, command: dict) -> dict:
+        """Record the command and return pre-programmed response."""
+        self.commands.append(command)
+        action = command.get("action", "")
+        if action in self._responses:
+            return self._responses[action]
+        return {"status": "ok", "action": action}
+
+
+@pytest.fixture()
+def mock_ue5_plugin() -> MockUE5Plugin:
+    """Provide a fresh MockUE5Plugin."""
+    return MockUE5Plugin()
+
+
+@pytest.fixture()
+def ue5_conn(mock_ue5_plugin: MockUE5Plugin):
+    """Provide a UE5PluginConnection wired to the mock plugin.
+
+    Resets the global singleton before and after each test.
+    """
+    ue5_module._connection = None
+    connection = ue5_module.get_ue5_connection()
+    # Bypass real TCP — inject mock's send_command directly
+    connection.send_command = mock_ue5_plugin.send_command
+    # Mark as "connected" by setting a truthy _sock
+    connection._sock = True  # type: ignore[assignment]
+    yield connection
+    connection._sock = None
+    ue5_module._connection = None
 
 
 @pytest.fixture()

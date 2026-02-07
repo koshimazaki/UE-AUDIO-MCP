@@ -1,0 +1,60 @@
+{
+  "name": "Wind System",
+  "type": "blueprint",
+  "description": "Controls MetaSound wind based on player pawn movement speed. Event BeginPlay spawns the MetaSound, Event Tick continuously feeds velocity magnitude as PawnSpeed parameter.",
+  "source_url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/metasounds-quick-start",
+  "requires": ["MetaSound Source with PawnSpeed float input"],
+  "nodes": [
+    {
+      "id": "begin_play",
+      "node_type": "EventBeginPlay",
+      "position": [0, 0],
+      "comment": "Fires once on level start"
+    },
+    {
+      "id": "spawn_sound",
+      "node_type": "SpawnSound2D",
+      "position": [300, 0],
+      "defaults": {
+        "Sound": "<MetaSound_Wind_Source>"
+      }
+    },
+    {
+      "id": "event_tick",
+      "node_type": "EventTick",
+      "position": [0, 300],
+      "comment": "Fires every frame"
+    },
+    {
+      "id": "set_param",
+      "node_type": "SetFloatParameter",
+      "position": [600, 300],
+      "defaults": {
+        "InName": "PawnSpeed"
+      }
+    },
+    {
+      "id": "get_pawn",
+      "node_type": "GetPlayerPawn",
+      "position": [0, 500]
+    },
+    {
+      "id": "get_velocity",
+      "node_type": "GetVelocity",
+      "position": [300, 500]
+    },
+    {
+      "id": "vec_length",
+      "node_type": "VectorLength",
+      "position": [600, 500]
+    }
+  ],
+  "connections": [
+    {"from_node": "begin_play", "from_pin": "Exec", "to_node": "spawn_sound", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "spawn_sound", "from_pin": "ReturnValue", "to_node": "set_param", "to_pin": "Target", "type": "data"},
+    {"from_node": "event_tick", "from_pin": "Exec", "to_node": "set_param", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "get_pawn", "from_pin": "ReturnValue", "to_node": "get_velocity", "to_pin": "Target", "type": "data"},
+    {"from_node": "get_velocity", "from_pin": "ReturnValue", "to_node": "vec_length", "to_pin": "A", "type": "data"},
+    {"from_node": "vec_length", "from_pin": "ReturnValue", "to_node": "set_param", "to_pin": "InFloat", "type": "data"}
+  ]
+}

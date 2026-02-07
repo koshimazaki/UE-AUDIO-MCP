@@ -1,0 +1,54 @@
+{
+  "name": "Spectral Analysis",
+  "type": "blueprint",
+  "description": "Registers a spectral analysis delegate on a submix. BeginPlay adds a full-spectrum band settings delegate (30 bands, 40-16000 Hz), then a custom event receives magnitude array for per-band processing.",
+  "source_url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/overview-of-submixes-in-unreal-engine",
+  "requires": ["Sound Submix asset"],
+  "nodes": [
+    {
+      "id": "begin_play",
+      "node_type": "EventBeginPlay",
+      "position": [0, 0]
+    },
+    {
+      "id": "add_delegate",
+      "node_type": "AddSpectralAnalysisDelegate",
+      "position": [300, 0],
+      "defaults": {
+        "Target": "<SoundSubmix>"
+      }
+    },
+    {
+      "id": "make_bands",
+      "node_type": "MakeFullSpectrumSpectralAnalysisBandSettings",
+      "position": [0, 200],
+      "defaults": {
+        "InNumBands": 30,
+        "InMinimumFrequency": 40.0,
+        "InMaximumFrequency": 16000.0
+      }
+    },
+    {
+      "id": "on_spectra",
+      "node_type": "CustomEvent",
+      "position": [600, 0],
+      "defaults": {
+        "EventName": "OnSpectraData"
+      },
+      "comment": "Receives Magnitude float array"
+    },
+    {
+      "id": "foreach",
+      "node_type": "ForEachLoop",
+      "position": [900, 0],
+      "comment": "Iterates over magnitude values per band"
+    }
+  ],
+  "connections": [
+    {"from_node": "begin_play", "from_pin": "Exec", "to_node": "add_delegate", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "make_bands", "from_pin": "ReturnValue", "to_node": "add_delegate", "to_pin": "InBandSettings", "type": "data"},
+    {"from_node": "add_delegate", "from_pin": "OnSubmixSpectralAnalysisBP", "to_node": "on_spectra", "to_pin": "Event", "type": "delegate"},
+    {"from_node": "on_spectra", "from_pin": "Magnitude", "to_node": "foreach", "to_pin": "Array", "type": "data"},
+    {"from_node": "on_spectra", "from_pin": "Exec", "to_node": "foreach", "to_pin": "Exec", "type": "exec"}
+  ]
+}

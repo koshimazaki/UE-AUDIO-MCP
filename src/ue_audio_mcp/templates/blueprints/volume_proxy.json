@@ -1,0 +1,84 @@
+{
+  "name": "Volume Proxy Controller",
+  "type": "blueprint",
+  "description": "Level Blueprint that scales a Volume Proxy Actor with mouse wheel input. Mouse Wheel Up increases scale, Mouse Wheel Down decreases. Also implements Condition Met interface with shift key check.",
+  "source_url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/volume-proxies-quick-start",
+  "requires": ["Volume Proxy Actor in level", "Audio Gameplay Condition interface"],
+  "nodes": [
+    {
+      "id": "proxy_ref",
+      "node_type": "ActorReference",
+      "position": [0, 0],
+      "defaults": {
+        "Actor": "<VolumeProxyActor>"
+      }
+    },
+    {
+      "id": "get_scale",
+      "node_type": "GetActorScale3D",
+      "position": [300, 0]
+    },
+    {
+      "id": "add_vec",
+      "node_type": "Add_VectorVector",
+      "position": [600, 0],
+      "defaults": {
+        "B": {"X": 1.0, "Y": 1.0, "Z": 1.0}
+      }
+    },
+    {
+      "id": "sub_vec",
+      "node_type": "Subtract_VectorVector",
+      "position": [600, 200],
+      "defaults": {
+        "B": {"X": 1.0, "Y": 1.0, "Z": 1.0}
+      }
+    },
+    {
+      "id": "mouse_up",
+      "node_type": "InputAction_MouseWheelUp",
+      "position": [0, 400]
+    },
+    {
+      "id": "set_scale_up",
+      "node_type": "SetActorScale3D",
+      "position": [900, 0]
+    },
+    {
+      "id": "mouse_down",
+      "node_type": "InputAction_MouseWheelDown",
+      "position": [0, 600]
+    },
+    {
+      "id": "set_scale_down",
+      "node_type": "SetActorScale3D",
+      "position": [900, 200]
+    },
+    {
+      "id": "condition_met",
+      "node_type": "ConditionMet_Interface",
+      "position": [0, 800],
+      "comment": "Audio Gameplay Condition interface"
+    },
+    {
+      "id": "is_shift",
+      "node_type": "IsInputKeyDown",
+      "position": [300, 800],
+      "defaults": {
+        "Key": "LeftShift"
+      }
+    }
+  ],
+  "connections": [
+    {"from_node": "proxy_ref", "from_pin": "Actor", "to_node": "get_scale", "to_pin": "Target", "type": "data"},
+    {"from_node": "get_scale", "from_pin": "ReturnValue", "to_node": "add_vec", "to_pin": "A", "type": "data"},
+    {"from_node": "get_scale", "from_pin": "ReturnValue", "to_node": "sub_vec", "to_pin": "A", "type": "data"},
+    {"from_node": "add_vec", "from_pin": "ReturnValue", "to_node": "set_scale_up", "to_pin": "NewScale3D", "type": "data"},
+    {"from_node": "sub_vec", "from_pin": "ReturnValue", "to_node": "set_scale_down", "to_pin": "NewScale3D", "type": "data"},
+    {"from_node": "proxy_ref", "from_pin": "Actor", "to_node": "set_scale_up", "to_pin": "Target", "type": "data"},
+    {"from_node": "proxy_ref", "from_pin": "Actor", "to_node": "set_scale_down", "to_pin": "Target", "type": "data"},
+    {"from_node": "mouse_up", "from_pin": "Pressed", "to_node": "set_scale_up", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "mouse_down", "from_pin": "Pressed", "to_node": "set_scale_down", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "is_shift", "from_pin": "ReturnValue", "to_node": "condition_met", "to_pin": "ReturnValue", "type": "data"}
+  ]
+}

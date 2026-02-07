@@ -1,0 +1,79 @@
+{
+  "name": "Quartz Beat Sync",
+  "type": "blueprint",
+  "description": "Sample-accurate beat-synchronized audio playback using Quartz clock. Creates a Quartz clock, sets BPM, plays a sound quantized to bars, and fires events on beat/bar boundaries.",
+  "source_url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/quartz-quick-start-in-unreal-engine",
+  "requires": ["Sound Wave or MetaSound Source asset"],
+  "nodes": [
+    {
+      "id": "begin_play",
+      "node_type": "EventBeginPlay",
+      "position": [0, 0]
+    },
+    {
+      "id": "create_clock",
+      "node_type": "CreateNewClock",
+      "position": [300, 0],
+      "defaults": {
+        "ClockName": "MusicClock"
+      },
+      "comment": "Quartz Subsystem -> Create New Clock"
+    },
+    {
+      "id": "set_bpm",
+      "node_type": "SetBeatsPerMinute",
+      "position": [600, 0],
+      "defaults": {
+        "ClockName": "MusicClock",
+        "BeatsPerMinute": 120.0
+      }
+    },
+    {
+      "id": "make_quant",
+      "node_type": "MakeQuartzQuantizationBoundary",
+      "position": [300, 300],
+      "defaults": {
+        "Quantization": "Bar",
+        "Multiplier": 1.0,
+        "CountingDirection": "Down"
+      }
+    },
+    {
+      "id": "play_quantized",
+      "node_type": "PlayQuantized",
+      "position": [900, 0],
+      "defaults": {
+        "ClockName": "MusicClock",
+        "Sound": "<SoundAsset>"
+      }
+    },
+    {
+      "id": "on_beat",
+      "node_type": "SubscribeToQuantizationEvent",
+      "position": [900, 300],
+      "defaults": {
+        "ClockName": "MusicClock",
+        "QuantizationBoundary": "Beat"
+      },
+      "comment": "Fires delegate on every beat"
+    },
+    {
+      "id": "on_bar",
+      "node_type": "SubscribeToQuantizationEvent",
+      "position": [900, 500],
+      "defaults": {
+        "ClockName": "MusicClock",
+        "QuantizationBoundary": "Bar"
+      },
+      "comment": "Fires delegate on every bar"
+    }
+  ],
+  "connections": [
+    {"from_node": "begin_play", "from_pin": "Exec", "to_node": "create_clock", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "create_clock", "from_pin": "Exec", "to_node": "set_bpm", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "set_bpm", "from_pin": "Exec", "to_node": "play_quantized", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "make_quant", "from_pin": "ReturnValue", "to_node": "play_quantized", "to_pin": "InQuantizationBoundary", "type": "data"},
+    {"from_node": "play_quantized", "from_pin": "Exec", "to_node": "on_beat", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "on_beat", "from_pin": "Exec", "to_node": "on_bar", "to_pin": "Exec", "type": "exec"}
+  ]
+}

@@ -93,6 +93,57 @@ CREATE TABLE IF NOT EXISTS blueprint_core (
     returns     TEXT NOT NULL DEFAULT '{}',
     tags        TEXT NOT NULL DEFAULT '[]'
 );
+
+CREATE TABLE IF NOT EXISTS blueprint_nodes_scraped (
+    name        TEXT PRIMARY KEY,
+    target      TEXT NOT NULL DEFAULT '',
+    category    TEXT NOT NULL DEFAULT '',
+    description TEXT NOT NULL DEFAULT '',
+    inputs      TEXT NOT NULL DEFAULT '[]',
+    outputs     TEXT NOT NULL DEFAULT '[]',
+    slug        TEXT NOT NULL DEFAULT '',
+    ue_version  TEXT NOT NULL DEFAULT '',
+    path        TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE IF NOT EXISTS builder_api_functions (
+    name        TEXT PRIMARY KEY,
+    category    TEXT NOT NULL,
+    description TEXT NOT NULL,
+    params      TEXT NOT NULL DEFAULT '[]'
+);
+
+CREATE TABLE IF NOT EXISTS tutorial_workflows (
+    name        TEXT PRIMARY KEY,
+    tutorial    TEXT NOT NULL,
+    url         TEXT NOT NULL DEFAULT '',
+    layers      TEXT NOT NULL DEFAULT '[]',
+    description TEXT NOT NULL DEFAULT '',
+    tags        TEXT NOT NULL DEFAULT '[]',
+    bp_template TEXT NOT NULL DEFAULT '',
+    ms_template TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE IF NOT EXISTS audio_console_commands (
+    cmd         TEXT PRIMARY KEY,
+    category    TEXT NOT NULL,
+    type        TEXT NOT NULL DEFAULT 'bool',
+    default_val TEXT NOT NULL DEFAULT '',
+    description TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE IF NOT EXISTS spatialization_methods (
+    name        TEXT PRIMARY KEY,
+    description TEXT NOT NULL,
+    details     TEXT NOT NULL DEFAULT '{}'
+);
+
+CREATE TABLE IF NOT EXISTS attenuation_subsystems (
+    name        TEXT PRIMARY KEY,
+    description TEXT NOT NULL,
+    params      TEXT NOT NULL DEFAULT '[]',
+    details     TEXT NOT NULL DEFAULT '{}'
+);
 """
 
 
@@ -384,6 +435,216 @@ class KnowledgeDB:
         )
         self._conn.commit()
 
+    # -- Blueprint curated (audio + core) -----------------------------------
+
+    def search_blueprint_curated(
+        self, query: str, category: str | None = None
+    ) -> list[dict]:
+        """Search curated blueprint tables (audio + core) by name/description."""
+        like = _like_param(query)
+        results: list[dict] = []
+        for table in ("blueprint_audio", "blueprint_core"):
+            sql = (
+                "SELECT name, category, description, '{}' as _table "
+                "FROM {} WHERE (name LIKE ? ESCAPE '\\' "
+                "OR description LIKE ? ESCAPE '\\')".format(table, table)
+            )
+            params: list[str] = [like, like]
+            if category:
+                sql += " AND category LIKE ? ESCAPE '\\'"
+                params.append(_like_param(category))
+            sql += " ORDER BY name"
+            results.extend(self._fetch(sql, tuple(params)))
+        return results
+
+    def query_blueprint_curated_by_name(self, name: str) -> list[dict]:
+        """Look up a curated blueprint node by exact name."""
+        for table in ("blueprint_audio", "blueprint_core"):
+            rows = self._fetch(
+                "SELECT * FROM {} WHERE name = ?".format(table), (name,)
+            )
+            if rows:
+                return rows
+        return []
+
+    def list_blueprint_curated_categories(self) -> list[dict]:
+        """Get category counts from curated blueprint tables."""
+        results: list[dict] = []
+        for table in ("blueprint_audio", "blueprint_core"):
+            rows = self._fetch(
+                "SELECT category, COUNT(*) as cnt FROM {} "
+                "GROUP BY category ORDER BY category".format(table)
+            )
+            results.extend(rows)
+        return results
+
+    # -- Blueprint scraped --------------------------------------------------
+
+    def insert_blueprint_scraped(self, bp: dict) -> None:
+        self._conn.execute(
+            "INSERT OR REPLACE INTO blueprint_nodes_scraped "
+            "(name, target, category, description, inputs, outputs, slug, ue_version, path) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                bp["name"],
+                bp.get("target", ""),
+                bp.get("category", ""),
+                bp.get("description", ""),
+                json.dumps(bp.get("inputs", [])),
+                json.dumps(bp.get("outputs", [])),
+                bp.get("slug", ""),
+                bp.get("ue_version", ""),
+                bp.get("path", ""),
+            ),
+        )
+        self._conn.commit()
+
+    def query_blueprint_scraped(
+        self,
+        category: str | None = None,
+        target: str | None = None,
+        name: str | None = None,
+    ) -> list[dict]:
+        if name:
+            return self._fetch(
+                "SELECT * FROM blueprint_nodes_scraped WHERE name = ?", (name,)
+            )
+        if category and target:
+            return self._fetch(
+                "SELECT * FROM blueprint_nodes_scraped "
+                "WHERE category = ? AND target = ? ORDER BY name",
+                (category, target),
+            )
+        if category:
+            return self._fetch(
+                "SELECT * FROM blueprint_nodes_scraped "
+                "WHERE category = ? ORDER BY name",
+                (category,),
+            )
+        if target:
+            return self._fetch(
+                "SELECT * FROM blueprint_nodes_scraped "
+                "WHERE target = ? ORDER BY name",
+                (target,),
+            )
+        return self._fetch(
+            "SELECT * FROM blueprint_nodes_scraped ORDER BY name"
+        )
+
+    def search_blueprint_scraped(self, query: str) -> list[dict]:
+        param = _like_param(query)
+        return self._fetch(
+            "SELECT * FROM blueprint_nodes_scraped "
+            "WHERE name LIKE ? ESCAPE '\\' "
+            "OR description LIKE ? ESCAPE '\\' "
+            "ORDER BY name",
+            (param, param),
+        )
+
+    # -- Builder API -------------------------------------------------------
+
+    def insert_builder_api(self, func: dict) -> None:
+        self._conn.execute(
+            "INSERT OR REPLACE INTO builder_api_functions "
+            "(name, category, description, params) VALUES (?, ?, ?, ?)",
+            (
+                func["name"],
+                func["category"],
+                func["description"],
+                json.dumps(func.get("params", [])),
+            ),
+        )
+        self._conn.commit()
+
+    def query_builder_api(self, category: str | None = None) -> list[dict]:
+        if category:
+            return self._fetch(
+                "SELECT * FROM builder_api_functions "
+                "WHERE category = ? ORDER BY name",
+                (category,),
+            )
+        return self._fetch(
+            "SELECT * FROM builder_api_functions ORDER BY name"
+        )
+
+    # -- Tutorial workflows ------------------------------------------------
+
+    def insert_tutorial_workflow(self, wf: dict) -> None:
+        self._conn.execute(
+            "INSERT OR REPLACE INTO tutorial_workflows "
+            "(name, tutorial, url, layers, description, tags, bp_template, ms_template) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                wf["name"],
+                wf["tutorial"],
+                wf.get("url", ""),
+                json.dumps(wf.get("layers", [])),
+                wf.get("description", ""),
+                json.dumps(wf.get("tags", [])),
+                wf.get("blueprint_template", ""),
+                wf.get("metasound_template", ""),
+            ),
+        )
+        self._conn.commit()
+
+    def query_tutorial_workflows(self, tag: str | None = None) -> list[dict]:
+        if tag:
+            return self._fetch(
+                "SELECT * FROM tutorial_workflows "
+                "WHERE tags LIKE ? ESCAPE '\\' ORDER BY name",
+                (_tag_param(tag),),
+            )
+        return self._fetch(
+            "SELECT * FROM tutorial_workflows ORDER BY name"
+        )
+
+    # -- Console commands --------------------------------------------------
+
+    def insert_console_command(self, cmd: dict) -> None:
+        default = cmd.get("default")
+        self._conn.execute(
+            "INSERT OR REPLACE INTO audio_console_commands "
+            "(cmd, category, type, default_val, description) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (
+                cmd["cmd"],
+                cmd["category"],
+                cmd.get("type", "bool"),
+                json.dumps(default) if default is not None else "",
+                cmd.get("description", ""),
+            ),
+        )
+        self._conn.commit()
+
+    # -- Spatialization ----------------------------------------------------
+
+    def insert_spatialization(self, method: dict) -> None:
+        self._conn.execute(
+            "INSERT OR REPLACE INTO spatialization_methods "
+            "(name, description, details) VALUES (?, ?, ?)",
+            (
+                method["name"],
+                method["description"],
+                json.dumps(method.get("details", {})),
+            ),
+        )
+        self._conn.commit()
+
+    # -- Attenuation -------------------------------------------------------
+
+    def insert_attenuation(self, sub: dict) -> None:
+        self._conn.execute(
+            "INSERT OR REPLACE INTO attenuation_subsystems "
+            "(name, description, params, details) VALUES (?, ?, ?, ?)",
+            (
+                sub["name"],
+                sub["description"],
+                json.dumps(sub.get("params", [])),
+                json.dumps(sub.get("details", {})),
+            ),
+        )
+        self._conn.commit()
+
     # -- Utility -----------------------------------------------------------
 
     def table_counts(self) -> dict[str, int]:
@@ -412,6 +673,24 @@ class KnowledgeDB:
             ).fetchone()["cnt"],
             "blueprint_core": self._conn.execute(
                 "SELECT COUNT(*) as cnt FROM blueprint_core"
+            ).fetchone()["cnt"],
+            "blueprint_nodes_scraped": self._conn.execute(
+                "SELECT COUNT(*) as cnt FROM blueprint_nodes_scraped"
+            ).fetchone()["cnt"],
+            "builder_api_functions": self._conn.execute(
+                "SELECT COUNT(*) as cnt FROM builder_api_functions"
+            ).fetchone()["cnt"],
+            "tutorial_workflows": self._conn.execute(
+                "SELECT COUNT(*) as cnt FROM tutorial_workflows"
+            ).fetchone()["cnt"],
+            "audio_console_commands": self._conn.execute(
+                "SELECT COUNT(*) as cnt FROM audio_console_commands"
+            ).fetchone()["cnt"],
+            "spatialization_methods": self._conn.execute(
+                "SELECT COUNT(*) as cnt FROM spatialization_methods"
+            ).fetchone()["cnt"],
+            "attenuation_subsystems": self._conn.execute(
+                "SELECT COUNT(*) as cnt FROM attenuation_subsystems"
             ).fetchone()["cnt"],
         }
 

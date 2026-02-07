@@ -1,0 +1,198 @@
+Developer
+Community
+Unreal Engine
+Learning
+Epic Games
+Crash Course: Building a Simple and Reactive Procedural Music System with MetaSounds
+Crash Course: Building a Simple and Reactive Procedural Music System with MetaSounds
+In this tutorial we'll walk through the creation of a procedural music MetaSound, which will change its tempo based on how fast the player is moving.
+by
+Matt Oztalay (He/Him)
+Staff
+Mar 20, 2025•Last Updated: Mar 20, 2025•
+Communities
+Unreal Engine 5.5
+TUTORIAL
+English
+Report
+3
+0 Comments
+1,678 Views
+Setup
+
+We’re continuing the work we’ve been doing on our Crash Course project, based on StackOBot. If you missed some of the earlier steps, be sure to go back and take a look since we’ll need to use the player pawn we created earlier to set up this synth kit to react to the player’s speed.
+
+We’re going to make a drum kit comprising a hi hat, a snare, and a kick drum. We’ll combine that with a synth that plays a random whole note, which is then used to play a random melody every quarter note.
+
+Finally, we’ll take this patch to the next level by adding in some random variation to the pattens, expanding the output to Stereo, and applying some effects to the synth to get it to really sing!
+
+As you’re going through this tutorial, I think it’s really important to be testing what each additional node is adding to the sound so you can hear the difference. I know I’ve provided the complete system as a snippet down below, but really take your time to inspect each individual element. You’ll learn a lot that way, I know I did!
+
+Snare Drum
+
+First up in our Audio -> MetaSoundSource asset, we’ll make a snare drum using a simple trick from the ol’ ChipTune days. We’re just filtering some white noise and using an AttackDecay envelope that’s triggered every quarter note at 90BPM. Multiply the output of the filter by that, and you can make a really simple snare drum!
+
+Metasounds
+Simple Snare
+Copy full snippet
+(106 lines long)
+The (Simplified) Drum Kit
+
+Next, we’ll add two new repeaters for eighth and half notes so that we can drive our HiHat and Kick respectively. 
+
+The HiHat is pretty simple, just duplicate of the snare, changing the filter frequency, and adding a very slight delay.
+
+The Kick Drum is a little more involved, it’s playing a triangle wave at a set frequency, but modulated by an AD Envelope, and then further tuned using a ladder filter whose frequency moves around along a different envelope.
+
+Finally, mix it all together with a Mono Mixer (3), and use Graph Inputs so you can control the gain of each patch.
+
+Metasounds
+Full (Simplified) Drumkit
+Copy full snippet
+(625 lines long)
+The (Simplified) Synth
+
+The synth adds yet another repeater, for the whole notes. This triggers a Random value between 60 and 72 (corresponding to keys on a keyboard), and we get the MIDI of that value from a scale (in this case the Major scale). Convert that to a frequency, pipe it into a waveform, envelope it, and you’ve got the Bar Tone. It plays for the duration of a bar, and we’ll base the melody off whichever note was selected.
+
+From the random float output, promote it to a Graph Variable called Current Note, and set up another random on the quarter notes. But this time instead of 60 to 72, we’ll use 3 to 8, and ADD the result to the Current Note. This way the melody notes are always between 3 and 8 steps ahead of the bar tone. (I’m not a Music Guy, but this seemed like a good way to go)
+
+You can mix these two together just as you did with the drum kit, and mix the whole thing together.
+
+Metasounds
+Synth (Simplified)
+Copy full snippet
+(583 lines long)
+
+This isn’t a BAD starting point by any stretch, but we’re missing to key elements:
+
+1. The Reactivity to the player (one of the really cool features of MetaSounds!)
+
+2. Stereo, we can add so much more depth with a few more simple techniques.
+
+The Rest of the Owl
+MetaSound Patch
+
+First up, in order to set up our MetaSound to be reactive to the player, we want to be able to change the BPM based on their speed. BUT we don’t want to change the BPM as soon as it changes on the player. Instead, we only want to change it at the start of a bar. 
+
+To accomplish this, we’ll set up a Trigger Counter that resets at 16, and we’ll set up a number of other triggers that will fire when the modulus of the Current Count and the Divisor == 0. That way, when Current Count = 8, and Divisor = 4, we can trigger the Quarter notes.
+
+We’ll create a MetaSoundPatch, which is kinda like a Material Function for MetaSounds. In it, we’ll make three inputs, a Trigger, and two Int32s. The one output will also be a Trigger.
+
+Then we modulo the Count by the Divisor, and use a Trigger Compare set to 0, and output the trigger when the remainder of the operation is 0.
+
+To rebuild out trigger repeater block, you’ll need five of these dragged into the graph, with divisors set to:
+
+16 (Whole Note)
+
+8 (Half Note)
+
+4 (Quarter Note)
+
+2 (Eighth Note)
+
+1 (Sixteenth Note) (this comes up in a second!)
+
+You’ll notice that in this graph, there’s a Trigger Value, which gets the value of the input BPM, and sets the value of BPM_Internal. Since this trigger occurs on the whole note, we’ll need to Get the value of BPM_Internal on a slight delay to avoid creating an infinite loop. BPM_Internal is then what gets used throughout the graph whenever we need it.
+
+Metasounds
+Modulo Trigger
+Copy full snippet
+(66 lines long)
+A few simple tweaks to bring it all together
+
+Next, we’ll add a bit more randomness and playfulness to our sound. You’ll see that each patch has a block that uses various combinations of Trigger Any (which combines multiple trigger inputs) with Trigger Selectors that flip coins and will output the results to either Heads of Tails. In this way, we can randomly decide to play any of our patches on a 16th.
+
+To further improve the random selection, there’s also a block that will reset the seeds of these random selectors after a certain number of bars. It changes things up a little bit more! Try it with and without to see if you can hear the difference.
+
+You’ll also notice that the kick drum has a little extra work happening to it to help round out the sound.
+
+And the synth now doubles up the waveforms, with the second slightly offset from the first’s frequency in order to add richness to the sound.
+
+You’ll also need to change the MetaSound to output Stereo instead of Mono for the next bit.
+
+For the drum kit, it’s relatively straightforward to make it stereo. We’ll first compress the mono mix so things don’t get too out of hand. Then, we’ll add a Stereo Delay of just 0.01 seconds, and pipe the undelayed value to the Left channel, and the delayed value to the right channel. Again, play around with this to see how much of a difference it really makes!
+
+For the Bar Tone, we’re going to use a Flanger and a Stereo Panner to wobble the sound between your ears. 
+
+And for the melody, we’ll take that one step further and delay the sound even more which will give us a bit of an echo.
+
+Finally, we need this sound to react to the player!
+
+Metasounds
+Copy full snippet
+(2333 lines long)
+The Jukebox Blueprint
+
+3 variables, Character, BPM_Low, and BPM_High
+
+There’s likely more robust ways to do this, but we’re just starting out and we can explore those later. I made a blueprint with an Audio component, and set the Audio source to our MetaSound.
+
+On Begin Play, I cache off a reference to the player pawn
+
+On Tick (it’s okay to do this on tick, I promise), we’ll get the horizontal component of the player’s speed (since StackOBot can use his jet pack, that really changes the values).
+
+Using that value, we normalize it to the Max speed of the player, and use THAT (clamped) value to interpolate between a low and a high BPM (I used 75 and 120). That value gets piped into the MetaSound via the Set Parameter node.
+
+AND THAT is the rest of the owl!
+
+Blueprint
+Copy full snippet
+(236 lines long)
+DOCUMENTATION & TUTORIALS
+UE5 EarlyAccess MetaSounds Making a Synth Kick Drum
+MetaSounds for Beginners | GameSoundCon 2022 | Unreal Engine
+Creating Compelling Procedural Music: Composing with UE Audio in “Cycles" | Unreal Fest 2024
+MetaSounds in Unreal Engine
+Categories:Audio
+Industries: Games
+ON THIS PAGE
+Setup
+Snare Drum
+The (Simplified) Drum Kit
+The (Simplified) Synth
+The Rest of the Owl
+MetaSound Patch
+A few simple tweaks to bring it all together
+The Jukebox Blueprint
+Documentation & Tutorials
+RECENT TUTORIALS
+View all
+How to use UE5's PCG to create background mountains in natural scenes
+极简主义
+Comment faire un mouvement de drapé réaliste en shader
+BlackFrogStudio
+💡How to Create Procedural Controllers in Unreal Engine 5.5 💡
+_aven_3
+Building a Modular Inventory System in Unreal Engine 5 (Blueprints)
+Rambod
+Displaying a Real-Time Clock in Unreal Engine 5.5 Using UMG
+Rambod
+Displaying FPS in Unreal Engine 5.5 Using a Widget Blueprint
+Rambod
+Video Game development assignmnet
+makka4488
+HUD + COINS AND DOOR OPEN BLUEPRINTS
+makka4488
+Video Game development assignmnet
+makka4488
+Video Game development assignmnet
+makka4488
+UEMinidump.dmp How to....
+ZkarmaKun
+Side by side comparison of Unreal Engine and UEFN
+Rhakys1
+create attack design using unreal engine 5.7
+Alhajqasem
+create amazing landscape in unreal engine 5
+Alhajqasem
+How to Use Composure in Unreal Engine 5.7
+Bruno Cavarsan
+UNREAL ENGINEへのCADデータ取り込み (基本手順編)
+Daiki Ishikawa
+Partner
+Error loading snippet
+Error loading snippet
+Error loading snippet
+Error loading snippet
+Error loading snippet
+Error loading snippet

@@ -104,6 +104,7 @@ def test_table_counts():
     assert "metasound_nodes" in counts
     assert "blueprint_audio" in counts
     assert "blueprint_core" in counts
+    assert "blueprint_nodes_scraped" in counts
     db.close()
 
 
@@ -128,7 +129,8 @@ def test_seed_database():
     assert counts["audio_patterns"] == 6
     assert counts["blueprint_audio"] >= 20
     assert counts["blueprint_core"] >= 900  # 946 verified nodes from official Epic docs
-    assert sum(counts.values()) >= 1100
+    assert counts["blueprint_nodes_scraped"] >= 100  # 124 in sample data
+    assert sum(counts.values()) >= 1200
     db.close()
 
 
@@ -179,6 +181,73 @@ def test_like_escape_underscore():
     results = db.query_nodes(tag="a_b")
     assert len(results) == 1
     assert results[0]["name"] == "A_B"
+    db.close()
+
+
+def test_insert_and_query_blueprint_scraped():
+    db = KnowledgeDB(":memory:")
+    db.insert_blueprint_scraped({
+        "name": "PlaySound2D",
+        "target": "Gameplay Statics",
+        "category": "audio",
+        "description": "Play a 2D sound",
+        "inputs": [{"type": "exec", "name": "In"}, {"type": "object", "name": "Sound"}],
+        "outputs": [{"type": "exec", "name": "Out"}],
+    })
+    rows = db.query_blueprint_scraped(name="PlaySound2D")
+    assert len(rows) == 1
+    assert rows[0]["target"] == "Gameplay Statics"
+    assert len(rows[0]["inputs"]) == 2
+    db.close()
+
+
+def test_query_scraped_by_category():
+    db = KnowledgeDB(":memory:")
+    db.insert_blueprint_scraped({"name": "NodeA", "category": "audio"})
+    db.insert_blueprint_scraped({"name": "NodeB", "category": "physics"})
+    rows = db.query_blueprint_scraped(category="audio")
+    assert len(rows) == 1
+    assert rows[0]["name"] == "NodeA"
+    db.close()
+
+
+def test_query_scraped_by_target():
+    db = KnowledgeDB(":memory:")
+    db.insert_blueprint_scraped({"name": "NodeA", "target": "Audio Component"})
+    db.insert_blueprint_scraped({"name": "NodeB", "target": "Gameplay Statics"})
+    rows = db.query_blueprint_scraped(target="Audio Component")
+    assert len(rows) == 1
+    assert rows[0]["name"] == "NodeA"
+    db.close()
+
+
+def test_search_blueprint_scraped():
+    db = KnowledgeDB(":memory:")
+    db.insert_blueprint_scraped({"name": "PlaySound2D", "description": "Play a 2D sound"})
+    db.insert_blueprint_scraped({"name": "SetVolume", "description": "Set audio volume"})
+    results = db.search_blueprint_scraped("sound")
+    assert len(results) == 1
+    assert results[0]["name"] == "PlaySound2D"
+    db.close()
+
+
+def test_table_counts_includes_scraped():
+    db = KnowledgeDB(":memory:")
+    counts = db.table_counts()
+    assert "blueprint_nodes_scraped" in counts
+    assert counts["blueprint_nodes_scraped"] == 0
+    db.insert_blueprint_scraped({"name": "TestNode"})
+    counts = db.table_counts()
+    assert counts["blueprint_nodes_scraped"] == 1
+    db.close()
+
+
+def test_seed_includes_scraped():
+    from ue_audio_mcp.knowledge.seed import seed_database
+    db = KnowledgeDB(":memory:")
+    counts = seed_database(db)
+    assert "blueprint_nodes_scraped" in counts
+    assert counts["blueprint_nodes_scraped"] >= 100  # 124 in sample data
     db.close()
 
 
