@@ -1,7 +1,7 @@
 # UE Audio MCP - Project Instructions
 
 ## Project Overview
-Building the **first MCP server for game audio** — generating complete Wwise + MetaSounds + Blueprint audio systems from natural language.
+ The ** MCP server for game audio** — generating complete Wwise + MetaSounds + Blueprint audio systems from natural language.
 
 **Architecture**: Three-layer system
 - **Blueprint (WHEN)** — Game event detection, parameter setting via Remote Control API
