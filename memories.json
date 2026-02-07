@@ -219,8 +219,8 @@
       ],
       "timestamp": "2026-02-06T15:09:24.940Z",
       "context": "Phase 2 comprehensive analysis for UE5-WWISE MCP project",
-      "accessCount": 1,
-      "lastAccessed": "2026-02-07T01:33:25.182Z",
+      "accessCount": 2,
+      "lastAccessed": "2026-02-07T11:54:06.223Z",
       "lastVerified": "2026-02-06T15:09:24.940Z",
       "status": "fresh"
     },
@@ -257,8 +257,8 @@
       ],
       "timestamp": "2026-02-06T16:21:53.628Z",
       "context": "Builder API research from official UE5 docs for Phase 3 C++ plugin implementation",
-      "accessCount": 0,
-      "lastAccessed": "2026-02-06T16:21:53.628Z",
+      "accessCount": 1,
+      "lastAccessed": "2026-02-07T11:54:06.223Z",
       "lastVerified": "2026-02-06T16:21:53.628Z",
       "status": "fresh"
     },
@@ -379,8 +379,8 @@
       ],
       "timestamp": "2026-02-07T00:32:53.888Z",
       "context": "Blueprint+MetaSounds workflow sources for agent training data",
-      "accessCount": 0,
-      "lastAccessed": "2026-02-07T00:32:53.888Z",
+      "accessCount": 1,
+      "lastAccessed": "2026-02-07T11:54:06.223Z",
       "lastVerified": "2026-02-07T00:32:53.888Z",
       "status": "fresh"
     },
@@ -462,7 +462,248 @@
       "lastAccessed": "2026-02-07T02:15:09.907Z",
       "lastVerified": "2026-02-07T02:15:09.907Z",
       "status": "fresh"
+    },
+    {
+      "id": "mem_1770431237386_5i0pk0hf6",
+      "content": "UE5 Plugin TCP Server Best Practices - Research Summary\n\nARCHITECTURE PATTERNS:\n1. **blender-mcp gold standard**: Addon (socket server inside app) + MCP server (FastMCP), TCP+JSON, main thread dispatch\n2. **chongdashu/unreal-mcp leader**: Python MCP → TCP socket → C++ plugin (1,370 stars), modular tool files pattern\n3. **Game thread dispatch**: AsyncTask with ENamedThreads::GameThread is standard for worker threads → game thread\n4. **Socket server location**: Inside the DCC app (plugin) NOT in MCP server\n\nKEY FINDINGS:\n\nTHREADING & GAME THREAD SAFETY:\n- FRunnable/FRunnableThread pattern for worker threads (separate async thread)\n- NEVER create/modify/delete UObjects from background threads\n- Use AsyncTask with ENamedThreads::GameThread to dispatch callbacks to game thread\n- CRITICAL: Deadlock risk when GC running + tasks queued on background threads\n- Solution: Use ENamedThreads::AnyHiPriThreadNormalTask (only group that doesn't conflict with GC)\n- Alternative: Do all heavy work on background thread, only spawn UObjects on game thread\n\nOBJECT POINTER MANAGEMENT:\n- TStrongObjectPtr: for holding strong refs inside non-UObject classes (plain C++)\n- NOT for UObject fields (use UPROPERTY instead)\n- Worker threads accessing UObjects: use TWeakObjectPtr.Pin() to get TStrongObjectPtr safely\n- Never directly access UObject from worker thread unless certain it's rooted (AddToRoot)\n- Creating/destroying TStrongObjectPtr is expensive, keep them long-lived\n\nSHUTDOWN DEADLOCK AVOIDANCE:\n- Module shutdown can deadlock if:\n  1. FRunnable thread still running during ~FModule\n  2. Trying to create UObjects as module unloads\n  3. Background task waiting for GC that's waiting for background tasks\n- Solutions:\n  a) Clean stop worker threads BEFORE module cleanup (FRunnable::Stop called early)\n  b) Use weak references instead of strong refs during shutdown\n  c) Fire pending game-thread tasks with bWaitForCompletion=true in ~FModule\n  d) Avoid UObject creation/deletion during shutdown\n\nREMOTE CONTROL API (Epic's Approach):\n- Remote Control plugin allows HTTP/WS clients to trigger Blueprint events remotely\n- Has some form of security/whitelist (ProcessEvent restrictions, but docs not clear)\n- Use as reference for exposing safe game functions to external clients\n- Sources: Epic documentation, but implementation details need source code review\n\nPRACTICAL PATTERN FOR TCP SERVER:\n1. Worker thread (FRunnable) reads TCP socket (blocking I/O safe)\n2. On message received, queue game-thread task: AsyncTask(ENamedThreads::GameThread, [=]() { ... })\n3. Game thread task processes command, calls BP functions, modifies UObjects\n4. Return response to worker thread, send back to socket\n5. On shutdown: Stop() the FRunnable first, wait for pending tasks with bWaitForCompletion\n\nAVOID DEADLOCK ON SHUTDOWN:\n- Module's ~FRunnable::Stop() signals thread to exit cleanly\n- Wait for FRunnableThread::Kill(true) = wait for completion\n- Flush any pending game-thread tasks from that thread BEFORE exiting\n- Use weak refs for any UObject pointers held by worker thread\n",
+      "type": "warning",
+      "tags": [
+        "warning",
+        "python",
+        "api",
+        "ue5",
+        "tcp-server",
+        "threading",
+        "game-thread",
+        "plugin-architecture"
+      ],
+      "timestamp": "2026-02-07T02:27:17.386Z",
+      "context": "Research for UE5-WWISE project C++ plugin TCP server implementation",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-07T02:27:17.386Z",
+      "lastVerified": "2026-02-07T02:27:17.386Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770431272737_xwsb4mfw3",
+      "content": "UE5 MetaSounds Builder API signatures (UE 5.4+) - Research findings:\n\nCONFIRMED SIGNATURES (from Epic docs):\n\n1. UMetaSoundBuilderSubsystem - Entry Point\n   - CreateSourceBuilder(FName BuilderName, FMetaSoundBuilderNodeOutputHandle& OnPlayNodeOutput, FMetaSoundBuilderNodeInputHandle& OnFinishedNodeInput, TArray<FMetaSoundBuilderNodeInputHandle>& AudioOutNodeInputs, EMetaSoundBuilderResult& OutResult, EMetaSoundOutputAudioFormat OutputFormat, bool bIsOneShot) -> UMetaSoundSourceBuilder*\n   - CreatePatchBuilder(FName BuilderName, EMetaSoundBuilderResult& OutResult) -> UMetaSoundPatchBuilder*\n   - CreateSourcePresetBuilder(FName BuilderName, TScriptInterface<IMetaSoundDocumentInterface>& ReferencedSourceClass, EMetaSoundBuilderResult& OutResult) -> UMetaSoundSourceBuilder*\n   - CreatePatchPresetBuilder(FName BuilderName, TScriptInterface<IMetaSoundDocumentInterface>& ReferencedPatchClass, EMetaSoundBuilderResult& OutResult) -> UMetaSoundPatchBuilder*\n\n2. UMetaSoundBuilderBase (parent class for Source/Patch builders)\n   - AddNode(TScriptInterface<IMetaSoundDocumentInterface>& NodeClass, EMetaSoundBuilderResult& OutResult) -> FMetaSoundNodeHandle\n   - ConnectNodes(FMetaSoundBuilderNodeOutputHandle& NodeOutputHandle, FMetaSoundBuilderNodeInputHandle& NodeInputHandle, EMetaSoundBuilderResult& OutResult) -> void\n   - FindNodeInputByName(FMetaSoundNodeHandle& NodeHandle, FName InputName, EMetaSoundBuilderResult& OutResult) -> FMetaSoundBuilderNodeInputHandle\n   - FindNodeOutputByName(FMetaSoundNodeHandle& NodeHandle, FName OutputName, EMetaSoundBuilderResult& OutResult) -> FMetaSoundBuilderNodeOutputHandle\n   - SetNodeInputDefault(FMetaSoundBuilderNodeInputHandle& NodeInputHandle, FMetasoundFrontendLiteral& Literal, EMetaSoundBuilderResult& OutResult) -> void\n\n3. UMetaSoundSourceBuilder (extends UMetaSoundBuilderBase)\n   - Audition(UObject* Parent, UAudioComponent* AudioComponent, FOnCreateAuditionGeneratorHandleDelegate OnCreateGenerator, bool bLiveUpdatesEnabled) -> void\n   - SetFormat(EMetaSoundOutputAudioFormat OutputFormat, EMetaSoundBuilderResult& OutResult) -> void\n   - SetBlockRateOverride(float BlockRate) -> void\n   - SetSampleRateOverride(int32 SampleRate) -> void\n   - SetQuality(FName Quality) -> void\n\nBLUEPRINT FUNCTIONS (available):\n- Add MetaSound Node By ClassName\n- Add MetaSound Node From Asset Class\n- Connect Nodes\n- Connect Node Inputs to Matching Graph Interface Inputs\n- Set Node Input Default\n- Build And Overwrite MetaSound\n- Build New MetaSound\n- Audition\n\nMISSING/NOT FOUND IN PUBLIC DOCS:\n- BuildToAsset (method)\n- SetNodeLocation (method)\n- AddGraphInputNode/AddGraphOutputNode (method signatures)\n- AddInterface (method signature)\n- Full EMetaSoundBuilderResult enum definition\n- FMetasoundFrontendClassName constructor details\n- Full FMetasoundFrontendLiteral usage\n\nHANDLE TYPES CONFIRMED:\n- FMetaSoundNodeHandle - Handle to a node in graph\n- FMetaSoundBuilderNodeInputHandle - Handle to node input pin\n- FMetaSoundBuilderNodeOutputHandle - Handle to node output pin\n- Handles should NOT be serialized (change between versions)\n\nRESEARCH GAPS:\n- AddNode in C++ takes TScriptInterface, but Blueprint version may take ClassName string\n- BuildToAsset may be on a different builder class or named differently\n- SetNodeLocation may be editor-only (not runtime)\n- EMetaSoundBuilderResult enum values unknown (Success/Failure likely but unconfirmed)",
+      "type": "tip",
+      "tags": [
+        "tip",
+        "api",
+        "UE5",
+        "MetaSounds",
+        "Builder API",
+        "API signatures",
+        "research"
+      ],
+      "timestamp": "2026-02-07T02:27:52.737Z",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-07T02:27:52.737Z",
+      "lastVerified": "2026-02-07T02:27:52.737Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770455434866_qtj0f68z9",
+      "content": "UE5 C++ Plugin Modernization Complete (2026-02-07):\n8 steps, 13 files modified, 1 new file (AudioMCPNodeRegistry.h).\n\nKey fixes applied:\n1. Build: \"Metasound\" → \"MetaSound\" in .uplugin, added \"UnrealEd\" dep\n2. GC: TStrongObjectPtr<UMetaSoundBuilderBase> replaces raw pointer\n3. API: Audition uses editor world (not nullptr), case-insensitive asset_type, graph input defaults\n4. Shutdown: SignalShutdown() before StopListening() prevents deadlock\n5. Security: Function allowlist (17 safe audio functions), WorldContextObject auto-fill\n6. TCP: SendExact helper, Socket::Wait for data (not polling), thread_local reusable payload buffer, response size guard\n7. Ping: FModuleManager::IsModuleLoaded replaces IPluginManager::FindEnabledPlugin\n8. NodeTypeMap externalized to AudioMCPNodeRegistry.h\n\nCritical bug found & fixed: WorldContextObject not auto-filled for UGameplayStatics ProcessEvent calls.\nFile sizes post-refactor: largest is AudioMCPBuilderManager.cpp at 512 lines (was 539). Total: 1,776 lines across 8 .cpp files.",
+      "type": "error",
+      "tags": [
+        "error",
+        "api",
+        "ue5-plugin",
+        "c++",
+        "modernization",
+        "fix-log"
+      ],
+      "timestamp": "2026-02-07T09:10:34.866Z",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-07T09:10:34.866Z",
+      "lastVerified": "2026-02-07T09:10:34.866Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770455435502_exycz0v3i",
+      "content": "UE5 C++ Plugin Review (2026-02-07):\n- 20 files, ~2100 lines reviewed across 13 primary + 7 supporting files\n- All 5 modernization criteria PASS: TStrongObjectPtr consistent, .Get()/.IsValid() correct, shutdown order correct, SendExact for both header/payload, wire protocol matches Python\n- CRITICAL BUG: BlueprintCommands.cpp ProcessEvent on UGameplayStatics CDO does NOT populate WorldContextObject param. All allowlisted functions (PlaySound2D, SpawnSoundAtLocation, etc.) require it. Will crash or silently fail.\n- WARNING: AudioMCPBuilderManager.h forward-declares FMetaSoundBuilderNodeOutputHandle/InputHandle but uses them as TMap value types (needs full definition)\n- WARNING: AudioMCPTcpServer.h missing #include \"HAL/ThreadSafeBool.h\" (used on line 59)\n- WARNING: Null FMetaSoundNodeHandle passed to FindNodeInputByName for graph input defaults (line 167 of BuilderManager.cpp) - fragile, may silently fail",
+      "type": "warning",
+      "tags": [
+        "warning",
+        "python",
+        "ue5-plugin",
+        "code-review",
+        "critical-bug",
+        "cpp"
+      ],
+      "timestamp": "2026-02-07T09:10:35.502Z",
+      "context": "Full review of UE5 C++ Audio MCP plugin after modernization",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-07T09:10:35.502Z",
+      "lastVerified": "2026-02-07T09:10:35.502Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770457662241_gpzvok6pf",
+      "content": "Python-side MCP tools exploration complete. Key findings:\n\n## UE5PluginConnection (connection.py)\n- Location: `/Users/radek/Documents/GIthub/UE5-WWISE/src/ue_audio_mcp/ue5_connection.py`\n- Singleton pattern: `get_ue5_connection()` (line 120-125)\n- TCP socket to 127.0.0.1:9877, 30s timeout, 4-byte big-endian length prefix + UTF-8 JSON\n- Methods:\n  - `connect(host, port)` → returns dict\n  - `disconnect()` → closes socket\n  - `is_connected()` → checks socket via getpeername()\n  - `send_command(command)` → sends JSON dict, receives response dict (line 79-96)\n  - `_recv_response()` → reads length-prefixed JSON (line 98-107)\n\n## MetaSounds Tools (metasounds.py)\n- Location: `/Users/radek/Documents/GIthub/UE5-WWISE/src/ue_audio_mcp/tools/metasounds.py`\n- 4 tools, no Builder API commands (those are in ms_builder.py)\n- Tools: ms_list_nodes, ms_node_info, ms_search_nodes, ms_list_categories\n- All query METASOUND_NODES catalogue, no C++ plugin interaction\n\n## MetaSounds Builder Tools (ms_builder.py)\n- Location: `/Users/radek/Documents/GIthub/UE5-WWISE/src/ue_audio_mcp/tools/ms_builder.py`\n- 7 tools that call send_command via UE5PluginConnection:\n  1. `ms_build_graph()` (line 27-64) - validates, converts, sends all commands\n  2. `ms_create_source()` (line 68-88) - action: \"create_builder\"\n  3. `ms_add_node()` (line 92-120) - action: \"add_node\"\n  4. `ms_connect_pins()` (line 124-152) - action: \"connect\"\n  5. `ms_set_default()` (line 156-183) - action: \"set_default\"\n  6. `ms_save_asset()` (line 187-210) - action: \"build_to_asset\"\n  7. `ms_audition()` (line 214-228) - action: \"audition\"\n\n## Builder Command Protocol\n- Location: `graph_to_builder_commands()` in `/Users/radek/Documents/GIthub/UE5-WWISE/src/ue_audio_mcp/knowledge/graph_schema.py` (line 239-343)\n- Command sequence:\n  1. create_builder {asset_type, name}\n  2. add_interface {interface} (per interface)\n  3. add_graph_input {name, type, default?}\n  4. add_graph_output {name, type}\n  5. add_node {id, node_type, position}\n  6. set_default {node_id, input, value} (per non-None default)\n  7. connect {from_node, from_pin, to_node, to_pin}\n  8. build_to_asset {name, path}\n\n## Orchestration Layer (systems.py)\n- Location: `/Users/radek/Documents/GIthub/UE5-WWISE/src/ue_audio_mcp/tools/systems.py`\n- PATTERNS dict (line 31-143): gunshot, footsteps, ambient, spatial, ui_sound, weather\n- Each pattern has: ms_template, wwise_template, bp_template, default_params, connections\n- `build_audio_system()` tool (line 412-494): orchestrates all 3 layers\n- Helper functions:\n  - `_load_ms_template()` (line 167-191) - loads JSON, applies param overrides\n  - `_load_bp_template()` (line 194-218) - loads BP JSON if exists\n  - `_build_wwise_layer()` (line 221-260) - executes or plans Wwise\n  - `_build_metasounds_layer()` (line 296-355) - loads, validates, converts, executes MS\n  - `_build_blueprint_layer()` (line 358-371) - loads BP template (no execution)\n  - `_build_connection_map()` (line 374-405) - cross-layer wiring\n\n## Preset Support in C++ Plugin\n- Location: `/Users/radek/Documents/GIthub/UE5-WWISE/ue5_plugin/UEAudioMCP/Source/UEAudioMCP/Private/AudioMCPBuilderManager.cpp` (line 71-73)\n- CreatePresetBuilder is already implemented\n- asset_type validation includes \"Preset\" (line 30-36)\n- No dedicated preset-specific commands yet (only create_builder with asset_type=\"Preset\")\n\n## Tests\n- `/Users/radek/Documents/GIthub/UE5-WWISE/tests/test_systems.py` covers offline/wwise-only/full modes\n- No preset-specific tests yet\n",
+      "type": "concept",
+      "tags": [
+        "concept",
+        "python",
+        "api",
+        "UE5-WWISE",
+        "MetaSounds",
+        "MCP",
+        "architecture",
+        "exploration"
+      ],
+      "timestamp": "2026-02-07T09:47:42.241Z",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-07T09:47:42.241Z",
+      "lastVerified": "2026-02-07T09:47:42.241Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770457665157_8gk77li6q",
+      "content": "## UE5 C++ Plugin - Command Dispatch and Builder Architecture\n\n### Command Dispatch System\n**Key File**: AudioMCPCommandDispatcher.cpp (lines 1-127)\n- Dispatch flow: JSON parse → extract \"action\" field → lookup in CommandMap → post AsyncTask to GameThread → wait on FEvent (25s timeout)\n- Thread-safe via TSharedPtr heap-allocated FDispatchState struct containing Result, CompletionEvent, Handler, Params, BuilderMgr\n- SignalShutdown prevents new AsyncTasks during module shutdown (prevents deadlock)\n- All responses include echoed \"action\" field for request-response matching\n\n### Registered Commands (11 Total)\n**Module.cpp lines 64-99** - RegisterCommands():\n1. **ping** → FPingCommand\n2. **create_builder** → FCreateBuilderCommand (asset_type, name)\n3. **add_interface** → FAddInterfaceCommand (interface name)\n4. **add_graph_input** → FAddGraphInputCommand (name, type, optional default)\n5. **add_graph_output** → FAddGraphOutputCommand (name, type)\n6. **add_node** → FAddNodeCommand (id, node_type, optional position [x,y])\n7. **set_default** → FSetDefaultCommand (node_id, input, value)\n8. **connect** → FConnectCommand (from_node, from_pin, to_node, to_pin; handles __graph__ sentinel)\n9. **build_to_asset** → FBuildToAssetCommand (name, path /Game/...)\n10. **audition** → FAuditionCommand (no required params)\n11. **call_function** → FCallFunctionCommand (function, args object; allowlist protection)\n\n### Builder Command Implementations\n**BuilderCommands.cpp**:\n- **create_builder** (13-49): Calls BuilderSubsystem.CreateSourceBuilder/PatchBuilder/PresetBuilder, resets NodeHandles/GraphI/O maps\n- **add_interface** (55-73): Builder.AddInterface(FName)\n- **add_graph_input** (79-182): Builder.AddGraphInputNode(), stores OutputHandle in GraphInputOutputHandles map, applies JSON default value (numeric/bool/string)\n- **add_graph_output** (184-207): Builder.AddGraphOutputNode(), stores InputHandle in GraphOutputInputHandles map\n- **build_to_asset** (149-188): Validates path (must start /Game/, no ..), calls Builder.BuildToAsset(FName path)\n- **audition** (194-210): Calls Builder.Audition(World) after #WITH_EDITOR check\n\n### Node Registry\n**AudioMCPNodeRegistry.h** - 65+ hardcoded mappings via InitNodeTypeMap():\n- Generators: Sine, Noise, WhiteNoise, LFO, Oscillator, Saw, Square, Triangle, Pulse, WaveTable, Granulator\n- Filters: BiquadFilter, StateVariableFilter (UE::State Variable Filter::Audio), Lowpass, Highpass, Bandpass, Ladder, OnePole variants\n- Math: Gain, Multiply, Add, Subtract, Divide, Clamp, MapRange, Interpolate, SampleAndHold\n- Effects: Delay, StereoDelay, Reverb, Chorus, Phaser, Flanger\n- Dynamics: Compressor, Limiter, Gate\n- Triggers: TriggerRepeat, TriggerCounter, TriggerControl, TriggerOnThreshold, TriggerDelay, TriggerRoute\n- Conversions: BPMToSeconds, FreqToMIDI, MIDIToFreq, SemitonesToFreqMultiplier, dBToLinear, LinearToDb, FloatToAudio, AudioToFloat\n- Routing: MonoToStereo, StereoToMono, Send, Receive\n- Spatialization: ITDPanner, StereoPanner\n- Variables: Get, Set\n\n**Lookup Strategy** (BuilderManager.cpp 489-512):\n1. Direct lookup in NodeTypeMap\n2. If DisplayName contains \"::\", use as full class name directly\n3. Else error with suggestion to use ms_search_nodes\n\n### Node/Pin/Graph I/O Management\n**BuilderManager.cpp**:\n- **AddNode** (213-259): Validates NodeId (forbids __graph__ sentinel), calls ResolveNodeType, stores FMetaSoundNodeHandle in NodeHandles map, sets position\n- **SetNodeDefault** (261-319): Looks up node handle, finds input pin by name, converts JSON value to FMetasoundFrontendLiteral (number→float, bool→bool, string→string)\n- **ConnectNodes** (321-405): \n  - From side: if FromNode == \"__graph__\", lookup in GraphInputOutputHandles; else lookup NodeHandles then FindNodeOutputByName\n  - To side: if ToNode == \"__graph__\", lookup in GraphOutputInputHandles; else lookup NodeHandles then FindNodeInputByName\n  - Calls Builder.ConnectNodes(OutputHandle, InputHandle)\n\n### Blueprint Command\n**BlueprintCommands.cpp** (46-100+):\n- **call_function** security: allowlist check (PlaySound2D, SpawnSoundAtLocation, SetSoundMixClassOverride, etc.) — only audio-safe functions allowed\n- Searches: 1) UGameplayStatics.StaticClass(), 2) World, 3) PlayerController\n- Uses reflection: FindFunctionByName, ProcessEvent with params from JSON args object\n- Prevents arbitrary function execution (no QuitGame, DestroyActor, etc.)\n\n### TCP Server Architecture\n**AudioMCPTcpServer.cpp**:\n- One-at-a-time client handling on dedicated FRunnable thread\n- Message format: 4-byte big-endian uint32 length + UTF-8 JSON payload (matches Python ue5_connection.py)\n- Bound to 127.0.0.1:9877 only (localhost security)\n- 60s idle timeout to prevent zombie connections\n- RecvExact/SendExact loop until disconnect or error\n- Socket buffers: 65536 bytes\n\n### Extension Points for New Commands\nTo add new commands (e.g., graph variables, presets, graph pages, transaction listeners):\n1. Create new class in Public/Commands/ inheriting from IAudioMCPCommand\n2. Implement Execute() method returning TSharedPtr<FJsonObject>\n3. Add corresponding builder method to FAudioMCPBuilderManager if needed\n4. Register in FUEAudioMCPModule::RegisterCommands() via Dispatcher->RegisterCommand()\n\nKey data structures already available:\n- NodeHandles: TMap<FString, FMetaSoundNodeHandle> for node references\n- GraphInputOutputHandles: TMap<FString, FMetaSoundBuilderNodeOutputHandle> for graph I/O\n- ActiveBuilder: TStrongObjectPtr<UMetaSoundBuilderBase> for Builder API access",
+      "type": "tip",
+      "tags": [
+        "tip",
+        "python",
+        "api",
+        "ue5-plugin",
+        "command-dispatch",
+        "builder-api",
+        "architecture"
+      ],
+      "timestamp": "2026-02-07T09:47:45.157Z",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-07T09:47:45.157Z",
+      "lastVerified": "2026-02-07T09:47:45.157Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770465054026_5o5y3zzgp",
+      "content": "Craig Owen Crossfade Tutorial - Complete Weapon Audio System Architecture\n\nTHREE LEVELS:\n1. MetaSoundSource (outer) - WaveAsset array inputs plugged from content, Source.OneShot interface\n2. Routing logic - MSP_Switch for room selection, Trigger Compare (Int32, RoomSize==0) gates outdoor tails, MSP_CrossFade for distance, Stereo Mixer (5) combines both\n3. MSP Patches (inner, reusable) - generic engines that work for any content\n\nKEY NODES (confirmed pins from screenshots):\n- Shuffle (WaveAsset:Array): Next, Shuffle, Reset Seed, In Array, Seed[-1], Auto Shuffle, Enable Shared State → On Next, On Shuffle, On Reset Seed, Value\n- Wave Player (2.0, Stereo): Play, Stop, Wave Asset, Start Time, Pitch Shift, Loop → On Play, On Finished, On Looped, Playback Time, Out Left, Out Right\n- Trigger Compare (Float): Compare, A, B, Type(Enum) → True, False\n- Trigger Compare (Int32): Compare, A, B, Type(Enum) → True, False\n- Stereo Mixer (3): In 0-2 L/R, Gain 0-2 (Lin) → Out L, Out R\n- Mid-Side Encode: In Left, In Right, Spread Amount[0.0], Equal Power → Out Mid, Out Side\n- Mid-Side Decode: In Mid, In Side, Spread Amount[0.5], Equal Power → Out Left, Out Right\n- Trigger Any (3): In 0, In 1, In 2 → Out\n\nCROSSFADE INTERNALS (22 nodes per patch):\n- Layer A: 1 gate (Less Than EndFadeOut+0.01) → Shuffle → WavePlayer → MapRange(1→0) → Mixer Gain 0\n- Layer B: 2 gates (Greater Than StartFadeIn-0.01 AND Less Than EndFadeOut+0.01) → Shuffle → WavePlayer → MapRange(0→1) × MapRange(1→0) = bell curve → Mixer Gain 1\n- Layer C: 1 gate (Greater Than StartFadeIn-0.01) → Shuffle → WavePlayer → MapRange(0→1) → Mixer Gain 2\n- Output: Stereo Mixer (3) → Output_L/R + Mid-Side Encode(0.0)→Decode(0.5)→AudioMono\n- All OnFinished → Trigger Any (3) → OnFinished\n\nPIN METADATA: Sort Order (0,5,10...) for logical grouping, Range (0-100000), Widget (Knob), Value Type (Linear)\n\nDESIGN PRINCIPLES:\n- Sounds plugged OUTSIDE (WaveAsset arrays), patches are generic engines\n- Trigger Compare gates prevent silent voice processing (optimization)\n- Safety offset ±0.01 on boundaries prevents flickering\n- Mid layer uses Multiply trick: two MapRanges × together = bell curve\n- Same patch works for guns, wind, engines, footsteps",
+      "type": "concept",
+      "tags": [
+        "concept",
+        "optimization",
+        "metasounds",
+        "crossfade",
+        "weapon-audio",
+        "craig-owen",
+        "tutorial",
+        "patterns",
+        "nodes"
+      ],
+      "timestamp": "2026-02-07T11:50:54.026Z",
+      "context": "From Craig Owen video tutorial on crossfade-by-parameter MetaSounds patches, analyzed via multiple UE5 editor screenshots",
+      "accessCount": 1,
+      "lastAccessed": "2026-02-07T11:54:06.223Z",
+      "lastVerified": "2026-02-07T11:50:54.026Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770470251417_r0toyz4p4",
+      "content": "TechAudioTools SFX Generator captured (2026-02-07): Added Plate Reverb node to catalogue (125 total nodes, was 124). Created sfx_generator.json MetaSounds template (full synth topology: Generator→Spectral Effects→SVF Filter→ADSR Amplifier→Parallel Send Effects) and sfx_generator_widget.json Blueprint template (Preset Widget controller: Builder init, ViewModel binding, Output Watch delegates, hierarchical randomization with lock/scope). Updated CREDITS.md with Eric Buchholz section. Key architecture: spectral effects in SERIES (WaveShaper→BitCrusher→RingMod), temporal effects in PARALLEL (Delay+Flanger+PlateReverb mixed back). SVF crossfade filter = DJ-style LP↔BP↔HP. Envelope Follower on output detects completion including effect tails. Wave Writer for capturing output to wav. Audio Buses feed mid-graph data to analyzer widgets. TechAudioTools also includes MetaSound Input Migrator and Metadata Editor tools. 21 MetaSounds + 16 Blueprint = 37 total templates.",
+      "type": "concept",
+      "tags": [
+        "concept",
+        "templates",
+        "sfx-generator",
+        "tech-audio-tools",
+        "eric-buchholz",
+        "metasounds",
+        "synthesis"
+      ],
+      "timestamp": "2026-02-07T13:17:31.417Z",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-07T13:17:31.417Z",
+      "lastVerified": "2026-02-07T13:17:31.417Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770470894916_pqe47gxyx",
+      "content": "Audio-Driven Gameplay Learning Path research complete (2026-02-07). 3 courses, 12+ tutorials on Epic Dev Community. Key patterns: (1) Amplitude via Submix Envelope Following -> game parameter, (2) Frequency via Submix Spectral Analysis (FFT) -> game parameter, (3) Microphone via Audio Capture Component -> Submix -> analysis -> game event, (4) NRT via Synesthesia (LoudnessNRT/ConstantQNRT/OnsetNRT) -> timed events. UE5 equivalents: MetaSounds Envelope Follower node for amplitude, Submix spectral analysis still works, Synesthesia plugin fully available. MetaSounds does NOT have native FFT/spectral nodes. Research file: /Users/radek/Documents/GIthub/UE5-WWISE/research/research_audio_driven_gameplay.md",
+      "type": "general",
+      "tags": [
+        "general",
+        "ue5",
+        "audio-analysis",
+        "blueprint-nodes",
+        "metasounds",
+        "research",
+        "audio-driven-gameplay"
+      ],
+      "timestamp": "2026-02-07T13:28:14.915Z",
+      "context": "Research for UE5-WWISE MCP project - audio-driven gameplay patterns that could be implemented as MCP tools",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-07T13:28:14.915Z",
+      "lastVerified": "2026-02-07T13:28:14.915Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770470912376_7mqv1yy2p",
+      "content": "Researched \"Ambient and Procedural Sound Design\" Epic Dev Community learning path by Richard Stevens & Dave Raybould. Course code qR, UE 4.23-4.24, 2h16m runtime, 15 individual tutorials. Covers: area loops, source loops, one-shots (Sound Cue Random+Delay+Loop), 3 occlusion methods (fake switching, ambient zones, raycasting), procedural randomization/modulation/layering, Blueprint audio systems (SpawnSoundAtLocation, AudioComponent control, Spline movement). Key UE5 migration: Sound Cues -> MetaSounds for procedural audio, Audio Volumes -> Audio Gameplay Volumes (5.1+), Soundscape plugin for procedural ambient. Same authors offer UE5 follow-up \"MetaSounds & More\" courses (Foundation + Control & Communication, 7+ hours, $230 each). Full research at research/research_ambient_procedural_sound_design.md",
+      "type": "general",
+      "tags": [
+        "general",
+        "ue5",
+        "audio",
+        "research",
+        "epic-dev-community",
+        "ambient",
+        "procedural",
+        "sound-design",
+        "metasounds",
+        "blueprints",
+        "stevens-raybould"
+      ],
+      "timestamp": "2026-02-07T13:28:32.376Z",
+      "context": "Research task for UE5-WWISE project, cataloguing Epic learning paths for game audio",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-07T13:28:32.376Z",
+      "lastVerified": "2026-02-07T13:28:32.376Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770471047280_w5qgz0o63",
+      "content": "Quartz Music System research completed (2026-02-07). Key findings:\n- Course by Richard Stevens on Epic Dev Community: 14 tutorials covering looping music, playlists, one-shots, core Quartz, layer mixing (direct/timelines/curves), arrangement switching, quantized transitions, stingers, tempo changes, advanced Quartz\n- Course URL: https://dev.epicgames.com/community/learning/courses/XAw/unreal-engine-quartz-music-system\n- UE 4.27 project on Fab (free), all concepts transfer directly to UE5\n- Core API: UQuartzSubsystem -> CreateNewClock -> UQuartzClockHandle -> PlayQuantized/SubscribeToQuantizationEvent\n- Key struct: FQuartzQuantizationBoundary (Quantization type + Multiplier + CountingReferencePoint)\n- EQuartzCommandQuantization enum: Bar, Beat, WholeNote, HalfNote, QuarterNote, EighthNote, SixteenthNote, ThirtySecondNote, plus dotted/triplet variants\n- Quartz API is STABLE from UE 4.26 through UE 5.7 - no breaking changes\n- UE5 adds MetaSounds integration (triggers driven by Quartz clock) and Harmonix Plugin (UE 5.4+, MIDI sequencing)\n- Above Noise Studios has excellent UE5 vertical remixing tutorial with GitHub project\n- Research file: /Users/radek/Documents/GIthub/UE5-WWISE/research/research_quartz_music_system.md\n- Implications for MCP: need Quartz clock tools in C++ plugin + Blueprint layer, maps to WHEN layer in architecture",
+      "type": "concept",
+      "tags": [
+        "concept",
+        "api",
+        "quartz",
+        "research",
+        "ue5",
+        "music-system",
+        "blueprint"
+      ],
+      "timestamp": "2026-02-07T13:30:47.280Z",
+      "context": "UE5-WWISE project research on Quartz Music System for dynamic/interactive music",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-07T13:30:47.280Z",
+      "lastVerified": "2026-02-07T13:30:47.280Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770473626141_trwk184bt",
+      "content": "Ambient & Procedural Sound Design extraction complete (2026-02-07). 5 new Blueprint templates from Stevens & Raybould UE 4.23 project at \"/Volumes/Koshi_T7 1/UN5.3/AmbientandProceduralSound\". Templates: ambient_spline_movement (Timeline→SplineComponent→SetRelativeLocation), ambient_height_wind (SphereOverlap→MapRangeClamped→VolumeMultiplier, creak threshold at 0.8), ambient_weighted_trigger (RandomBoolWithWeight probability gate), player_oriented_sound (Forward/Right/Up vectors + RandomFloatInRange → SpawnSoundAtLocation), audio_visualiser (BP_GetAttenuationSettingsToApply → spawn debug spheres). Sound Class hierarchy: Master→Area_Loops+Source_Loops+One_Shots+Footsteps+Foley+Night_Day+Dialogue. All UE 4.23 node names — may need updating with 20K node database. 42 total templates (21 MS + 21 BP). 243 tests passing.",
+      "type": "troubleshooting",
+      "tags": [
+        "troubleshooting",
+        "database",
+        "templates",
+        "ambient",
+        "procedural",
+        "stevens-raybould",
+        "ue4",
+        "extraction"
+      ],
+      "timestamp": "2026-02-07T14:13:46.141Z",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-07T14:13:46.141Z",
+      "lastVerified": "2026-02-07T14:13:46.141Z",
+      "status": "fresh"
     }
   ],
-  "lastUpdated": "2026-02-07T02:15:09.907Z"
+  "lastUpdated": "2026-02-07T14:13:46.141Z"
 }

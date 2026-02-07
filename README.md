@@ -454,6 +454,21 @@ No MCP server exists for game audio. This is first-of-kind.
 
 ---
 
+## Credits & Attribution
+
+This project's templates and knowledge base draw from the work of these audio professionals. See [CREDITS.md](CREDITS.md) for full details and links.
+
+| Author | Affiliation | Templates |
+|--------|------------|-----------|
+| **[Craig Owen](https://www.youtube.com/watch?v=n5z4L43jMi8)** | YAGER Development | weapon_source, weapon_burst, crossfade_by_param, weapon_burst_control |
+| **[Matt Spendlove](https://dev.epicgames.com/community/learning/recommended-community-tutorial/Kw7l/unreal-engine-metasounds)** | Community | subtractive_synth, mono_synth, set_float_parameter |
+| **[Nick Pfisterer](https://dev.epicgames.com/community/learning/recommended-community-tutorial/WzJ/creating-first-person-footfalls-with-metasounds)** | Community | footfalls_simple (MS + BP) |
+| **[Eric Buchholz](https://dev.epicgames.com/community/learning/tutorials/qEjr/unreal-engine-techaudiotools-content-5-7-creating-a-metasound-preset-widget-using-metasound-viewmodels)** | TechAudioTools | metasound_preset_widget |
+| **[Chris Payne](https://dev.epicgames.com/community/learning/tutorials/opvv/unreal-engine-metasound-sound-pads)** | Community | Sound Pads (BP↔MS communication, musical scales, visual feedback) |
+| **Epic Games** | Official Docs | wind, bomb_fuse, audio_modulation, quartz, submix_recording, spatial_attenuation, volume_proxy, spectral_analysis, soundscape_ambient |
+
+---
+
 ## Author
 
 Built by [Koshi](https://github.com/koshimazaki) — creator of SIDKIT, VibeComfy MCP, and shipped audio products for Elektron, Waldorf, Qu-bit Electronix, and Industrial Music Electronics.
