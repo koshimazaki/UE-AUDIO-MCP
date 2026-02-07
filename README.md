@@ -1,6 +1,6 @@
 # UE Audio MCP
 
-**Build complete game audio systems from natural language.**
+**Build Complete game audio systems from natural language.**
 
 One MCP server. Three audio engines. Wwise + MetaSounds + Blueprint — wired together, running in your game.
 
@@ -106,21 +106,21 @@ Not replacing sound designers — giving them a first draft in seconds instead o
                                 │ MCP Protocol (stdio)
                                 v
                     ┌───────────────────────┐
-                    │    UE Audio MCP        │
-                    │    (one server)        │
+                    │    UE Audio MCP       │
+                    │    (one server)       │
                     └───────┬───────────────┘
                             │
               ┌─────────────┼─────────────────┐
-              v             v                  v
+              v             v                 v
      ┌──────────────┐ ┌──────────┐  ┌──────────────────┐
-     │  Wwise Tools │ │ MetaSound│  │ Blueprint Tools   │
-     │  (WAAPI)     │ │ Tools    │  │ (Remote Control)  │
+     │  Wwise Tools │ │ MetaSound│  │ Blueprint Tools  │
+     │  (WAAPI)     │ │ Tools    │  │ (Remote Control) │
      └──────┬───────┘ └────┬─────┘  └────────┬─────────┘
-            │              │                  │
-            v              v                  v
+            │              │                 │
+            v              v                 v
      ┌──────────────┐ ┌──────────┐  ┌──────────────────┐
      │ Wwise App    │ │ UE5      │  │ UE5 Editor       │
-     │ (WAAPI :8080)│ │ Plugin   │  │ (Remote Control)  │
+     │ (WAAPI :8080)│ │ Plugin   │  │ (Remote Control) │
      └──────────────┘ │ (Builder │  └──────────────────┘
                       │  API)    │
                       └──────────┘
