@@ -2,6 +2,7 @@
   "name": "Quartz Beat Sync",
   "type": "blueprint",
   "description": "Sample-accurate beat-synchronized audio playback using Quartz clock. Creates a Quartz clock, sets BPM, plays a sound quantized to bars, and fires events on beat/bar boundaries.",
+  "author": "Epic Games",
   "source_url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/quartz-quick-start-in-unreal-engine",
   "requires": ["Sound Wave or MetaSound Source asset"],
   "nodes": [

@@ -2,6 +2,7 @@
   "name": "Submix Recording",
   "type": "blueprint",
   "description": "Records audio output from a submix to a .wav file. BeginPlay starts recording, a timer or event stops it. Uses StartRecordingOutput/FinishRecordingOutput on a Sound Submix.",
+  "author": "Epic Games",
   "source_url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/overview-of-submixes-in-unreal-engine",
   "requires": ["Sound Submix asset"],
   "nodes": [

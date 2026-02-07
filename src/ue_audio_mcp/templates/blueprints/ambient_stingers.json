@@ -1,0 +1,84 @@
+{
+  "name": "Ambient Stingers with Trigger Boxes",
+  "type": "blueprint",
+  "blueprint_type": "level",
+  "description": "Level Blueprint that spawns ambient MetaSound on BeginPlay and uses trigger box overlaps to fire named triggers via Audio Parameter Interface. Each trigger box fades in a different ambient layer (birds, bugs). Extensible to day/night cycles and zone transitions.",
+  "author": "Epic Games Community",
+  "source_url": "https://dev.epicgames.com/community/learning/tutorials/ambient-sounds-metasound",
+  "requires": [
+    "MetaSound Source named Stingers_MS with Birds and Bugs trigger inputs",
+    "Trigger box actors named Trigger_Birds and Trigger_Bugs placed in level"
+  ],
+  "nodes": [
+    {
+      "id": "begin_play",
+      "node_type": "EventBeginPlay",
+      "position": [0, 0],
+      "comment": "Fires once on level start"
+    },
+    {
+      "id": "add_audio",
+      "node_type": "AddAudioComponent",
+      "position": [200, 0],
+      "defaults": {
+        "Sound": "<Stingers_MS>",
+        "Target": "self",
+        "Manual Attachment": false
+      },
+      "comment": "Spawns the ambient MetaSound Source as a component"
+    },
+    {
+      "id": "get_param_interface",
+      "node_type": "GetParameterInterface",
+      "position": [500, 150],
+      "defaults": {
+        "Target": "<AudioComponent>"
+      },
+      "comment": "Gets Audio Parameter Interface from the spawned component — used to fire named triggers"
+    },
+    {
+      "id": "overlap_birds",
+      "node_type": "OnActorBeginOverlap",
+      "position": [200, 300],
+      "defaults": {
+        "Actor": "Trigger_Birds"
+      },
+      "comment": "Fires when player enters the birds trigger volume"
+    },
+    {
+      "id": "trigger_birds",
+      "node_type": "Trigger",
+      "position": [700, 300],
+      "defaults": {
+        "Name": "Birds"
+      },
+      "comment": "Target is Audio Parameter Interface — fires the Birds trigger in MetaSound"
+    },
+    {
+      "id": "overlap_bugs",
+      "node_type": "OnActorBeginOverlap",
+      "position": [200, 450],
+      "defaults": {
+        "Actor": "Trigger_Bugs"
+      },
+      "comment": "Fires when player enters the bugs trigger volume"
+    },
+    {
+      "id": "trigger_bugs",
+      "node_type": "Trigger",
+      "position": [700, 450],
+      "defaults": {
+        "Name": "Bugs"
+      },
+      "comment": "Target is Audio Parameter Interface — fires the Bugs trigger in MetaSound"
+    }
+  ],
+  "connections": [
+    {"from_node": "begin_play", "from_pin": "Exec", "to_node": "add_audio", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "add_audio", "from_pin": "ReturnValue", "to_node": "get_param_interface", "to_pin": "Target", "type": "data"},
+    {"from_node": "overlap_birds", "from_pin": "Exec", "to_node": "trigger_birds", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "get_param_interface", "from_pin": "ReturnValue", "to_node": "trigger_birds", "to_pin": "Target", "type": "data"},
+    {"from_node": "overlap_bugs", "from_pin": "Exec", "to_node": "trigger_bugs", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "get_param_interface", "from_pin": "ReturnValue", "to_node": "trigger_bugs", "to_pin": "Target", "type": "data"}
+  ]
+}

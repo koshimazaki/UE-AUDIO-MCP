@@ -1,0 +1,178 @@
+{
+  "name": "Sound Pad Controller",
+  "type": "blueprint",
+  "blueprint_type": "actor",
+  "author": "Dr Chris Payne (ChrisPayne123)",
+  "description": "Interactive sound pad from Chris Payne tutorial. Actor with Cube mesh + Audio Component. OnHit switches between MIDI synth and audio file playback via enum. Dynamic material provides visual feedback — colour set in Construction Script, brightness animated via Timeline on each hit. Cooldown timer prevents rapid re-triggers. Struct-driven configuration allows per-pad customisation of colour, root note, scale degree, audio file, and cooldown time.",
+  "source_url": "https://dev.epicgames.com/community/learning/tutorials/opvv/unreal-engine-metasound-sound-pads",
+  "requires": [
+    "MetaSound Source (MS_SoundSource) with TriggerSound, PlayAudioFile, AudioFile, RootNote, ScaleDegree inputs",
+    "Material with Colour (Vector) and Brightness (Scalar) parameters",
+    "S_SoundPadBaseStructure user-defined struct",
+    "E_SoundPadBaseSoundSource user-defined enum (Play Musical Pitches / Play Audio File)"
+  ],
+  "ue_version": "5.6+",
+  "components": [
+    {"name": "DefaultSceneRoot", "type": "SceneComponent"},
+    {"name": "Cube", "type": "StaticMeshComponent", "defaults": {"StaticMesh": "BasicShapes/Cube"}},
+    {"name": "Audio", "type": "AudioComponent", "defaults": {"Sound": "<MS_SoundSource>"}}
+  ],
+  "structs": [
+    {
+      "name": "S_SoundPadBaseStructure",
+      "fields": [
+        {"name": "SelectSoundSource", "type": "E_SoundPadBaseSoundSource", "default": "Play Musical Pitches"},
+        {"name": "Colour", "type": "LinearColor", "default": [0, 0, 1, 1], "description": "Pad colour for emissive material"},
+        {"name": "AudioFileToPlay", "type": "SoundWave", "description": "Wave asset for audio file mode"},
+        {"name": "Brightness", "type": "Float", "default": 1000.0, "description": "Emissive brightness on hit"},
+        {"name": "CooldownTime", "type": "Float", "default": 0.5, "description": "Seconds between allowed hits"},
+        {"name": "RootNote", "type": "Int32", "default": 60, "description": "MIDI root note (60=C4)"},
+        {"name": "ScaleDegree", "type": "Int32", "default": 0, "description": "Scale degree index (0-6)"}
+      ]
+    }
+  ],
+  "enums": [
+    {
+      "name": "E_SoundPadBaseSoundSource",
+      "values": ["Play Musical Pitches", "Play Audio File"]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "construction",
+      "node_type": "UserConstructionScript",
+      "position": [0, -400],
+      "comment": "Pre-runtime setup: create dynamic material, set pad colour"
+    },
+    {
+      "id": "create_material",
+      "node_type": "CreateDynamicMaterialInstance",
+      "position": [300, -400],
+      "defaults": {"ElementIndex": 0},
+      "comment": "Creates dynamic material instance from Cube's source material for runtime colour/brightness changes"
+    },
+    {
+      "id": "set_colour",
+      "node_type": "SetVectorParameterValue",
+      "position": [600, -400],
+      "defaults": {"ParameterName": "Colour"},
+      "comment": "Sets pad colour from struct — each pad can have unique colour"
+    },
+    {
+      "id": "on_hit",
+      "node_type": "OnComponentHit",
+      "position": [0, 0],
+      "defaults": {"Component": "Cube"},
+      "comment": "Player character walks into cube mesh — fires hit event"
+    },
+    {
+      "id": "cooldown_check",
+      "node_type": "Branch",
+      "position": [300, 0],
+      "comment": "Check 'Is In Cool Down?' — skip if still cooling down"
+    },
+    {
+      "id": "switch_source",
+      "node_type": "SwitchOnEnum",
+      "position": [500, 0],
+      "defaults": {"Enum": "E_SoundPadBaseSoundSource"},
+      "comment": "Routes to MIDI synth or audio file path based on per-pad setting"
+    },
+    {
+      "id": "set_midi_pitch",
+      "node_type": "SetIntParameter",
+      "position": [800, -100],
+      "defaults": {"InName": "RootNote"},
+      "comment": "Sends MIDI root note as integer to MetaSounds — Hz conversion happens inside MS"
+    },
+    {
+      "id": "set_scale_degree",
+      "node_type": "SetIntParameter",
+      "position": [800, 0],
+      "defaults": {"InName": "ScaleDegree"},
+      "comment": "Scale degree index — MetaSounds looks up interval from MajorScaleArray variable"
+    },
+    {
+      "id": "trigger_synth",
+      "node_type": "SetTriggerParameter",
+      "position": [800, 100],
+      "defaults": {"InName": "TriggerSound"},
+      "comment": "Fires the synth path in MetaSounds"
+    },
+    {
+      "id": "set_wave",
+      "node_type": "SetWaveParameter",
+      "position": [800, 300],
+      "defaults": {"InName": "AudioFile"},
+      "comment": "Sets the wave asset to play"
+    },
+    {
+      "id": "trigger_audio",
+      "node_type": "SetTriggerParameter",
+      "position": [800, 400],
+      "defaults": {"InName": "PlayAudioFile"},
+      "comment": "Fires the sample playback path in MetaSounds"
+    },
+    {
+      "id": "timeline_brightness",
+      "node_type": "Timeline",
+      "position": [500, 600],
+      "defaults": {
+        "Length": 0.5,
+        "AutoPlay": false,
+        "Loop": false,
+        "Curves": ["BrightnessFloatChange"]
+      },
+      "comment": "Animates material brightness: 0s=Brightness (bright flash), 0.5s=0 (fade to dark). Visual feedback for hit."
+    },
+    {
+      "id": "set_brightness",
+      "node_type": "SetScalarParameterValue",
+      "position": [800, 600],
+      "defaults": {"ParameterName": "Brightness"},
+      "comment": "Drives emissive brightness from Timeline curve — visual confirmation of pad hit"
+    },
+    {
+      "id": "start_cooldown",
+      "node_type": "SetTimerByFunctionName",
+      "position": [500, 800],
+      "defaults": {"FunctionName": "CooldownComplete", "Looping": false},
+      "comment": "Starts cooldown timer — prevents rapid re-triggering"
+    }
+  ],
+  "variables": [
+    {"name": "Sound Pad Settings", "type": "S_SoundPadBaseStructure", "description": "Per-instance configuration struct — exposed to editor details panel"},
+    {"name": "Is In Cool Down?", "type": "Bool", "default": false, "description": "Cooldown guard flag"},
+    {"name": "Material Instance", "type": "MaterialInstanceDynamic", "description": "Cached dynamic material reference"},
+    {"name": "Audio", "type": "AudioComponent", "description": "Reference to Audio Component playing MetaSound Source"}
+  ],
+  "connections": [
+    {"from_node": "construction", "from_pin": "Exec", "to_node": "create_material", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "create_material", "from_pin": "ReturnValue", "to_node": "set_colour", "to_pin": "Target", "type": "data"},
+    {"from_node": "create_material", "from_pin": "Exec", "to_node": "set_colour", "to_pin": "Exec", "type": "exec"},
+
+    {"from_node": "on_hit", "from_pin": "Exec", "to_node": "cooldown_check", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "var:Is In Cool Down?", "from_pin": "Value", "to_node": "cooldown_check", "to_pin": "Condition", "type": "data"},
+    {"from_node": "cooldown_check", "from_pin": "False", "to_node": "switch_source", "to_pin": "Exec", "type": "exec"},
+
+    {"from_node": "switch_source", "from_pin": "Play Musical Pitches", "to_node": "set_midi_pitch", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "set_midi_pitch", "from_pin": "Exec", "to_node": "set_scale_degree", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "set_scale_degree", "from_pin": "Exec", "to_node": "trigger_synth", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "var:Audio", "from_pin": "Value", "to_node": "set_midi_pitch", "to_pin": "Target", "type": "data"},
+    {"from_node": "var:Audio", "from_pin": "Value", "to_node": "set_scale_degree", "to_pin": "Target", "type": "data"},
+    {"from_node": "var:Audio", "from_pin": "Value", "to_node": "trigger_synth", "to_pin": "Target", "type": "data"},
+
+    {"from_node": "switch_source", "from_pin": "Play Audio File", "to_node": "set_wave", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "set_wave", "from_pin": "Exec", "to_node": "trigger_audio", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "var:Audio", "from_pin": "Value", "to_node": "set_wave", "to_pin": "Target", "type": "data"},
+    {"from_node": "var:Audio", "from_pin": "Value", "to_node": "trigger_audio", "to_pin": "Target", "type": "data"},
+
+    {"from_node": "cooldown_check", "from_pin": "False", "to_node": "timeline_brightness", "to_pin": "Play", "type": "exec"},
+    {"from_node": "timeline_brightness", "from_pin": "Update", "to_node": "set_brightness", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "timeline_brightness", "from_pin": "BrightnessFloatChange", "to_node": "set_brightness", "to_pin": "Value", "type": "data"},
+    {"from_node": "var:Material Instance", "from_pin": "Value", "to_node": "set_brightness", "to_pin": "Target", "type": "data"},
+
+    {"from_node": "cooldown_check", "from_pin": "False", "to_node": "start_cooldown", "to_pin": "Exec", "type": "exec"}
+  ],
+  "notes": "Key patterns from this tutorial: (1) MIDI ints in Blueprint, Hz conversion inside MetaSounds — cleaner BP code. (2) Struct-driven configuration — each sound pad instance can have unique colour, pitch, scale, and sound source. (3) Timeline for visual feedback — same hit event drives both audio trigger and material brightness flash. (4) Cooldown prevents overlapping triggers. (5) Enum switches between synth and sample playback — same actor, different sound modes. Scale arrays: Major=[0,2,4,5,7,9,11], Minor=[0,2,3,5,7,8,10], Pentatonic=[0,2,4,7,9], Blues=[0,3,5,6,7,10]."
+}

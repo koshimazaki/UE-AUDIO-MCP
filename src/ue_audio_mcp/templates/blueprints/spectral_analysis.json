@@ -2,6 +2,7 @@
   "name": "Spectral Analysis",
   "type": "blueprint",
   "description": "Registers a spectral analysis delegate on a submix. BeginPlay adds a full-spectrum band settings delegate (30 bands, 40-16000 Hz), then a custom event receives magnitude array for per-band processing.",
+  "author": "Epic Games",
   "source_url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/overview-of-submixes-in-unreal-engine",
   "requires": ["Sound Submix asset"],
   "nodes": [

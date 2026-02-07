@@ -2,6 +2,7 @@
   "name": "Spatial Attenuation",
   "type": "blueprint",
   "description": "3D spatialized audio with attenuation settings. Spawns sound at actor location with custom attenuation (inner/outer radius, falloff, spatialization method, air absorption, occlusion).",
+  "author": "Epic Games",
   "source_url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/sound-attenuation-in-unreal-engine",
   "requires": ["Sound Attenuation asset", "Sound Wave or MetaSound Source"],
   "nodes": [

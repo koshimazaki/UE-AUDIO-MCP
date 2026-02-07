@@ -1,0 +1,103 @@
+{
+  "name": "Ambient Spline Sound Movement",
+  "type": "blueprint",
+  "blueprint_type": "actor",
+  "author": "Richard Stevens & Dave Raybould (Leeds Beckett University)",
+  "description": "Sound movement along Spline path from Ambient & Procedural Sound Design course. Actor with SplineComponent defines path. Timeline drives normalized position (0-1) along spline. AudioComponent follows via SetRelativeLocation(GetLocationAtDistanceAlongSpline). Multiple AudioComponents via ForEachLoop for layered moving sounds. Looping timeline for continuous movement. MovementSpeed variable controls speed. UE 4.23 origin — node names may need UE5 adjustment.",
+  "source_url": "https://dev.epicgames.com/community/learning/courses/qR/unreal-engine-ambient-and-procedural-sound-design",
+  "ue_version": "4.23+ (UE5 compatible with minor node updates)",
+  "components": [
+    {"name": "DefaultSceneRoot", "type": "SceneComponent"},
+    {"name": "Spline", "type": "SplineComponent", "defaults": {"bClosedLoop": true}},
+    {"name": "Audio", "type": "AudioComponent", "defaults": {"Sound": "<AmbientSoundCue>"}}
+  ],
+  "nodes": [
+    {
+      "id": "begin_play",
+      "node_type": "ReceiveBeginPlay",
+      "position": [0, 0],
+      "comment": "Start the movement timeline on play"
+    },
+    {
+      "id": "get_spline_length",
+      "node_type": "GetSplineLength",
+      "position": [200, 0],
+      "comment": "Cache total spline length for distance calculation"
+    },
+    {
+      "id": "get_audio_components",
+      "node_type": "GetComponentsByClass",
+      "position": [200, 200],
+      "defaults": {"ComponentClass": "AudioComponent"},
+      "comment": "Get all AudioComponents — supports multiple moving sound sources"
+    },
+    {
+      "id": "timeline",
+      "node_type": "Timeline",
+      "position": [400, 0],
+      "defaults": {
+        "Length": 1.0,
+        "AutoPlay": false,
+        "Loop": true,
+        "Curves": ["SplinePosition"]
+      },
+      "comment": "Drives normalized position 0→1 along spline. Looping for continuous movement."
+    },
+    {
+      "id": "multiply_distance",
+      "node_type": "Multiply_FloatFloat",
+      "position": [600, 0],
+      "comment": "SplinePosition (0-1) × SplineLength = distance along spline"
+    },
+    {
+      "id": "multiply_speed",
+      "node_type": "Multiply_FloatFloat",
+      "position": [600, 100],
+      "comment": "Distance × MovementSpeed = final position"
+    },
+    {
+      "id": "get_location",
+      "node_type": "GetLocationAtDistanceAlongSpline",
+      "position": [800, 0],
+      "defaults": {"CoordinateSpace": "Local"},
+      "comment": "Converts distance to world-space position on spline"
+    },
+    {
+      "id": "foreach_audio",
+      "node_type": "ForEachLoop",
+      "position": [1000, 0],
+      "comment": "Apply position to each AudioComponent — multiple sources follow same spline"
+    },
+    {
+      "id": "set_location",
+      "node_type": "K2_SetRelativeLocation",
+      "position": [1200, 0],
+      "comment": "Move AudioComponent to current spline position"
+    },
+    {
+      "id": "check_wrap",
+      "node_type": "Branch",
+      "position": [600, 300],
+      "comment": "If distance > SplineLength, wrap around (for non-closed splines)"
+    }
+  ],
+  "variables": [
+    {"name": "MovementSpeed", "type": "Float", "default": 1.0, "description": "Speed multiplier for sound movement along spline"},
+    {"name": "SplineLength", "type": "Float", "description": "Cached total spline length"},
+    {"name": "AudioComponents", "type": "AudioComponent[]", "description": "All audio components to move along spline"}
+  ],
+  "connections": [
+    {"from_node": "begin_play", "from_pin": "Exec", "to_node": "get_spline_length", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "get_spline_length", "from_pin": "Exec", "to_node": "get_audio_components", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "get_audio_components", "from_pin": "Exec", "to_node": "timeline", "to_pin": "Play", "type": "exec"},
+    {"from_node": "get_spline_length", "from_pin": "ReturnValue", "to_node": "multiply_distance", "to_pin": "A", "type": "data"},
+    {"from_node": "timeline", "from_pin": "SplinePosition", "to_node": "multiply_distance", "to_pin": "B", "type": "data"},
+    {"from_node": "multiply_distance", "from_pin": "ReturnValue", "to_node": "multiply_speed", "to_pin": "A", "type": "data"},
+    {"from_node": "var:MovementSpeed", "from_pin": "Value", "to_node": "multiply_speed", "to_pin": "B", "type": "data"},
+    {"from_node": "multiply_speed", "from_pin": "ReturnValue", "to_node": "get_location", "to_pin": "Distance", "type": "data"},
+    {"from_node": "timeline", "from_pin": "Update", "to_node": "foreach_audio", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "get_location", "from_pin": "ReturnValue", "to_node": "set_location", "to_pin": "NewLocation", "type": "data"},
+    {"from_node": "foreach_audio", "from_pin": "LoopBody", "to_node": "set_location", "to_pin": "Exec", "type": "exec"}
+  ],
+  "notes": "Key patterns from Stevens & Raybould Ambient course: (1) SplineComponent defines arbitrary movement path — closed loop for continuous or open for one-way. (2) Timeline provides smooth normalized 0-1 position — multiply by SplineLength for actual distance. (3) GetLocationAtDistanceAlongSpline converts distance to 3D position. (4) ForEachLoop applies to all AudioComponents — supports multiple layered moving sources on same path. (5) MovementSpeed variable allows per-instance speed control. (6) For UE5: same pattern works, but consider using MetaSounds Source instead of Sound Cues for procedural audio. Spline + AudioComponent pattern is unchanged in UE5."
+}

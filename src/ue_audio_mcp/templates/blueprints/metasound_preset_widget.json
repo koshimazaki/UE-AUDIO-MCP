@@ -1,0 +1,80 @@
+{
+  "name": "MetaSound Preset Widget",
+  "type": "blueprint",
+  "blueprint_type": "editor_utility_widget",
+  "description": "UE 5.7 Editor Utility Widget for custom MetaSound preset UI. Caches Builder from OnMetaSoundPresetWidgetConstructed, initializes viewmodel on Construct, then binds literal float knob widgets via SetLiteralWidgetInputViewmodels. Scalable to multiple knobs via Make Array + ForEachLoop.",
+  "author": "Eric Buchholz (TechAudioTools)",
+  "source_url": "https://dev.epicgames.com/community/learning/tutorials/qEjr/unreal-engine-techaudiotools-content-5-7-creating-a-metasound-preset-widget-using-metasound-viewmodels",
+  "requires": [
+    "Editor Utility Widget implementing MetaSoundPresetWidgetInterface",
+    "TechAudioTools plugin (UE 5.7+)",
+    "MetaSound Source or Patch asset",
+    "MetaSound Preset asset referencing the source/patch"
+  ],
+  "ue_version": "5.7+",
+  "nodes": [
+    {
+      "id": "on_preset_constructed",
+      "node_type": "Event On MetaSoundPreset Widget Constructed",
+      "position": [0, 0],
+      "defaults": {},
+      "comment": "From MetaSoundPresetWidgetInterface — provides Builder reference"
+    },
+    {
+      "id": "set_builder",
+      "node_type": "SET",
+      "position": [300, 0],
+      "defaults": {
+        "Variable": "Builder"
+      },
+      "comment": "Cache the builder reference for use in Construct"
+    },
+    {
+      "id": "event_construct",
+      "node_type": "EventConstruct",
+      "position": [0, 250],
+      "comment": "Standard UMG widget construct event"
+    },
+    {
+      "id": "initialize_builder",
+      "node_type": "InitializeBuilder",
+      "position": [300, 250],
+      "defaults": {
+        "Target": "<MetaSoundEditorViewModel>"
+      },
+      "comment": "Target is MetaSound Viewmodel — initializes from cached builder. Alternative: InitializeMetaSound for asset reference."
+    },
+    {
+      "id": "set_literal_viewmodels",
+      "node_type": "SetLiteralWidgetInputViewmodels",
+      "position": [600, 250],
+      "defaults": {},
+      "comment": "Binds literal widget to viewmodel. For multiple widgets, use Make Array + ForEachLoop."
+    }
+  ],
+  "variables": [
+    {"name": "Builder", "type": "MetaSoundBuilder", "description": "Cached from OnPresetWidgetConstructed, used by InitializeBuilder"},
+    {"name": "Meta Sound Editor View Model", "type": "MetaSoundEditorViewModel", "description": "Auto-created reference, target for InitializeBuilder"},
+    {"name": "Included Meta Sounds", "type": "MetaSound[]", "description": "Populated with target MetaSound assets in GetSupportedMetaSounds"}
+  ],
+  "connections": [
+    {"from_node": "on_preset_constructed", "from_pin": "Exec", "to_node": "set_builder", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "on_preset_constructed", "from_pin": "Builder", "to_node": "set_builder", "to_pin": "Builder", "type": "data"},
+    {"from_node": "event_construct", "from_pin": "Exec", "to_node": "initialize_builder", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "initialize_builder", "from_pin": "Exec", "to_node": "set_literal_viewmodels", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "var:Meta Sound Editor View Model", "from_pin": "Value", "to_node": "initialize_builder", "to_pin": "Target", "type": "data"},
+    {"from_node": "var:Builder", "from_pin": "Value", "to_node": "initialize_builder", "to_pin": "In Builder", "type": "data"},
+    {"from_node": "widget:EUW_FloatKnob", "from_pin": "Reference", "to_node": "set_literal_viewmodels", "to_pin": "Literal Widget", "type": "data"},
+    {"from_node": "var:Meta Sound Editor View Model", "from_pin": "Value", "to_node": "set_literal_viewmodels", "to_pin": "Meta Sound Viewmodel", "type": "data"}
+  ],
+  "interface_functions": {
+    "GetSupportedMetaSounds": {
+      "description": "Specify which MetaSound assets this widget works with",
+      "returns": {
+        "Support All Presets": {"type": "bool", "default": false},
+        "Excluded MetaSounds": {"type": "MetaSound[]", "default": []},
+        "Included MetaSounds": {"type": "MetaSound[]", "description": "Promote to variable and populate with target assets"}
+      }
+    }
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "name": "Simple Footfalls",
+  "asset_type": "Source",
+  "description": "First-person footfalls from Epic tutorial. Random sample selection with timed repeat and graceful stop via custom On Stop trigger. Simpler than surface-routed footsteps template.",
+  "author": "Nick Pfisterer (pfist)",
+  "source_url": "https://dev.epicgames.com/community/learning/recommended-community-tutorial/WzJ/creating-first-person-footfalls-with-metasounds",
+  "interfaces": ["UE.Source.OneShot"],
+  "inputs": [
+    {"name": "OnPlay", "type": "Trigger"},
+    {"name": "On Stop", "type": "Trigger"}
+  ],
+  "outputs": [
+    {"name": "Out Mono", "type": "Audio"},
+    {"name": "OnFinished", "type": "Trigger"}
+  ],
+  "variables": [
+    {"name": "FootfallVariations", "type": "WaveAsset[]", "description": "Array of imported footfall sound files"}
+  ],
+  "nodes": [
+    {
+      "id": "trigger_repeat",
+      "node_type": "Trigger Repeat",
+      "position": [200, 0],
+      "defaults": {"Period": 0.42},
+      "comment": "Repeats trigger at fixed interval (footstep pace)"
+    },
+    {
+      "id": "random_get",
+      "node_type": "Random Get (WaveAsset:Array)",
+      "position": [500, 0],
+      "comment": "Picks a random footfall from the array each trigger"
+    },
+    {
+      "id": "wave_player",
+      "node_type": "Wave Player",
+      "position": [800, 0],
+      "defaults": {"Loop": false}
+    },
+    {
+      "id": "trigger_once",
+      "node_type": "Trigger Once",
+      "position": [800, 300],
+      "defaults": {"StartClosed": true},
+      "comment": "Prevents OnFinished until On Stop is called — allows graceful sound completion"
+    }
+  ],
+  "connections": [
+    {"from_node": "__graph__", "from_pin": "OnPlay", "to_node": "trigger_repeat", "to_pin": "Play"},
+    {"from_node": "trigger_repeat", "from_pin": "Trigger", "to_node": "random_get", "to_pin": "On Next"},
+    {"from_node": "random_get", "from_pin": "On Next", "to_node": "wave_player", "to_pin": "Play"},
+    {"from_node": "__graph__", "from_pin": "FootfallVariations", "to_node": "random_get", "to_pin": "In Array"},
+    {"from_node": "random_get", "from_pin": "Value", "to_node": "wave_player", "to_pin": "Wave Asset"},
+    {"from_node": "wave_player", "from_pin": "Out Left", "to_node": "__graph__", "to_pin": "Out Mono"},
+    {"from_node": "wave_player", "from_pin": "On Finished", "to_node": "trigger_once", "to_pin": "Trigger In"},
+    {"from_node": "__graph__", "from_pin": "On Stop", "to_node": "trigger_once", "to_pin": "Reset"},
+    {"from_node": "trigger_once", "from_pin": "Trigger Out", "to_node": "__graph__", "to_pin": "OnFinished"}
+  ]
+}

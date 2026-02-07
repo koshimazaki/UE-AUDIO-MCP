@@ -1,0 +1,38 @@
+{
+  "name": "Sample Player",
+  "asset_type": "Source",
+  "description": "Minimal stereo wave player with exposed loop controls. Loop Start and Loop Duration are graph inputs with float sliders for real-time scrubbing. Loop Duration -1.0 loops the whole file. The simplest possible MetaSound Source — single file playback with variation via start point and loop region.",
+  "interfaces": ["UE.Source.Default"],
+  "inputs": [
+    {"name": "OnPlay", "type": "Trigger"},
+    {"name": "Wave Asset", "type": "WaveAsset"},
+    {"name": "Loop Start", "type": "Float", "default": 0.0, "widget": "slider", "description": "Start point of loop region in seconds — scrub to find clean loop points"},
+    {"name": "Loop Duration", "type": "Float", "default": -1.0, "widget": "slider", "description": "Duration of loop in seconds. Negative value loops the whole wave file."}
+  ],
+  "outputs": [
+    {"name": "On Finished", "type": "Trigger"},
+    {"name": "Out Left", "type": "Audio"},
+    {"name": "Out Right", "type": "Audio"}
+  ],
+  "nodes": [
+    {
+      "id": "wave_player",
+      "node_type": "Wave Player",
+      "position": [300, 0],
+      "defaults": {
+        "Start Time": 0.0,
+        "Pitch Shift": 0.0,
+        "Loop": true
+      }
+    }
+  ],
+  "connections": [
+    {"from_node": "__graph__", "from_pin": "OnPlay", "to_node": "wave_player", "to_pin": "Play"},
+    {"from_node": "__graph__", "from_pin": "Wave Asset", "to_node": "wave_player", "to_pin": "Wave Asset"},
+    {"from_node": "__graph__", "from_pin": "Loop Start", "to_node": "wave_player", "to_pin": "Loop Start"},
+    {"from_node": "__graph__", "from_pin": "Loop Duration", "to_node": "wave_player", "to_pin": "Loop Duration"},
+    {"from_node": "wave_player", "from_pin": "On Finished", "to_node": "__graph__", "to_pin": "On Finished"},
+    {"from_node": "wave_player", "from_pin": "Out Left", "to_node": "__graph__", "to_pin": "Out Left"},
+    {"from_node": "wave_player", "from_pin": "Out Right", "to_node": "__graph__", "to_pin": "Out Right"}
+  ]
+}

@@ -2,6 +2,7 @@
   "name": "Volume Proxy Controller",
   "type": "blueprint",
   "description": "Level Blueprint that scales a Volume Proxy Actor with mouse wheel input. Mouse Wheel Up increases scale, Mouse Wheel Down decreases. Also implements Condition Met interface with shift key check.",
+  "author": "Epic Games",
   "source_url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/volume-proxies-quick-start",
   "requires": ["Volume Proxy Actor in level", "Audio Gameplay Condition interface"],
   "nodes": [

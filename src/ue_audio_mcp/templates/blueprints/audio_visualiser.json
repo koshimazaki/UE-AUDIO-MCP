@@ -1,0 +1,74 @@
+{
+  "name": "Audio Attenuation Visualiser",
+  "type": "blueprint",
+  "blueprint_type": "actor",
+  "author": "Richard Stevens & Dave Raybould (Leeds Beckett University)",
+  "description": "Debug visualiser for audio attenuation from Ambient & Procedural Sound Design course. Spawns VisualiserSphere actors at positions of all AudioComponents in scene, sized to match attenuation settings. Shows LPF/HPF frequency ranges, occlusion low-pass, distance falloff, and log frequency scaling. Toggle with V key. Essential debug tool for audio level design. UE 4.23 origin — node names may need UE5 adjustment.",
+  "source_url": "https://dev.epicgames.com/community/learning/courses/qR/unreal-engine-ambient-and-procedural-sound-design",
+  "ue_version": "4.23+ (UE5 compatible)",
+  "nodes": [
+    {
+      "id": "begin_play",
+      "node_type": "ReceiveBeginPlay",
+      "position": [0, 0],
+      "comment": "Collect all audio actors on level start"
+    },
+    {
+      "id": "get_all_audio",
+      "node_type": "GetAllActorsOfClass",
+      "position": [200, 0],
+      "comment": "Find all actors with AudioComponents in the level"
+    },
+    {
+      "id": "foreach_actor",
+      "node_type": "ForEachLoop",
+      "position": [400, 0],
+      "comment": "For each audio actor, spawn a visualiser sphere"
+    },
+    {
+      "id": "get_attenuation",
+      "node_type": "BP_GetAttenuationSettingsToApply",
+      "position": [600, 0],
+      "comment": "Get the attenuation settings from the AudioComponent — shape, distances, LPF/HPF ranges"
+    },
+    {
+      "id": "spawn_sphere",
+      "node_type": "SpawnActorFromClass",
+      "position": [800, 0],
+      "defaults": {"Class": "BP_DC_VisualiserSphere"},
+      "comment": "Spawn debug sphere at audio source position, sized to attenuation falloff distance"
+    },
+    {
+      "id": "store_sphere",
+      "node_type": "ArrayAdd",
+      "position": [1000, 0],
+      "comment": "Store reference to spawned sphere for toggle/cleanup"
+    },
+    {
+      "id": "toggle_key",
+      "node_type": "InputKeyEvent",
+      "position": [0, 300],
+      "defaults": {"Key": "V"},
+      "comment": "V key toggles visualiser on/off"
+    },
+    {
+      "id": "toggle_visibility",
+      "node_type": "ForEachLoop",
+      "position": [300, 300],
+      "comment": "Toggle visibility of all visualiser spheres"
+    }
+  ],
+  "variables": [
+    {"name": "Visualisers", "type": "Actor[]", "description": "Array of spawned visualiser sphere actors"},
+    {"name": "IsVisible", "type": "Bool", "default": false, "description": "Current visibility state"}
+  ],
+  "connections": [
+    {"from_node": "begin_play", "from_pin": "Exec", "to_node": "get_all_audio", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "get_all_audio", "from_pin": "OutActors", "to_node": "foreach_actor", "to_pin": "Array", "type": "data"},
+    {"from_node": "foreach_actor", "from_pin": "LoopBody", "to_node": "get_attenuation", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "get_attenuation", "from_pin": "Exec", "to_node": "spawn_sphere", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "spawn_sphere", "from_pin": "ReturnValue", "to_node": "store_sphere", "to_pin": "Value", "type": "data"},
+    {"from_node": "toggle_key", "from_pin": "Pressed", "to_node": "toggle_visibility", "to_pin": "Exec", "type": "exec"}
+  ],
+  "notes": "Key patterns: (1) BP_GetAttenuationSettingsToApply extracts all attenuation data: shape, extents, LPF/HPF frequency ranges at min/max distance, occlusion LPF, log frequency scaling. (2) Attenuation shape types: Sphere, Capsule, Box, Cone — each with different extent parameters. (3) Key attenuation properties visualised: LPFFrequencyAtMin/Max, HPFFrequencyAtMin/Max, OcclusionLowPassFilterFrequency, bEnableLogFrequencyScaling, FalloffDistance, dBAttenuationAtMax. (4) Sound Class hierarchy from this project: Audio_Demo_Master → Area_Loops + Source_Loops + One_Shots + Footsteps + Foley + Night_Day + Dialogue + Collision + Barrel. PassiveSoundMix for ducking. (5) For UE5: same pattern works, BP_GetAttenuationSettingsToApply unchanged. Audio Gameplay Volumes (5.1+) replace Audio Volumes."
+}

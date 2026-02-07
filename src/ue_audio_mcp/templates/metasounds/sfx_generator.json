@@ -1,0 +1,281 @@
+{
+  "name": "SFX Generator",
+  "asset_type": "Source",
+  "author": "Eric Buchholz (TechAudioTools, Epic Games)",
+  "description": "Single-generator synthesizer for rapid SFX iteration from TechAudioTools. Signal flow: Switchable Waveform Generator (5 types) with frequency modulation → Spectral Effects (Wave Shaper → BitCrusher → Ring Modulator) → State Variable Filter (crossfade LP/BP/HP with envelope modulation) → Amplifier (ADSR × LFO) → Temporal Effects (Delay + Flanger + Plate Reverb in parallel) → Output + Wave Writer + Envelope Follower. Designed for sci-fi and abstract sounds with full randomization support.",
+  "source_url": "https://dev.epicgames.com/community/learning/tutorials/ZMpq/unreal-engine-tech-audio-tools-content-documentation",
+  "requires": [
+    "TechAudioTools engine plugin enabled",
+    "UMG Viewmodel engine plugin enabled"
+  ],
+  "interfaces": ["UE.Source.OneShot"],
+  "inputs": [
+    {"name": "OnPlay", "type": "Trigger"},
+    {"name": "BaseFrequency", "type": "Float", "default": 440.0, "description": "Base oscillator frequency in Hz (mapped from normalized input via log scale)"},
+    {"name": "FreqMod", "type": "Float", "default": 0.0, "description": "Pitch slide amount — summed with vibrato for frequency modulation"},
+    {"name": "VibratoRate", "type": "Float", "default": 5.0, "description": "Vibrato LFO rate — up to audio rate for FM synthesis"},
+    {"name": "VibratoDepth", "type": "Float", "default": 0.0, "description": "Vibrato depth — 0 = off, higher = wider pitch wobble"},
+    {"name": "WaveShapeAmount", "type": "Float", "default": 0.0, "description": "Wave shaper drive — 0 = clean, 1 = soft clip / rounded pulse"},
+    {"name": "CrushSampleRate", "type": "Float", "default": 48000.0, "description": "BitCrusher sample rate reduction — lower = more aliased"},
+    {"name": "RingModFreq", "type": "Float", "default": 440.0, "description": "Ring modulator carrier frequency"},
+    {"name": "RingModEnvAttack", "type": "Time", "default": 0.01, "description": "Ring mod envelope attack — modulates carrier frequency"},
+    {"name": "RingModEnvDecay", "type": "Time", "default": 0.1, "description": "Ring mod envelope decay"},
+    {"name": "FilterType", "type": "Float", "default": 0.0, "description": "Filter crossfade: 0=LP, 0.5=BP, 1=HP (DJ-style filter)"},
+    {"name": "FilterCutoff", "type": "Float", "default": 5000.0, "description": "Filter cutoff frequency in Hz"},
+    {"name": "FilterResonance", "type": "Float", "default": 0.5, "description": "Filter resonance / Q factor"},
+    {"name": "FilterEnvAmount", "type": "Float", "default": 0.0, "description": "Filter envelope modulation depth on cutoff"},
+    {"name": "FilterEnvAttack", "type": "Time", "default": 0.01, "description": "Filter envelope attack time"},
+    {"name": "FilterEnvDecay", "type": "Time", "default": 0.2, "description": "Filter envelope decay time"},
+    {"name": "AmpAttack", "type": "Time", "default": 0.01, "description": "Amplitude ADSR attack"},
+    {"name": "AmpDecay", "type": "Time", "default": 0.1, "description": "Amplitude ADSR decay"},
+    {"name": "AmpSustain", "type": "Float", "default": 0.7, "description": "Amplitude ADSR sustain level"},
+    {"name": "AmpRelease", "type": "Time", "default": 0.2, "description": "Amplitude ADSR release"},
+    {"name": "AmpDuration", "type": "Time", "default": 1.0, "description": "Overall sound duration — gates the ADSR and timing map"},
+    {"name": "LFORate", "type": "Float", "default": 5.0, "description": "Amplitude modulation LFO rate"},
+    {"name": "LFODepth", "type": "Float", "default": 0.0, "description": "Amplitude modulation LFO depth (unipolar)"},
+    {"name": "DelayAmount", "type": "Float", "default": 0.0, "description": "Delay send level (parallel)"},
+    {"name": "FlangerAmount", "type": "Float", "default": 0.0, "description": "Flanger send level (parallel)"},
+    {"name": "ReverbAmount", "type": "Float", "default": 0.0, "description": "Plate reverb send level (parallel)"},
+    {"name": "RecordEnabled", "type": "Bool", "default": false, "description": "Arms Wave Writer — records wav on each play"},
+    {"name": "FileName", "type": "String", "default": "sfx_output", "description": "Output wav filename (saved to Saved/AudioCaptures)"}
+  ],
+  "outputs": [
+    {"name": "OnFinished", "type": "Trigger"},
+    {"name": "Out Mono", "type": "Audio"},
+    {"name": "AmpEnvelope", "type": "Float", "description": "Block-rate ADSR output for widget visualization"},
+    {"name": "AmpLFO", "type": "Float", "description": "Block-rate LFO output for widget visualization"}
+  ],
+  "nodes": [
+    {
+      "id": "osc",
+      "node_type": "SuperOscillator",
+      "position": [200, 0],
+      "defaults": {"Enabled": true, "Voices": 1, "Type": "Saw"},
+      "comment": "Main tone generator — switchable waveform. Single voice for clean synth; add Voices for unison."
+    },
+    {
+      "id": "vibrato_lfo",
+      "node_type": "Low-Frequency Oscillator",
+      "position": [0, 200],
+      "defaults": {"Shape": "Sine", "MinValue": -1.0, "MaxValue": 1.0},
+      "comment": "Vibrato/FM — goes up to audio rate for FM synthesis when VibratoRate is high"
+    },
+    {
+      "id": "vibrato_scale",
+      "node_type": "Multiply",
+      "position": [200, 200],
+      "comment": "VibratoLFO × VibratoDepth = pitch modulation amount"
+    },
+    {
+      "id": "freq_sum",
+      "node_type": "Add",
+      "position": [200, 100],
+      "comment": "BaseFrequency + FreqMod + Vibrato = final oscillator frequency"
+    },
+    {
+      "id": "waveshaper",
+      "node_type": "Wave Shaper",
+      "position": [500, 0],
+      "comment": "Spectral effect 1: soft-clip to rounded pulse — balanced volume output"
+    },
+    {
+      "id": "bitcrusher",
+      "node_type": "Bitcrusher",
+      "position": [700, 0],
+      "defaults": {"BitDepth": 16},
+      "comment": "Spectral effect 2: sample rate reduction only — harsh aliased spectra"
+    },
+    {
+      "id": "ringmod",
+      "node_type": "Ring Mod",
+      "position": [900, 0],
+      "comment": "Spectral effect 3: ring modulation with built-in AD envelope on carrier freq"
+    },
+    {
+      "id": "ringmod_env",
+      "node_type": "AD Envelope",
+      "position": [700, 200],
+      "comment": "Modulates ring mod carrier frequency over time"
+    },
+    {
+      "id": "svf",
+      "node_type": "State Variable Filter",
+      "position": [1100, 0],
+      "comment": "Multimode filter — LP/BP/HP outputs crossfaded by FilterType param (DJ-style)"
+    },
+    {
+      "id": "filter_xfade_lp_bp",
+      "node_type": "Crossfade",
+      "position": [1300, 0],
+      "comment": "Crossfade LP↔BP based on FilterType (0–0.5 range)"
+    },
+    {
+      "id": "filter_xfade_final",
+      "node_type": "Crossfade",
+      "position": [1500, 0],
+      "comment": "Crossfade (LP/BP blend)↔HP based on FilterType (0.5–1.0 range)"
+    },
+    {
+      "id": "filter_env",
+      "node_type": "AD Envelope",
+      "position": [900, 200],
+      "comment": "Filter envelope — modulates cutoff frequency over time"
+    },
+    {
+      "id": "filter_env_scale",
+      "node_type": "Multiply",
+      "position": [1000, 200],
+      "comment": "FilterEnv × FilterEnvAmount = cutoff modulation"
+    },
+    {
+      "id": "cutoff_sum",
+      "node_type": "Add",
+      "position": [1000, 100],
+      "comment": "FilterCutoff + envelope modulation = final cutoff frequency"
+    },
+    {
+      "id": "amp_env",
+      "node_type": "ADSR Envelope (Audio)",
+      "position": [1700, 0],
+      "comment": "Main amplitude envelope — shapes the overall sound dynamics"
+    },
+    {
+      "id": "amp_lfo",
+      "node_type": "Low-Frequency Oscillator",
+      "position": [1700, 200],
+      "defaults": {"Shape": "Sine", "MinValue": 0.0, "MaxValue": 1.0},
+      "comment": "Unipolar amplitude modulation LFO — tremolo effect"
+    },
+    {
+      "id": "amp_lfo_mix",
+      "node_type": "Add",
+      "position": [1800, 200],
+      "comment": "1.0 - LFODepth + (LFO × LFODepth) = amplitude modulation with depth control"
+    },
+    {
+      "id": "amp_multiply",
+      "node_type": "Multiply (Audio)",
+      "position": [1900, 0],
+      "comment": "Signal × ADSR envelope = amplitude-shaped signal"
+    },
+    {
+      "id": "amp_lfo_multiply",
+      "node_type": "Multiply (Audio)",
+      "position": [2100, 0],
+      "comment": "Shaped signal × LFO modulation = final amplitude"
+    },
+    {
+      "id": "delay_send",
+      "node_type": "Delay",
+      "position": [2300, -100],
+      "defaults": {"DelayTime": 0.25, "Feedback": 0.3},
+      "comment": "Temporal effect 1: delay (parallel send)"
+    },
+    {
+      "id": "flanger_send",
+      "node_type": "Flanger",
+      "position": [2300, 100],
+      "defaults": {"Rate": 0.5, "Depth": 0.5, "Feedback": 0.3},
+      "comment": "Temporal effect 2: multi-series flanger (parallel send)"
+    },
+    {
+      "id": "reverb_send",
+      "node_type": "Plate Reverb",
+      "position": [2300, 300],
+      "defaults": {"Damping": 0.5, "Decay": 0.5},
+      "comment": "Temporal effect 3: plate reverb (parallel send)"
+    },
+    {
+      "id": "effects_mixer",
+      "node_type": "Mono Mixer",
+      "position": [2600, 0],
+      "comment": "Mixes dry signal + delay + flanger + reverb sends back together"
+    },
+    {
+      "id": "wave_writer",
+      "node_type": "Wave Writer",
+      "position": [2800, 200],
+      "comment": "Records output to wav file when RecordEnabled is armed"
+    },
+    {
+      "id": "env_follower",
+      "node_type": "Envelope Follower",
+      "position": [2800, 400],
+      "defaults": {"Attack": 0.001, "Release": 0.05},
+      "comment": "Tracks output amplitude — determines when sound has fully completed (including effect tails)"
+    }
+  ],
+  "connections": [
+    {"from_node": "__graph__", "from_pin": "BaseFrequency", "to_node": "freq_sum", "to_pin": "A"},
+    {"from_node": "__graph__", "from_pin": "FreqMod", "to_node": "freq_sum", "to_pin": "B"},
+    {"from_node": "__graph__", "from_pin": "VibratoRate", "to_node": "vibrato_lfo", "to_pin": "Frequency"},
+    {"from_node": "__graph__", "from_pin": "VibratoDepth", "to_node": "vibrato_scale", "to_pin": "B"},
+    {"from_node": "vibrato_lfo", "from_pin": "Out", "to_node": "vibrato_scale", "to_pin": "A"},
+    {"from_node": "freq_sum", "from_pin": "Result", "to_node": "osc", "to_pin": "Frequency"},
+
+    {"from_node": "osc", "from_pin": "Audio", "to_node": "waveshaper", "to_pin": "Audio"},
+    {"from_node": "__graph__", "from_pin": "WaveShapeAmount", "to_node": "waveshaper", "to_pin": "Amount"},
+
+    {"from_node": "waveshaper", "from_pin": "Audio", "to_node": "bitcrusher", "to_pin": "Audio"},
+    {"from_node": "__graph__", "from_pin": "CrushSampleRate", "to_node": "bitcrusher", "to_pin": "SampleRateCrush"},
+
+    {"from_node": "bitcrusher", "from_pin": "Audio", "to_node": "ringmod", "to_pin": "Audio"},
+    {"from_node": "__graph__", "from_pin": "RingModFreq", "to_node": "ringmod", "to_pin": "ModFrequency"},
+
+    {"from_node": "__graph__", "from_pin": "OnPlay", "to_node": "ringmod_env", "to_pin": "On Trigger"},
+    {"from_node": "__graph__", "from_pin": "RingModEnvAttack", "to_node": "ringmod_env", "to_pin": "Attack Time"},
+    {"from_node": "__graph__", "from_pin": "RingModEnvDecay", "to_node": "ringmod_env", "to_pin": "Decay Time"},
+
+    {"from_node": "__graph__", "from_pin": "FilterCutoff", "to_node": "cutoff_sum", "to_pin": "A"},
+    {"from_node": "__graph__", "from_pin": "OnPlay", "to_node": "filter_env", "to_pin": "On Trigger"},
+    {"from_node": "__graph__", "from_pin": "FilterEnvAttack", "to_node": "filter_env", "to_pin": "Attack Time"},
+    {"from_node": "__graph__", "from_pin": "FilterEnvDecay", "to_node": "filter_env", "to_pin": "Decay Time"},
+    {"from_node": "filter_env", "from_pin": "Out Envelope", "to_node": "filter_env_scale", "to_pin": "A"},
+    {"from_node": "__graph__", "from_pin": "FilterEnvAmount", "to_node": "filter_env_scale", "to_pin": "B"},
+    {"from_node": "filter_env_scale", "from_pin": "Result", "to_node": "cutoff_sum", "to_pin": "B"},
+
+    {"from_node": "ringmod", "from_pin": "Audio", "to_node": "svf", "to_pin": "Audio"},
+    {"from_node": "cutoff_sum", "from_pin": "Result", "to_node": "svf", "to_pin": "Cutoff Frequency"},
+    {"from_node": "__graph__", "from_pin": "FilterResonance", "to_node": "svf", "to_pin": "Resonance"},
+
+    {"from_node": "svf", "from_pin": "Low Pass", "to_node": "filter_xfade_lp_bp", "to_pin": "Audio A"},
+    {"from_node": "svf", "from_pin": "Band Pass", "to_node": "filter_xfade_lp_bp", "to_pin": "Audio B"},
+    {"from_node": "__graph__", "from_pin": "FilterType", "to_node": "filter_xfade_lp_bp", "to_pin": "Crossfade"},
+    {"from_node": "filter_xfade_lp_bp", "from_pin": "Audio", "to_node": "filter_xfade_final", "to_pin": "Audio A"},
+    {"from_node": "svf", "from_pin": "High Pass", "to_node": "filter_xfade_final", "to_pin": "Audio B"},
+    {"from_node": "__graph__", "from_pin": "FilterType", "to_node": "filter_xfade_final", "to_pin": "Crossfade"},
+
+    {"from_node": "__graph__", "from_pin": "OnPlay", "to_node": "amp_env", "to_pin": "Trigger"},
+    {"from_node": "__graph__", "from_pin": "AmpAttack", "to_node": "amp_env", "to_pin": "Attack"},
+    {"from_node": "__graph__", "from_pin": "AmpDecay", "to_node": "amp_env", "to_pin": "Decay"},
+    {"from_node": "__graph__", "from_pin": "AmpSustain", "to_node": "amp_env", "to_pin": "Sustain"},
+    {"from_node": "__graph__", "from_pin": "AmpRelease", "to_node": "amp_env", "to_pin": "Release"},
+
+    {"from_node": "filter_xfade_final", "from_pin": "Audio", "to_node": "amp_multiply", "to_pin": "A"},
+    {"from_node": "amp_env", "from_pin": "Envelope", "to_node": "amp_multiply", "to_pin": "B"},
+
+    {"from_node": "__graph__", "from_pin": "LFORate", "to_node": "amp_lfo", "to_pin": "Frequency"},
+    {"from_node": "amp_multiply", "from_pin": "Result", "to_node": "amp_lfo_multiply", "to_pin": "A"},
+
+    {"from_node": "amp_lfo_multiply", "from_pin": "Result", "to_node": "delay_send", "to_pin": "Audio"},
+    {"from_node": "amp_lfo_multiply", "from_pin": "Result", "to_node": "flanger_send", "to_pin": "Audio"},
+    {"from_node": "amp_lfo_multiply", "from_pin": "Result", "to_node": "reverb_send", "to_pin": "Audio"},
+
+    {"from_node": "amp_lfo_multiply", "from_pin": "Result", "to_node": "effects_mixer", "to_pin": "Audio 0"},
+    {"from_node": "delay_send", "from_pin": "Audio", "to_node": "effects_mixer", "to_pin": "Audio 1"},
+    {"from_node": "flanger_send", "from_pin": "Audio", "to_node": "effects_mixer", "to_pin": "Audio 2"},
+    {"from_node": "reverb_send", "from_pin": "Audio", "to_node": "effects_mixer", "to_pin": "Audio 3"},
+    {"from_node": "__graph__", "from_pin": "DelayAmount", "to_node": "effects_mixer", "to_pin": "Gain 1"},
+    {"from_node": "__graph__", "from_pin": "FlangerAmount", "to_node": "effects_mixer", "to_pin": "Gain 2"},
+    {"from_node": "__graph__", "from_pin": "ReverbAmount", "to_node": "effects_mixer", "to_pin": "Gain 3"},
+
+    {"from_node": "effects_mixer", "from_pin": "Audio", "to_node": "__graph__", "to_pin": "Out Mono"},
+    {"from_node": "effects_mixer", "from_pin": "Audio", "to_node": "wave_writer", "to_pin": "Audio"},
+    {"from_node": "effects_mixer", "from_pin": "Audio", "to_node": "env_follower", "to_pin": "Audio"},
+    {"from_node": "__graph__", "from_pin": "FileName", "to_node": "wave_writer", "to_pin": "Filename"},
+    {"from_node": "__graph__", "from_pin": "OnPlay", "to_node": "wave_writer", "to_pin": "Start"},
+
+    {"from_node": "amp_env", "from_pin": "OnDone", "to_node": "__graph__", "to_pin": "OnFinished"}
+  ],
+  "notes": "Key architecture patterns from TechAudioTools SFX Generator: (1) Single workhorse synth topology: Generator→Spectral→Filter→Amp→Effects. (2) Spectral effects in series (WaveShaper→BitCrusher→RingMod) for harmonic richness. (3) SVF crossfade filter acts like DJ filter — smooth LP↔BP↔HP transition. (4) Temporal effects processed in PARALLEL and mixed back (not series). (5) Envelope Follower on output detects when sound+tails have fully decayed. (6) Wave Writer captures output to wav for iteration. (7) All parameters designed for Preset Widget randomization — each has meaningful default and range. (8) Audio Buses can feed mid-graph data to analyzer widgets for real-time visualization."
+}

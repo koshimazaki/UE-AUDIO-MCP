@@ -1,0 +1,116 @@
+{
+  "name": "Height-Based Wind Audio",
+  "type": "blueprint",
+  "blueprint_type": "actor",
+  "author": "Richard Stevens & Dave Raybould (Leeds Beckett University)",
+  "description": "Height-driven wind audio from Ambient & Procedural Sound Design course. SphereComponent overlap detects player entry. Tick calculates player height within zone, maps to volume via MapRangeClamped. Above 0.8 height threshold triggers wood creaks (timer-based). RandomFloatInRange adds natural variation to trigger intervals. Uses VolumeMultiplier on AudioComponent for smooth height-based volume. UE 4.23 origin — node names may need UE5 adjustment.",
+  "source_url": "https://dev.epicgames.com/community/learning/courses/qR/unreal-engine-ambient-and-procedural-sound-design",
+  "ue_version": "4.23+ (UE5 compatible with minor node updates)",
+  "components": [
+    {"name": "DefaultSceneRoot", "type": "SceneComponent"},
+    {"name": "Sphere", "type": "SphereComponent", "defaults": {"SphereRadius": 1000.0, "bGenerateOverlapEvents": true}},
+    {"name": "WindAudio", "type": "AudioComponent", "defaults": {"Sound": "<WindLoopCue>"}},
+    {"name": "CreakAudio", "type": "AudioComponent", "defaults": {"Sound": "<WoodCreakCue>"}}
+  ],
+  "nodes": [
+    {
+      "id": "overlap_begin",
+      "node_type": "OnComponentBeginOverlap",
+      "position": [0, 0],
+      "defaults": {"Component": "Sphere"},
+      "comment": "Player enters wind zone"
+    },
+    {
+      "id": "overlap_end",
+      "node_type": "OnComponentEndOverlap",
+      "position": [0, 400],
+      "defaults": {"Component": "Sphere"},
+      "comment": "Player exits wind zone"
+    },
+    {
+      "id": "check_player",
+      "node_type": "Branch",
+      "position": [300, 0],
+      "comment": "Verify overlapping actor is player character"
+    },
+    {
+      "id": "enable_tick",
+      "node_type": "SetActorTickEnabled",
+      "position": [500, 0],
+      "defaults": {"bEnabled": true},
+      "comment": "Enable tick to track height while player is in zone"
+    },
+    {
+      "id": "disable_tick",
+      "node_type": "SetActorTickEnabled",
+      "position": [500, 400],
+      "defaults": {"bEnabled": false},
+      "comment": "Disable tick when player leaves zone — save CPU"
+    },
+    {
+      "id": "tick",
+      "node_type": "ReceiveTick",
+      "position": [0, 200],
+      "comment": "Per-frame height calculation while player is in zone"
+    },
+    {
+      "id": "get_player_loc",
+      "node_type": "K2_GetActorLocation",
+      "position": [200, 200],
+      "comment": "Get player Z position for height calculation"
+    },
+    {
+      "id": "calc_height",
+      "node_type": "MapRangeClamped",
+      "position": [400, 200],
+      "comment": "Map player Z from [Start_Height, End_Height] → [0, 1] normalized height"
+    },
+    {
+      "id": "set_volume",
+      "node_type": "SetVolumeMultiplier",
+      "position": [600, 200],
+      "comment": "Wind volume scales with height — louder at top of trees"
+    },
+    {
+      "id": "check_creak_threshold",
+      "node_type": "Branch",
+      "position": [600, 300],
+      "comment": "Above 0.8 height → trigger wood creaks"
+    },
+    {
+      "id": "random_delay",
+      "node_type": "RandomFloatInRange",
+      "position": [800, 300],
+      "defaults": {"Min": 2.0, "Max": 8.0},
+      "comment": "Random interval between creaks — natural variation"
+    },
+    {
+      "id": "set_creak_timer",
+      "node_type": "K2_SetTimer",
+      "position": [1000, 300],
+      "defaults": {"FunctionName": "PlayCreak", "Looping": false},
+      "comment": "Timer triggers creak sound after random delay"
+    }
+  ],
+  "variables": [
+    {"name": "Start_Height", "type": "Float", "default": 0.0, "description": "Z position for bottom of height range (volume = 0)"},
+    {"name": "End_Height", "type": "Float", "default": 500.0, "description": "Z position for top of height range (volume = 1)"},
+    {"name": "Height", "type": "Float", "description": "Current normalized height (0-1)"},
+    {"name": "IsPlayerInZone", "type": "Bool", "default": false, "description": "Overlap state tracking"},
+    {"name": "Wind Gusts", "type": "Bool", "default": true, "description": "Enable random wind gust variations"}
+  ],
+  "connections": [
+    {"from_node": "overlap_begin", "from_pin": "Exec", "to_node": "check_player", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "check_player", "from_pin": "True", "to_node": "enable_tick", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "overlap_end", "from_pin": "Exec", "to_node": "disable_tick", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "tick", "from_pin": "Exec", "to_node": "get_player_loc", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "get_player_loc", "from_pin": "Z", "to_node": "calc_height", "to_pin": "Value", "type": "data"},
+    {"from_node": "var:Start_Height", "from_pin": "Value", "to_node": "calc_height", "to_pin": "InRangeA", "type": "data"},
+    {"from_node": "var:End_Height", "from_pin": "Value", "to_node": "calc_height", "to_pin": "InRangeB", "type": "data"},
+    {"from_node": "calc_height", "from_pin": "ReturnValue", "to_node": "set_volume", "to_pin": "VolumeMultiplier", "type": "data"},
+    {"from_node": "calc_height", "from_pin": "ReturnValue", "to_node": "check_creak_threshold", "to_pin": "Condition", "type": "data"},
+    {"from_node": "check_creak_threshold", "from_pin": "True", "to_node": "random_delay", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "random_delay", "from_pin": "ReturnValue", "to_node": "set_creak_timer", "to_pin": "Time", "type": "data"}
+  ],
+  "notes": "Key patterns: (1) Overlap-gated tick — only calculates height when player is in zone, saves CPU. (2) MapRangeClamped normalizes height to 0-1, directly drives VolumeMultiplier. (3) Threshold-based secondary sounds — above 0.8 height triggers creaks with random intervals. (4) Area loops use stereo ambient beds with large attenuation spheres (inner/outer radius). Source loops use mono positioned sounds with binaural panning. (5) Sound Class hierarchy: Master → Area_Loops + Source_Loops + One_Shots + Footsteps + Foley + Night_Day + Dialogue. (6) For UE5: replace Sound Cues with MetaSounds Sources, VolumeMultiplier still works on AudioComponent."
+}

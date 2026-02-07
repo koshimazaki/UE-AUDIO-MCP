@@ -2,6 +2,7 @@
   "name": "Soundscape Ambient",
   "type": "blueprint",
   "description": "Procedural ambient soundscape using GameplayTags. Sets up Soundscape Palette with Colors (tagged sound layers), drives layer activation from game state via the Soundscape Subsystem.",
+  "author": "Epic Games",
   "source_url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/soundscape-quick-start",
   "requires": ["Soundscape Palette asset", "Soundscape Color assets", "GameplayTags configured"],
   "nodes": [

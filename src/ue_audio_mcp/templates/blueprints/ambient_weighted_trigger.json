@@ -1,0 +1,66 @@
+{
+  "name": "Weighted Random Ambient Trigger",
+  "type": "blueprint",
+  "blueprint_type": "actor",
+  "author": "Richard Stevens & Dave Raybould (Leeds Beckett University)",
+  "description": "Weighted random sound trigger from Ambient & Procedural Sound Design course. Player overlap triggers RandomBoolWithWeight — probability-based sound playback. Simple but effective for scattered ambient one-shots (bird calls, insect chirps, rustling). Prevents every trigger zone from firing, creating natural variation across a scene. UE 4.23 origin — node names may need UE5 adjustment.",
+  "source_url": "https://dev.epicgames.com/community/learning/courses/qR/unreal-engine-ambient-and-procedural-sound-design",
+  "ue_version": "4.23+ (UE5 compatible)",
+  "components": [
+    {"name": "DefaultSceneRoot", "type": "SceneComponent"},
+    {"name": "TriggerSphere", "type": "SphereComponent", "defaults": {"SphereRadius": 300.0, "bGenerateOverlapEvents": true}},
+    {"name": "Audio", "type": "AudioComponent", "defaults": {"Sound": "<AmbientOneShotCue>"}}
+  ],
+  "nodes": [
+    {
+      "id": "overlap_begin",
+      "node_type": "ReceiveActorBeginOverlap",
+      "position": [0, 0],
+      "comment": "Player walks into trigger zone"
+    },
+    {
+      "id": "check_player",
+      "node_type": "Branch",
+      "position": [300, 0],
+      "comment": "Verify it's the player character, not an NPC"
+    },
+    {
+      "id": "check_cooldown",
+      "node_type": "Branch",
+      "position": [500, 0],
+      "comment": "Not already playing — prevent re-trigger"
+    },
+    {
+      "id": "weighted_random",
+      "node_type": "RandomBoolWithWeight",
+      "position": [700, 0],
+      "defaults": {"Weight": 0.3},
+      "comment": "30% chance to play — natural variation, not every zone fires"
+    },
+    {
+      "id": "play_check",
+      "node_type": "Branch",
+      "position": [900, 0],
+      "comment": "Only play if random check passes"
+    },
+    {
+      "id": "play_sound",
+      "node_type": "Play",
+      "position": [1100, 0],
+      "comment": "Play the ambient one-shot"
+    }
+  ],
+  "variables": [
+    {"name": "Weight", "type": "Float", "default": 0.3, "description": "Probability of sound playing on overlap (0-1). Lower = more sparse, higher = more frequent."},
+    {"name": "IsPlaying", "type": "Bool", "default": false, "description": "Cooldown flag — prevents overlapping triggers"}
+  ],
+  "connections": [
+    {"from_node": "overlap_begin", "from_pin": "Exec", "to_node": "check_player", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "check_player", "from_pin": "True", "to_node": "check_cooldown", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "var:IsPlaying", "from_pin": "Value", "to_node": "check_cooldown", "to_pin": "Condition", "type": "data"},
+    {"from_node": "check_cooldown", "from_pin": "False", "to_node": "weighted_random", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "weighted_random", "from_pin": "ReturnValue", "to_node": "play_check", "to_pin": "Condition", "type": "data"},
+    {"from_node": "play_check", "from_pin": "True", "to_node": "play_sound", "to_pin": "Exec", "type": "exec"}
+  ],
+  "notes": "Key patterns: (1) RandomBoolWithWeight is the core mechanic — simple probability gate before playback. (2) Weight of 0.3 means ~30% of zone entries produce sound — creates natural sparse ambient. (3) Multiple instances scattered across scene with different weights create organic soundscape. (4) Combine with Sound Cues that have internal randomization (Random node with multiple wave files) for double-layer variation. (5) For UE5: same pattern, use MetaSounds Source with Array Random Get for sample variation instead of Sound Cue Random node."
+}

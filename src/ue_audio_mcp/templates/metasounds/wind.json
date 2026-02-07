@@ -2,6 +2,7 @@
   "name": "Wind",
   "asset_type": "Source",
   "description": "Procedural wind synthesis: noise through LPF modulated by LFO, with player speed driving cutoff. From MetaSounds Quick Start tutorial.",
+  "author": "Epic Games",
   "source_url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/metasounds-quick-start",
   "interfaces": ["UE.Source.OneShot"],
   "inputs": [

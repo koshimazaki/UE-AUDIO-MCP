@@ -68,7 +68,7 @@ def test_ms_search_nodes(knowledge_db):
 def test_ms_list_categories(knowledge_db):
     result = _parse(ms_list_categories())
     assert result["status"] == "ok"
-    assert result["count"] == 16
+    assert result["count"] == 17
     assert result["total_nodes"] >= 100
     assert "Filters" in result["categories"]
     assert "Generators" in result["categories"]

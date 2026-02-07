@@ -2,6 +2,7 @@
   "name": "Audio Modulation",
   "type": "blueprint",
   "description": "Audio modulation via Control Bus and Control Bus Mix. Creates a Control Bus for volume/pitch, applies a Control Bus Mix, and drives parameters from Blueprint variables.",
+  "author": "Epic Games",
   "source_url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/audio-modulation-quick-start-in-unreal-engine",
   "requires": ["Control Bus asset", "Control Bus Mix asset", "Sound with modulation patch"],
   "nodes": [

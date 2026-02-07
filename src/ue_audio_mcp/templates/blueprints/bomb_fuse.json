@@ -2,6 +2,7 @@
   "name": "Bomb Fuse Timer",
   "type": "blueprint",
   "description": "Plays a MetaSound bomb with a fuse timer. BeginPlay spawns the sound, a 3-second delay triggers SetBoolParameter to detonate.",
+  "author": "Epic Games",
   "source_url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/metasounds-quick-start",
   "requires": ["MetaSound Source with Detonate bool input"],
   "nodes": [

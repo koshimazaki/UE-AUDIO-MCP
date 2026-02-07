@@ -1,0 +1,121 @@
+{
+  "name": "Player-Oriented Sound Spawner",
+  "type": "blueprint",
+  "blueprint_type": "actor",
+  "author": "Richard Stevens & Dave Raybould (Leeds Beckett University)",
+  "description": "Player-oriented sound spawning from Ambient & Procedural Sound Design course. Spawns sounds at calculated positions relative to the player using Forward/Right/Up vectors with random offsets. Enum-switchable spawn shapes (sphere, hemisphere, cone). Reusable Blueprint for scattered ambient sounds that follow the player — birds overhead, insects around, wind from direction. Uses SpawnSoundAtLocation for fire-and-forget playback. UE 4.23 origin — node names may need UE5 adjustment.",
+  "source_url": "https://dev.epicgames.com/community/learning/courses/qR/unreal-engine-ambient-and-procedural-sound-design",
+  "ue_version": "4.23+ (UE5 compatible)",
+  "nodes": [
+    {
+      "id": "begin_play",
+      "node_type": "ReceiveBeginPlay",
+      "position": [0, 0],
+      "comment": "Start spawning timer on play"
+    },
+    {
+      "id": "set_timer",
+      "node_type": "K2_SetTimer",
+      "position": [200, 0],
+      "defaults": {"FunctionName": "SpawnSound", "Looping": true},
+      "comment": "Periodic timer for sound spawning — interval from variable"
+    },
+    {
+      "id": "spawn_event",
+      "node_type": "CustomEvent",
+      "position": [0, 200],
+      "defaults": {"EventName": "SpawnSound"},
+      "comment": "Called by timer — calculates position and spawns sound"
+    },
+    {
+      "id": "get_player",
+      "node_type": "GetPlayerCharacter",
+      "position": [200, 200],
+      "comment": "Get player for position reference"
+    },
+    {
+      "id": "get_player_loc",
+      "node_type": "K2_GetActorLocation",
+      "position": [400, 200],
+      "comment": "Player world position as spawn origin"
+    },
+    {
+      "id": "get_forward",
+      "node_type": "GetActorForwardVector",
+      "position": [400, 300],
+      "comment": "Player facing direction for directional spawning"
+    },
+    {
+      "id": "get_right",
+      "node_type": "GetActorRightVector",
+      "position": [400, 400],
+      "comment": "Player right vector for lateral offset"
+    },
+    {
+      "id": "get_up",
+      "node_type": "GetActorUpVector",
+      "position": [400, 500],
+      "comment": "Player up vector for overhead spawning"
+    },
+    {
+      "id": "random_forward",
+      "node_type": "RandomFloatInRange",
+      "position": [600, 300],
+      "defaults": {"Min": -500.0, "Max": 500.0},
+      "comment": "Random distance along forward axis"
+    },
+    {
+      "id": "random_right",
+      "node_type": "RandomFloatInRange",
+      "position": [600, 400],
+      "defaults": {"Min": -500.0, "Max": 500.0},
+      "comment": "Random distance along right axis"
+    },
+    {
+      "id": "random_up",
+      "node_type": "RandomFloatInRange",
+      "position": [600, 500],
+      "defaults": {"Min": 100.0, "Max": 400.0},
+      "comment": "Random height above player (always above for birds/insects)"
+    },
+    {
+      "id": "switch_shape",
+      "node_type": "SwitchOnEnum",
+      "position": [700, 200],
+      "defaults": {"Enum": "SpawnShape"},
+      "comment": "Enum selects spawn pattern: Sphere, Hemisphere, Cone, Overhead"
+    },
+    {
+      "id": "calc_position",
+      "node_type": "Add_VectorVector",
+      "position": [900, 200],
+      "comment": "PlayerLocation + (Forward×RandomF + Right×RandomR + Up×RandomU) = spawn position"
+    },
+    {
+      "id": "spawn_sound",
+      "node_type": "SpawnSoundAtLocation",
+      "position": [1100, 200],
+      "comment": "Fire-and-forget spatial sound at calculated position"
+    }
+  ],
+  "variables": [
+    {"name": "SpawnInterval", "type": "Float", "default": 3.0, "description": "Seconds between spawn attempts"},
+    {"name": "SpawnRadius", "type": "Float", "default": 500.0, "description": "Maximum spawn distance from player"},
+    {"name": "SpawnShape", "type": "Enum", "default": "Sphere", "description": "Spawn pattern: Sphere (all around), Hemisphere (above), Cone (in front), Overhead (directly above)"},
+    {"name": "SoundToSpawn", "type": "SoundBase", "description": "Sound asset to spawn (Sound Cue or MetaSound Source)"},
+    {"name": "AttenuationSettings", "type": "SoundAttenuation", "description": "Attenuation override for spawned sounds"}
+  ],
+  "connections": [
+    {"from_node": "begin_play", "from_pin": "Exec", "to_node": "set_timer", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "spawn_event", "from_pin": "Exec", "to_node": "get_player", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "get_player", "from_pin": "ReturnValue", "to_node": "get_player_loc", "to_pin": "Target", "type": "data"},
+    {"from_node": "get_player", "from_pin": "ReturnValue", "to_node": "get_forward", "to_pin": "Target", "type": "data"},
+    {"from_node": "get_player", "from_pin": "ReturnValue", "to_node": "get_right", "to_pin": "Target", "type": "data"},
+    {"from_node": "get_player", "from_pin": "ReturnValue", "to_node": "get_up", "to_pin": "Target", "type": "data"},
+    {"from_node": "get_player_loc", "from_pin": "ReturnValue", "to_node": "calc_position", "to_pin": "A", "type": "data"},
+    {"from_node": "calc_position", "from_pin": "ReturnValue", "to_node": "spawn_sound", "to_pin": "Location", "type": "data"},
+    {"from_node": "var:SoundToSpawn", "from_pin": "Value", "to_node": "spawn_sound", "to_pin": "Sound", "type": "data"},
+    {"from_node": "var:AttenuationSettings", "from_pin": "Value", "to_node": "spawn_sound", "to_pin": "AttenuationSettings", "type": "data"}
+  ],
+  "notes": "Key patterns: (1) SpawnSoundAtLocation is fire-and-forget — no AudioComponent management needed. (2) Player orientation vectors ensure sounds spawn relative to where player is looking. (3) Random offsets within radius create natural scattered ambient field. (4) SpawnShape enum allows reuse: birds overhead, insects all around, wind from facing direction. (5) Timer-based spawning with RandomFloatInRange interval variation prevents rhythmic repetition. (6) Sound Class hierarchy controls mix: Area_Loops (stereo ambient beds), Source_Loops (mono positioned), One_Shots (triggered), Footsteps, Foley, Night_Day (time-switched). (7) For UE5: SpawnSoundAtLocation still works unchanged. Use MetaSounds Source assets instead of Sound Cues."
+}

@@ -129,14 +129,26 @@ _register(_node(
 
 _register(_node(
     "SuperOscillator", "Generators",
-    "Multi-waveform oscillator with pulse-width control and wave morphing.",
-    [_in("Frequency", "Float", default=440.0),
-     _in("PulseWidth", "Float", default=0.5),
-     _in("WaveType", "Enum", default="Saw"),
-     _in("Enabled", "Bool", default=True)],
+    "Multi-voice oscillator with waveform type selection, detuning, glide, and pulse-width control. "
+    "Mono variant. Voices stacks unison voices with Detune spread. Entropy adds random per-voice drift. "
+    "Blend crossfades between voices. Glide adds portamento between pitch changes. "
+    "Limit Output prevents clipping when stacking many voices. Type: Saw/Square/Sine/Triangle. "
+    "Best practice: send MIDI ints from Blueprint, convert to Hz with MIDI To Frequency inside MetaSounds.",
+    [_in("Enabled", "Bool", default=True),
+     _in("Limit Output", "Bool", default=True),
+     _in("Voices", "Int32", required=False, default=16),
+     _in("Frequency", "Float", default=440.0),
+     _in("Modulation", "Audio", required=False),
+     _in("Detune", "Float", required=False, default=-0.25),
+     _in("Entropy", "Float", required=False, default=0.0),
+     _in("Blend", "Float", required=False, default=0.0),
+     _in("Glide", "Float", required=False, default=0.0),
+     _in("PulseWidth", "Float", required=False, default=0.5),
+     _in("Type", "Enum", default="Square")],
     [_out("Audio", "Audio")],
-    ["oscillator", "super", "synthesis", "waveform", "morph", "pulse width"],
-    complexity=2,
+    ["oscillator", "super", "synthesis", "waveform", "morph", "pulse width",
+     "unison", "detune", "voices", "glide", "pad", "synth"],
+    complexity=3,
 ))
 
 _register(_node(
@@ -279,8 +291,27 @@ del _ch, _desc, _outs, _cx
 # -------------------------------------------------------------------
 
 _register(_node(
+    "AD Envelope", "Envelopes",
+    "Attack-Decay envelope — real UE5 node name (no Audio/Float suffix in editor). "
+    "Outputs audio-rate envelope signal. Real pin names from Chris Payne Sound Pads binary: "
+    "On Trigger, Attack Time, Attack Curve, Decay Time, Decay Curve, Hard Reset, Looping → Out Envelope, On Done.",
+    [_in("On Trigger", "Trigger"),
+     _in("Attack Time", "Time", default=0.01),
+     _in("Attack Curve", "Float", required=False, default=1.0),
+     _in("Decay Time", "Time", default=0.1),
+     _in("Decay Curve", "Float", required=False, default=1.0),
+     _in("Hard Reset", "Bool", required=False, default=False),
+     _in("Looping", "Bool", required=False, default=False)],
+    [_out("Out Envelope", "Audio"),
+     _out("On Done", "Trigger")],
+    ["envelope", "AD", "attack", "decay", "percussive", "transient", "amplitude"],
+    complexity=2,
+))
+
+_register(_node(
     "AD Envelope (Audio)", "Envelopes",
-    "Attack-Decay envelope outputting audio-rate signal.",
+    "Attack-Decay envelope outputting audio-rate signal. "
+    "Legacy pin names — use 'AD Envelope' for real UE5 pin names.",
     [_in("Trigger", "Trigger"),
      _in("Attack", "Time", default=0.01),
      _in("Decay", "Time", default=0.1),
@@ -294,7 +325,8 @@ _register(_node(
 
 _register(_node(
     "AD Envelope (Float)", "Envelopes",
-    "Attack-Decay envelope outputting block-rate float.",
+    "Attack-Decay envelope outputting block-rate float. "
+    "Legacy pin names — use 'AD Envelope' for real UE5 pin names.",
     [_in("Trigger", "Trigger"),
      _in("Attack", "Time", default=0.01),
      _in("Decay", "Time", default=0.1),
@@ -563,6 +595,21 @@ _register(_node(
 ))
 
 _register(_node(
+    "Plate Reverb", "Delays",
+    "Plate reverb effect — simulates metal plate vibration for dense, smooth reverb tails. "
+    "From TechAudioTools SFX Generator (Eric Buchholz). Used as one of three parallel temporal effects "
+    "(Delay + Flanger + Plate Reverb) in the send effects section.",
+    [_in("Audio", "Audio"),
+     _in("Damping", "Float", default=0.5),
+     _in("Decay", "Float", default=0.5),
+     _in("DryWet", "Float", required=False, default=0.5),
+     _in("PreDelay", "Time", required=False, default=0.02)],
+    [_out("Audio", "Audio")],
+    ["reverb", "plate", "space", "ambience", "tail", "dense", "smooth", "room"],
+    complexity=3,
+))
+
+_register(_node(
     "Grain Delay", "Delays",
     "Granular delay with grain size, density, and pitch shift controls.",
     [_in("Audio", "Audio"),
@@ -667,6 +714,19 @@ _register(_node(
 ))
 
 _register(_node(
+    "Trigger Compare (Int32)", "Triggers",
+    "Compares two Int32 values when triggered and fires True or False. Used for room/state selection.",
+    [_in("Compare", "Trigger"),
+     _in("A", "Int32"),
+     _in("B", "Int32", default=0),
+     _in("Type", "Enum", default="Equals")],
+    [_out("True", "Trigger"),
+     _out("False", "Trigger")],
+    ["trigger", "compare", "int32", "equals", "switch", "condition", "gate"],
+    complexity=2,
+))
+
+_register(_node(
     "Trigger Control", "Triggers",
     "Gates or enables trigger flow based on a boolean control input.",
     [_in("Trigger", "Trigger"),
@@ -760,6 +820,21 @@ _register(_node(
     [_out("Trigger", "Trigger"),
      _out("Count", "Int32")],
     ["trigger", "repeat", "timer", "periodic", "interval", "clock", "metronome"],
+    complexity=2,
+))
+
+_register(_node(
+    "Trigger Sequence", "Triggers",
+    "Fires output triggers in sequential round-robin order (0, 1, 2, ...). "
+    "When Loop is enabled, wraps back to Out 0 after the last output. "
+    "Used for cycling through weapon shot layers.",
+    [_in("In", "Trigger"),
+     _in("Reset", "Trigger", required=False),
+     _in("Loop", "Bool", required=False, default=False)],
+    [_out("Out 0", "Trigger"),
+     _out("Out 1", "Trigger"),
+     _out("Out 2", "Trigger")],
+    ["trigger", "sequence", "round-robin", "order", "cycle", "step", "rotate"],
     complexity=2,
 ))
 
@@ -952,6 +1027,17 @@ _register(_node(
 ))
 
 _register(_node(
+    "Float Compare", "Math",
+    "Compares two float values and outputs a boolean. CompareOp: LessThan, GreaterThan, Equals, LessThanOrEqual, GreaterThanOrEqual.",
+    [_in("A", "Float"),
+     _in("B", "Float"),
+     _in("CompareOp", "Enum", default="LessThan")],
+    [_out("Result", "Bool")],
+    ["math", "compare", "less", "greater", "equals", "condition", "boolean"],
+    complexity=1,
+))
+
+_register(_node(
     "Min", "Math",
     "Returns the smaller of two float values.",
     [_in("A", "Float"), _in("B", "Float")],
@@ -1021,8 +1107,23 @@ _register(_node(
 ))
 
 _register(_node(
+    "Audio Mixer (Stereo, 2)", "Mix",
+    "2-input stereo mixer — real UE5 node name. Mixes two stereo pairs with per-input gain. "
+    "Pin names use 'In N L/R' format. From Chris Payne Sound Pads project binary extraction.",
+    [_in("In 0 L", "Audio"), _in("In 0 R", "Audio"),
+     _in("Gain 0", "Float", default=1.0),
+     _in("In 1 L", "Audio", required=False), _in("In 1 R", "Audio", required=False),
+     _in("Gain 1", "Float", required=False, default=1.0)],
+    [_out("Out L", "Audio"),
+     _out("Out R", "Audio")],
+    ["mix", "mixer", "stereo", "sum", "combine", "audio mixer"],
+    complexity=2,
+))
+
+_register(_node(
     "Stereo Mixer", "Mix",
-    "Mixes N stereo audio input pairs into a single stereo output with per-input gain.",
+    "Mixes N stereo audio input pairs into a single stereo output with per-input gain. "
+    "Alias for Audio Mixer with 'Audio L/R N' pin naming convention used in earlier templates.",
     [_in("Audio L 0", "Audio"), _in("Audio R 0", "Audio"),
      _in("Gain 0", "Float", default=1.0),
      _in("Audio L 1", "Audio", required=False), _in("Audio R 1", "Audio", required=False),
@@ -1068,6 +1169,19 @@ _register(_node(
 ))
 
 _register(_node(
+    "MSP_HeightEQ_Node", "Spatialization",
+    "Height-based EQ for 3D spatialization. Applies frequency shaping based on "
+    "azimuth and elevation angles for realistic height perception. From Craig Owen tutorial.",
+    [_in("Audio", "Audio"),
+     _in("UE.Spatialization.Azimuth", "Float", required=False, default=0.0),
+     _in("UE.Spatialization.Elevation", "Float")],
+    [_out("Output", "Audio")],
+    ["spatial", "height", "EQ", "3d", "binaural", "azimuth", "elevation",
+     "spatialization", "HRTF"],
+    complexity=2,
+))
+
+_register(_node(
     "Mid-Side Encode/Decode", "Spatialization",
     "Converts between stereo L/R and mid/side representation for width control.",
     [_in("Audio L", "Audio"),
@@ -1096,10 +1210,12 @@ _register(_node(
 
 _register(_node(
     "MIDI To Frequency", "Music",
-    "Converts a MIDI note number to frequency in Hz.",
-    [_in("MIDI Note", "Float", default=69.0)],
-    [_out("Frequency", "Float")],
-    ["music", "MIDI", "frequency", "convert", "note", "pitch"],
+    "Converts a MIDI note number (Int32) to frequency in Hz (Float). "
+    "Real pin names from binary: MIDI In → Out Frequency. "
+    "Best practice: send MIDI ints from Blueprint, convert to Hz here inside MetaSounds.",
+    [_in("MIDI In", "Int32", default=69)],
+    [_out("Out Frequency", "Float")],
+    ["music", "MIDI", "frequency", "convert", "note", "pitch", "Hz"],
     complexity=1,
 ))
 
@@ -1203,6 +1319,15 @@ _register(_node(
      _out("SampleRate", "Float"),
      _out("Duration", "Time")],
     ["debug", "wave", "info", "metadata", "channels", "sample rate", "duration"],
+    complexity=1,
+))
+
+_register(_node(
+    "Get Wave Duration", "Debug",
+    "Returns the duration of a WaveAsset in seconds. Simpler alternative to Get Wave Info.",
+    [_in("Wave", "WaveAsset")],
+    [_out("Duration", "Time")],
+    ["wave", "duration", "length", "time", "info", "utility"],
     complexity=1,
 ))
 
@@ -1332,6 +1457,75 @@ _register(_node(
     [],
     ["variable", "state", "set", "write", "graph variable"],
     complexity=1,
+))
+
+
+# -------------------------------------------------------------------
+# Patches (reusable sub-graphs from Craig Owen tutorial)
+# -------------------------------------------------------------------
+
+_register(_node(
+    "MSP_RandomizationNode", "Patches",
+    "Wave asset array player with per-shot pitch and volume randomization. "
+    "Selects from WaveAsset array on each Next trigger, applies random pitch/volume offsets. "
+    "Used for weapon burst round-robin layers. From Craig Owen weapon burst tutorial.",
+    [_in("In Array", "WaveAsset[]"),
+     _in("Next", "Trigger"),
+     _in("Pitch_RandomMax", "Float", required=False, default=0.0),
+     _in("Pitch_RandomMin", "Float", required=False, default=0.0),
+     _in("Volume_Master", "Float", required=False, default=1.0),
+     _in("Volume_RandomMax", "Float", required=False, default=1.1),
+     _in("Volume_RandomMin", "Float", required=False, default=0.9)],
+    [_out("On Finished", "Trigger"),
+     _out("On Nearly Finished", "Trigger"),
+     _out("Out", "Audio"),
+     _out("Value", "Float")],
+    ["randomization", "wave", "variation", "weapon", "gunshot", "pitch", "volume",
+     "patch", "reusable", "round-robin"],
+    complexity=3,
+))
+
+_register(_node(
+    "MSP_CrossFadeByParam_3Inputs", "Patches",
+    "3-layer distance crossfade patch. Each layer: Shuffle→WavePlayer→MapRange gain→StereoMixer. "
+    "Includes optimization gates (only processes active layers) and Mid-Side mono output. "
+    "From Craig Owen weapon audio tutorial.",
+    [_in("TriggerStart", "Trigger"),
+     _in("InputParameter", "Float", default=0.0),
+     _in("WaveAsset_A", "WaveAsset[]"),
+     _in("WaveAsset_A_StartFadeOut", "Float", default=5000.0),
+     _in("WaveAsset_A_EndFadeOut", "Float", default=7500.0),
+     _in("WaveAsset_B", "WaveAsset[]"),
+     _in("WaveAsset_B_StartFadeIn", "Float", default=5000.0),
+     _in("WaveAsset_B_EndFadeIn", "Float", default=7500.0),
+     _in("WaveAsset_B_StartFadeOut", "Float", default=15000.0),
+     _in("WaveAsset_B_EndFadeOut", "Float", default=17500.0),
+     _in("WaveAsset_C", "WaveAsset[]"),
+     _in("WaveAsset_C_StartFadeIn", "Float", default=15000.0),
+     _in("WaveAsset_C_EndFadeIn", "Float", default=17500.0)],
+    [_out("OnFinished", "Trigger"),
+     _out("Output_L", "Audio"),
+     _out("Output_R", "Audio"),
+     _out("AudioMono", "Audio")],
+    ["crossfade", "distance", "layers", "weapon", "tail", "blend", "parameter",
+     "patch", "reusable"],
+    complexity=4,
+))
+
+_register(_node(
+    "MSP_Switch_3Inputs", "Patches",
+    "Hard switch between 3 WaveAsset array inputs based on an Int32 parameter (0/1/2). "
+    "Used for room-size selection in weapon audio. Each input: Shuffle→WavePlayer→StereoMixer.",
+    [_in("TriggerStart", "Trigger"),
+     _in("InputParameter", "Int32", default=0),
+     _in("WaveAsset_A", "WaveAsset[]"),
+     _in("WaveAsset_B", "WaveAsset[]"),
+     _in("WaveAsset_C", "WaveAsset[]")],
+    [_out("OnFinished", "Trigger"),
+     _out("Output_L", "Audio"),
+     _out("Output_R", "Audio")],
+    ["switch", "select", "room", "int32", "hard-switch", "patch", "reusable"],
+    complexity=3,
 ))
 
 

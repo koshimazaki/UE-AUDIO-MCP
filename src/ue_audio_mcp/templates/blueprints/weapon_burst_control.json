@@ -1,0 +1,118 @@
+{
+  "name": "Weapon Burst Fire Control",
+  "type": "blueprint",
+  "blueprint_type": "actor",
+  "description": "Blueprint controller for weapon burst fire MetaSounds system. Uses Timeline to drive burst timing and parameter updates. Fire input triggers SpawnSoundAtLocation with the weapon_burst MetaSound Source, then a Timeline curve drives BurstRate and Volume_Master over the burst duration. Sets RoomSize and Distance from game state. Good example of using Blueprint Timeline to control MetaSounds parameters in real-time.",
+  "author": "Craig Owen (YAGER Development)",
+  "source_url": "https://www.youtube.com/watch?v=n5z4L43jMi8",
+  "requires": [
+    "MetaSound Source built from weapon_burst template with named float/int inputs",
+    "Audio Component or SpawnSoundAtLocation for playback"
+  ],
+  "nodes": [
+    {
+      "id": "fire_input",
+      "node_type": "InputAction",
+      "position": [0, 0],
+      "defaults": {"Action": "IA_Fire"},
+      "comment": "Enhanced Input action — bind to mouse click or gamepad trigger"
+    },
+    {
+      "id": "spawn_sound",
+      "node_type": "SpawnSoundAtLocation",
+      "position": [300, 0],
+      "defaults": {
+        "Sound": "<MS_WeaponBurst_Source>",
+        "AttenuationSettings": "<WPN_Attenuation>"
+      },
+      "comment": "Spawns weapon burst sound at muzzle location. Returns Audio Component for parameter control."
+    },
+    {
+      "id": "set_burst_rate",
+      "node_type": "Set Float Parameter",
+      "position": [600, 0],
+      "defaults": {"In Name": "BurstRate"},
+      "comment": "Sets time between shots — 0.08 = 750 RPM, 0.12 = 500 RPM"
+    },
+    {
+      "id": "set_burst_count",
+      "node_type": "Set Int Parameter",
+      "position": [600, 200],
+      "defaults": {"In Name": "BurstCount"},
+      "comment": "Number of shots per burst — 3 for 3-round burst, 0 for full auto"
+    },
+    {
+      "id": "set_room_size",
+      "node_type": "Set Int Parameter",
+      "position": [600, 400],
+      "defaults": {"In Name": "RoomSize"},
+      "comment": "0=outdoor, 1=small, 2=medium, 3=large — fed from room detection volume overlap"
+    },
+    {
+      "id": "timeline",
+      "node_type": "Timeline",
+      "position": [300, 600],
+      "defaults": {
+        "Length": 0.5,
+        "AutoPlay": false,
+        "Loop": false,
+        "Curves": ["BurstVolumeCurve"]
+      },
+      "comment": "Timeline drives volume envelope over burst duration. Play triggered after spawn. Curve: 0s=1.0, 0.3s=0.95, 0.5s=0.0 (tail off)"
+    },
+    {
+      "id": "set_volume",
+      "node_type": "Set Float Parameter",
+      "position": [600, 600],
+      "defaults": {"In Name": "Volume_Master"},
+      "comment": "Volume driven by Timeline curve — slight decay across burst for realism"
+    },
+    {
+      "id": "get_distance",
+      "node_type": "GetDistanceTo",
+      "position": [300, 400],
+      "defaults": {},
+      "comment": "Distance from listener to weapon — drives attenuation and tail layer crossfade"
+    },
+    {
+      "id": "set_distance",
+      "node_type": "Set Float Parameter",
+      "position": [900, 400],
+      "defaults": {"In Name": "Distance"},
+      "comment": "Distance parameter for weapon_source tail crossfade (if using combined system)"
+    }
+  ],
+  "variables": [
+    {"name": "AudioComp", "type": "AudioComponent", "description": "Cached reference to spawned Audio Component for parameter updates"},
+    {"name": "BurstRate", "type": "Float", "default": 0.08, "description": "Time between shots in seconds"},
+    {"name": "BurstCount", "type": "Int32", "default": 3, "description": "Shots per burst"},
+    {"name": "RoomSize", "type": "Int32", "default": 0, "description": "Current room size from overlap detection"},
+    {"name": "PlayerRef", "type": "Actor", "description": "Reference to listener/player for distance calc"}
+  ],
+  "connections": [
+    {"from_node": "fire_input", "from_pin": "Pressed", "to_node": "spawn_sound", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "spawn_sound", "from_pin": "Exec", "to_node": "set_burst_rate", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "set_burst_rate", "from_pin": "Exec", "to_node": "set_burst_count", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "set_burst_count", "from_pin": "Exec", "to_node": "set_room_size", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "set_room_size", "from_pin": "Exec", "to_node": "timeline", "to_pin": "Play", "type": "exec"},
+
+    {"from_node": "spawn_sound", "from_pin": "ReturnValue", "to_node": "set_burst_rate", "to_pin": "Target", "type": "data"},
+    {"from_node": "spawn_sound", "from_pin": "ReturnValue", "to_node": "set_burst_count", "to_pin": "Target", "type": "data"},
+    {"from_node": "spawn_sound", "from_pin": "ReturnValue", "to_node": "set_room_size", "to_pin": "Target", "type": "data"},
+    {"from_node": "spawn_sound", "from_pin": "ReturnValue", "to_node": "set_volume", "to_pin": "Target", "type": "data"},
+    {"from_node": "spawn_sound", "from_pin": "ReturnValue", "to_node": "set_distance", "to_pin": "Target", "type": "data"},
+
+    {"from_node": "var:BurstRate", "from_pin": "Value", "to_node": "set_burst_rate", "to_pin": "In Float", "type": "data"},
+    {"from_node": "var:BurstCount", "from_pin": "Value", "to_node": "set_burst_count", "to_pin": "In Int", "type": "data"},
+    {"from_node": "var:RoomSize", "from_pin": "Value", "to_node": "set_room_size", "to_pin": "In Int", "type": "data"},
+
+    {"from_node": "timeline", "from_pin": "BurstVolumeCurve", "to_node": "set_volume", "to_pin": "In Float", "type": "data"},
+    {"from_node": "timeline", "from_pin": "Update", "to_node": "set_volume", "to_pin": "Exec", "type": "exec"},
+
+    {"from_node": "fire_input", "from_pin": "Pressed", "to_node": "get_distance", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "var:PlayerRef", "from_pin": "Value", "to_node": "get_distance", "to_pin": "OtherActor", "type": "data"},
+    {"from_node": "get_distance", "from_pin": "ReturnValue", "to_node": "set_distance", "to_pin": "In Float", "type": "data"},
+    {"from_node": "set_room_size", "from_pin": "Exec", "to_node": "set_distance", "to_pin": "Exec", "type": "exec"}
+  ],
+  "notes": "Timeline is key for controlling MetaSounds from Blueprint — it provides frame-accurate float curves that update via the Update exec pin. The BurstVolumeCurve should be a gentle decay (1.0 at 0s → 0.95 at burst midpoint → 0.0 at end) for natural tail-off. For full-auto, set BurstCount=0 and loop the Timeline. RoomSize should be set by a separate BeginOverlap/EndOverlap event from room detection volumes."
+}

@@ -1,0 +1,168 @@
+{
+  "name": "Mono Synth (Minimoog-style)",
+  "asset_type": "Source",
+  "description": "Minimoog-inspired mono synthesizer. Three sound sources (Saw, Pink Noise, Square) mix into a Low Pass Biquad Filter. A looping AD Envelope sweeps the filter cutoff via Map Range — from base Cutoff Frequency up to Filter env amount. MSP_Sequencer steps through a MIDI note array driving oscillator pitch, with Glide for portamento. MSP_ADControl splits envelope Period by Att/Dec ratio. Trigger Repeat fires both sequencer steps and envelope retriggers. Classic bass/lead synth — filter sweep gives rhythmic character.",
+  "author": "Matt Spendlove (msp)",
+  "source_url": "https://dev.epicgames.com/community/learning/tutorials/metasound-mono-synth",
+  "interfaces": ["UE.Source.Default"],
+  "inputs": [
+    {"name": "OnPlay", "type": "Trigger"},
+    {"name": "Period", "type": "Float", "description": "Trigger repeat rate / note duration in seconds"},
+    {"name": "Notes", "type": "Int32[]", "description": "MIDI note numbers for sequencer pattern"},
+    {"name": "Env Att / Dec ratio", "type": "Float", "default": 0.128, "widget": "slider", "description": "Envelope attack/decay balance — 0.128 = short attack, long decay"},
+    {"name": "Filter env amount", "type": "Float", "default": 2663.0, "widget": "slider", "description": "Envelope peak filter cutoff in Hz — how far the filter opens"},
+    {"name": "Glide", "type": "Float", "default": 0.504, "widget": "slider", "description": "Portamento time — how fast pitch slides between notes"},
+    {"name": "Mixer Saw", "type": "Float", "default": 0.308, "widget": "slider", "description": "Saw oscillator mix level (linear gain)"},
+    {"name": "Mixer Noise", "type": "Float", "default": 0.248, "widget": "slider", "description": "Pink noise mix level (linear gain)"},
+    {"name": "Mixer Square", "type": "Float", "default": 1.0, "widget": "slider", "description": "Square oscillator mix level (linear gain)"},
+    {"name": "Cutoff Frequency", "type": "Float", "default": 138.4, "widget": "slider", "description": "Base filter cutoff in Hz — floor when envelope is at rest"},
+    {"name": "Bandwidth", "type": "Float", "default": 0.460, "widget": "slider", "description": "Low pass filter bandwidth — lower = more resonant"}
+  ],
+  "outputs": [
+    {"name": "Out Mono", "type": "Audio"},
+    {"name": "On Finished", "type": "Trigger"}
+  ],
+  "custom_patches": {
+    "MSP_Sequencer": {
+      "description": "Step sequencer — steps through MIDI note array on each trigger, converts to frequency. Random At shuffles after N steps. Start Note MIDI sets base pitch.",
+      "inputs": ["In (Trigger)", "Notes (Int32[])", "Start Note MIDI (Float)", "Step Length (Int32)", "Random At (Int32)"],
+      "outputs": ["Value (Float)"]
+    },
+    "MSP_ADControl": {
+      "description": "Splits a total time (Max Value) into Attack and Decay times by ratio (Value). At ratio 0.128: Attack = 12.8% of period, Decay = 87.2%.",
+      "inputs": ["Value (Float)", "Max Value (Float)"],
+      "outputs": ["Attack (Float)", "Decay (Float)"]
+    }
+  },
+  "nodes": [
+    {
+      "id": "trigger_repeat",
+      "node_type": "Trigger Repeat",
+      "position": [0, 0],
+      "defaults": {},
+      "comment": "Fires sequencer steps and envelope retriggers at Period rate"
+    },
+    {
+      "id": "sequencer",
+      "node_type": "MSP_Sequencer",
+      "position": [0, 300],
+      "defaults": {
+        "Start Note MIDI": 28.0,
+        "Step Length": 3,
+        "Random At": 12
+      },
+      "comment": "Step sequencer — MIDI 28 ≈ 41 Hz (low E). Randomizes after 12 steps."
+    },
+    {
+      "id": "ad_control",
+      "node_type": "MSP_ADControl",
+      "position": [300, 0],
+      "defaults": {},
+      "comment": "Splits Period into Attack and Decay times by Env Att/Dec ratio"
+    },
+    {
+      "id": "ad_envelope",
+      "node_type": "AD Envelope (Float)",
+      "position": [300, 150],
+      "defaults": {
+        "Attack Curve": 1.0,
+        "Decay Curve": 1.0,
+        "Looping": true
+      },
+      "comment": "Looping AD envelope — drives filter cutoff sweep each trigger"
+    },
+    {
+      "id": "map_range",
+      "node_type": "Map Range (Float)",
+      "position": [600, 0],
+      "defaults": {
+        "In Range A": 0.0,
+        "In Range B": 1.0,
+        "Clamped": true
+      },
+      "comment": "Maps envelope 0-1 to Cutoff Frequency..Filter env amount range"
+    },
+    {
+      "id": "saw",
+      "node_type": "Saw",
+      "position": [300, 450],
+      "defaults": {
+        "Enabled": true,
+        "Bi Polar": true,
+        "Phase Offset": 0.0,
+        "Type": "Poly Smooth"
+      },
+      "comment": "Saw oscillator — classic Minimoog tone, frequency from sequencer"
+    },
+    {
+      "id": "noise",
+      "node_type": "Noise",
+      "position": [300, 600],
+      "defaults": {
+        "Seed": -1,
+        "Type": "Pink Noise"
+      },
+      "comment": "Pink noise — adds texture/grit to the mix"
+    },
+    {
+      "id": "square",
+      "node_type": "Square",
+      "position": [300, 750],
+      "defaults": {
+        "Enabled": true,
+        "Bi Polar": true,
+        "Frequency": 440.0,
+        "Phase Offset": 0.0,
+        "Type": "Poly Smooth"
+      },
+      "comment": "Square oscillator — hollow/woody tone, frequency from sequencer"
+    },
+    {
+      "id": "mono_mixer",
+      "node_type": "Mono Mixer (4)",
+      "position": [600, 500],
+      "defaults": {
+        "Gain 3 (Lin)": 1.0
+      },
+      "comment": "4-input mono mixer — Saw/Noise/Square on In 0-2, In 3 unused"
+    },
+    {
+      "id": "biquad_filter",
+      "node_type": "Biquad Filter",
+      "position": [900, 400],
+      "defaults": {
+        "Gain (dB)": 0.0,
+        "Type": "Low Pass"
+      },
+      "comment": "Low pass filter — cutoff swept by envelope, bandwidth controls resonance"
+    }
+  ],
+  "connections": [
+    {"from_node": "__graph__", "from_pin": "OnPlay", "to_node": "trigger_repeat", "to_pin": "Start"},
+    {"from_node": "__graph__", "from_pin": "Period", "to_node": "trigger_repeat", "to_pin": "Period"},
+    {"from_node": "trigger_repeat", "from_pin": "RepeatOut", "to_node": "sequencer", "to_pin": "In"},
+    {"from_node": "trigger_repeat", "from_pin": "RepeatOut", "to_node": "ad_envelope", "to_pin": "Trigger"},
+    {"from_node": "__graph__", "from_pin": "Notes", "to_node": "sequencer", "to_pin": "Notes"},
+    {"from_node": "__graph__", "from_pin": "Period", "to_node": "ad_control", "to_pin": "Max Value"},
+    {"from_node": "__graph__", "from_pin": "Env Att / Dec ratio", "to_node": "ad_control", "to_pin": "Value"},
+    {"from_node": "ad_control", "from_pin": "Attack", "to_node": "ad_envelope", "to_pin": "Attack Time"},
+    {"from_node": "ad_control", "from_pin": "Decay", "to_node": "ad_envelope", "to_pin": "Decay Time"},
+    {"from_node": "ad_envelope", "from_pin": "Out Envelope", "to_node": "map_range", "to_pin": "In"},
+    {"from_node": "__graph__", "from_pin": "Cutoff Frequency", "to_node": "map_range", "to_pin": "Out Range A"},
+    {"from_node": "__graph__", "from_pin": "Filter env amount", "to_node": "map_range", "to_pin": "Out Range B"},
+    {"from_node": "map_range", "from_pin": "Out Value", "to_node": "biquad_filter", "to_pin": "Cutoff Frequency"},
+    {"from_node": "sequencer", "from_pin": "Value", "to_node": "saw", "to_pin": "Frequency"},
+    {"from_node": "sequencer", "from_pin": "Value", "to_node": "square", "to_pin": "Frequency"},
+    {"from_node": "__graph__", "from_pin": "Glide", "to_node": "saw", "to_pin": "Glide"},
+    {"from_node": "__graph__", "from_pin": "Glide", "to_node": "square", "to_pin": "Glide"},
+    {"from_node": "saw", "from_pin": "Audio", "to_node": "mono_mixer", "to_pin": "In 0"},
+    {"from_node": "__graph__", "from_pin": "Mixer Saw", "to_node": "mono_mixer", "to_pin": "Gain 0 (Lin)"},
+    {"from_node": "noise", "from_pin": "Audio", "to_node": "mono_mixer", "to_pin": "In 1"},
+    {"from_node": "__graph__", "from_pin": "Mixer Noise", "to_node": "mono_mixer", "to_pin": "Gain 1 (Lin)"},
+    {"from_node": "square", "from_pin": "Audio", "to_node": "mono_mixer", "to_pin": "In 2"},
+    {"from_node": "__graph__", "from_pin": "Mixer Square", "to_node": "mono_mixer", "to_pin": "Gain 2 (Lin)"},
+    {"from_node": "mono_mixer", "from_pin": "Out", "to_node": "biquad_filter", "to_pin": "In"},
+    {"from_node": "__graph__", "from_pin": "Bandwidth", "to_node": "biquad_filter", "to_pin": "Bandwidth"},
+    {"from_node": "biquad_filter", "from_pin": "Out", "to_node": "__graph__", "to_pin": "Out Mono"}
+  ]
+}

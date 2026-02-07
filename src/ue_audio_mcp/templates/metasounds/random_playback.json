@@ -1,0 +1,61 @@
+{
+  "name": "Random Audio Playback",
+  "asset_type": "Source",
+  "description": "Weighted random audio playback with timed repetition. OnPlay starts a Trigger Repeat that fires Random Get every Period seconds. Random Get picks from a WaveAsset array using a Weights float array for probability control (e.g. [0.1, 0.1, 0.7, 0.1] = 70% chance for index 2). No Repeats prevents consecutive duplicates. Use as a building block for ambient, footsteps, and any variation-based sound.",
+  "author": "Epic Games Community",
+  "source_url": "https://dev.epicgames.com/community/learning/tutorials/random-audio-metasound",
+  "interfaces": ["UE.Source.Default"],
+  "inputs": [
+    {"name": "OnPlay", "type": "Trigger"},
+    {"name": "Period", "type": "Float", "default": 1.0, "description": "Time between random plays in seconds"}
+  ],
+  "outputs": [
+    {"name": "Out Mono", "type": "Audio"},
+    {"name": "On Finished", "type": "Trigger"}
+  ],
+  "variables": [
+    {"name": "NumbersSamples", "type": "WaveAsset[]", "description": "Array of audio files to randomly select from"},
+    {"name": "Weights", "type": "Float[]", "description": "Per-element probability weights — must match array length. Example: [0.1, 0.1, 0.7, 0.1] gives 70% chance to index 2. Empty array = uniform distribution."}
+  ],
+  "nodes": [
+    {
+      "id": "trigger_repeat",
+      "node_type": "Trigger Repeat",
+      "position": [100, 0],
+      "defaults": {},
+      "comment": "Fires Random Get every Period seconds for continuous playback"
+    },
+    {
+      "id": "random_get",
+      "node_type": "Random Get (WaveAsset:Array)",
+      "position": [400, 0],
+      "defaults": {
+        "Seed": -1,
+        "No Repeats": 1,
+        "Enable Shared State": false
+      },
+      "comment": "Weighted random selection — Weights array controls probability per element"
+    },
+    {
+      "id": "wave_player",
+      "node_type": "Wave Player",
+      "position": [700, 0],
+      "defaults": {
+        "Start Time": 0.0,
+        "Pitch Shift": 0.0,
+        "Loop": false
+      }
+    }
+  ],
+  "connections": [
+    {"from_node": "__graph__", "from_pin": "OnPlay", "to_node": "trigger_repeat", "to_pin": "Play"},
+    {"from_node": "__graph__", "from_pin": "Period", "to_node": "trigger_repeat", "to_pin": "Period"},
+    {"from_node": "trigger_repeat", "from_pin": "Trigger Output", "to_node": "random_get", "to_pin": "Next"},
+    {"from_node": "var:NumbersSamples", "from_pin": "Value", "to_node": "random_get", "to_pin": "In Array"},
+    {"from_node": "var:Weights", "from_pin": "Value", "to_node": "random_get", "to_pin": "Weights"},
+    {"from_node": "random_get", "from_pin": "On Next", "to_node": "wave_player", "to_pin": "Play"},
+    {"from_node": "random_get", "from_pin": "Value", "to_node": "wave_player", "to_pin": "Wave Asset"},
+    {"from_node": "wave_player", "from_pin": "On Finished", "to_node": "__graph__", "to_pin": "On Finished"},
+    {"from_node": "wave_player", "from_pin": "Out Mono", "to_node": "__graph__", "to_pin": "Out Mono"}
+  ]
+}

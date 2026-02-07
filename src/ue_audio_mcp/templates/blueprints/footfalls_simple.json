@@ -1,0 +1,108 @@
+{
+  "name": "First Person Footfalls",
+  "type": "blueprint",
+  "description": "Plays MetaSound footfalls when character moves on ground, stops when airborne or stationary. Uses DoOnce to prevent per-frame Play calls. ExecuteTriggerParameter sends custom On Stop to MetaSound for graceful sound completion.",
+  "author": "Nick Pfisterer (pfist)",
+  "source_url": "https://dev.epicgames.com/community/learning/recommended-community-tutorial/WzJ/creating-first-person-footfalls-with-metasounds",
+  "requires": ["Audio Component named Footfalls", "MetaSound Source with On Stop trigger input"],
+  "character_class": "BP_FirstPersonCharacter",
+  "hookup": {
+    "section": "Movement Input",
+    "attach_after": "AddMovementInput",
+    "note": "First Person template has two AddMovementInput nodes (forward/backward + right/left). Chain footfalls off either exec pin — runs every frame during movement input. Default graph also has Gamepad Input, Mouse Input, Jump, and Primary Action sections which are left unchanged."
+  },
+  "nodes": [
+    {
+      "id": "add_movement",
+      "node_type": "AddMovementInput",
+      "position": [0, 0],
+      "comment": "Exec chain — runs every frame during movement input"
+    },
+    {
+      "id": "get_velocity",
+      "node_type": "GetVelocity",
+      "position": [200, 0],
+      "comment": "Returns character velocity vector"
+    },
+    {
+      "id": "vec_is_zero",
+      "node_type": "VectorIsZero",
+      "position": [400, 0],
+      "comment": "True if character is stationary"
+    },
+    {
+      "id": "not_zero",
+      "node_type": "NOT_Boolean",
+      "position": [550, 0],
+      "comment": "Inverted: true when moving"
+    },
+    {
+      "id": "is_falling",
+      "node_type": "IsFalling",
+      "position": [200, 200],
+      "comment": "True when character is airborne"
+    },
+    {
+      "id": "not_falling",
+      "node_type": "NOT_Boolean",
+      "position": [400, 200],
+      "comment": "Inverted: true when on ground"
+    },
+    {
+      "id": "and_gate",
+      "node_type": "BooleanAND",
+      "position": [650, 100],
+      "comment": "True when moving AND on ground"
+    },
+    {
+      "id": "branch",
+      "node_type": "Branch",
+      "position": [800, 0]
+    },
+    {
+      "id": "do_once",
+      "node_type": "DoOnce",
+      "position": [1000, 0],
+      "comment": "Prevents Play from firing every frame — only fires once until reset"
+    },
+    {
+      "id": "play",
+      "node_type": "Play",
+      "position": [1200, 0],
+      "defaults": {
+        "Target": "<AudioComponent_Footfalls>"
+      },
+      "comment": "Plays the Footfalls MetaSound Source"
+    },
+    {
+      "id": "reset_footfalls",
+      "node_type": "CustomEvent",
+      "position": [1000, 300],
+      "defaults": {"EventName": "ResetFootfalls"},
+      "comment": "Custom event to reset DoOnce — called when stopping"
+    },
+    {
+      "id": "execute_trigger",
+      "node_type": "ExecuteTriggerParameter",
+      "position": [1200, 200],
+      "defaults": {
+        "InName": "On Stop"
+      },
+      "comment": "Sends On Stop trigger to MetaSound for graceful completion"
+    }
+  ],
+  "connections": [
+    {"from_node": "add_movement", "from_pin": "Exec", "to_node": "branch", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "get_velocity", "from_pin": "ReturnValue", "to_node": "vec_is_zero", "to_pin": "A", "type": "data"},
+    {"from_node": "vec_is_zero", "from_pin": "ReturnValue", "to_node": "not_zero", "to_pin": "A", "type": "data"},
+    {"from_node": "is_falling", "from_pin": "ReturnValue", "to_node": "not_falling", "to_pin": "A", "type": "data"},
+    {"from_node": "not_zero", "from_pin": "ReturnValue", "to_node": "and_gate", "to_pin": "A", "type": "data"},
+    {"from_node": "not_falling", "from_pin": "ReturnValue", "to_node": "and_gate", "to_pin": "B", "type": "data"},
+    {"from_node": "and_gate", "from_pin": "ReturnValue", "to_node": "branch", "to_pin": "Condition", "type": "data"},
+    {"from_node": "branch", "from_pin": "True", "to_node": "do_once", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "do_once", "from_pin": "Completed", "to_node": "play", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "branch", "from_pin": "False", "to_node": "execute_trigger", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "execute_trigger", "from_pin": "Exec", "to_node": "reset_footfalls", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "reset_footfalls", "from_pin": "Exec", "to_node": "do_once", "to_pin": "Reset", "type": "exec"}
+  ]
+}

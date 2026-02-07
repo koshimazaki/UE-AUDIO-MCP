@@ -1,0 +1,174 @@
+{
+  "name": "SFX Generator Preset Widget Controller",
+  "type": "blueprint",
+  "blueprint_type": "editor_utility_widget",
+  "author": "Eric Buchholz (TechAudioTools, Epic Games)",
+  "description": "Preset Widget controller from TechAudioTools SFX Generator. Editor utility widget that initializes a MetaSound Builder, passes input literals to the MetaSound Editor ViewModel, binds output watch delegates for real-time visualization, and provides hierarchical randomization with per-parameter lock/scope. Demonstrates: Builder initialization, Preset Widget construction, Audio Component play state handling, Output Watch binding/unbinding, and Wave Writer record toggle.",
+  "source_url": "https://dev.epicgames.com/community/learning/tutorials/ZMpq/unreal-engine-tech-audio-tools-content-documentation",
+  "requires": [
+    "TechAudioTools engine plugin enabled",
+    "UMG Viewmodel engine plugin enabled",
+    "MetaSound Source asset (e.g. MSS_SFXGenerator)",
+    "Custom Editor User Widgets: EUW_MetaSoundFloat_Knob, EUW_MetaSoundBoolean_ToggleButton, EUW_MetaSoundInteger_Slider, EUW_SFXGenerator_Randomizer"
+  ],
+  "ue_version": "5.6+",
+  "nodes": [
+    {
+      "id": "pre_construct",
+      "node_type": "PreConstruct",
+      "position": [0, -600],
+      "comment": "Pre-Construction: set styles, colours for the widget UI"
+    },
+    {
+      "id": "construct",
+      "node_type": "Construct",
+      "position": [0, -400],
+      "comment": "Construction: attempt to Initialize the SFX Generator and Audio Buses"
+    },
+    {
+      "id": "init_builder",
+      "node_type": "InitializeMetaSoundBuilder",
+      "position": [300, -400],
+      "comment": "Initialize the MetaSound Builder — fails if Builder is invalid. Must succeed before any parameter operations."
+    },
+    {
+      "id": "get_input_literals",
+      "node_type": "GetInputLiterals",
+      "position": [600, -400],
+      "comment": "Get all input literal values from the MetaSound asset"
+    },
+    {
+      "id": "loop_literals",
+      "node_type": "ForEachLoop",
+      "position": [800, -400],
+      "comment": "Loop through each input literal and pass to the MetaSound Editor ViewModel"
+    },
+    {
+      "id": "pass_to_viewmodel",
+      "node_type": "SetViewModelInput",
+      "position": [1000, -400],
+      "comment": "Passes input literal to MetaSound Editor ViewModel for widget binding"
+    },
+    {
+      "id": "on_widget_constructed",
+      "node_type": "OnMetaSoundPresetWidgetConstructed",
+      "position": [0, -200],
+      "comment": "When Preset Widget is constructed, get reference to Builder"
+    },
+    {
+      "id": "get_builder_ref",
+      "node_type": "GetBuilderReference",
+      "position": [300, -200],
+      "comment": "Cache Builder reference for runtime parameter operations"
+    },
+    {
+      "id": "on_audition",
+      "node_type": "OnMetaSoundAudition",
+      "position": [0, 0],
+      "comment": "When auditioning: cache AudioComponent, bind output watches, bind play state delegate"
+    },
+    {
+      "id": "cache_audio_comp",
+      "node_type": "SetVariable",
+      "position": [300, 0],
+      "defaults": {"VariableName": "AudioComponent"},
+      "comment": "Cache AudioComponent reference for delegate management"
+    },
+    {
+      "id": "bind_output_watches",
+      "node_type": "BindMetaSoundOutputWatch",
+      "position": [500, 0],
+      "comment": "Bind output watch delegates — receives block-rate data (envelope, LFO) for widget visualization"
+    },
+    {
+      "id": "bind_play_state",
+      "node_type": "BindOnAudioPlayStateChanged",
+      "position": [500, 200],
+      "comment": "Bind play state delegate — triggers cleanup when sound stops"
+    },
+    {
+      "id": "on_play_state_changed",
+      "node_type": "OnAudioPlayStateChanged",
+      "position": [0, 400],
+      "comment": "When play state changes to Stopped: unbind output watches, reset visualization widgets"
+    },
+    {
+      "id": "check_stopped",
+      "node_type": "Branch",
+      "position": [300, 400],
+      "comment": "Check if PlayState == Stopped"
+    },
+    {
+      "id": "check_ac_valid",
+      "node_type": "IsValid",
+      "position": [500, 400],
+      "comment": "Check if AudioComponent is still valid before unbinding"
+    },
+    {
+      "id": "unbind_watches",
+      "node_type": "UnbindMetaSoundOutputWatch",
+      "position": [700, 350],
+      "comment": "Unbind output watches if AC is still valid — clean delegate cleanup"
+    },
+    {
+      "id": "reset_env_widget",
+      "node_type": "ResetWidgetVisualization",
+      "position": [700, 500],
+      "defaults": {"Widget": "EnvelopeDisplay"},
+      "comment": "Reset envelope widget visualization — handles case where AC destroyed before final 0 values sent"
+    },
+    {
+      "id": "reset_lfo_widget",
+      "node_type": "ResetWidgetVisualization",
+      "position": [900, 500],
+      "defaults": {"Widget": "LFODisplay"},
+      "comment": "Reset LFO widget visualization"
+    },
+    {
+      "id": "randomize_all",
+      "node_type": "RandomizeParameters",
+      "position": [0, 700],
+      "comment": "Top-scope randomizer: recursively randomizes all unlocked parameters across all sections"
+    },
+    {
+      "id": "on_record_toggle",
+      "node_type": "OnToggleButtonStateChanged",
+      "position": [0, 900],
+      "comment": "Record toggle: changes visual colour and arms/disarms Wave Writer input"
+    },
+    {
+      "id": "set_record_param",
+      "node_type": "SetBoolParameter",
+      "position": [300, 900],
+      "defaults": {"InName": "RecordEnabled"},
+      "comment": "Sets RecordEnabled input on the MetaSound Source"
+    }
+  ],
+  "variables": [
+    {"name": "AudioComponent", "type": "AudioComponent", "description": "Cached reference to the playing AudioComponent"},
+    {"name": "MetaSoundBuilder", "type": "MetaSoundBuilderHandle", "description": "Handle to the MetaSound Builder for runtime operations"},
+    {"name": "IsRecording", "type": "Bool", "default": false, "description": "Record arm state"}
+  ],
+  "connections": [
+    {"from_node": "construct", "from_pin": "Exec", "to_node": "init_builder", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "init_builder", "from_pin": "Exec", "to_node": "get_input_literals", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "get_input_literals", "from_pin": "Exec", "to_node": "loop_literals", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "loop_literals", "from_pin": "LoopBody", "to_node": "pass_to_viewmodel", "to_pin": "Exec", "type": "exec"},
+
+    {"from_node": "on_widget_constructed", "from_pin": "Exec", "to_node": "get_builder_ref", "to_pin": "Exec", "type": "exec"},
+
+    {"from_node": "on_audition", "from_pin": "Exec", "to_node": "cache_audio_comp", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "cache_audio_comp", "from_pin": "Exec", "to_node": "bind_output_watches", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "bind_output_watches", "from_pin": "Exec", "to_node": "bind_play_state", "to_pin": "Exec", "type": "exec"},
+
+    {"from_node": "on_play_state_changed", "from_pin": "Exec", "to_node": "check_stopped", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "check_stopped", "from_pin": "True", "to_node": "check_ac_valid", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "check_ac_valid", "from_pin": "True", "to_node": "unbind_watches", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "check_ac_valid", "from_pin": "False", "to_node": "reset_env_widget", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "reset_env_widget", "from_pin": "Exec", "to_node": "reset_lfo_widget", "to_pin": "Exec", "type": "exec"},
+
+    {"from_node": "on_record_toggle", "from_pin": "Exec", "to_node": "set_record_param", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "var:AudioComponent", "from_pin": "Value", "to_node": "set_record_param", "to_pin": "Target", "type": "data"}
+  ],
+  "notes": "Key patterns from TechAudioTools Preset Widget system: (1) MetaSound Builder must be initialized BEFORE any parameter operations — fails gracefully if invalid. (2) Input literals are looped and passed to MetaSound Editor ViewModel for automatic widget binding. (3) Output Watch delegates provide block-rate data (envelope, LFO values) for real-time widget visualization. (4) On play state Stopped: MUST unbind output watches AND reset widget visualizations — if AC is destroyed before final 0 values, widgets can get stuck in non-zero state. (5) Randomizer widgets support hierarchical scope: individual param → subsection → section → all. Lock toggle prevents randomization at that scope and blocks calls to interior scopes. (6) Custom Editor User Widgets: Float_Knob (randomize+lock+default+range), Integer_Slider (same), Boolean_ToggleButton, Randomizer (icon toggle lock + icon button randomize). (7) Audio Buses feed mid-graph audio-rate data to analyzer widgets for real-time waveform display (Generator, Filter, WaveShaper, BitCrusher, RingMod, Vibrato, Delay, Reverb sections)."
+}

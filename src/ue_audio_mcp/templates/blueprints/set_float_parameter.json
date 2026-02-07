@@ -1,0 +1,65 @@
+{
+  "name": "Set Float Parameter (Event Tick)",
+  "type": "blueprint",
+  "blueprint_type": "actor",
+  "description": "Real-time MetaSounds parameter update via Blueprint lifecycle. Event Tick fires every frame, calling Set Float Parameter on an Audio Component to push a float variable into the MetaSound graph by name. Use for knobs, sliders, game state values that need continuous updates. Scales to multiple parameters by chaining Set Float Parameter calls.",
+  "author": "Matt Spendlove (msp)",
+  "source_url": "https://dev.epicgames.com/community/learning/tutorials/metasound-mono-synth",
+  "requires": [
+    "Audio Component playing a MetaSound Source with named float inputs",
+    "Blueprint float variable matching the parameter to update"
+  ],
+  "nodes": [
+    {
+      "id": "event_tick",
+      "node_type": "EventTick",
+      "position": [0, 0],
+      "comment": "Fires every frame — every tick of the gameplay loop checks and pushes values"
+    },
+    {
+      "id": "set_mixer_sub",
+      "node_type": "Set Float Parameter",
+      "position": [300, 0],
+      "defaults": {
+        "In Name": "Mixer Sub"
+      },
+      "comment": "In Name must match MetaSound graph input name exactly (case-sensitive)"
+    },
+    {
+      "id": "set_mixer_fm",
+      "node_type": "Set Float Parameter",
+      "position": [300, 200],
+      "defaults": {
+        "In Name": "Mixer FM"
+      },
+      "comment": "Chain exec → exec for each parameter. Same Audio Component target."
+    },
+    {
+      "id": "set_seq_period",
+      "node_type": "Set Float Parameter",
+      "position": [300, 400],
+      "defaults": {
+        "In Name": "Seq Period"
+      },
+      "comment": "Any float graph input can be driven this way — just match the name"
+    }
+  ],
+  "variables": [
+    {"name": "Audio", "type": "AudioComponent", "description": "Reference to the Audio Component playing the MetaSound Source"},
+    {"name": "Mixer Sub", "type": "Float", "description": "Sub-oscillator mix level — bind to UI slider or game state"},
+    {"name": "Mixer FM", "type": "Float", "description": "FM modulation amount"},
+    {"name": "Seq Period", "type": "Float", "description": "Sequencer period / note duration"}
+  ],
+  "connections": [
+    {"from_node": "event_tick", "from_pin": "Exec", "to_node": "set_mixer_sub", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "set_mixer_sub", "from_pin": "Exec", "to_node": "set_mixer_fm", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "set_mixer_fm", "from_pin": "Exec", "to_node": "set_seq_period", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "var:Audio", "from_pin": "Value", "to_node": "set_mixer_sub", "to_pin": "Target", "type": "data"},
+    {"from_node": "var:Mixer Sub", "from_pin": "Value", "to_node": "set_mixer_sub", "to_pin": "In Float", "type": "data"},
+    {"from_node": "var:Audio", "from_pin": "Value", "to_node": "set_mixer_fm", "to_pin": "Target", "type": "data"},
+    {"from_node": "var:Mixer FM", "from_pin": "Value", "to_node": "set_mixer_fm", "to_pin": "In Float", "type": "data"},
+    {"from_node": "var:Audio", "from_pin": "Value", "to_node": "set_seq_period", "to_pin": "Target", "type": "data"},
+    {"from_node": "var:Seq Period", "from_pin": "Value", "to_node": "set_seq_period", "to_pin": "In Float", "type": "data"}
+  ],
+  "notes": "Chain as many Set Float Parameter calls as needed — one per MetaSound input to control. In Name must match the graph input name exactly (case-sensitive). Also available: Set Int Parameter, Set Bool Parameter, Set String Parameter, Execute Trigger Parameter. Consider using a Timer instead of Event Tick if you don't need 60fps updates."
+}

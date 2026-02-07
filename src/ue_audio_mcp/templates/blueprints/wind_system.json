@@ -2,6 +2,7 @@
   "name": "Wind System",
   "type": "blueprint",
   "description": "Controls MetaSound wind based on player pawn movement speed. Event BeginPlay spawns the MetaSound, Event Tick continuously feeds velocity magnitude as PawnSpeed parameter.",
+  "author": "Epic Games",
   "source_url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/metasounds-quick-start",
   "requires": ["MetaSound Source with PawnSpeed float input"],
   "nodes": [

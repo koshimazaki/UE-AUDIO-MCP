@@ -82,6 +82,18 @@ INTERFACES: dict[str, dict] = {
             {"name": "Out Stereo R", "type": "Audio"},
         ],
     },
+    "UE.Source.Default": {
+        "description": "Default playback with play trigger and stereo output",
+        "inputs": [
+            {"name": "OnPlay", "type": "Trigger"},
+        ],
+        "outputs": [
+            {"name": "OnFinished", "type": "Trigger"},
+            {"name": "Out Mono", "type": "Audio"},
+            {"name": "Out Stereo L", "type": "Audio"},
+            {"name": "Out Stereo R", "type": "Audio"},
+        ],
+    },
     "UE.Attenuation": {
         "description": "Distance-based volume falloff",
         "inputs": [
@@ -119,6 +131,7 @@ NODE_CATEGORIES: list[str] = [
     "Debug",
     "External IO",
     "General",
+    "Patches",
 ]
 
 # ---------------------------------------------------------------------------
