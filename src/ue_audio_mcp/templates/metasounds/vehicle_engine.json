@@ -62,7 +62,7 @@
       "type": "Audio"
     },
     {
-      "name": "On Finished",
+      "name": "OnFinished",
       "type": "Trigger"
     }
   ],

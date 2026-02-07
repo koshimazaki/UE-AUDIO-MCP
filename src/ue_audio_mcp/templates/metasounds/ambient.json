@@ -33,11 +33,11 @@
       "type": "Audio"
     },
     {
-      "name": "On Finished",
+      "name": "OnFinished",
       "type": "Trigger"
     },
     {
-      "name": "On Looped",
+      "name": "OnLooped",
       "type": "Trigger"
     }
   ],
@@ -100,13 +100,13 @@
       "from_node": "wave_player",
       "from_pin": "Out Left",
       "to_node": "stereo_mixer",
-      "to_pin": "Audio L 0"
+      "to_pin": "In 0 L"
     },
     {
       "from_node": "wave_player",
       "from_pin": "Out Right",
       "to_node": "stereo_mixer",
-      "to_pin": "Audio R 0"
+      "to_pin": "In 0 R"
     },
     {
       "from_node": "lfo",
@@ -116,19 +116,19 @@
     },
     {
       "from_node": "stereo_mixer",
-      "from_pin": "Audio L",
+      "from_pin": "Out L",
       "to_node": "__graph__",
       "to_pin": "Out Stereo L"
     },
     {
       "from_node": "stereo_mixer",
-      "from_pin": "Audio R",
+      "from_pin": "Out R",
       "to_node": "__graph__",
       "to_pin": "Out Stereo R"
     },
     {
       "from_node": "stereo_mixer",
-      "from_pin": "Audio L",
+      "from_pin": "Out L",
       "to_node": "__graph__",
       "to_pin": "Out Mono"
     },
@@ -136,13 +136,13 @@
       "from_node": "wave_player",
       "from_pin": "On Finished",
       "to_node": "__graph__",
-      "to_pin": "On Finished"
+      "to_pin": "OnFinished"
     },
     {
       "from_node": "wave_player",
       "from_pin": "On Looped",
       "to_node": "__graph__",
-      "to_pin": "On Looped"
+      "to_pin": "OnLooped"
     }
   ]
 }

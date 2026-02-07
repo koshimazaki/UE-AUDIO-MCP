@@ -57,11 +57,11 @@
       "type": "Audio"
     },
     {
-      "name": "On Finished",
+      "name": "OnFinished",
       "type": "Trigger"
     },
     {
-      "name": "On Looped",
+      "name": "OnLooped",
       "type": "Trigger"
     }
   ],
@@ -274,13 +274,13 @@
       "from_node": "wave_player",
       "from_pin": "On Finished",
       "to_node": "__graph__",
-      "to_pin": "On Finished"
+      "to_pin": "OnFinished"
     },
     {
       "from_node": "wave_player",
       "from_pin": "On Looped",
       "to_node": "__graph__",
-      "to_pin": "On Looped"
+      "to_pin": "OnLooped"
     }
   ]
 }

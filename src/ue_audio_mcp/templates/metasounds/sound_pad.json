@@ -42,7 +42,7 @@
   ],
   "outputs": [
     {
-      "name": "On Finished",
+      "name": "OnFinished",
       "type": "Trigger"
     },
     {
@@ -298,7 +298,7 @@
       "from_node": "trigger_any",
       "from_pin": "Trigger",
       "to_node": "__graph__",
-      "to_pin": "On Finished"
+      "to_pin": "OnFinished"
     }
   ]
 }

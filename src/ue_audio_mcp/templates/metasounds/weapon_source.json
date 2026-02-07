@@ -58,7 +58,7 @@
   ],
   "outputs": [
     {
-      "name": "On Finished",
+      "name": "OnFinished",
       "type": "Trigger"
     },
     {
@@ -219,35 +219,35 @@
       "from_node": "room_switch",
       "from_pin": "Output_L",
       "to_node": "stereo_mixer",
-      "to_pin": "Audio L 0"
+      "to_pin": "In 0 L"
     },
     {
       "from_node": "room_switch",
       "from_pin": "Output_R",
       "to_node": "stereo_mixer",
-      "to_pin": "Audio R 0"
+      "to_pin": "In 0 R"
     },
     {
       "from_node": "tail_crossfade",
       "from_pin": "Output_L",
       "to_node": "stereo_mixer",
-      "to_pin": "Audio L 1"
+      "to_pin": "In 1 L"
     },
     {
       "from_node": "tail_crossfade",
       "from_pin": "Output_R",
       "to_node": "stereo_mixer",
-      "to_pin": "Audio R 1"
+      "to_pin": "In 1 R"
     },
     {
       "from_node": "stereo_mixer",
-      "from_pin": "Audio L",
+      "from_pin": "Out L",
       "to_node": "__graph__",
       "to_pin": "Out Stereo L"
     },
     {
       "from_node": "stereo_mixer",
-      "from_pin": "Audio R",
+      "from_pin": "Out R",
       "to_node": "__graph__",
       "to_pin": "Out Stereo R"
     },
@@ -273,7 +273,7 @@
       "from_node": "trigger_any",
       "from_pin": "Trigger",
       "to_node": "__graph__",
-      "to_pin": "On Finished"
+      "to_pin": "OnFinished"
     }
   ]
 }

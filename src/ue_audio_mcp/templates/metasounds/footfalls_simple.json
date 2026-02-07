@@ -23,7 +23,7 @@
       "type": "Audio"
     },
     {
-      "name": "On Finished",
+      "name": "OnFinished",
       "type": "Trigger"
     }
   ],
@@ -133,7 +133,7 @@
       "from_node": "trigger_once",
       "from_pin": "Trigger Out",
       "to_node": "__graph__",
-      "to_pin": "On Finished"
+      "to_pin": "OnFinished"
     }
   ]
 }

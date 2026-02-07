@@ -74,7 +74,7 @@
   ],
   "outputs": [
     {
-      "name": "On Finished",
+      "name": "OnFinished",
       "type": "Trigger"
     },
     {
@@ -688,13 +688,13 @@
       "from_node": "wp_a",
       "from_pin": "Out Left",
       "to_node": "stereo_mixer",
-      "to_pin": "Audio L 0"
+      "to_pin": "In 0 L"
     },
     {
       "from_node": "wp_a",
       "from_pin": "Out Right",
       "to_node": "stereo_mixer",
-      "to_pin": "Audio R 0"
+      "to_pin": "In 0 R"
     },
     {
       "from_node": "gain_a",
@@ -706,13 +706,13 @@
       "from_node": "wp_b",
       "from_pin": "Out Left",
       "to_node": "stereo_mixer",
-      "to_pin": "Audio L 1"
+      "to_pin": "In 1 L"
     },
     {
       "from_node": "wp_b",
       "from_pin": "Out Right",
       "to_node": "stereo_mixer",
-      "to_pin": "Audio R 1"
+      "to_pin": "In 1 R"
     },
     {
       "from_node": "gain_b_bell",
@@ -724,13 +724,13 @@
       "from_node": "wp_c",
       "from_pin": "Out Left",
       "to_node": "stereo_mixer",
-      "to_pin": "Audio L 2"
+      "to_pin": "In 2 L"
     },
     {
       "from_node": "wp_c",
       "from_pin": "Out Right",
       "to_node": "stereo_mixer",
-      "to_pin": "Audio R 2"
+      "to_pin": "In 2 R"
     },
     {
       "from_node": "gain_c",
@@ -740,25 +740,25 @@
     },
     {
       "from_node": "stereo_mixer",
-      "from_pin": "Audio L",
+      "from_pin": "Out L",
       "to_node": "__graph__",
       "to_pin": "Output_L"
     },
     {
       "from_node": "stereo_mixer",
-      "from_pin": "Audio R",
+      "from_pin": "Out R",
       "to_node": "__graph__",
       "to_pin": "Output_R"
     },
     {
       "from_node": "stereo_mixer",
-      "from_pin": "Audio L",
+      "from_pin": "Out L",
       "to_node": "ms_encode",
       "to_pin": "Audio L"
     },
     {
       "from_node": "stereo_mixer",
-      "from_pin": "Audio R",
+      "from_pin": "Out R",
       "to_node": "ms_encode",
       "to_pin": "Audio R"
     },
@@ -802,7 +802,7 @@
       "from_node": "trigger_any",
       "from_pin": "Trigger",
       "to_node": "__graph__",
-      "to_pin": "On Finished"
+      "to_pin": "OnFinished"
     }
   ]
 }
