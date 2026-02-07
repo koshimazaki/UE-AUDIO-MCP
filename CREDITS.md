@@ -140,14 +140,21 @@ Templates derived from official UE5 audio tutorials and documentation:
 - `blueprints/physics_audio.json` — Physics rolling/impact/scraping → audio
 - `blueprints/quartz_vertical_music.json` — Quartz-synchronised vertical music layers
 - `blueprints/triggered_music_stinger.json` — One-shot overlap-triggered stinger
+- `blueprints/quartz_music_playlist.json` — Shuffle-based music playlist with OnAudioFinished chaining
+- `blueprints/quartz_multi_clock.json` — Dual Quartz clocks with different time signatures (4/4 + 5/4)
+- `blueprints/quartz_transitional_states.json` — Full bidirectional music state machine (Amb/Low/Mid/High) with harmonic stingers
+- `blueprints/synesthesia_stems.json` — Synesthesia NRT per-stem analysis + particle visualisation
 
 **Knowledge informed by this work:**
 - Sound Class hierarchy (Master → Area_Loops + Source_Loops + One_Shots + Footsteps + Foley + Night_Day + Dialogue)
 - 3 occlusion methods: fake switching, Ambient Zones, raycasting
 - Component-based sound decomposition (4 categories × 3 variants = 81 combinations)
 - Audio analysis patterns: Envelope Following, Spectral Analysis, Audio Capture (microphone), Synesthesia NRT
-- Quartz music system: vertical layering, bar-quantized transitions, metronome callbacks
+- Quartz music system: vertical layering, bar-quantized transitions, metronome callbacks, multi-clock coordination
 - Physics audio: angular velocity → rolling, NormalImpulse → impacts, linear velocity → scraping
+- Multi-clock patterns: separate clocks for different time signatures, StartOtherClock for sync, beat-level queueing
+- Transitional music: bidirectional state machine with cover triggers, harmonic stinger selection by bar position
+- Synesthesia NRT: ConstantQ (spectral), Onset (transients), Loudness (envelope) — zero runtime cost pre-computed analysis
 
 ---
 

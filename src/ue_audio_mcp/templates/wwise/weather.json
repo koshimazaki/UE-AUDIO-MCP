@@ -1,0 +1,185 @@
+{
+  "name": "Weather States — Full 3-Layer System",
+  "type": "wwise",
+  "description": "Complete state-driven weather system wiring Wwise (state switching/crossfade) + MetaSounds (procedural weather synthesis) + Blueprint (weather state management). Wwise manages the StateGroup-driven SwitchContainer with crossfade transitions. MetaSounds generates procedural rain/wind/thunder DSP with intensity control. Blueprint detects weather changes and sets States + parameters.",
+
+  "wwise_objects": {
+    "hierarchy": {
+      "type": "SwitchContainer",
+      "name": "Ambience_Weather",
+      "parent": "\\Actor-Mixer Hierarchy\\Default Work Unit",
+      "switch_group_ref": "Weather",
+      "transition_mode": "CrossFade",
+      "transition_duration": 3.0,
+      "children": [
+        {
+          "type": "Sound",
+          "name": "Weather_{state}",
+          "for_each": "{weather_states}",
+          "assigned_to_state": "{state}",
+          "properties": {
+            "IsLoopingEnabled": true,
+            "IsLoopingInfinite": true
+          },
+          "note": "Per-state looping sound — crossfades on state transition"
+        }
+      ]
+    },
+    "state_group": {
+      "type": "StateGroup",
+      "name": "Weather",
+      "parent": "\\States\\Default Work Unit",
+      "values": "{weather_states}",
+      "default_transition": 3.0,
+      "note": "Weather states: Clear, Cloudy, LightRain, HeavyRain, Storm, Snow"
+    },
+    "event": {
+      "type": "Event",
+      "name": "Play_Weather_Ambience",
+      "parent": "\\Events\\Default Work Unit",
+      "actions": [
+        {"type": "Play", "target": "Ambience_Weather"}
+      ]
+    },
+    "game_parameters": [
+      {
+        "name": "RTPC_Weather_Intensity",
+        "range": [0.0, 100.0],
+        "default": 0.0,
+        "note": "Continuous intensity within current state — drives volume and filter in both Wwise and MetaSounds"
+      },
+      {
+        "name": "RTPC_Wind_Speed",
+        "range": [0.0, 100.0],
+        "default": 20.0,
+        "note": "Wind speed parameter — drives noise modulation rate in MetaSounds"
+      },
+      {
+        "name": "RTPC_Thunder_Distance",
+        "range": [0.0, 100.0],
+        "default": 50.0,
+        "note": "Thunder proximity — drives delay between flash and rumble"
+      }
+    ],
+    "buses": {
+      "output_bus": "\\Master-Mixer Hierarchy\\Ambience",
+      "aux_buses": [
+        {
+          "name": "Weather_Reverb",
+          "note": "Large outdoor reverb for weather — longer RT60 during storm"
+        }
+      ]
+    }
+  },
+
+  "audiolink": {
+    "enabled": true,
+    "direction": "MetaSounds → Wwise",
+    "bus": "AudioLink_Weather",
+    "setup_steps": [
+      "1. Enable AudioLink plugin",
+      "2. Create AudioLink bus: Master-Mixer > AudioLink_Weather",
+      "3. MetaSounds weather Source → AudioLink → Wwise Weather bus",
+      "4. Wwise StateGroup manages which state variation plays",
+      "5. Wwise handles crossfade transitions between states (3s default)"
+    ]
+  },
+
+  "metasound_link": {
+    "template": "metasounds/weather.json",
+    "asset_name": "MS_{name}_Weather",
+    "asset_type": "Source",
+    "parameter_mapping": [
+      {
+        "wwise_source": "Event Play_Weather_Ambience",
+        "metasound_target": "OnPlay (Trigger)",
+        "mechanism": "AudioComponent.Play() fires MetaSounds OnPlay"
+      },
+      {
+        "wwise_source": "State Weather",
+        "metasound_target": "WeatherState (Int32 input)",
+        "direction": "Blueprint → MetaSounds",
+        "mechanism": "SetIntParameter('WeatherState', stateIndex)",
+        "note": "Int index: 0=Clear, 1=Cloudy, 2=LightRain, 3=HeavyRain, 4=Storm, 5=Snow"
+      },
+      {
+        "wwise_source": "RTPC_Weather_Intensity",
+        "metasound_target": "Intensity (Float input)",
+        "direction": "Blueprint → both",
+        "mechanism": "SetRTPCValue for Wwise + SetFloatParameter for MetaSounds",
+        "note": "Continuous control within current state — MetaSounds adjusts filter cutoff"
+      },
+      {
+        "wwise_source": "RTPC_Wind_Speed",
+        "metasound_target": "WindSpeed (Float input)",
+        "direction": "Blueprint → MetaSounds",
+        "mechanism": "SetFloatParameter('WindSpeed', speed)",
+        "note": "Modulates LFO rate on noise generator for wind gusting"
+      }
+    ]
+  },
+
+  "blueprint_link": {
+    "template": "blueprints/wind_system.json",
+    "class_name": "BP_WeatherAudio",
+    "parameter_mapping": [
+      {
+        "blueprint_action": "PostEvent('Play_Weather_Ambience')",
+        "target": "Wwise",
+        "when": "On level begin play",
+        "note": "Start weather ambient at level load — always running"
+      },
+      {
+        "blueprint_action": "SetState('Weather', '{state}')",
+        "target": "Wwise State",
+        "when": "On weather system state change",
+        "note": "Weather manager notifies audio system → SetState triggers Wwise crossfade"
+      },
+      {
+        "blueprint_action": "SetIntParameter('WeatherState', stateIndex)",
+        "target": "MetaSounds input",
+        "when": "Same as SetState",
+        "note": "MetaSounds needs integer index for state-based DSP branching"
+      },
+      {
+        "blueprint_action": "SetRTPCValue('RTPC_Weather_Intensity', intensity)",
+        "target": "Wwise RTPC",
+        "when": "Per tick during weather transitions or intensity changes",
+        "note": "Smooth interpolation during state transitions"
+      },
+      {
+        "blueprint_action": "SetFloatParameter('Intensity', normalizedIntensity)",
+        "target": "MetaSounds input",
+        "when": "Same as RTPC update"
+      },
+      {
+        "blueprint_action": "SetFloatParameter('WindSpeed', windSpeed)",
+        "target": "MetaSounds input",
+        "when": "Per tick from wind system",
+        "note": "Wind speed drives MetaSounds noise LFO rate"
+      }
+    ],
+    "events_posted": ["Play_Weather_Ambience", "Stop_Weather_Ambience"],
+    "rtpcs_set": ["RTPC_Weather_Intensity", "RTPC_Wind_Speed", "RTPC_Thunder_Distance"],
+    "switches_set": [],
+    "states_set": ["Weather"]
+  },
+
+  "signal_flow": [
+    "1. BLUEPRINT: Level loads → PostEvent('Play_Weather_Ambience')",
+    "2. WWISE: Event triggers Play on SwitchContainer — starts with default state (Clear)",
+    "3. METASOUNDS: OnPlay trigger → noise generator + wave player + filter begin looping",
+    "4. BLUEPRINT: Weather system changes to 'HeavyRain'",
+    "5. BLUEPRINT: SetState('Weather', 'HeavyRain') → Wwise crossfades to HeavyRain child (3s)",
+    "6. BLUEPRINT: SetIntParameter('WeatherState', 3) → MetaSounds switches DSP branch",
+    "7. BLUEPRINT: Per-tick SetRTPCValue('RTPC_Weather_Intensity', rampingValue)",
+    "8. BLUEPRINT: Per-tick SetFloatParameter('Intensity', rampingValue)",
+    "9. METASOUNDS: Intensity drives filter cutoff (more intense = brighter/louder)",
+    "10. AUDIOLINK: MetaSounds audio → AudioLink → Wwise Weather bus",
+    "11. WWISE: Applies environmental reverb, bus mixing, master output"
+  ],
+
+  "parameters": {
+    "weather_states": {"type": "string[]", "default": ["Clear", "Cloudy", "LightRain", "HeavyRain", "Storm", "Snow"], "description": "Weather state names"}
+  }
+}

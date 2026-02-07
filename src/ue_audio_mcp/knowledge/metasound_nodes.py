@@ -234,27 +234,34 @@ _register(_node(
 _WAVE_PLAYER_INPUTS: list[InputPin] = [
     _in("Play", "Trigger"),
     _in("Stop", "Trigger", required=False),
-    _in("WaveAsset", "WaveAsset"),
+    _in("Wave Asset", "WaveAsset"),
+    _in("Start Time", "Time", required=False, default=0.0),
+    _in("Pitch Shift", "Float", required=False, default=0.0),
     _in("Loop", "Bool", default=False),
-    _in("LoopStart", "Time", required=False, default=0.0),
-    _in("LoopDuration", "Time", required=False, default=-1.0),
-    _in("StartTime", "Time", required=False, default=0.0),
-    _in("PitchShift", "Float", required=False, default=0.0),
+    _in("Loop Start", "Time", required=False, default=0.0),
+    _in("Loop Duration", "Time", required=False, default=-1.0),
 ]
 
 _WAVE_PLAYER_OUTPUTS_MONO: list[Pin] = [
     _out("Audio", "Audio"),
-    _out("OnFinished", "Trigger"),
-    _out("OnLooped", "Trigger"),
-    _out("OnNearlyFinished", "Trigger"),
+    _out("On Finished", "Trigger"),
+    _out("On Looped", "Trigger"),
+    _out("On Nearly Finished", "Trigger"),
 ]
 
 _WAVE_PLAYER_OUTPUTS_STEREO: list[Pin] = [
-    _out("Audio L", "Audio"),
-    _out("Audio R", "Audio"),
-    _out("OnFinished", "Trigger"),
-    _out("OnLooped", "Trigger"),
-    _out("OnNearlyFinished", "Trigger"),
+    _out("Out Left", "Audio"),
+    _out("Out Right", "Audio"),
+    _out("On Play", "Trigger"),
+    _out("On Finished", "Trigger"),
+    _out("On Nearly Finished", "Trigger"),
+    _out("On Looped", "Trigger"),
+    _out("On Cue Point", "Trigger"),
+    _out("Cue Point ID", "Int32"),
+    _out("Cue Point Label", "String"),
+    _out("Loop Ratio", "Float"),
+    _out("Playback Location", "Float"),
+    _out("Playback Time", "Time"),
 ]
 
 for _ch, _desc, _outs, _cx in [
@@ -630,17 +637,26 @@ _register(_node(
 
 _register(_node(
     "Compressor", "Dynamics",
-    "Dynamic range compressor with standard threshold/ratio/knee controls.",
-    [_in("Audio", "Audio"),
-     _in("Threshold", "Float", default=-20.0),
+    "Dynamic range compressor with threshold/ratio/knee, parallel mix (Wet/Dry), "
+    "optional analog modeling, peak/RMS envelope modes, and upwards compression. "
+    "At 30:1 ratio with low threshold acts as brick-wall limiter for vehicle/engine layers.",
+    [_in("Bypass", "Bool", required=False, default=False),
+     _in("Audio", "Audio"),
      _in("Ratio", "Float", default=4.0),
-     _in("Attack", "Time", default=0.01),
-     _in("Release", "Time", default=0.1),
+     _in("Threshold dB", "Float", default=-20.0),
+     _in("Attack Time", "Time", default=0.01),
+     _in("Release Time", "Time", default=0.1),
+     _in("Lookahead Time", "Time", required=False, default=0.01),
      _in("Knee", "Float", required=False, default=6.0),
-     _in("Sidechain", "Audio", required=False)],
+     _in("Sidechain", "Audio", required=False),
+     _in("Envelope Mode", "Enum", required=False, default="Peak"),
+     _in("Analog Mode", "Bool", required=False, default=False),
+     _in("Upwards Mode", "Bool", required=False, default=False),
+     _in("Wet/Dry", "Float", required=False, default=1.0)],
     [_out("Audio", "Audio"),
-     _out("Gain Reduction", "Float")],
-    ["compressor", "dynamics", "loudness", "squeeze", "punch", "sidechain"],
+     _out("Gain Envelope", "Float")],
+    ["compressor", "dynamics", "loudness", "squeeze", "punch", "sidechain",
+     "parallel", "limiter", "vehicle", "engine"],
     complexity=3,
 ))
 
@@ -888,16 +904,19 @@ _register(_node(
 ))
 
 _register(_node(
-    "Array Random Get", "Arrays",
-    "Gets a random element from an array, optionally weighted.",
-    [_in("Trigger", "Trigger"),
-     _in("Array", "WaveAsset[]"),
+    "Random Get (WaveAssetArray)", "Arrays",
+    "Gets a random element from a WaveAsset array, optionally weighted. "
+    "No Repeats prevents consecutive duplicates. Enable Shared State syncs across instances.",
+    [_in("Next", "Trigger"),
+     _in("Reset", "Trigger", required=False),
+     _in("In Array", "WaveAsset[]"),
      _in("Weights", "Float[]", required=False),
      _in("Seed", "Int32", required=False, default=-1),
-     _in("NoRepeat", "Bool", required=False, default=False)],
-    [_out("Value", "WaveAsset"),
-     _out("Index", "Int32"),
-     _out("Trigger", "Trigger")],
+     _in("No Repeats", "Int32", required=False, default=1),
+     _in("Enable Shared State", "Bool", required=False, default=False)],
+    [_out("On Next", "Trigger"),
+     _out("On Reset", "Trigger"),
+     _out("Value", "WaveAsset")],
     ["array", "random", "get", "variation", "selection", "weighted", "no-repeat"],
     complexity=2,
 ))
@@ -1092,16 +1111,17 @@ _register(_node(
 
 _register(_node(
     "Mono Mixer", "Mix",
-    "Mixes N mono audio inputs into a single mono output with per-input gain.",
-    [_in("Audio 0", "Audio"),
+    "Mixes N mono audio inputs into a single mono output with per-input gain. "
+    "Real UE5 pin names: In 0..N, Gain 0..N (Lin), Out.",
+    [_in("In 0", "Audio"),
      _in("Gain 0", "Float", default=1.0),
-     _in("Audio 1", "Audio", required=False),
+     _in("In 1", "Audio", required=False),
      _in("Gain 1", "Float", required=False, default=1.0),
-     _in("Audio 2", "Audio", required=False),
+     _in("In 2", "Audio", required=False),
      _in("Gain 2", "Float", required=False, default=1.0),
-     _in("Audio 3", "Audio", required=False),
+     _in("In 3", "Audio", required=False),
      _in("Gain 3", "Float", required=False, default=1.0)],
-    [_out("Audio", "Audio")],
+    [_out("Out", "Audio")],
     ["mix", "mixer", "mono", "sum", "combine", "bus"],
     complexity=1,
 ))
@@ -1123,17 +1143,18 @@ _register(_node(
 _register(_node(
     "Stereo Mixer", "Mix",
     "Mixes N stereo audio input pairs into a single stereo output with per-input gain. "
-    "Alias for Audio Mixer with 'Audio L/R N' pin naming convention used in earlier templates.",
-    [_in("Audio L 0", "Audio"), _in("Audio R 0", "Audio"),
+    "Real UE5 pin names: In N L/R, Gain N (Lin), Out L/R. "
+    "Variant suffix (N) sets input count: Stereo Mixer (2), (3), (4), (8).",
+    [_in("In 0 L", "Audio"), _in("In 0 R", "Audio"),
      _in("Gain 0", "Float", default=1.0),
-     _in("Audio L 1", "Audio", required=False), _in("Audio R 1", "Audio", required=False),
+     _in("In 1 L", "Audio", required=False), _in("In 1 R", "Audio", required=False),
      _in("Gain 1", "Float", required=False, default=1.0),
-     _in("Audio L 2", "Audio", required=False), _in("Audio R 2", "Audio", required=False),
+     _in("In 2 L", "Audio", required=False), _in("In 2 R", "Audio", required=False),
      _in("Gain 2", "Float", required=False, default=1.0),
-     _in("Audio L 3", "Audio", required=False), _in("Audio R 3", "Audio", required=False),
+     _in("In 3 L", "Audio", required=False), _in("In 3 R", "Audio", required=False),
      _in("Gain 3", "Float", required=False, default=1.0)],
-    [_out("Audio L", "Audio"),
-     _out("Audio R", "Audio")],
+    [_out("Out L", "Audio"),
+     _out("Out R", "Audio")],
     ["mix", "mixer", "stereo", "sum", "combine", "bus"],
     complexity=2,
 ))

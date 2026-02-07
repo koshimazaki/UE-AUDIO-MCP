@@ -32,7 +32,8 @@ PATTERNS: dict[str, dict[str, Any]] = {
     "gunshot": {
         "ms_template": "gunshot",
         "wwise_template": "gunshot",
-        "bp_template": None,
+        "wwise_json": "gunshot",
+        "bp_template": "weapon_burst_control",
         "default_params": {
             "wwise": {"weapon_name": "Rifle", "num_variations": 3, "pitch_randomization": 100},
             "metasounds": {},
@@ -41,15 +42,21 @@ PATTERNS: dict[str, dict[str, Any]] = {
         "connections": {
             "wwise_event": "Play_Gunshot_{name}",
             "metasound_asset": "MS_{name}_Gunshot",
+            "audiolink_bus": "AudioLink_Weapons",
             "wiring": [
-                {"from": "wwise.event.Play", "to": "metasound.OnPlay"},
+                {"from": "blueprint.PostEvent", "to": "wwise.event.Play_Gunshot_{name}", "type": "event"},
+                {"from": "wwise.event.Play", "to": "metasound.OnPlay", "type": "trigger"},
+                {"from": "blueprint.SetRTPCValue", "to": "wwise.rtpc.RTPC_Gunshot_Distance", "type": "rtpc"},
+                {"from": "blueprint.SetFloatParameter('Distance')", "to": "metasound.Distance", "type": "param"},
+                {"from": "metasound.Output", "to": "wwise.bus.AudioLink_Weapons", "type": "audiolink"},
             ],
         },
     },
     "footsteps": {
         "ms_template": "footsteps",
         "wwise_template": "footsteps",
-        "bp_template": None,
+        "wwise_json": "footsteps",
+        "bp_template": "footfalls_simple",
         "default_params": {
             "wwise": {
                 "surface_types": ["Concrete", "Grass", "Metal"],
@@ -61,16 +68,22 @@ PATTERNS: dict[str, dict[str, Any]] = {
         "connections": {
             "wwise_event": "Play_Footstep",
             "metasound_asset": "MS_{name}_Footsteps",
+            "audiolink_bus": "AudioLink_Foley",
             "wiring": [
-                {"from": "wwise.switch.Surface_Type", "to": "metasound.SurfaceIndex"},
-                {"from": "wwise.event.Play", "to": "metasound.OnPlay"},
+                {"from": "blueprint.PostEvent", "to": "wwise.event.Play_Footstep", "type": "event"},
+                {"from": "blueprint.SetSwitch('Surface_Type')", "to": "wwise.switch.Surface_Type", "type": "switch"},
+                {"from": "blueprint.SetIntParameter('SurfaceType')", "to": "metasound.SurfaceType", "type": "param"},
+                {"from": "wwise.event.Play", "to": "metasound.OnPlay", "type": "trigger"},
+                {"from": "blueprint.SetRTPCValue", "to": "wwise.rtpc.RTPC_Footstep_Speed", "type": "rtpc"},
+                {"from": "metasound.Output", "to": "wwise.bus.AudioLink_Foley", "type": "audiolink"},
             ],
         },
     },
     "ambient": {
         "ms_template": "ambient",
         "wwise_template": "ambient",
-        "bp_template": None,
+        "wwise_json": "ambient",
+        "bp_template": "ambient_height_wind",
         "default_params": {
             "wwise": {
                 "layer_names": ["Wind_Light", "Wind_Medium", "Wind_Heavy"],
@@ -82,16 +95,21 @@ PATTERNS: dict[str, dict[str, Any]] = {
         "connections": {
             "wwise_event": "Play_Ambient_{name}",
             "metasound_asset": "MS_{name}_Ambient",
+            "audiolink_bus": "AudioLink_Ambience",
             "wiring": [
-                {"from": "wwise.rtpc.RTPC_Wind_Intensity", "to": "metasound.Intensity"},
-                {"from": "wwise.event.Play", "to": "metasound.OnPlay"},
+                {"from": "blueprint.PostEvent", "to": "wwise.event.Play_Ambient_{name}", "type": "event"},
+                {"from": "blueprint.SetRTPCValue", "to": "wwise.rtpc.RTPC_Wind_Intensity", "type": "rtpc"},
+                {"from": "blueprint.SetFloatParameter('Intensity')", "to": "metasound.Intensity", "type": "param"},
+                {"from": "wwise.event.Play", "to": "metasound.OnPlay", "type": "trigger"},
+                {"from": "metasound.Output", "to": "wwise.bus.AudioLink_Ambience", "type": "audiolink"},
             ],
         },
     },
     "spatial": {
         "ms_template": "spatial",
         "wwise_template": None,
-        "bp_template": None,
+        "wwise_json": None,
+        "bp_template": "spatial_attenuation",
         "default_params": {
             "wwise": {},
             "metasounds": {},
@@ -100,13 +118,16 @@ PATTERNS: dict[str, dict[str, Any]] = {
         "connections": {
             "wwise_event": None,
             "metasound_asset": "MS_{name}_Spatial",
-            "wiring": [],
+            "wiring": [
+                {"from": "blueprint.SetFloatParameter('Distance')", "to": "metasound.Distance", "type": "param"},
+            ],
         },
     },
     "ui_sound": {
         "ms_template": "ui_sound",
         "wwise_template": "ui_sound",
-        "bp_template": None,
+        "wwise_json": "ui_sound",
+        "bp_template": "set_float_parameter",
         "default_params": {
             "wwise": {"sound_name": "Click", "bus_path": ""},
             "metasounds": {},
@@ -115,15 +136,19 @@ PATTERNS: dict[str, dict[str, Any]] = {
         "connections": {
             "wwise_event": "Play_UI_{name}",
             "metasound_asset": "MS_{name}_UI",
+            "audiolink_bus": "AudioLink_UI",
             "wiring": [
-                {"from": "wwise.event.Play", "to": "metasound.OnPlay"},
+                {"from": "blueprint.PostEvent", "to": "wwise.event.Play_UI_{name}", "type": "event"},
+                {"from": "wwise.event.Play", "to": "metasound.OnPlay", "type": "trigger"},
+                {"from": "metasound.Output", "to": "wwise.bus.AudioLink_UI", "type": "audiolink"},
             ],
         },
     },
     "weather": {
         "ms_template": "weather",
         "wwise_template": "weather_states",
-        "bp_template": None,
+        "wwise_json": "weather",
+        "bp_template": "wind_system",
         "default_params": {
             "wwise": {
                 "weather_states": ["Clear", "Cloudy", "LightRain", "HeavyRain", "Storm", "Snow"],
@@ -134,16 +159,23 @@ PATTERNS: dict[str, dict[str, Any]] = {
         "connections": {
             "wwise_event": "Play_Weather_Ambience",
             "metasound_asset": "MS_{name}_Weather",
+            "audiolink_bus": "AudioLink_Weather",
             "wiring": [
-                {"from": "wwise.state.Weather", "to": "metasound.WeatherState"},
-                {"from": "wwise.event.Play", "to": "metasound.OnPlay"},
+                {"from": "blueprint.PostEvent", "to": "wwise.event.Play_Weather_Ambience", "type": "event"},
+                {"from": "blueprint.SetState('Weather')", "to": "wwise.state.Weather", "type": "state"},
+                {"from": "blueprint.SetIntParameter('WeatherState')", "to": "metasound.WeatherState", "type": "param"},
+                {"from": "blueprint.SetRTPCValue", "to": "wwise.rtpc.RTPC_Weather_Intensity", "type": "rtpc"},
+                {"from": "blueprint.SetFloatParameter('Intensity')", "to": "metasound.Intensity", "type": "param"},
+                {"from": "wwise.event.Play", "to": "metasound.OnPlay", "type": "trigger"},
+                {"from": "metasound.Output", "to": "wwise.bus.AudioLink_Weather", "type": "audiolink"},
             ],
         },
     },
     "preset_morph": {
         "ms_template": "preset_morph",
         "wwise_template": None,
-        "bp_template": None,
+        "wwise_json": None,
+        "bp_template": "set_float_parameter",
         "default_params": {
             "wwise": {},
             "metasounds": {},
@@ -153,13 +185,14 @@ PATTERNS: dict[str, dict[str, Any]] = {
             "wwise_event": None,
             "metasound_asset": "MS_{name}_PresetMorph",
             "wiring": [
-                {"from": "blueprint.Morph", "to": "metasound.Morph"},
+                {"from": "blueprint.SetFloatParameter('Morph')", "to": "metasound.Morph", "type": "param"},
             ],
         },
     },
     "macro_sequence": {
         "ms_template": "macro_sequence",
         "wwise_template": None,
+        "wwise_json": None,
         "bp_template": None,
         "default_params": {
             "wwise": {},
@@ -170,9 +203,33 @@ PATTERNS: dict[str, dict[str, Any]] = {
             "wwise_event": None,
             "metasound_asset": "MS_{name}_MacroSequence",
             "wiring": [
-                {"from": "blueprint.MacroStep1", "to": "metasound.MacroStep1"},
-                {"from": "blueprint.MacroStep2", "to": "metasound.MacroStep2"},
-                {"from": "blueprint.MacroStep3", "to": "metasound.MacroStep3"},
+                {"from": "blueprint.MacroStep1", "to": "metasound.MacroStep1", "type": "trigger"},
+                {"from": "blueprint.MacroStep2", "to": "metasound.MacroStep2", "type": "trigger"},
+                {"from": "blueprint.MacroStep3", "to": "metasound.MacroStep3", "type": "trigger"},
+            ],
+        },
+    },
+    "vehicle_engine": {
+        "ms_template": "vehicle_engine",
+        "wwise_template": None,
+        "wwise_json": "vehicle_engine",
+        "bp_template": None,
+        "default_params": {
+            "wwise": {"vehicle_name": "Speeder"},
+            "metasounds": {},
+            "blueprint": {},
+        },
+        "connections": {
+            "wwise_event": "Play_Vehicle_{name}",
+            "metasound_asset": "MS_{name}_Engine",
+            "audiolink_bus": "AudioLink_Vehicles",
+            "wiring": [
+                {"from": "blueprint.PostEvent", "to": "wwise.event.Play_Vehicle_{name}", "type": "event"},
+                {"from": "wwise.event.Play", "to": "metasound.OnPlay", "type": "trigger"},
+                {"from": "blueprint.SetRTPCValue", "to": "wwise.rtpc.RTPC_Vehicle_RPM", "type": "rtpc"},
+                {"from": "blueprint.PostTrigger('TurboStartTrigger')", "to": "metasound.TurboStartTrigger", "type": "trigger"},
+                {"from": "blueprint.PostTrigger('TurboStopTrigger')", "to": "metasound.TurboStopTrigger", "type": "trigger"},
+                {"from": "metasound.Output", "to": "wwise.bus.AudioLink_Vehicles", "type": "audiolink"},
             ],
         },
     },
@@ -198,6 +255,19 @@ def _get_template_dir(subdir: str) -> str:
         os.path.dirname(os.path.dirname(__file__)),
         "templates", subdir,
     )
+
+
+def _load_wwise_json(template_name: str) -> dict[str, Any] | None:
+    """Load a Wwise integration JSON template (cross-layer spec)."""
+    if template_name is None:
+        return None
+    template_path = os.path.join(
+        _get_template_dir("wwise"), "{}.json".format(template_name)
+    )
+    if not os.path.isfile(template_path):
+        return None
+    with open(template_path) as f:
+        return json.load(f)
 
 
 def _load_ms_template(template_name: str, ms_params: dict) -> dict[str, Any]:
@@ -433,11 +503,20 @@ def _build_connection_map(
                 if k.endswith("_id") or k.endswith("_ids")
             }
 
+    # Resolve wiring placeholders
+    wiring = []
+    for w in conn_cfg.get("wiring", []):
+        entry = {}
+        for k, v in w.items():
+            entry[k] = v.format(name=asset_name) if isinstance(v, str) else v
+        wiring.append(entry)
+
     return {
         "wwise_event": wwise_event,
         "metasound_asset": ms_asset,
+        "audiolink_bus": conn_cfg.get("audiolink_bus"),
         "wwise_ids": wwise_ids,
-        "wiring": conn_cfg.get("wiring", []),
+        "wiring": wiring,
     }
 
 
@@ -510,7 +589,18 @@ def build_audio_system(
     # 5. Build connection map
     connections = _build_connection_map(pattern_cfg, asset_name, wwise_result, ms_result)
 
-    # 6. Check for layer-level errors
+    # 6. Load Wwise integration spec (cross-layer JSON)
+    wwise_json_spec = _load_wwise_json(pattern_cfg.get("wwise_json"))
+    integration = None
+    if wwise_json_spec:
+        integration = {
+            "signal_flow": wwise_json_spec.get("signal_flow", []),
+            "audiolink": wwise_json_spec.get("audiolink"),
+            "metasound_link": wwise_json_spec.get("metasound_link"),
+            "blueprint_link": wwise_json_spec.get("blueprint_link"),
+        }
+
+    # 7. Check for layer-level errors
     layer_errors = []
     for layer_name, result in [("wwise", wwise_result), ("metasounds", ms_result), ("blueprint", bp_result)]:
         if result.get("mode") == "error":
@@ -526,5 +616,6 @@ def build_audio_system(
             "blueprint": bp_result,
         },
         "connections": connections,
+        "integration": integration,
         "errors": layer_errors,
     })

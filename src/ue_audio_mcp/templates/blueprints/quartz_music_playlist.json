@@ -1,0 +1,116 @@
+{
+  "name": "Quartz Music Playlist (Shuffle + Chain)",
+  "type": "blueprint",
+  "blueprint_type": "actor",
+  "author": "Richard Stevens (Leeds Beckett University)",
+  "description": "Shuffle-based music playlist from Quartz Music System course. Copies track array into temp playlist, Array_Shuffle randomises order. SpawnSound2D plays current track. OnAudioFinished callback chains to next track. Array_Remove prevents repeats until playlist exhausted, then refills from master. FadeVolumeLevel crossfades between tracks. Delay between tracks for natural spacing. GetDisplayName for debug logging. Input key triggers playlist skip. UE 4.27 origin — Quartz API stable through UE5.",
+  "source_url": "https://dev.epicgames.com/community/learning/courses/XAw/unreal-engine-quartz-music-system",
+  "ue_version": "4.27+ (UE5 compatible)",
+  "nodes": [
+    {
+      "id": "begin_play",
+      "node_type": "ReceiveBeginPlay",
+      "position": [0, 0],
+      "comment": "Initialize playlist and start first track"
+    },
+    {
+      "id": "copy_playlist",
+      "node_type": "Array_Shuffle",
+      "position": [200, 0],
+      "comment": "Copy master playlist to temp, shuffle for random order"
+    },
+    {
+      "id": "play_track",
+      "node_type": "CustomEvent",
+      "position": [0, 200],
+      "defaults": {"EventName": "PlayTrack"},
+      "comment": "Play current track from shuffled temp playlist"
+    },
+    {
+      "id": "get_length",
+      "node_type": "Array_Length",
+      "position": [200, 200],
+      "comment": "Check if temp playlist has remaining tracks"
+    },
+    {
+      "id": "check_empty",
+      "node_type": "Branch",
+      "position": [400, 200],
+      "comment": "Playlist empty? Refill from master and reshuffle"
+    },
+    {
+      "id": "get_track",
+      "node_type": "Array_Get",
+      "position": [600, 200],
+      "defaults": {"Index": 0},
+      "comment": "Get first track from shuffled temp playlist"
+    },
+    {
+      "id": "remove_track",
+      "node_type": "Array_Remove",
+      "position": [600, 300],
+      "defaults": {"IndexToRemove": 0},
+      "comment": "Remove played track — prevents repeats until refill"
+    },
+    {
+      "id": "spawn_sound",
+      "node_type": "SpawnSound2D",
+      "position": [800, 200],
+      "comment": "Spawn 2D (non-spatial) music track as fire-and-forget"
+    },
+    {
+      "id": "on_finished",
+      "node_type": "CustomEvent",
+      "position": [0, 400],
+      "defaults": {"EventName": "OnAudioFinished"},
+      "comment": "Track finished playing — chain to next"
+    },
+    {
+      "id": "fade_out",
+      "node_type": "FadeOut",
+      "position": [200, 400],
+      "defaults": {"FadeOutDuration": 1.0, "FadeVolumeLevel": 0.0},
+      "comment": "Fade out current track before starting next"
+    },
+    {
+      "id": "delay",
+      "node_type": "Delay",
+      "position": [400, 400],
+      "defaults": {"Duration": 1.0},
+      "comment": "Brief pause between tracks for natural spacing"
+    },
+    {
+      "id": "increment_count",
+      "node_type": "Add_IntInt",
+      "position": [600, 400],
+      "comment": "Increment tracks played counter"
+    },
+    {
+      "id": "skip_input",
+      "node_type": "InputKeyEvent",
+      "position": [0, 600],
+      "defaults": {"Key": "PageUp"},
+      "comment": "Manual skip to next track (debug/testing)"
+    }
+  ],
+  "variables": [
+    {"name": "MasterPlaylist", "type": "SoundBase[]", "description": "Master array of all music tracks (never modified)"},
+    {"name": "TempPlaylist", "type": "SoundBase[]", "description": "Working copy — shuffled, tracks removed as played"},
+    {"name": "CurrentTrack", "type": "AudioComponent", "description": "Currently playing track's AudioComponent reference"},
+    {"name": "TracksPlayed", "type": "Int32", "default": 0, "description": "Count of tracks played for logging/analytics"},
+    {"name": "VolumeMultiplier", "type": "Float", "default": 1.0, "description": "Global volume multiplier for all tracks"}
+  ],
+  "connections": [
+    {"from_node": "begin_play", "from_pin": "Exec", "to_node": "copy_playlist", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "copy_playlist", "from_pin": "Exec", "to_node": "play_track", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "play_track", "from_pin": "Exec", "to_node": "get_length", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "get_length", "from_pin": "ReturnValue", "to_node": "check_empty", "to_pin": "Condition", "type": "data"},
+    {"from_node": "check_empty", "from_pin": "True", "to_node": "get_track", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "get_track", "from_pin": "Item", "to_node": "spawn_sound", "to_pin": "Sound", "type": "data"},
+    {"from_node": "on_finished", "from_pin": "Exec", "to_node": "fade_out", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "fade_out", "from_pin": "Exec", "to_node": "delay", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "delay", "from_pin": "Exec", "to_node": "play_track", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "skip_input", "from_pin": "Exec", "to_node": "fade_out", "to_pin": "Exec", "type": "exec"}
+  ],
+  "notes": "Key patterns: (1) Array_Shuffle randomises without repetition — copy master to temp, shuffle temp, consume sequentially, refill when empty. (2) OnAudioFinished delegate on AudioComponent/SpawnSound2D is the chaining mechanism — fires when sound completes naturally. (3) FadeOut before next track prevents hard cuts. (4) SpawnSound2D returns AudioComponent for fade/volume control. (5) Array_Remove(0) after Get(0) is the consume pattern. (6) GetDisplayName useful for debug logging current track. (7) For Quartz-quantized transitions, replace Delay with PlayQuantized. (8) For UE5: same API, can use MetaSounds Sources in the playlist array."
+}

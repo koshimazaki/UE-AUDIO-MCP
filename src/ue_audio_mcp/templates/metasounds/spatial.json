@@ -2,41 +2,121 @@
   "name": "Spatial",
   "asset_type": "Source",
   "description": "3D spatial audio with ITD panning for binaural headphone rendering.",
-  "interfaces": ["UE.Source.OneShot", "UE.Spatialization"],
+  "interfaces": [
+    "UE.Source.OneShot",
+    "UE.Spatialization"
+  ],
   "inputs": [
-    {"name": "OnPlay", "type": "Trigger"},
-    {"name": "Azimuth", "type": "Float"},
-    {"name": "Elevation", "type": "Float"},
-    {"name": "Sound", "type": "WaveAsset"}
+    {
+      "name": "OnPlay",
+      "type": "Trigger"
+    },
+    {
+      "name": "Azimuth",
+      "type": "Float"
+    },
+    {
+      "name": "Elevation",
+      "type": "Float"
+    },
+    {
+      "name": "Sound",
+      "type": "WaveAsset"
+    }
   ],
   "outputs": [
-    {"name": "Out Mono", "type": "Audio"},
-    {"name": "Out Stereo L", "type": "Audio"},
-    {"name": "Out Stereo R", "type": "Audio"},
-    {"name": "OnFinished", "type": "Trigger"}
+    {
+      "name": "Out Mono",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo L",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo R",
+      "type": "Audio"
+    },
+    {
+      "name": "On Finished",
+      "type": "Trigger"
+    }
   ],
   "nodes": [
     {
       "id": "wave_player",
       "node_type": "Wave Player (Mono)",
-      "position": [0, 0],
-      "defaults": {"Loop": false}
+      "position": [
+        0,
+        0
+      ],
+      "defaults": {
+        "Loop": false
+      }
     },
     {
       "id": "itd_panner",
       "node_type": "ITD Panner",
-      "position": [400, 0]
+      "position": [
+        400,
+        0
+      ]
     }
   ],
   "connections": [
-    {"from_node": "__graph__", "from_pin": "OnPlay", "to_node": "wave_player", "to_pin": "Play"},
-    {"from_node": "__graph__", "from_pin": "Sound", "to_node": "wave_player", "to_pin": "WaveAsset"},
-    {"from_node": "wave_player", "from_pin": "Audio", "to_node": "itd_panner", "to_pin": "Audio"},
-    {"from_node": "__graph__", "from_pin": "Azimuth", "to_node": "itd_panner", "to_pin": "Azimuth"},
-    {"from_node": "__graph__", "from_pin": "Elevation", "to_node": "itd_panner", "to_pin": "Elevation"},
-    {"from_node": "wave_player", "from_pin": "Audio", "to_node": "__graph__", "to_pin": "Out Mono"},
-    {"from_node": "itd_panner", "from_pin": "Audio L", "to_node": "__graph__", "to_pin": "Out Stereo L"},
-    {"from_node": "itd_panner", "from_pin": "Audio R", "to_node": "__graph__", "to_pin": "Out Stereo R"},
-    {"from_node": "wave_player", "from_pin": "OnFinished", "to_node": "__graph__", "to_pin": "OnFinished"}
+    {
+      "from_node": "__graph__",
+      "from_pin": "OnPlay",
+      "to_node": "wave_player",
+      "to_pin": "Play"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Sound",
+      "to_node": "wave_player",
+      "to_pin": "Wave Asset"
+    },
+    {
+      "from_node": "wave_player",
+      "from_pin": "Audio",
+      "to_node": "itd_panner",
+      "to_pin": "Audio"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Azimuth",
+      "to_node": "itd_panner",
+      "to_pin": "Azimuth"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Elevation",
+      "to_node": "itd_panner",
+      "to_pin": "Elevation"
+    },
+    {
+      "from_node": "wave_player",
+      "from_pin": "Audio",
+      "to_node": "__graph__",
+      "to_pin": "Out Mono"
+    },
+    {
+      "from_node": "itd_panner",
+      "from_pin": "Audio L",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo L"
+    },
+    {
+      "from_node": "itd_panner",
+      "from_pin": "Audio R",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo R"
+    },
+    {
+      "from_node": "wave_player",
+      "from_pin": "On Finished",
+      "to_node": "__graph__",
+      "to_pin": "On Finished"
+    }
   ]
 }

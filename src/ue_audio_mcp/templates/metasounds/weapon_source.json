@@ -4,43 +4,109 @@
   "description": "Production weapon audio system from Craig Owen tutorial. Three-layer architecture: (1) MSP_Switch_3Inputs selects room impulse by RoomSize int, (2) Trigger Compare (Int32) gates outdoor tails when RoomSize==0, (3) MSP_CrossFadeByParam_3Inputs crossfades Close/Mid/Far tail layers by Distance. Stereo Mixer (5) combines shot body + tails. All WaveAsset inputs are arrays for random variation via Shuffle.",
   "author": "Craig Owen (YAGER Development)",
   "source_url": "https://www.youtube.com/watch?v=n5z4L43jMi8",
-  "interfaces": ["UE.Source.OneShot", "UE.Attenuation"],
+  "interfaces": [
+    "UE.Source.OneShot",
+    "UE.Attenuation"
+  ],
   "inputs": [
-    {"name": "OnPlay", "type": "Trigger"},
-    {"name": "Distance", "type": "Float", "default": 0.0, "description": "Distance between listener and sound location in game units (from UE.Attenuation)"},
-    {"name": "RoomSize", "type": "Int32", "default": 0, "description": "0=outdoor, 1=small room, 2=medium room, 3=large room"},
-    {"name": "WaveAsset_SmallRoom", "type": "WaveAsset[]", "description": "Small room impulse variations"},
-    {"name": "WaveAsset_MediumRoom", "type": "WaveAsset[]", "description": "Medium room impulse variations"},
-    {"name": "WaveAsset_LargeRoom", "type": "WaveAsset[]", "description": "Large room impulse variations"},
-    {"name": "WaveAsset_WPN_Tail_Close", "type": "WaveAsset[]", "description": "Close distance tail variations (0-50m)"},
-    {"name": "WaveAsset_WPN_Tail_Mid", "type": "WaveAsset[]", "description": "Mid distance tail variations (50-150m)"},
-    {"name": "WaveAsset_WPN_Tail_Far", "type": "WaveAsset[]", "description": "Far distance tail variations (150m+)"}
+    {
+      "name": "OnPlay",
+      "type": "Trigger"
+    },
+    {
+      "name": "Distance",
+      "type": "Float",
+      "default": 0.0,
+      "description": "Distance between listener and sound location in game units (from UE.Attenuation)"
+    },
+    {
+      "name": "RoomSize",
+      "type": "Int32",
+      "default": 0,
+      "description": "0=outdoor, 1=small room, 2=medium room, 3=large room"
+    },
+    {
+      "name": "WaveAsset_SmallRoom",
+      "type": "WaveAsset[]",
+      "description": "Small room impulse variations"
+    },
+    {
+      "name": "WaveAsset_MediumRoom",
+      "type": "WaveAsset[]",
+      "description": "Medium room impulse variations"
+    },
+    {
+      "name": "WaveAsset_LargeRoom",
+      "type": "WaveAsset[]",
+      "description": "Large room impulse variations"
+    },
+    {
+      "name": "WaveAsset_WPN_Tail_Close",
+      "type": "WaveAsset[]",
+      "description": "Close distance tail variations (0-50m)"
+    },
+    {
+      "name": "WaveAsset_WPN_Tail_Mid",
+      "type": "WaveAsset[]",
+      "description": "Mid distance tail variations (50-150m)"
+    },
+    {
+      "name": "WaveAsset_WPN_Tail_Far",
+      "type": "WaveAsset[]",
+      "description": "Far distance tail variations (150m+)"
+    }
   ],
   "outputs": [
-    {"name": "OnFinished", "type": "Trigger"},
-    {"name": "Out Mono", "type": "Audio"},
-    {"name": "Out Stereo L", "type": "Audio"},
-    {"name": "Out Stereo R", "type": "Audio"}
+    {
+      "name": "On Finished",
+      "type": "Trigger"
+    },
+    {
+      "name": "Out Mono",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo L",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo R",
+      "type": "Audio"
+    }
   ],
   "nodes": [
     {
       "id": "room_switch",
       "node_type": "MSP_Switch_3Inputs",
-      "position": [400, 0],
-      "defaults": {"InputParameter": 0},
-      "comment": "Selects room impulse by RoomSize (0→A=small, 1→B=medium, 2→C=large). Output feeds Stereo Mixer slot 0."
+      "position": [
+        400,
+        0
+      ],
+      "defaults": {
+        "InputParameter": 0
+      },
+      "comment": "Selects room impulse by RoomSize (0\u2192A=small, 1\u2192B=medium, 2\u2192C=large). Output feeds Stereo Mixer slot 0."
     },
     {
       "id": "outdoor_gate",
       "node_type": "Trigger Compare (Int32)",
-      "position": [200, 600],
-      "defaults": {"B": 0, "Type": "Equals"},
-      "comment": "RoomSize == 0 means outdoor — only then do we play distance tails"
+      "position": [
+        200,
+        600
+      ],
+      "defaults": {
+        "B": 0,
+        "Type": "Equals"
+      },
+      "comment": "RoomSize == 0 means outdoor \u2014 only then do we play distance tails"
     },
     {
       "id": "tail_crossfade",
       "node_type": "MSP_CrossFadeByParam_3Inputs",
-      "position": [600, 600],
+      "position": [
+        600,
+        600
+      ],
       "defaults": {
         "WaveAsset_A_StartFadeOut": 5000.0,
         "WaveAsset_A_EndFadeOut": 7500.0,
@@ -56,44 +122,158 @@
     {
       "id": "stereo_mixer",
       "node_type": "Stereo Mixer",
-      "position": [1000, 300],
-      "defaults": {"Gain 0": 1.0, "Gain 1": 1.0},
+      "position": [
+        1000,
+        300
+      ],
+      "defaults": {
+        "Gain 0": 1.0,
+        "Gain 1": 1.0
+      },
       "comment": "Combines room shot (slot 0) + distance tails (slot 1) into final output"
     },
     {
       "id": "trigger_any",
       "node_type": "Trigger Any",
-      "position": [1000, 100],
+      "position": [
+        1000,
+        100
+      ],
       "comment": "Fires OnFinished when both room shot and tails complete"
     }
   ],
   "connections": [
-    {"from_node": "__graph__", "from_pin": "OnPlay", "to_node": "room_switch", "to_pin": "TriggerStart"},
-    {"from_node": "__graph__", "from_pin": "RoomSize", "to_node": "room_switch", "to_pin": "InputParameter"},
-    {"from_node": "__graph__", "from_pin": "WaveAsset_SmallRoom", "to_node": "room_switch", "to_pin": "WaveAsset_A"},
-    {"from_node": "__graph__", "from_pin": "WaveAsset_MediumRoom", "to_node": "room_switch", "to_pin": "WaveAsset_B"},
-    {"from_node": "__graph__", "from_pin": "WaveAsset_LargeRoom", "to_node": "room_switch", "to_pin": "WaveAsset_C"},
-
-    {"from_node": "__graph__", "from_pin": "OnPlay", "to_node": "outdoor_gate", "to_pin": "Compare"},
-    {"from_node": "__graph__", "from_pin": "RoomSize", "to_node": "outdoor_gate", "to_pin": "A"},
-
-    {"from_node": "outdoor_gate", "from_pin": "True", "to_node": "tail_crossfade", "to_pin": "TriggerStart"},
-    {"from_node": "__graph__", "from_pin": "Distance", "to_node": "tail_crossfade", "to_pin": "InputParameter"},
-    {"from_node": "__graph__", "from_pin": "WaveAsset_WPN_Tail_Close", "to_node": "tail_crossfade", "to_pin": "WaveAsset_A"},
-    {"from_node": "__graph__", "from_pin": "WaveAsset_WPN_Tail_Mid", "to_node": "tail_crossfade", "to_pin": "WaveAsset_B"},
-    {"from_node": "__graph__", "from_pin": "WaveAsset_WPN_Tail_Far", "to_node": "tail_crossfade", "to_pin": "WaveAsset_C"},
-
-    {"from_node": "room_switch", "from_pin": "Output_L", "to_node": "stereo_mixer", "to_pin": "Audio L 0"},
-    {"from_node": "room_switch", "from_pin": "Output_R", "to_node": "stereo_mixer", "to_pin": "Audio R 0"},
-    {"from_node": "tail_crossfade", "from_pin": "Output_L", "to_node": "stereo_mixer", "to_pin": "Audio L 1"},
-    {"from_node": "tail_crossfade", "from_pin": "Output_R", "to_node": "stereo_mixer", "to_pin": "Audio R 1"},
-
-    {"from_node": "stereo_mixer", "from_pin": "Audio L", "to_node": "__graph__", "to_pin": "Out Stereo L"},
-    {"from_node": "stereo_mixer", "from_pin": "Audio R", "to_node": "__graph__", "to_pin": "Out Stereo R"},
-    {"from_node": "tail_crossfade", "from_pin": "AudioMono", "to_node": "__graph__", "to_pin": "Out Mono"},
-
-    {"from_node": "room_switch", "from_pin": "OnFinished", "to_node": "trigger_any", "to_pin": "Trigger 0"},
-    {"from_node": "tail_crossfade", "from_pin": "OnFinished", "to_node": "trigger_any", "to_pin": "Trigger 1"},
-    {"from_node": "trigger_any", "from_pin": "Trigger", "to_node": "__graph__", "to_pin": "OnFinished"}
+    {
+      "from_node": "__graph__",
+      "from_pin": "OnPlay",
+      "to_node": "room_switch",
+      "to_pin": "TriggerStart"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "RoomSize",
+      "to_node": "room_switch",
+      "to_pin": "InputParameter"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "WaveAsset_SmallRoom",
+      "to_node": "room_switch",
+      "to_pin": "WaveAsset_A"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "WaveAsset_MediumRoom",
+      "to_node": "room_switch",
+      "to_pin": "WaveAsset_B"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "WaveAsset_LargeRoom",
+      "to_node": "room_switch",
+      "to_pin": "WaveAsset_C"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "OnPlay",
+      "to_node": "outdoor_gate",
+      "to_pin": "Compare"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "RoomSize",
+      "to_node": "outdoor_gate",
+      "to_pin": "A"
+    },
+    {
+      "from_node": "outdoor_gate",
+      "from_pin": "True",
+      "to_node": "tail_crossfade",
+      "to_pin": "TriggerStart"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Distance",
+      "to_node": "tail_crossfade",
+      "to_pin": "InputParameter"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "WaveAsset_WPN_Tail_Close",
+      "to_node": "tail_crossfade",
+      "to_pin": "WaveAsset_A"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "WaveAsset_WPN_Tail_Mid",
+      "to_node": "tail_crossfade",
+      "to_pin": "WaveAsset_B"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "WaveAsset_WPN_Tail_Far",
+      "to_node": "tail_crossfade",
+      "to_pin": "WaveAsset_C"
+    },
+    {
+      "from_node": "room_switch",
+      "from_pin": "Output_L",
+      "to_node": "stereo_mixer",
+      "to_pin": "Audio L 0"
+    },
+    {
+      "from_node": "room_switch",
+      "from_pin": "Output_R",
+      "to_node": "stereo_mixer",
+      "to_pin": "Audio R 0"
+    },
+    {
+      "from_node": "tail_crossfade",
+      "from_pin": "Output_L",
+      "to_node": "stereo_mixer",
+      "to_pin": "Audio L 1"
+    },
+    {
+      "from_node": "tail_crossfade",
+      "from_pin": "Output_R",
+      "to_node": "stereo_mixer",
+      "to_pin": "Audio R 1"
+    },
+    {
+      "from_node": "stereo_mixer",
+      "from_pin": "Audio L",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo L"
+    },
+    {
+      "from_node": "stereo_mixer",
+      "from_pin": "Audio R",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo R"
+    },
+    {
+      "from_node": "tail_crossfade",
+      "from_pin": "AudioMono",
+      "to_node": "__graph__",
+      "to_pin": "Out Mono"
+    },
+    {
+      "from_node": "room_switch",
+      "from_pin": "OnFinished",
+      "to_node": "trigger_any",
+      "to_pin": "Trigger 0"
+    },
+    {
+      "from_node": "tail_crossfade",
+      "from_pin": "OnFinished",
+      "to_node": "trigger_any",
+      "to_pin": "Trigger 1"
+    },
+    {
+      "from_node": "trigger_any",
+      "from_pin": "Trigger",
+      "to_node": "__graph__",
+      "to_pin": "On Finished"
+    }
   ]
 }

@@ -2,66 +2,198 @@
   "name": "Weather",
   "asset_type": "Source",
   "description": "Weather state system with looping playback, smooth intensity interpolation controlling a Biquad filter cutoff.",
-  "interfaces": ["UE.Source.Looping"],
+  "interfaces": [
+    "UE.Source.Looping"
+  ],
   "inputs": [
-    {"name": "OnPlay", "type": "Trigger"},
-    {"name": "OnStop", "type": "Trigger"},
-    {"name": "WeatherLoop", "type": "WaveAsset"},
-    {"name": "Intensity", "type": "Float", "default": 0.5}
+    {
+      "name": "OnPlay",
+      "type": "Trigger"
+    },
+    {
+      "name": "OnStop",
+      "type": "Trigger"
+    },
+    {
+      "name": "WeatherLoop",
+      "type": "WaveAsset"
+    },
+    {
+      "name": "Intensity",
+      "type": "Float",
+      "default": 0.5
+    }
   ],
   "outputs": [
-    {"name": "Out Mono", "type": "Audio"},
-    {"name": "Out Stereo L", "type": "Audio"},
-    {"name": "Out Stereo R", "type": "Audio"},
-    {"name": "OnFinished", "type": "Trigger"},
-    {"name": "OnLooped", "type": "Trigger"}
+    {
+      "name": "Out Mono",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo L",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo R",
+      "type": "Audio"
+    },
+    {
+      "name": "On Finished",
+      "type": "Trigger"
+    },
+    {
+      "name": "On Looped",
+      "type": "Trigger"
+    }
   ],
   "nodes": [
     {
       "id": "wave_player",
       "node_type": "Wave Player (Stereo)",
-      "position": [0, 0],
-      "defaults": {"Loop": true}
+      "position": [
+        0,
+        0
+      ],
+      "defaults": {
+        "Loop": true
+      }
     },
     {
       "id": "interp",
       "node_type": "InterpTo",
-      "position": [0, 300],
-      "defaults": {"Speed": 2.0, "Current": 1000.0}
+      "position": [
+        0,
+        300
+      ],
+      "defaults": {
+        "Speed": 2.0,
+        "Current": 1000.0
+      }
     },
     {
       "id": "cutoff_map",
       "node_type": "Map Range",
-      "position": [200, 300],
-      "defaults": {"InMin": 0.0, "InMax": 1.0, "OutMin": 500.0, "OutMax": 16000.0, "Clamped": true}
+      "position": [
+        200,
+        300
+      ],
+      "defaults": {
+        "InMin": 0.0,
+        "InMax": 1.0,
+        "OutMin": 500.0,
+        "OutMax": 16000.0,
+        "Clamped": true
+      }
     },
     {
       "id": "filter_l",
       "node_type": "Biquad Filter",
-      "position": [400, 0],
-      "defaults": {"Bandwidth": 1.0, "FilterType": "LPF"}
+      "position": [
+        400,
+        0
+      ],
+      "defaults": {
+        "Bandwidth": 1.0,
+        "FilterType": "LPF"
+      }
     },
     {
       "id": "filter_r",
       "node_type": "Biquad Filter",
-      "position": [400, 200],
-      "defaults": {"Bandwidth": 1.0, "FilterType": "LPF"}
+      "position": [
+        400,
+        200
+      ],
+      "defaults": {
+        "Bandwidth": 1.0,
+        "FilterType": "LPF"
+      }
     }
   ],
   "connections": [
-    {"from_node": "__graph__", "from_pin": "OnPlay", "to_node": "wave_player", "to_pin": "Play"},
-    {"from_node": "__graph__", "from_pin": "OnStop", "to_node": "wave_player", "to_pin": "Stop"},
-    {"from_node": "__graph__", "from_pin": "WeatherLoop", "to_node": "wave_player", "to_pin": "WaveAsset"},
-    {"from_node": "__graph__", "from_pin": "Intensity", "to_node": "interp", "to_pin": "Target"},
-    {"from_node": "interp", "from_pin": "Result", "to_node": "cutoff_map", "to_pin": "Value"},
-    {"from_node": "cutoff_map", "from_pin": "Result", "to_node": "filter_l", "to_pin": "Cutoff Frequency"},
-    {"from_node": "cutoff_map", "from_pin": "Result", "to_node": "filter_r", "to_pin": "Cutoff Frequency"},
-    {"from_node": "wave_player", "from_pin": "Audio L", "to_node": "filter_l", "to_pin": "Audio"},
-    {"from_node": "wave_player", "from_pin": "Audio R", "to_node": "filter_r", "to_pin": "Audio"},
-    {"from_node": "filter_l", "from_pin": "Audio", "to_node": "__graph__", "to_pin": "Out Stereo L"},
-    {"from_node": "filter_r", "from_pin": "Audio", "to_node": "__graph__", "to_pin": "Out Stereo R"},
-    {"from_node": "filter_l", "from_pin": "Audio", "to_node": "__graph__", "to_pin": "Out Mono"},
-    {"from_node": "wave_player", "from_pin": "OnFinished", "to_node": "__graph__", "to_pin": "OnFinished"},
-    {"from_node": "wave_player", "from_pin": "OnLooped", "to_node": "__graph__", "to_pin": "OnLooped"}
+    {
+      "from_node": "__graph__",
+      "from_pin": "OnPlay",
+      "to_node": "wave_player",
+      "to_pin": "Play"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "OnStop",
+      "to_node": "wave_player",
+      "to_pin": "Stop"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "WeatherLoop",
+      "to_node": "wave_player",
+      "to_pin": "Wave Asset"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Intensity",
+      "to_node": "interp",
+      "to_pin": "Target"
+    },
+    {
+      "from_node": "interp",
+      "from_pin": "Result",
+      "to_node": "cutoff_map",
+      "to_pin": "Value"
+    },
+    {
+      "from_node": "cutoff_map",
+      "from_pin": "Result",
+      "to_node": "filter_l",
+      "to_pin": "Cutoff Frequency"
+    },
+    {
+      "from_node": "cutoff_map",
+      "from_pin": "Result",
+      "to_node": "filter_r",
+      "to_pin": "Cutoff Frequency"
+    },
+    {
+      "from_node": "wave_player",
+      "from_pin": "Out Left",
+      "to_node": "filter_l",
+      "to_pin": "Audio"
+    },
+    {
+      "from_node": "wave_player",
+      "from_pin": "Out Right",
+      "to_node": "filter_r",
+      "to_pin": "Audio"
+    },
+    {
+      "from_node": "filter_l",
+      "from_pin": "Audio",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo L"
+    },
+    {
+      "from_node": "filter_r",
+      "from_pin": "Audio",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo R"
+    },
+    {
+      "from_node": "filter_l",
+      "from_pin": "Audio",
+      "to_node": "__graph__",
+      "to_pin": "Out Mono"
+    },
+    {
+      "from_node": "wave_player",
+      "from_pin": "On Finished",
+      "to_node": "__graph__",
+      "to_pin": "On Finished"
+    },
+    {
+      "from_node": "wave_player",
+      "from_pin": "On Looped",
+      "to_node": "__graph__",
+      "to_pin": "On Looped"
+    }
   ]
 }

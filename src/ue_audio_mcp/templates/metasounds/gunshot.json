@@ -2,61 +2,173 @@
   "name": "Gunshot",
   "asset_type": "Source",
   "description": "Weapon fire with sample randomization, pitch variation, and ADSR amplitude shaping.",
-  "interfaces": ["UE.Source.OneShot"],
+  "interfaces": [
+    "UE.Source.OneShot"
+  ],
   "inputs": [
-    {"name": "OnPlay", "type": "Trigger"},
-    {"name": "Shots", "type": "WaveAsset[]"}
+    {
+      "name": "OnPlay",
+      "type": "Trigger"
+    },
+    {
+      "name": "Shots",
+      "type": "WaveAsset[]"
+    }
   ],
   "outputs": [
-    {"name": "Out Mono", "type": "Audio"},
-    {"name": "Out Stereo L", "type": "Audio"},
-    {"name": "Out Stereo R", "type": "Audio"},
-    {"name": "OnFinished", "type": "Trigger"}
+    {
+      "name": "Out Mono",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo L",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo R",
+      "type": "Audio"
+    },
+    {
+      "name": "On Finished",
+      "type": "Trigger"
+    }
   ],
   "nodes": [
     {
       "id": "random_get",
-      "node_type": "Array Random Get",
-      "position": [0, 0],
-      "defaults": {"NoRepeat": true}
+      "node_type": "Random Get (WaveAssetArray)",
+      "position": [
+        0,
+        0
+      ],
+      "defaults": {
+        "No Repeats": 1
+      }
     },
     {
       "id": "random_pitch",
       "node_type": "Random Float",
-      "position": [0, 200],
-      "defaults": {"Min": -1.0, "Max": 1.5}
+      "position": [
+        0,
+        200
+      ],
+      "defaults": {
+        "Min": -1.0,
+        "Max": 1.5
+      }
     },
     {
       "id": "wave_player",
       "node_type": "Wave Player (Mono)",
-      "position": [400, 0],
-      "defaults": {"Loop": false}
+      "position": [
+        400,
+        0
+      ],
+      "defaults": {
+        "Loop": false
+      }
     },
     {
       "id": "adsr",
       "node_type": "ADSR Envelope (Audio)",
-      "position": [400, 200],
-      "defaults": {"Attack": 0.001, "Decay": 0.05, "Sustain": 0.3, "Release": 0.15}
+      "position": [
+        400,
+        200
+      ],
+      "defaults": {
+        "Attack": 0.001,
+        "Decay": 0.05,
+        "Sustain": 0.3,
+        "Release": 0.15
+      }
     },
     {
       "id": "amp_multiply",
       "node_type": "Multiply (Audio)",
-      "position": [800, 0]
+      "position": [
+        800,
+        0
+      ]
     }
   ],
   "connections": [
-    {"from_node": "__graph__", "from_pin": "OnPlay", "to_node": "random_get", "to_pin": "Trigger"},
-    {"from_node": "__graph__", "from_pin": "OnPlay", "to_node": "random_pitch", "to_pin": "Trigger"},
-    {"from_node": "__graph__", "from_pin": "Shots", "to_node": "random_get", "to_pin": "Array"},
-    {"from_node": "random_get", "from_pin": "Value", "to_node": "wave_player", "to_pin": "WaveAsset"},
-    {"from_node": "random_get", "from_pin": "Trigger", "to_node": "wave_player", "to_pin": "Play"},
-    {"from_node": "random_pitch", "from_pin": "Value", "to_node": "wave_player", "to_pin": "PitchShift"},
-    {"from_node": "random_get", "from_pin": "Trigger", "to_node": "adsr", "to_pin": "Trigger"},
-    {"from_node": "wave_player", "from_pin": "Audio", "to_node": "amp_multiply", "to_pin": "A"},
-    {"from_node": "adsr", "from_pin": "Envelope", "to_node": "amp_multiply", "to_pin": "B"},
-    {"from_node": "amp_multiply", "from_pin": "Result", "to_node": "__graph__", "to_pin": "Out Mono"},
-    {"from_node": "amp_multiply", "from_pin": "Result", "to_node": "__graph__", "to_pin": "Out Stereo L"},
-    {"from_node": "amp_multiply", "from_pin": "Result", "to_node": "__graph__", "to_pin": "Out Stereo R"},
-    {"from_node": "adsr", "from_pin": "OnDone", "to_node": "__graph__", "to_pin": "OnFinished"}
+    {
+      "from_node": "__graph__",
+      "from_pin": "OnPlay",
+      "to_node": "random_get",
+      "to_pin": "Next"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "OnPlay",
+      "to_node": "random_pitch",
+      "to_pin": "Trigger"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Shots",
+      "to_node": "random_get",
+      "to_pin": "In Array"
+    },
+    {
+      "from_node": "random_get",
+      "from_pin": "Value",
+      "to_node": "wave_player",
+      "to_pin": "Wave Asset"
+    },
+    {
+      "from_node": "random_get",
+      "from_pin": "On Next",
+      "to_node": "wave_player",
+      "to_pin": "Play"
+    },
+    {
+      "from_node": "random_pitch",
+      "from_pin": "Value",
+      "to_node": "wave_player",
+      "to_pin": "Pitch Shift"
+    },
+    {
+      "from_node": "random_get",
+      "from_pin": "On Next",
+      "to_node": "adsr",
+      "to_pin": "Trigger"
+    },
+    {
+      "from_node": "wave_player",
+      "from_pin": "Audio",
+      "to_node": "amp_multiply",
+      "to_pin": "A"
+    },
+    {
+      "from_node": "adsr",
+      "from_pin": "Envelope",
+      "to_node": "amp_multiply",
+      "to_pin": "B"
+    },
+    {
+      "from_node": "amp_multiply",
+      "from_pin": "Result",
+      "to_node": "__graph__",
+      "to_pin": "Out Mono"
+    },
+    {
+      "from_node": "amp_multiply",
+      "from_pin": "Result",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo L"
+    },
+    {
+      "from_node": "amp_multiply",
+      "from_pin": "Result",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo R"
+    },
+    {
+      "from_node": "adsr",
+      "from_pin": "OnDone",
+      "to_node": "__graph__",
+      "to_pin": "On Finished"
+    }
   ]
 }

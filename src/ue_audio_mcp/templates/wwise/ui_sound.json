@@ -1,0 +1,114 @@
+{
+  "name": "UI Sound — Full 3-Layer System",
+  "type": "wwise",
+  "description": "Complete UI audio system wiring Wwise (non-spatial bus routing) + MetaSounds (procedural UI synthesis) + Blueprint (widget interaction events). Wwise manages the UI ActorMixer with dedicated UI bus (no spatialization). MetaSounds generates procedural clicks/beeps/confirmations. Blueprint fires events from UMG widget interactions.",
+
+  "wwise_objects": {
+    "hierarchy": {
+      "type": "ActorMixer",
+      "name": "UI",
+      "parent": "\\Actor-Mixer Hierarchy\\Default Work Unit",
+      "children": [
+        {
+          "type": "Sound",
+          "name": "UI_{sound_name}",
+          "properties": {
+            "OverrideOutput": true,
+            "OutputBus": "\\Master-Mixer Hierarchy\\UI"
+          },
+          "note": "Non-spatial UI sound — routes to dedicated UI bus, bypasses 3D"
+        }
+      ]
+    },
+    "event": {
+      "type": "Event",
+      "name": "Play_UI_{sound_name}",
+      "parent": "\\Events\\Default Work Unit",
+      "actions": [
+        {"type": "Play", "target": "UI_{sound_name}"}
+      ]
+    },
+    "game_parameters": [
+      {
+        "name": "RTPC_UI_Volume",
+        "range": [0.0, 100.0],
+        "default": 80.0,
+        "note": "Master UI volume from settings menu"
+      }
+    ],
+    "buses": {
+      "output_bus": "\\Master-Mixer Hierarchy\\UI",
+      "note": "Dedicated UI bus — no spatialization, no attenuation, separate volume control"
+    }
+  },
+
+  "audiolink": {
+    "enabled": true,
+    "direction": "MetaSounds → Wwise",
+    "bus": "AudioLink_UI",
+    "setup_steps": [
+      "1. Enable AudioLink plugin",
+      "2. Create AudioLink bus: Master-Mixer > AudioLink_UI (non-spatial)",
+      "3. MetaSounds UI Source → AudioLink → Wwise UI bus",
+      "4. Wwise UI bus has no 3D spatialization, clean direct output"
+    ]
+  },
+
+  "metasound_link": {
+    "template": "metasounds/ui_sound.json",
+    "asset_name": "MS_{name}_UI",
+    "asset_type": "Source",
+    "parameter_mapping": [
+      {
+        "wwise_source": "Event Play_UI_{sound_name}",
+        "metasound_target": "OnPlay (Trigger)",
+        "mechanism": "AudioComponent.Play() fires MetaSounds OnPlay trigger"
+      },
+      {
+        "wwise_source": "RTPC_UI_Volume",
+        "metasound_target": "Volume (Float input)",
+        "direction": "Blueprint → MetaSounds",
+        "mechanism": "SetFloatParameter('Volume', normalizedVolume)",
+        "note": "Optional — usually Wwise bus handles UI volume"
+      }
+    ]
+  },
+
+  "blueprint_link": {
+    "template": "blueprints/set_float_parameter.json",
+    "class_name": "BP_UIAudio",
+    "parameter_mapping": [
+      {
+        "blueprint_action": "PostEvent('Play_UI_{sound_name}')",
+        "target": "Wwise",
+        "when": "Widget OnClicked, OnHovered, OnPressed",
+        "note": "UMG Button events → PostEvent via UAkGameplayStatics::PostEvent"
+      },
+      {
+        "blueprint_action": "SetRTPCValue('RTPC_UI_Volume', volume)",
+        "target": "Wwise RTPC",
+        "when": "On settings change",
+        "note": "User adjusts UI volume slider in settings menu"
+      }
+    ],
+    "events_posted": ["Play_UI_{sound_name}"],
+    "rtpcs_set": ["RTPC_UI_Volume"],
+    "switches_set": [],
+    "states_set": [],
+    "note": "UI sounds typically use SpawnSound2D or non-spatial AudioComponent — no 3D position needed"
+  },
+
+  "signal_flow": [
+    "1. BLUEPRINT: User clicks button → OnClicked delegate fires",
+    "2. BLUEPRINT: PostEvent('Play_UI_Click') via UAkGameplayStatics (non-spatial)",
+    "3. WWISE: Event triggers Play on UI_Click sound",
+    "4. METASOUNDS: OnPlay trigger → sine oscillator + ADSR envelope → Output",
+    "5. AUDIOLINK: MetaSounds audio → AudioLink → Wwise UI bus",
+    "6. WWISE: UI bus applies volume (no spatialization) → master output"
+  ],
+
+  "parameters": {
+    "sound_name": {"type": "string", "default": "Click", "description": "UI sound name"},
+    "bus_path": {"type": "string", "default": "", "description": "Output bus path (default: UI bus)"}
+  }
+}

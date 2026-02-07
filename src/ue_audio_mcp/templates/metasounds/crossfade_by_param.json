@@ -1,285 +1,808 @@
 {
   "name": "MSP_CrossFadeByParam_3Inputs",
   "asset_type": "Patch",
-  "description": "3-layer distance crossfade patch from Craig Owen weapon audio tutorial. Crossfades between Close/Mid/Far WaveAsset arrays driven by a float parameter (typically Distance). Each layer: gate check → Shuffle → Wave Player (Stereo) → MapRange gain curve → Stereo Mixer (3). Layer B uses two MapRanges multiplied for bell curve. Mid-Side Encode/Decode produces mono output. Trigger Any combines all OnFinished signals. Safety offset ±0.01 on gate boundaries prevents flickering.",
+  "description": "3-layer distance crossfade patch from Craig Owen weapon audio tutorial. Crossfades between Close/Mid/Far WaveAsset arrays driven by a float parameter (typically Distance). Each layer: gate check \u2192 Shuffle \u2192 Wave Player (Stereo) \u2192 MapRange gain curve \u2192 Stereo Mixer (3). Layer B uses two MapRanges multiplied for bell curve. Mid-Side Encode/Decode produces mono output. Trigger Any combines all OnFinished signals. Safety offset \u00b10.01 on gate boundaries prevents flickering.",
   "author": "Craig Owen (YAGER Development)",
   "source_url": "https://www.youtube.com/watch?v=n5z4L43jMi8",
   "interfaces": [],
   "inputs": [
-    {"name": "TriggerStart", "type": "Trigger"},
-    {"name": "InputParameter", "type": "Float", "default": 0.0, "description": "Crossfade driver — typically Distance (UE.Attenuation) in game units"},
-    {"name": "WaveAsset_A", "type": "WaveAsset[]", "description": "Close layer samples"},
-    {"name": "WaveAsset_A_StartFadeOut", "type": "Float", "default": 5000.0},
-    {"name": "WaveAsset_A_EndFadeOut", "type": "Float", "default": 7500.0},
-    {"name": "WaveAsset_B", "type": "WaveAsset[]", "description": "Mid layer samples"},
-    {"name": "WaveAsset_B_StartFadeIn", "type": "Float", "default": 5000.0},
-    {"name": "WaveAsset_B_EndFadeIn", "type": "Float", "default": 7500.0},
-    {"name": "WaveAsset_B_StartFadeOut", "type": "Float", "default": 15000.0},
-    {"name": "WaveAsset_B_EndFadeOut", "type": "Float", "default": 17500.0},
-    {"name": "WaveAsset_C", "type": "WaveAsset[]", "description": "Far layer samples"},
-    {"name": "WaveAsset_C_StartFadeIn", "type": "Float", "default": 15000.0},
-    {"name": "WaveAsset_C_EndFadeIn", "type": "Float", "default": 17500.0}
+    {
+      "name": "TriggerStart",
+      "type": "Trigger"
+    },
+    {
+      "name": "InputParameter",
+      "type": "Float",
+      "default": 0.0,
+      "description": "Crossfade driver \u2014 typically Distance (UE.Attenuation) in game units"
+    },
+    {
+      "name": "WaveAsset_A",
+      "type": "WaveAsset[]",
+      "description": "Close layer samples"
+    },
+    {
+      "name": "WaveAsset_A_StartFadeOut",
+      "type": "Float",
+      "default": 5000.0
+    },
+    {
+      "name": "WaveAsset_A_EndFadeOut",
+      "type": "Float",
+      "default": 7500.0
+    },
+    {
+      "name": "WaveAsset_B",
+      "type": "WaveAsset[]",
+      "description": "Mid layer samples"
+    },
+    {
+      "name": "WaveAsset_B_StartFadeIn",
+      "type": "Float",
+      "default": 5000.0
+    },
+    {
+      "name": "WaveAsset_B_EndFadeIn",
+      "type": "Float",
+      "default": 7500.0
+    },
+    {
+      "name": "WaveAsset_B_StartFadeOut",
+      "type": "Float",
+      "default": 15000.0
+    },
+    {
+      "name": "WaveAsset_B_EndFadeOut",
+      "type": "Float",
+      "default": 17500.0
+    },
+    {
+      "name": "WaveAsset_C",
+      "type": "WaveAsset[]",
+      "description": "Far layer samples"
+    },
+    {
+      "name": "WaveAsset_C_StartFadeIn",
+      "type": "Float",
+      "default": 15000.0
+    },
+    {
+      "name": "WaveAsset_C_EndFadeIn",
+      "type": "Float",
+      "default": 17500.0
+    }
   ],
   "outputs": [
-    {"name": "OnFinished", "type": "Trigger"},
-    {"name": "Output_L", "type": "Audio"},
-    {"name": "Output_R", "type": "Audio"},
-    {"name": "AudioMono", "type": "Audio"}
+    {
+      "name": "On Finished",
+      "type": "Trigger"
+    },
+    {
+      "name": "Output_L",
+      "type": "Audio"
+    },
+    {
+      "name": "Output_R",
+      "type": "Audio"
+    },
+    {
+      "name": "AudioMono",
+      "type": "Audio"
+    }
   ],
   "nodes": [
     {
       "id": "gate_a_threshold",
       "node_type": "Add",
-      "position": [0, 0],
-      "defaults": {"B": 0.01},
+      "position": [
+        0,
+        0
+      ],
+      "defaults": {
+        "B": 0.01
+      },
       "comment": "EndFadeOut + 0.01 safety offset for Layer A gate"
     },
     {
       "id": "gate_a",
       "node_type": "Float Compare",
-      "position": [200, 0],
-      "defaults": {"CompareOp": "LessThan"},
-      "comment": "InputParam < EndFadeOut+0.01 → Layer A active"
+      "position": [
+        200,
+        0
+      ],
+      "defaults": {
+        "CompareOp": "LessThan"
+      },
+      "comment": "InputParam < EndFadeOut+0.01 \u2192 Layer A active"
     },
     {
       "id": "trigger_filter_a",
       "node_type": "Trigger Filter",
-      "position": [400, 0],
+      "position": [
+        400,
+        0
+      ],
       "comment": "Only pass trigger to Layer A when gate is open"
     },
     {
       "id": "shuffle_a",
       "node_type": "Array Shuffle",
-      "position": [600, 0],
-      "defaults": {"Seed": -1, "AutoReset": true}
+      "position": [
+        600,
+        0
+      ],
+      "defaults": {
+        "Seed": -1,
+        "AutoReset": true
+      }
     },
     {
       "id": "wp_a",
       "node_type": "Wave Player (Stereo)",
-      "position": [800, 0],
-      "defaults": {"Loop": false}
+      "position": [
+        800,
+        0
+      ],
+      "defaults": {
+        "Loop": false
+      }
     },
     {
       "id": "gain_a",
       "node_type": "Map Range",
-      "position": [1000, 0],
-      "defaults": {"OutMin": 1.0, "OutMax": 0.0, "Clamped": true},
-      "comment": "Layer A: gain 1→0 as InputParam goes StartFadeOut→EndFadeOut"
+      "position": [
+        1000,
+        0
+      ],
+      "defaults": {
+        "OutMin": 1.0,
+        "OutMax": 0.0,
+        "Clamped": true
+      },
+      "comment": "Layer A: gain 1\u21920 as InputParam goes StartFadeOut\u2192EndFadeOut"
     },
-
     {
       "id": "gate_b_low_offset",
       "node_type": "Subtract",
-      "position": [0, 400],
-      "defaults": {"B": 0.01},
+      "position": [
+        0,
+        400
+      ],
+      "defaults": {
+        "B": 0.01
+      },
       "comment": "StartFadeIn - 0.01 safety offset for Layer B lower gate"
     },
     {
       "id": "gate_b_low",
       "node_type": "Float Compare",
-      "position": [200, 400],
-      "defaults": {"CompareOp": "GreaterThan"},
-      "comment": "InputParam > StartFadeIn-0.01 → Layer B lower bound met"
+      "position": [
+        200,
+        400
+      ],
+      "defaults": {
+        "CompareOp": "GreaterThan"
+      },
+      "comment": "InputParam > StartFadeIn-0.01 \u2192 Layer B lower bound met"
     },
     {
       "id": "gate_b_high_offset",
       "node_type": "Add",
-      "position": [0, 500],
-      "defaults": {"B": 0.01},
+      "position": [
+        0,
+        500
+      ],
+      "defaults": {
+        "B": 0.01
+      },
       "comment": "EndFadeOut + 0.01 safety offset for Layer B upper gate"
     },
     {
       "id": "gate_b_high",
       "node_type": "Float Compare",
-      "position": [200, 500],
-      "defaults": {"CompareOp": "LessThan"},
-      "comment": "InputParam < EndFadeOut+0.01 → Layer B upper bound met"
+      "position": [
+        200,
+        500
+      ],
+      "defaults": {
+        "CompareOp": "LessThan"
+      },
+      "comment": "InputParam < EndFadeOut+0.01 \u2192 Layer B upper bound met"
     },
     {
       "id": "trigger_filter_b_low",
       "node_type": "Trigger Filter",
-      "position": [400, 400],
+      "position": [
+        400,
+        400
+      ],
       "comment": "Gate by lower bound"
     },
     {
       "id": "trigger_filter_b_high",
       "node_type": "Trigger Filter",
-      "position": [400, 500],
-      "comment": "Gate by upper bound — both must pass for Layer B to play"
+      "position": [
+        400,
+        500
+      ],
+      "comment": "Gate by upper bound \u2014 both must pass for Layer B to play"
     },
     {
       "id": "shuffle_b",
       "node_type": "Array Shuffle",
-      "position": [600, 450],
-      "defaults": {"Seed": -1, "AutoReset": true}
+      "position": [
+        600,
+        450
+      ],
+      "defaults": {
+        "Seed": -1,
+        "AutoReset": true
+      }
     },
     {
       "id": "wp_b",
       "node_type": "Wave Player (Stereo)",
-      "position": [800, 450],
-      "defaults": {"Loop": false}
+      "position": [
+        800,
+        450
+      ],
+      "defaults": {
+        "Loop": false
+      }
     },
     {
       "id": "gain_b_fadein",
       "node_type": "Map Range",
-      "position": [1000, 400],
-      "defaults": {"OutMin": 0.0, "OutMax": 1.0, "Clamped": true},
-      "comment": "Layer B fade-in: gain 0→1 as InputParam goes StartFadeIn→EndFadeIn"
+      "position": [
+        1000,
+        400
+      ],
+      "defaults": {
+        "OutMin": 0.0,
+        "OutMax": 1.0,
+        "Clamped": true
+      },
+      "comment": "Layer B fade-in: gain 0\u21921 as InputParam goes StartFadeIn\u2192EndFadeIn"
     },
     {
       "id": "gain_b_fadeout",
       "node_type": "Map Range",
-      "position": [1000, 500],
-      "defaults": {"OutMin": 1.0, "OutMax": 0.0, "Clamped": true},
-      "comment": "Layer B fade-out: gain 1→0 as InputParam goes StartFadeOut→EndFadeOut"
+      "position": [
+        1000,
+        500
+      ],
+      "defaults": {
+        "OutMin": 1.0,
+        "OutMax": 0.0,
+        "Clamped": true
+      },
+      "comment": "Layer B fade-out: gain 1\u21920 as InputParam goes StartFadeOut\u2192EndFadeOut"
     },
     {
       "id": "gain_b_bell",
       "node_type": "Multiply",
-      "position": [1200, 450],
-      "comment": "Bell curve: fadein × fadeout — peaks at 1.0 in the mid zone"
+      "position": [
+        1200,
+        450
+      ],
+      "comment": "Bell curve: fadein \u00d7 fadeout \u2014 peaks at 1.0 in the mid zone"
     },
-
     {
       "id": "gate_c_offset",
       "node_type": "Subtract",
-      "position": [0, 800],
-      "defaults": {"B": 0.01},
+      "position": [
+        0,
+        800
+      ],
+      "defaults": {
+        "B": 0.01
+      },
       "comment": "StartFadeIn - 0.01 safety offset for Layer C gate"
     },
     {
       "id": "gate_c",
       "node_type": "Float Compare",
-      "position": [200, 800],
-      "defaults": {"CompareOp": "GreaterThan"},
-      "comment": "InputParam > StartFadeIn-0.01 → Layer C active"
+      "position": [
+        200,
+        800
+      ],
+      "defaults": {
+        "CompareOp": "GreaterThan"
+      },
+      "comment": "InputParam > StartFadeIn-0.01 \u2192 Layer C active"
     },
     {
       "id": "trigger_filter_c",
       "node_type": "Trigger Filter",
-      "position": [400, 800],
+      "position": [
+        400,
+        800
+      ],
       "comment": "Only pass trigger to Layer C when gate is open"
     },
     {
       "id": "shuffle_c",
       "node_type": "Array Shuffle",
-      "position": [600, 800],
-      "defaults": {"Seed": -1, "AutoReset": true}
+      "position": [
+        600,
+        800
+      ],
+      "defaults": {
+        "Seed": -1,
+        "AutoReset": true
+      }
     },
     {
       "id": "wp_c",
       "node_type": "Wave Player (Stereo)",
-      "position": [800, 800],
-      "defaults": {"Loop": false}
+      "position": [
+        800,
+        800
+      ],
+      "defaults": {
+        "Loop": false
+      }
     },
     {
       "id": "gain_c",
       "node_type": "Map Range",
-      "position": [1000, 800],
-      "defaults": {"OutMin": 0.0, "OutMax": 1.0, "Clamped": true},
-      "comment": "Layer C: gain 0→1 as InputParam goes StartFadeIn→EndFadeIn"
+      "position": [
+        1000,
+        800
+      ],
+      "defaults": {
+        "OutMin": 0.0,
+        "OutMax": 1.0,
+        "Clamped": true
+      },
+      "comment": "Layer C: gain 0\u21921 as InputParam goes StartFadeIn\u2192EndFadeIn"
     },
-
     {
       "id": "stereo_mixer",
       "node_type": "Stereo Mixer",
-      "position": [1400, 400],
-      "defaults": {"Gain 0": 1.0, "Gain 1": 1.0, "Gain 2": 1.0},
-      "comment": "Combines all 3 layers — gains driven by MapRange outputs"
+      "position": [
+        1400,
+        400
+      ],
+      "defaults": {
+        "Gain 0": 1.0,
+        "Gain 1": 1.0,
+        "Gain 2": 1.0
+      },
+      "comment": "Combines all 3 layers \u2014 gains driven by MapRange outputs"
     },
     {
       "id": "ms_encode",
       "node_type": "Mid-Side Encode/Decode",
-      "position": [1600, 400],
-      "defaults": {"Mode": "Encode", "Width": 0.0},
+      "position": [
+        1600,
+        400
+      ],
+      "defaults": {
+        "Mode": "Encode",
+        "Width": 0.0
+      },
       "comment": "Encode stereo to mid-side with Width=0 (pure mid)"
     },
     {
       "id": "ms_decode",
       "node_type": "Mid-Side Encode/Decode",
-      "position": [1800, 400],
-      "defaults": {"Mode": "Decode", "Width": 0.5},
-      "comment": "Decode back — Width=0.5 gives centered mono-compatible output"
+      "position": [
+        1800,
+        400
+      ],
+      "defaults": {
+        "Mode": "Decode",
+        "Width": 0.5
+      },
+      "comment": "Decode back \u2014 Width=0.5 gives centered mono-compatible output"
     },
     {
       "id": "trigger_any",
       "node_type": "Trigger Any",
-      "position": [1400, 200],
+      "position": [
+        1400,
+        200
+      ],
       "comment": "Fires OnFinished when any layer finishes"
     }
   ],
   "connections": [
-    {"from_node": "__graph__", "from_pin": "WaveAsset_A_EndFadeOut", "to_node": "gate_a_threshold", "to_pin": "A"},
-    {"from_node": "__graph__", "from_pin": "InputParameter", "to_node": "gate_a", "to_pin": "A"},
-    {"from_node": "gate_a_threshold", "from_pin": "Result", "to_node": "gate_a", "to_pin": "B"},
-    {"from_node": "gate_a", "from_pin": "Result", "to_node": "trigger_filter_a", "to_pin": "Gate"},
-    {"from_node": "__graph__", "from_pin": "TriggerStart", "to_node": "trigger_filter_a", "to_pin": "Trigger"},
-    {"from_node": "trigger_filter_a", "from_pin": "Trigger", "to_node": "shuffle_a", "to_pin": "Trigger"},
-    {"from_node": "__graph__", "from_pin": "WaveAsset_A", "to_node": "shuffle_a", "to_pin": "Array"},
-    {"from_node": "shuffle_a", "from_pin": "Value", "to_node": "wp_a", "to_pin": "WaveAsset"},
-    {"from_node": "shuffle_a", "from_pin": "Trigger", "to_node": "wp_a", "to_pin": "Play"},
-    {"from_node": "__graph__", "from_pin": "InputParameter", "to_node": "gain_a", "to_pin": "Value"},
-    {"from_node": "__graph__", "from_pin": "WaveAsset_A_StartFadeOut", "to_node": "gain_a", "to_pin": "InMin"},
-    {"from_node": "__graph__", "from_pin": "WaveAsset_A_EndFadeOut", "to_node": "gain_a", "to_pin": "InMax"},
-
-    {"from_node": "__graph__", "from_pin": "WaveAsset_B_StartFadeIn", "to_node": "gate_b_low_offset", "to_pin": "A"},
-    {"from_node": "__graph__", "from_pin": "InputParameter", "to_node": "gate_b_low", "to_pin": "A"},
-    {"from_node": "gate_b_low_offset", "from_pin": "Result", "to_node": "gate_b_low", "to_pin": "B"},
-    {"from_node": "__graph__", "from_pin": "WaveAsset_B_EndFadeOut", "to_node": "gate_b_high_offset", "to_pin": "A"},
-    {"from_node": "__graph__", "from_pin": "InputParameter", "to_node": "gate_b_high", "to_pin": "A"},
-    {"from_node": "gate_b_high_offset", "from_pin": "Result", "to_node": "gate_b_high", "to_pin": "B"},
-    {"from_node": "gate_b_low", "from_pin": "Result", "to_node": "trigger_filter_b_low", "to_pin": "Gate"},
-    {"from_node": "__graph__", "from_pin": "TriggerStart", "to_node": "trigger_filter_b_low", "to_pin": "Trigger"},
-    {"from_node": "gate_b_high", "from_pin": "Result", "to_node": "trigger_filter_b_high", "to_pin": "Gate"},
-    {"from_node": "trigger_filter_b_low", "from_pin": "Trigger", "to_node": "trigger_filter_b_high", "to_pin": "Trigger"},
-    {"from_node": "trigger_filter_b_high", "from_pin": "Trigger", "to_node": "shuffle_b", "to_pin": "Trigger"},
-    {"from_node": "__graph__", "from_pin": "WaveAsset_B", "to_node": "shuffle_b", "to_pin": "Array"},
-    {"from_node": "shuffle_b", "from_pin": "Value", "to_node": "wp_b", "to_pin": "WaveAsset"},
-    {"from_node": "shuffle_b", "from_pin": "Trigger", "to_node": "wp_b", "to_pin": "Play"},
-    {"from_node": "__graph__", "from_pin": "InputParameter", "to_node": "gain_b_fadein", "to_pin": "Value"},
-    {"from_node": "__graph__", "from_pin": "WaveAsset_B_StartFadeIn", "to_node": "gain_b_fadein", "to_pin": "InMin"},
-    {"from_node": "__graph__", "from_pin": "WaveAsset_B_EndFadeIn", "to_node": "gain_b_fadein", "to_pin": "InMax"},
-    {"from_node": "__graph__", "from_pin": "InputParameter", "to_node": "gain_b_fadeout", "to_pin": "Value"},
-    {"from_node": "__graph__", "from_pin": "WaveAsset_B_StartFadeOut", "to_node": "gain_b_fadeout", "to_pin": "InMin"},
-    {"from_node": "__graph__", "from_pin": "WaveAsset_B_EndFadeOut", "to_node": "gain_b_fadeout", "to_pin": "InMax"},
-    {"from_node": "gain_b_fadein", "from_pin": "Result", "to_node": "gain_b_bell", "to_pin": "A"},
-    {"from_node": "gain_b_fadeout", "from_pin": "Result", "to_node": "gain_b_bell", "to_pin": "B"},
-
-    {"from_node": "__graph__", "from_pin": "WaveAsset_C_StartFadeIn", "to_node": "gate_c_offset", "to_pin": "A"},
-    {"from_node": "__graph__", "from_pin": "InputParameter", "to_node": "gate_c", "to_pin": "A"},
-    {"from_node": "gate_c_offset", "from_pin": "Result", "to_node": "gate_c", "to_pin": "B"},
-    {"from_node": "gate_c", "from_pin": "Result", "to_node": "trigger_filter_c", "to_pin": "Gate"},
-    {"from_node": "__graph__", "from_pin": "TriggerStart", "to_node": "trigger_filter_c", "to_pin": "Trigger"},
-    {"from_node": "trigger_filter_c", "from_pin": "Trigger", "to_node": "shuffle_c", "to_pin": "Trigger"},
-    {"from_node": "__graph__", "from_pin": "WaveAsset_C", "to_node": "shuffle_c", "to_pin": "Array"},
-    {"from_node": "shuffle_c", "from_pin": "Value", "to_node": "wp_c", "to_pin": "WaveAsset"},
-    {"from_node": "shuffle_c", "from_pin": "Trigger", "to_node": "wp_c", "to_pin": "Play"},
-    {"from_node": "__graph__", "from_pin": "InputParameter", "to_node": "gain_c", "to_pin": "Value"},
-    {"from_node": "__graph__", "from_pin": "WaveAsset_C_StartFadeIn", "to_node": "gain_c", "to_pin": "InMin"},
-    {"from_node": "__graph__", "from_pin": "WaveAsset_C_EndFadeIn", "to_node": "gain_c", "to_pin": "InMax"},
-
-    {"from_node": "wp_a", "from_pin": "Audio L", "to_node": "stereo_mixer", "to_pin": "Audio L 0"},
-    {"from_node": "wp_a", "from_pin": "Audio R", "to_node": "stereo_mixer", "to_pin": "Audio R 0"},
-    {"from_node": "gain_a", "from_pin": "Result", "to_node": "stereo_mixer", "to_pin": "Gain 0"},
-    {"from_node": "wp_b", "from_pin": "Audio L", "to_node": "stereo_mixer", "to_pin": "Audio L 1"},
-    {"from_node": "wp_b", "from_pin": "Audio R", "to_node": "stereo_mixer", "to_pin": "Audio R 1"},
-    {"from_node": "gain_b_bell", "from_pin": "Result", "to_node": "stereo_mixer", "to_pin": "Gain 1"},
-    {"from_node": "wp_c", "from_pin": "Audio L", "to_node": "stereo_mixer", "to_pin": "Audio L 2"},
-    {"from_node": "wp_c", "from_pin": "Audio R", "to_node": "stereo_mixer", "to_pin": "Audio R 2"},
-    {"from_node": "gain_c", "from_pin": "Result", "to_node": "stereo_mixer", "to_pin": "Gain 2"},
-
-    {"from_node": "stereo_mixer", "from_pin": "Audio L", "to_node": "__graph__", "to_pin": "Output_L"},
-    {"from_node": "stereo_mixer", "from_pin": "Audio R", "to_node": "__graph__", "to_pin": "Output_R"},
-
-    {"from_node": "stereo_mixer", "from_pin": "Audio L", "to_node": "ms_encode", "to_pin": "Audio L"},
-    {"from_node": "stereo_mixer", "from_pin": "Audio R", "to_node": "ms_encode", "to_pin": "Audio R"},
-    {"from_node": "ms_encode", "from_pin": "Out A", "to_node": "ms_decode", "to_pin": "Audio L"},
-    {"from_node": "ms_encode", "from_pin": "Out B", "to_node": "ms_decode", "to_pin": "Audio R"},
-    {"from_node": "ms_decode", "from_pin": "Out A", "to_node": "__graph__", "to_pin": "AudioMono"},
-
-    {"from_node": "wp_a", "from_pin": "OnFinished", "to_node": "trigger_any", "to_pin": "Trigger 0"},
-    {"from_node": "wp_b", "from_pin": "OnFinished", "to_node": "trigger_any", "to_pin": "Trigger 1"},
-    {"from_node": "wp_c", "from_pin": "OnFinished", "to_node": "trigger_any", "to_pin": "Trigger 2"},
-    {"from_node": "trigger_any", "from_pin": "Trigger", "to_node": "__graph__", "to_pin": "OnFinished"}
+    {
+      "from_node": "__graph__",
+      "from_pin": "WaveAsset_A_EndFadeOut",
+      "to_node": "gate_a_threshold",
+      "to_pin": "A"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "InputParameter",
+      "to_node": "gate_a",
+      "to_pin": "A"
+    },
+    {
+      "from_node": "gate_a_threshold",
+      "from_pin": "Result",
+      "to_node": "gate_a",
+      "to_pin": "B"
+    },
+    {
+      "from_node": "gate_a",
+      "from_pin": "Result",
+      "to_node": "trigger_filter_a",
+      "to_pin": "Gate"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "TriggerStart",
+      "to_node": "trigger_filter_a",
+      "to_pin": "Trigger"
+    },
+    {
+      "from_node": "trigger_filter_a",
+      "from_pin": "Trigger",
+      "to_node": "shuffle_a",
+      "to_pin": "Trigger"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "WaveAsset_A",
+      "to_node": "shuffle_a",
+      "to_pin": "Array"
+    },
+    {
+      "from_node": "shuffle_a",
+      "from_pin": "Value",
+      "to_node": "wp_a",
+      "to_pin": "Wave Asset"
+    },
+    {
+      "from_node": "shuffle_a",
+      "from_pin": "Trigger",
+      "to_node": "wp_a",
+      "to_pin": "Play"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "InputParameter",
+      "to_node": "gain_a",
+      "to_pin": "Value"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "WaveAsset_A_StartFadeOut",
+      "to_node": "gain_a",
+      "to_pin": "InMin"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "WaveAsset_A_EndFadeOut",
+      "to_node": "gain_a",
+      "to_pin": "InMax"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "WaveAsset_B_StartFadeIn",
+      "to_node": "gate_b_low_offset",
+      "to_pin": "A"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "InputParameter",
+      "to_node": "gate_b_low",
+      "to_pin": "A"
+    },
+    {
+      "from_node": "gate_b_low_offset",
+      "from_pin": "Result",
+      "to_node": "gate_b_low",
+      "to_pin": "B"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "WaveAsset_B_EndFadeOut",
+      "to_node": "gate_b_high_offset",
+      "to_pin": "A"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "InputParameter",
+      "to_node": "gate_b_high",
+      "to_pin": "A"
+    },
+    {
+      "from_node": "gate_b_high_offset",
+      "from_pin": "Result",
+      "to_node": "gate_b_high",
+      "to_pin": "B"
+    },
+    {
+      "from_node": "gate_b_low",
+      "from_pin": "Result",
+      "to_node": "trigger_filter_b_low",
+      "to_pin": "Gate"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "TriggerStart",
+      "to_node": "trigger_filter_b_low",
+      "to_pin": "Trigger"
+    },
+    {
+      "from_node": "gate_b_high",
+      "from_pin": "Result",
+      "to_node": "trigger_filter_b_high",
+      "to_pin": "Gate"
+    },
+    {
+      "from_node": "trigger_filter_b_low",
+      "from_pin": "Trigger",
+      "to_node": "trigger_filter_b_high",
+      "to_pin": "Trigger"
+    },
+    {
+      "from_node": "trigger_filter_b_high",
+      "from_pin": "Trigger",
+      "to_node": "shuffle_b",
+      "to_pin": "Trigger"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "WaveAsset_B",
+      "to_node": "shuffle_b",
+      "to_pin": "Array"
+    },
+    {
+      "from_node": "shuffle_b",
+      "from_pin": "Value",
+      "to_node": "wp_b",
+      "to_pin": "Wave Asset"
+    },
+    {
+      "from_node": "shuffle_b",
+      "from_pin": "Trigger",
+      "to_node": "wp_b",
+      "to_pin": "Play"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "InputParameter",
+      "to_node": "gain_b_fadein",
+      "to_pin": "Value"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "WaveAsset_B_StartFadeIn",
+      "to_node": "gain_b_fadein",
+      "to_pin": "InMin"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "WaveAsset_B_EndFadeIn",
+      "to_node": "gain_b_fadein",
+      "to_pin": "InMax"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "InputParameter",
+      "to_node": "gain_b_fadeout",
+      "to_pin": "Value"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "WaveAsset_B_StartFadeOut",
+      "to_node": "gain_b_fadeout",
+      "to_pin": "InMin"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "WaveAsset_B_EndFadeOut",
+      "to_node": "gain_b_fadeout",
+      "to_pin": "InMax"
+    },
+    {
+      "from_node": "gain_b_fadein",
+      "from_pin": "Result",
+      "to_node": "gain_b_bell",
+      "to_pin": "A"
+    },
+    {
+      "from_node": "gain_b_fadeout",
+      "from_pin": "Result",
+      "to_node": "gain_b_bell",
+      "to_pin": "B"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "WaveAsset_C_StartFadeIn",
+      "to_node": "gate_c_offset",
+      "to_pin": "A"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "InputParameter",
+      "to_node": "gate_c",
+      "to_pin": "A"
+    },
+    {
+      "from_node": "gate_c_offset",
+      "from_pin": "Result",
+      "to_node": "gate_c",
+      "to_pin": "B"
+    },
+    {
+      "from_node": "gate_c",
+      "from_pin": "Result",
+      "to_node": "trigger_filter_c",
+      "to_pin": "Gate"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "TriggerStart",
+      "to_node": "trigger_filter_c",
+      "to_pin": "Trigger"
+    },
+    {
+      "from_node": "trigger_filter_c",
+      "from_pin": "Trigger",
+      "to_node": "shuffle_c",
+      "to_pin": "Trigger"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "WaveAsset_C",
+      "to_node": "shuffle_c",
+      "to_pin": "Array"
+    },
+    {
+      "from_node": "shuffle_c",
+      "from_pin": "Value",
+      "to_node": "wp_c",
+      "to_pin": "Wave Asset"
+    },
+    {
+      "from_node": "shuffle_c",
+      "from_pin": "Trigger",
+      "to_node": "wp_c",
+      "to_pin": "Play"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "InputParameter",
+      "to_node": "gain_c",
+      "to_pin": "Value"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "WaveAsset_C_StartFadeIn",
+      "to_node": "gain_c",
+      "to_pin": "InMin"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "WaveAsset_C_EndFadeIn",
+      "to_node": "gain_c",
+      "to_pin": "InMax"
+    },
+    {
+      "from_node": "wp_a",
+      "from_pin": "Out Left",
+      "to_node": "stereo_mixer",
+      "to_pin": "Audio L 0"
+    },
+    {
+      "from_node": "wp_a",
+      "from_pin": "Out Right",
+      "to_node": "stereo_mixer",
+      "to_pin": "Audio R 0"
+    },
+    {
+      "from_node": "gain_a",
+      "from_pin": "Result",
+      "to_node": "stereo_mixer",
+      "to_pin": "Gain 0"
+    },
+    {
+      "from_node": "wp_b",
+      "from_pin": "Out Left",
+      "to_node": "stereo_mixer",
+      "to_pin": "Audio L 1"
+    },
+    {
+      "from_node": "wp_b",
+      "from_pin": "Out Right",
+      "to_node": "stereo_mixer",
+      "to_pin": "Audio R 1"
+    },
+    {
+      "from_node": "gain_b_bell",
+      "from_pin": "Result",
+      "to_node": "stereo_mixer",
+      "to_pin": "Gain 1"
+    },
+    {
+      "from_node": "wp_c",
+      "from_pin": "Out Left",
+      "to_node": "stereo_mixer",
+      "to_pin": "Audio L 2"
+    },
+    {
+      "from_node": "wp_c",
+      "from_pin": "Out Right",
+      "to_node": "stereo_mixer",
+      "to_pin": "Audio R 2"
+    },
+    {
+      "from_node": "gain_c",
+      "from_pin": "Result",
+      "to_node": "stereo_mixer",
+      "to_pin": "Gain 2"
+    },
+    {
+      "from_node": "stereo_mixer",
+      "from_pin": "Audio L",
+      "to_node": "__graph__",
+      "to_pin": "Output_L"
+    },
+    {
+      "from_node": "stereo_mixer",
+      "from_pin": "Audio R",
+      "to_node": "__graph__",
+      "to_pin": "Output_R"
+    },
+    {
+      "from_node": "stereo_mixer",
+      "from_pin": "Audio L",
+      "to_node": "ms_encode",
+      "to_pin": "Audio L"
+    },
+    {
+      "from_node": "stereo_mixer",
+      "from_pin": "Audio R",
+      "to_node": "ms_encode",
+      "to_pin": "Audio R"
+    },
+    {
+      "from_node": "ms_encode",
+      "from_pin": "Out A",
+      "to_node": "ms_decode",
+      "to_pin": "Audio L"
+    },
+    {
+      "from_node": "ms_encode",
+      "from_pin": "Out B",
+      "to_node": "ms_decode",
+      "to_pin": "Audio R"
+    },
+    {
+      "from_node": "ms_decode",
+      "from_pin": "Out A",
+      "to_node": "__graph__",
+      "to_pin": "AudioMono"
+    },
+    {
+      "from_node": "wp_a",
+      "from_pin": "On Finished",
+      "to_node": "trigger_any",
+      "to_pin": "Trigger 0"
+    },
+    {
+      "from_node": "wp_b",
+      "from_pin": "On Finished",
+      "to_node": "trigger_any",
+      "to_pin": "Trigger 1"
+    },
+    {
+      "from_node": "wp_c",
+      "from_pin": "On Finished",
+      "to_node": "trigger_any",
+      "to_pin": "Trigger 2"
+    },
+    {
+      "from_node": "trigger_any",
+      "from_pin": "Trigger",
+      "to_node": "__graph__",
+      "to_pin": "On Finished"
+    }
   ]
 }

@@ -1,0 +1,146 @@
+{
+  "name": "Synesthesia NRT Music Stems + Particle Visualisation",
+  "type": "blueprint",
+  "blueprint_type": "actor",
+  "author": "Richard Stevens (Leeds Beckett University)",
+  "description": "Synesthesia Non-Real-Time audio analysis with per-stem particle visualisation from Quartz Music System course (Mushroom Music). Music decomposed into 5 stems (Flute, Hats, Kick, Pizz, Snare) each with NRT analysis assets: ConstantQ (spectral), Onset (transient detection), Loudness (amplitude envelope). Sound Cue plays all stems via AudioComponent. OnAudioPlaybackPercent fires per-frame callbacks. NRT analysis data drives particle spawning — mushroom hats spawn on onset, particles pulse on loudness peaks. AudioSoloSoundwave for individual stem isolation. Input keys (1-5) solo individual stems. BeginDeferredActorSpawnFromClass for timed visual element creation. UE 4.27 origin.",
+  "source_url": "https://dev.epicgames.com/community/learning/courses/XAw/unreal-engine-quartz-music-system",
+  "ue_version": "4.27+ (UE5 compatible — Synesthesia NRT available from 4.24)",
+  "components": [
+    {"name": "DefaultSceneRoot", "type": "SceneComponent"},
+    {"name": "Sphere", "type": "SphereComponent", "defaults": {"SphereRadius": 500.0, "bGenerateOverlapEvents": true}},
+    {"name": "Audio", "type": "AudioComponent", "defaults": {"Sound": "<MushroomMusicCue>", "bAutoActivate": false}}
+  ],
+  "nodes": [
+    {
+      "id": "begin_play",
+      "node_type": "ReceiveBeginPlay",
+      "position": [0, 0],
+      "comment": "Initialize analysis assets and check for overlap on spawn"
+    },
+    {
+      "id": "overlap_begin",
+      "node_type": "OnComponentBeginOverlap",
+      "position": [0, 150],
+      "defaults": {"Component": "Sphere"},
+      "comment": "Player enters music zone — start playback and analysis"
+    },
+    {
+      "id": "overlap_end",
+      "node_type": "OnComponentEndOverlap",
+      "position": [0, 300],
+      "defaults": {"Component": "Sphere"},
+      "comment": "Player exits — stop music and analysis"
+    },
+    {
+      "id": "start_playback",
+      "node_type": "CustomEvent",
+      "position": [200, 150],
+      "defaults": {"EventName": "StartAudioPlayback"},
+      "comment": "Begin music playback and bind analysis callbacks"
+    },
+    {
+      "id": "play",
+      "node_type": "Play",
+      "position": [400, 150],
+      "comment": "Start AudioComponent with music Sound Cue"
+    },
+    {
+      "id": "bind_percent",
+      "node_type": "OnAudioPlaybackPercent",
+      "position": [400, 250],
+      "comment": "Per-frame callback with playback position — drives NRT lookup"
+    },
+    {
+      "id": "tick",
+      "node_type": "ReceiveTick",
+      "position": [0, 500],
+      "comment": "Per-frame particle rotation towards player"
+    },
+    {
+      "id": "rotate_to_player",
+      "node_type": "FindLookAtRotation",
+      "position": [200, 500],
+      "comment": "Orient particle systems to face player camera"
+    },
+    {
+      "id": "spawn_onset",
+      "node_type": "BeginDeferredActorSpawnFromClass",
+      "position": [600, 250],
+      "defaults": {"Class": "BP_MushroomHats"},
+      "comment": "Spawn visual element on onset detection (transient peaks)"
+    },
+    {
+      "id": "finish_spawn",
+      "node_type": "FinishSpawningActor",
+      "position": [800, 250],
+      "comment": "Complete deferred spawn with position/rotation set"
+    },
+    {
+      "id": "set_timer",
+      "node_type": "K2_SetTimer",
+      "position": [600, 350],
+      "comment": "Timer for periodic stem analysis — alternative to Tick"
+    },
+    {
+      "id": "solo_flute",
+      "node_type": "InputKeyEvent",
+      "position": [0, 700],
+      "defaults": {"Key": "One"},
+      "comment": "Solo flute stem — AudioSoloSoundwave"
+    },
+    {
+      "id": "solo_hats",
+      "node_type": "InputKeyEvent",
+      "position": [0, 770],
+      "defaults": {"Key": "Two"},
+      "comment": "Solo hats stem"
+    },
+    {
+      "id": "solo_kick",
+      "node_type": "InputKeyEvent",
+      "position": [0, 840],
+      "defaults": {"Key": "Three"},
+      "comment": "Solo kick stem"
+    },
+    {
+      "id": "solo_pizz",
+      "node_type": "InputKeyEvent",
+      "position": [0, 910],
+      "defaults": {"Key": "Four"},
+      "comment": "Solo pizz stem"
+    },
+    {
+      "id": "solo_snare",
+      "node_type": "InputKeyEvent",
+      "position": [0, 980],
+      "defaults": {"Key": "Five"},
+      "comment": "Solo snare stem"
+    },
+    {
+      "id": "set_sound",
+      "node_type": "SetSound",
+      "position": [200, 700],
+      "comment": "Switch AudioComponent to solo stem's individual SoundWave"
+    }
+  ],
+  "variables": [
+    {"name": "MusicCue", "type": "SoundBase", "description": "Sound Cue containing all music stems"},
+    {"name": "FluteConstantQ", "type": "Object", "description": "ConstantQ NRT analysis asset for flute stem"},
+    {"name": "HatsOnset", "type": "Object", "description": "Onset NRT analysis asset for hats (transient detection)"},
+    {"name": "KickLoudness", "type": "Object", "description": "Loudness NRT analysis asset for kick drum"},
+    {"name": "PizzLoudness", "type": "Object", "description": "Loudness NRT analysis asset for pizzicato"},
+    {"name": "SnareLoudness", "type": "Object", "description": "Loudness NRT analysis asset for snare"},
+    {"name": "SpawnedMushroomHats", "type": "Actor", "description": "Reference to spawned visual element (mushroom hats)"},
+    {"name": "SpawnedOverlapping", "type": "Bool", "description": "Whether player was overlapping on spawn (auto-start)"},
+    {"name": "PlaybackPercent", "type": "Float", "description": "Current playback position (0.0-1.0)"}
+  ],
+  "connections": [
+    {"from_node": "overlap_begin", "from_pin": "Exec", "to_node": "start_playback", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "start_playback", "from_pin": "Exec", "to_node": "play", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "bind_percent", "from_pin": "PlaybackPercent", "to_node": "spawn_onset", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "spawn_onset", "from_pin": "ReturnValue", "to_node": "finish_spawn", "to_pin": "Actor", "type": "data"},
+    {"from_node": "solo_flute", "from_pin": "Exec", "to_node": "set_sound", "to_pin": "Exec", "type": "exec"}
+  ],
+  "notes": "Key patterns: (1) Synesthesia NRT = Non-Real-Time analysis — pre-computed at import, zero runtime cost. Three types: ConstantQ (spectral bands), Onset (transient peaks), Loudness (amplitude envelope). (2) OnAudioPlaybackPercent fires every frame with position 0.0→1.0 — use to lookup NRT data at current time. (3) AudioSoloSoundwave isolates individual stems from multi-track Sound Cue — invaluable for debugging. (4) NRT analysis assets created in editor: right-click SoundWave → Create Synesthesia NRT → choose type. (5) ConstantQ gives frequency bands (like spectral analysis but pre-computed) — drives spectral particle effects. (6) Onset detection flags transient peaks — perfect for spawning visual elements on beats. (7) Loudness NRT gives dB envelope — drives particle size/intensity. (8) BeginDeferredActorSpawnFromClass + FinishSpawningActor for timed visual spawning. (9) For UE5: Synesthesia NRT unchanged, also works with MetaSounds Source assets. Can combine with Niagara for GPU particles."
+}

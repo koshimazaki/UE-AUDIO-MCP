@@ -1,0 +1,168 @@
+{
+  "name": "Vehicle Engine — Layered Repulsor + Compressed Mono",
+  "type": "wwise",
+  "description": "Vehicle audio system: stereo repulsor loops (trigger-sequenced random samples) + mono engine layers (turbo start, turbo stop, idle) through parallel compression. Wwise handles bus routing, attenuation, and RPM-driven RTPC mixing. MetaSounds builds the DSP (trigger sequencing, sample randomization, compression). Blueprint fires engine state changes and feeds RPM.",
+
+  "wwise_objects": {
+    "hierarchy": {
+      "type": "BlendContainer",
+      "name": "Vehicle_{vehicle_name}",
+      "parent": "\\Actor-Mixer Hierarchy\\Default Work Unit",
+      "properties": {
+        "GameParameterID": "RTPC_Vehicle_RPM"
+      },
+      "children": [
+        {
+          "type": "Sound",
+          "name": "{vehicle_name}_Repulsor_Loop",
+          "properties": {
+            "Loop": true,
+            "IsStreamingEnabled": true
+          },
+          "note": "AudioLink source from MetaSounds repulsor layers — stereo looping output"
+        },
+        {
+          "type": "Sound",
+          "name": "{vehicle_name}_Engine_Idle",
+          "properties": {
+            "Loop": true
+          },
+          "note": "AudioLink source from MetaSounds idle layer — continuous mono loop"
+        },
+        {
+          "type": "Sound",
+          "name": "{vehicle_name}_Turbo_Start",
+          "properties": {
+            "Loop": false
+          },
+          "note": "AudioLink source from MetaSounds turbo start one-shot"
+        },
+        {
+          "type": "Sound",
+          "name": "{vehicle_name}_Turbo_Stop",
+          "properties": {
+            "Loop": false
+          },
+          "note": "AudioLink source from MetaSounds turbo stop one-shot"
+        }
+      ]
+    },
+    "event": {
+      "type": "Event",
+      "name": "Play_Vehicle_{vehicle_name}",
+      "parent": "\\Events\\Default Work Unit",
+      "actions": [
+        {"type": "Play", "target": "Vehicle_{vehicle_name}"}
+      ]
+    },
+    "game_parameters": [
+      {
+        "name": "RTPC_Vehicle_RPM",
+        "parent": "\\Game Parameters\\Default Work Unit",
+        "range": [0.0, 10000.0],
+        "default": 800.0,
+        "note": "Engine RPM — drives pitch and layer blend in Wwise"
+      },
+      {
+        "name": "RTPC_Vehicle_Speed",
+        "parent": "\\Game Parameters\\Default Work Unit",
+        "range": [0.0, 300.0],
+        "default": 0.0,
+        "note": "Vehicle speed (km/h) — drives wind/tire noise layers"
+      }
+    ],
+    "buses": {
+      "output_bus": "\\Master-Mixer Hierarchy\\Vehicles",
+      "aux_buses": [
+        {
+          "name": "Vehicles_Reverb",
+          "note": "Environment reverb for vehicle audio"
+        }
+      ]
+    },
+    "attenuation": {
+      "name": "Atten_Vehicle",
+      "max_distance": 10000.0,
+      "curves": {
+        "VolumeDryUsage": "logarithmic",
+        "LowPassFilterUsage": "linear_ramp_at_distance"
+      },
+      "note": "Wide attenuation for vehicles — audible at long range"
+    }
+  },
+
+  "audiolink": {
+    "enabled": true,
+    "direction": "MetaSounds → Wwise",
+    "bus": "AudioLink_Vehicles",
+    "note": "AudioLink routes MetaSounds DSP output (repulsor + compressed engine mix) into Wwise for spatialization and bus mixing."
+  },
+
+  "metasound_link": {
+    "template": "metasounds/vehicle_engine.json",
+    "asset_name": "MS_{vehicle_name}_Engine",
+    "asset_type": "Source",
+    "parameter_mapping": [
+      {
+        "wwise_source": "Event Play_Vehicle_{vehicle_name}",
+        "metasound_target": "OnPlay (Trigger)",
+        "direction": "Wwise → MetaSounds",
+        "mechanism": "AudioComponent.Play() fires MetaSounds OnPlay trigger"
+      },
+      {
+        "wwise_source": "RTPC_Vehicle_RPM",
+        "metasound_target": "RPM (Float input, future)",
+        "direction": "Blueprint → MetaSounds (via SetFloatParameter)",
+        "mechanism": "Blueprint SetFloatParameter('RPM', value) on AudioComponent"
+      }
+    ]
+  },
+
+  "blueprint_link": {
+    "template": null,
+    "class_name": "BP_VehicleAudio",
+    "parameter_mapping": [
+      {
+        "blueprint_action": "PostEvent('Play_Vehicle_{vehicle_name}')",
+        "target": "Wwise",
+        "when": "On vehicle enter / engine start"
+      },
+      {
+        "blueprint_action": "SetRTPCValue('RTPC_Vehicle_RPM', RPM)",
+        "target": "Wwise RTPC",
+        "when": "Per tick from vehicle physics"
+      },
+      {
+        "blueprint_action": "PostTrigger('TurboStartTrigger')",
+        "target": "MetaSounds input",
+        "when": "On turbo engage"
+      },
+      {
+        "blueprint_action": "PostTrigger('TurboStopTrigger')",
+        "target": "MetaSounds input",
+        "when": "On turbo disengage"
+      }
+    ],
+    "events_posted": ["Play_Vehicle_{vehicle_name}", "Stop_Vehicle_{vehicle_name}"],
+    "rtpcs_set": ["RTPC_Vehicle_RPM", "RTPC_Vehicle_Speed"],
+    "switches_set": [],
+    "states_set": []
+  },
+
+  "signal_flow": [
+    "1. BLUEPRINT: Player enters vehicle → PostEvent('Play_Vehicle_{vehicle_name}')",
+    "2. WWISE: Event triggers Play on BlendContainer with all engine layers",
+    "3. METASOUNDS: OnPlay fires Trigger Sequence (3-way round-robin) + Idle Wave Player",
+    "4. METASOUNDS: Trigger Sequence → 3x Random Get → 3x Wave Player (Stereo) → Stereo Mixer (8) = repulsor layers",
+    "5. METASOUNDS: TurboStart/Stop triggers → Wave Players (Mono) + Idle loop → Mono Mixer (4, Idle gain=2.0)",
+    "6. METASOUNDS: Mono Mixer → Compressor (30:1, -30dB, Analog, 50% Wet/Dry = parallel compression)",
+    "7. METASOUNDS: Final Stereo Mixer (2): repulsor stereo + compressed mono → Output L/R",
+    "8. AUDIOLINK: MetaSounds stereo output → AudioLink → Wwise AudioLink_Vehicles bus",
+    "9. WWISE: Applies attenuation, RPM-driven pitch, reverb send, bus mixing",
+    "10. BLUEPRINT: Per-tick SetRTPCValue('RTPC_Vehicle_RPM', physics.RPM) for dynamic mixing"
+  ],
+
+  "parameters": {
+    "vehicle_name": {"type": "string", "default": "Speeder", "description": "Vehicle name prefix for all objects"}
+  }
+}

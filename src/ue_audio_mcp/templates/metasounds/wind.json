@@ -4,73 +4,182 @@
   "description": "Procedural wind synthesis: noise through LPF modulated by LFO, with player speed driving cutoff. From MetaSounds Quick Start tutorial.",
   "author": "Epic Games",
   "source_url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/metasounds-quick-start",
-  "interfaces": ["UE.Source.OneShot"],
+  "interfaces": [
+    "UE.Source.OneShot"
+  ],
   "inputs": [
-    {"name": "OnPlay", "type": "Trigger"},
-    {"name": "PawnSpeed", "type": "Float"}
+    {
+      "name": "OnPlay",
+      "type": "Trigger"
+    },
+    {
+      "name": "PawnSpeed",
+      "type": "Float"
+    }
   ],
   "outputs": [
-    {"name": "Out Left", "type": "Audio"},
-    {"name": "Out Right", "type": "Audio"},
-    {"name": "OnFinished", "type": "Trigger"}
+    {
+      "name": "Out Left",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Right",
+      "type": "Audio"
+    },
+    {
+      "name": "On Finished",
+      "type": "Trigger"
+    }
   ],
   "nodes": [
     {
       "id": "noise",
       "node_type": "Noise",
-      "position": [0, 0],
-      "defaults": {"Type": "White"}
+      "position": [
+        0,
+        0
+      ],
+      "defaults": {
+        "Type": "White"
+      }
     },
     {
       "id": "lpf",
       "node_type": "Biquad Filter",
-      "position": [400, 0],
-      "defaults": {"Type": "LowPass", "Bandwidth": 2.0}
+      "position": [
+        400,
+        0
+      ],
+      "defaults": {
+        "Type": "LowPass",
+        "Bandwidth": 2.0
+      }
     },
     {
       "id": "stereo_mixer",
       "node_type": "Stereo Mixer",
-      "position": [800, 0]
+      "position": [
+        800,
+        0
+      ]
     },
     {
       "id": "lfo",
       "node_type": "LFO",
-      "position": [0, 300],
-      "defaults": {"Frequency": 0.3, "Type": "Sine", "MinValue": 200.0, "MaxValue": 2000.0}
+      "position": [
+        0,
+        300
+      ],
+      "defaults": {
+        "Frequency": 0.3,
+        "Type": "Sine",
+        "MinValue": 200.0,
+        "MaxValue": 2000.0
+      }
     },
     {
       "id": "multiply",
       "node_type": "Multiply (Float)",
-      "position": [200, 500],
-      "defaults": {"B": 10.0},
+      "position": [
+        200,
+        500
+      ],
+      "defaults": {
+        "B": 10.0
+      },
       "comment": "Scale PawnSpeed to frequency range"
     },
     {
       "id": "add",
       "node_type": "Add (Float)",
-      "position": [400, 500],
-      "defaults": {"B": 200.0},
+      "position": [
+        400,
+        500
+      ],
+      "defaults": {
+        "B": 200.0
+      },
       "comment": "Offset so idle speed still has some wind"
     },
     {
       "id": "interp",
       "node_type": "FInterpTo (Float)",
-      "position": [400, 300],
-      "defaults": {"InterpSpeed": 2.0},
+      "position": [
+        400,
+        300
+      ],
+      "defaults": {
+        "InterpSpeed": 2.0
+      },
       "comment": "Smooth cutoff transitions"
     }
   ],
   "connections": [
-    {"from_node": "noise", "from_pin": "Audio", "to_node": "lpf", "to_pin": "Audio"},
-    {"from_node": "lpf", "from_pin": "Audio", "to_node": "stereo_mixer", "to_pin": "In 0 Left"},
-    {"from_node": "lpf", "from_pin": "Audio", "to_node": "stereo_mixer", "to_pin": "In 0 Right"},
-    {"from_node": "lfo", "from_pin": "Value", "to_node": "interp", "to_pin": "Target"},
-    {"from_node": "__graph__", "from_pin": "PawnSpeed", "to_node": "multiply", "to_pin": "A"},
-    {"from_node": "multiply", "from_pin": "Result", "to_node": "add", "to_pin": "A"},
-    {"from_node": "add", "from_pin": "Result", "to_node": "interp", "to_pin": "Current"},
-    {"from_node": "interp", "from_pin": "Value", "to_node": "lpf", "to_pin": "Cutoff Frequency"},
-    {"from_node": "stereo_mixer", "from_pin": "Out Left", "to_node": "__graph__", "to_pin": "Out Left"},
-    {"from_node": "stereo_mixer", "from_pin": "Out Right", "to_node": "__graph__", "to_pin": "Out Right"},
-    {"from_node": "__graph__", "from_pin": "OnPlay", "to_node": "noise", "to_pin": "Play"}
+    {
+      "from_node": "noise",
+      "from_pin": "Audio",
+      "to_node": "lpf",
+      "to_pin": "Audio"
+    },
+    {
+      "from_node": "lpf",
+      "from_pin": "Audio",
+      "to_node": "stereo_mixer",
+      "to_pin": "In 0 Left"
+    },
+    {
+      "from_node": "lpf",
+      "from_pin": "Audio",
+      "to_node": "stereo_mixer",
+      "to_pin": "In 0 Right"
+    },
+    {
+      "from_node": "lfo",
+      "from_pin": "Value",
+      "to_node": "interp",
+      "to_pin": "Target"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "PawnSpeed",
+      "to_node": "multiply",
+      "to_pin": "A"
+    },
+    {
+      "from_node": "multiply",
+      "from_pin": "Result",
+      "to_node": "add",
+      "to_pin": "A"
+    },
+    {
+      "from_node": "add",
+      "from_pin": "Result",
+      "to_node": "interp",
+      "to_pin": "Current"
+    },
+    {
+      "from_node": "interp",
+      "from_pin": "Value",
+      "to_node": "lpf",
+      "to_pin": "Cutoff Frequency"
+    },
+    {
+      "from_node": "stereo_mixer",
+      "from_pin": "Out Left",
+      "to_node": "__graph__",
+      "to_pin": "Out Left"
+    },
+    {
+      "from_node": "stereo_mixer",
+      "from_pin": "Out Right",
+      "to_node": "__graph__",
+      "to_pin": "Out Right"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "OnPlay",
+      "to_node": "noise",
+      "to_pin": "Play"
+    }
   ]
 }

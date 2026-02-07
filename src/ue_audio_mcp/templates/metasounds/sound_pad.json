@@ -2,45 +2,93 @@
   "name": "Sound Pad Source",
   "asset_type": "Source",
   "author": "Dr Chris Payne (ChrisPayne123)",
-  "description": "Dual-source sound pad from Chris Payne tutorial. Two parallel signal paths: (1) Synth path — ScaleDegree indexes into MajorScaleArray variable, adds RootNote offset, MIDI To Frequency converts to Hz, SuperOscillator generates tone, AD Envelope shapes amplitude. (2) Sample path — Wave Player plays AudioFile on trigger. Audio Mixer (Stereo, 2) combines both paths. Best practice: MIDI ints in Blueprint, Hz conversion inside MetaSounds.",
+  "description": "Dual-source sound pad from Chris Payne tutorial. Two parallel signal paths: (1) Synth path \u2014 ScaleDegree indexes into MajorScaleArray variable, adds RootNote offset, MIDI To Frequency converts to Hz, SuperOscillator generates tone, AD Envelope shapes amplitude. (2) Sample path \u2014 Wave Player plays AudioFile on trigger. Audio Mixer (Stereo, 2) combines both paths. Best practice: MIDI ints in Blueprint, Hz conversion inside MetaSounds.",
   "source_url": "https://dev.epicgames.com/community/learning/tutorials/opvv/unreal-engine-metasound-sound-pads",
-  "interfaces": ["UE.Source.OneShot"],
+  "interfaces": [
+    "UE.Source.OneShot"
+  ],
   "inputs": [
-    {"name": "OnPlay", "type": "Trigger"},
-    {"name": "TriggerSound", "type": "Trigger", "description": "Triggers the synth path (MIDI pitch playback)"},
-    {"name": "PlayAudioFile", "type": "Trigger", "description": "Triggers the sample path (wave file playback)"},
-    {"name": "AudioFile", "type": "WaveAsset", "description": "Wave asset for sample playback path"},
-    {"name": "RootNote", "type": "Int32", "default": 60, "description": "MIDI root note (60 = C4). Set from Blueprint as integer."},
-    {"name": "ScaleDegree", "type": "Int32", "default": 0, "description": "Scale degree index (0-6 for 7-note scale). Indexes into MajorScaleArray."}
+    {
+      "name": "OnPlay",
+      "type": "Trigger"
+    },
+    {
+      "name": "TriggerSound",
+      "type": "Trigger",
+      "description": "Triggers the synth path (MIDI pitch playback)"
+    },
+    {
+      "name": "PlayAudioFile",
+      "type": "Trigger",
+      "description": "Triggers the sample path (wave file playback)"
+    },
+    {
+      "name": "AudioFile",
+      "type": "WaveAsset",
+      "description": "Wave asset for sample playback path"
+    },
+    {
+      "name": "RootNote",
+      "type": "Int32",
+      "default": 60,
+      "description": "MIDI root note (60 = C4). Set from Blueprint as integer."
+    },
+    {
+      "name": "ScaleDegree",
+      "type": "Int32",
+      "default": 0,
+      "description": "Scale degree index (0-6 for 7-note scale). Indexes into MajorScaleArray."
+    }
   ],
   "outputs": [
-    {"name": "OnFinished", "type": "Trigger"},
-    {"name": "Out Left", "type": "Audio"},
-    {"name": "Out Right", "type": "Audio"}
+    {
+      "name": "On Finished",
+      "type": "Trigger"
+    },
+    {
+      "name": "Out Left",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Right",
+      "type": "Audio"
+    }
   ],
   "nodes": [
     {
       "id": "scale_lookup",
       "node_type": "Array Get (Int32)",
-      "position": [200, 0],
+      "position": [
+        200,
+        0
+      ],
       "comment": "Indexes MajorScaleArray[ScaleDegree] to get semitone offset (e.g. major = [0,2,4,5,7,9,11])"
     },
     {
       "id": "note_add",
       "node_type": "Add (Int32)",
-      "position": [400, 0],
+      "position": [
+        400,
+        0
+      ],
       "comment": "RootNote + scale interval = final MIDI note number"
     },
     {
       "id": "midi_to_freq",
       "node_type": "MIDI To Frequency",
-      "position": [600, 0],
-      "comment": "Converts MIDI int to Hz float — the conversion boundary between BP and MS"
+      "position": [
+        600,
+        0
+      ],
+      "comment": "Converts MIDI int to Hz float \u2014 the conversion boundary between BP and MS"
     },
     {
       "id": "synth",
       "node_type": "SuperOscillator",
-      "position": [800, 0],
+      "position": [
+        800,
+        0
+      ],
       "defaults": {
         "Enabled": true,
         "Limit Output": true,
@@ -57,7 +105,10 @@
     {
       "id": "env",
       "node_type": "AD Envelope",
-      "position": [800, 200],
+      "position": [
+        800,
+        200
+      ],
       "defaults": {
         "Attack Time": 0.01,
         "Attack Curve": 1.0,
@@ -66,32 +117,49 @@
         "Hard Reset": false,
         "Looping": false
       },
-      "comment": "Shapes synth amplitude — short attack, medium decay for percussive pad hit"
+      "comment": "Shapes synth amplitude \u2014 short attack, medium decay for percussive pad hit"
     },
     {
       "id": "synth_gain",
       "node_type": "Multiply",
-      "position": [1000, 0],
-      "comment": "Oscillator × Envelope = shaped synth signal"
+      "position": [
+        1000,
+        0
+      ],
+      "comment": "Oscillator \u00d7 Envelope = shaped synth signal"
     },
     {
       "id": "wave_player",
       "node_type": "Wave Player (Stereo)",
-      "position": [800, 400],
-      "defaults": {"Loop": false},
-      "comment": "Sample playback path — plays AudioFile when triggered"
+      "position": [
+        800,
+        400
+      ],
+      "defaults": {
+        "Loop": false
+      },
+      "comment": "Sample playback path \u2014 plays AudioFile when triggered"
     },
     {
       "id": "mixer",
       "node_type": "Audio Mixer (Stereo, 2)",
-      "position": [1200, 200],
-      "defaults": {"Gain 0": 1.0, "Gain 1": 1.0},
+      "position": [
+        1200,
+        200
+      ],
+      "defaults": {
+        "Gain 0": 1.0,
+        "Gain 1": 1.0
+      },
       "comment": "Combines synth (slot 0) and sample (slot 1) into stereo output"
     },
     {
       "id": "trigger_any",
       "node_type": "Trigger Any",
-      "position": [1200, 0],
+      "position": [
+        1200,
+        0
+      ],
       "comment": "OnFinished when either synth envelope or sample completes"
     }
   ],
@@ -99,36 +167,138 @@
     {
       "name": "MajorScaleArray",
       "type": "Int32[]",
-      "default": [0, 2, 4, 5, 7, 9, 11],
+      "default": [
+        0,
+        2,
+        4,
+        5,
+        7,
+        9,
+        11
+      ],
       "description": "Major scale intervals in semitones. Change to [0,2,3,5,7,8,10] for natural minor, [0,3,5,6,7,10,11] for blues, etc."
     }
   ],
   "connections": [
-    {"from_node": "__graph__", "from_pin": "ScaleDegree", "to_node": "scale_lookup", "to_pin": "Index"},
-    {"from_node": "__variable__", "from_pin": "MajorScaleArray", "to_node": "scale_lookup", "to_pin": "Array"},
-    {"from_node": "scale_lookup", "from_pin": "Element", "to_node": "note_add", "to_pin": "A"},
-    {"from_node": "__graph__", "from_pin": "RootNote", "to_node": "note_add", "to_pin": "B"},
-
-    {"from_node": "note_add", "from_pin": "Result", "to_node": "midi_to_freq", "to_pin": "MIDI In"},
-    {"from_node": "midi_to_freq", "from_pin": "Out Frequency", "to_node": "synth", "to_pin": "Frequency"},
-
-    {"from_node": "__graph__", "from_pin": "TriggerSound", "to_node": "env", "to_pin": "On Trigger"},
-    {"from_node": "synth", "from_pin": "Audio", "to_node": "synth_gain", "to_pin": "A"},
-    {"from_node": "env", "from_pin": "Out Envelope", "to_node": "synth_gain", "to_pin": "B"},
-
-    {"from_node": "__graph__", "from_pin": "PlayAudioFile", "to_node": "wave_player", "to_pin": "Play"},
-    {"from_node": "__graph__", "from_pin": "AudioFile", "to_node": "wave_player", "to_pin": "WaveAsset"},
-
-    {"from_node": "synth_gain", "from_pin": "Audio", "to_node": "mixer", "to_pin": "In 0 L"},
-    {"from_node": "synth_gain", "from_pin": "Audio", "to_node": "mixer", "to_pin": "In 0 R"},
-    {"from_node": "wave_player", "from_pin": "Audio L", "to_node": "mixer", "to_pin": "In 1 L"},
-    {"from_node": "wave_player", "from_pin": "Audio R", "to_node": "mixer", "to_pin": "In 1 R"},
-
-    {"from_node": "mixer", "from_pin": "Out L", "to_node": "__graph__", "to_pin": "Out Left"},
-    {"from_node": "mixer", "from_pin": "Out R", "to_node": "__graph__", "to_pin": "Out Right"},
-
-    {"from_node": "env", "from_pin": "On Done", "to_node": "trigger_any", "to_pin": "Trigger 0"},
-    {"from_node": "wave_player", "from_pin": "OnFinished", "to_node": "trigger_any", "to_pin": "Trigger 1"},
-    {"from_node": "trigger_any", "from_pin": "Trigger", "to_node": "__graph__", "to_pin": "OnFinished"}
+    {
+      "from_node": "__graph__",
+      "from_pin": "ScaleDegree",
+      "to_node": "scale_lookup",
+      "to_pin": "Index"
+    },
+    {
+      "from_node": "__variable__",
+      "from_pin": "MajorScaleArray",
+      "to_node": "scale_lookup",
+      "to_pin": "Array"
+    },
+    {
+      "from_node": "scale_lookup",
+      "from_pin": "Element",
+      "to_node": "note_add",
+      "to_pin": "A"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "RootNote",
+      "to_node": "note_add",
+      "to_pin": "B"
+    },
+    {
+      "from_node": "note_add",
+      "from_pin": "Result",
+      "to_node": "midi_to_freq",
+      "to_pin": "MIDI In"
+    },
+    {
+      "from_node": "midi_to_freq",
+      "from_pin": "Out Frequency",
+      "to_node": "synth",
+      "to_pin": "Frequency"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "TriggerSound",
+      "to_node": "env",
+      "to_pin": "On Trigger"
+    },
+    {
+      "from_node": "synth",
+      "from_pin": "Audio",
+      "to_node": "synth_gain",
+      "to_pin": "A"
+    },
+    {
+      "from_node": "env",
+      "from_pin": "Out Envelope",
+      "to_node": "synth_gain",
+      "to_pin": "B"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "PlayAudioFile",
+      "to_node": "wave_player",
+      "to_pin": "Play"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "AudioFile",
+      "to_node": "wave_player",
+      "to_pin": "Wave Asset"
+    },
+    {
+      "from_node": "synth_gain",
+      "from_pin": "Audio",
+      "to_node": "mixer",
+      "to_pin": "In 0 L"
+    },
+    {
+      "from_node": "synth_gain",
+      "from_pin": "Audio",
+      "to_node": "mixer",
+      "to_pin": "In 0 R"
+    },
+    {
+      "from_node": "wave_player",
+      "from_pin": "Out Left",
+      "to_node": "mixer",
+      "to_pin": "In 1 L"
+    },
+    {
+      "from_node": "wave_player",
+      "from_pin": "Out Right",
+      "to_node": "mixer",
+      "to_pin": "In 1 R"
+    },
+    {
+      "from_node": "mixer",
+      "from_pin": "Out L",
+      "to_node": "__graph__",
+      "to_pin": "Out Left"
+    },
+    {
+      "from_node": "mixer",
+      "from_pin": "Out R",
+      "to_node": "__graph__",
+      "to_pin": "Out Right"
+    },
+    {
+      "from_node": "env",
+      "from_pin": "On Done",
+      "to_node": "trigger_any",
+      "to_pin": "Trigger 0"
+    },
+    {
+      "from_node": "wave_player",
+      "from_pin": "On Finished",
+      "to_node": "trigger_any",
+      "to_pin": "Trigger 1"
+    },
+    {
+      "from_node": "trigger_any",
+      "from_pin": "Trigger",
+      "to_node": "__graph__",
+      "to_pin": "On Finished"
+    }
   ]
 }

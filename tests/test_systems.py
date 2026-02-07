@@ -43,7 +43,7 @@ class TestOfflineMode:
         assert result["pattern"] == "gunshot"
         assert result["layers"]["wwise"]["mode"] == "planned"
         assert result["layers"]["metasounds"]["mode"] == "planned"
-        assert result["layers"]["blueprint"]["mode"] == "skipped"
+        assert result["layers"]["blueprint"]["mode"] == "planned"
 
     def test_build_footsteps_offline(self):
         result = _parse(build_audio_system("footsteps"))
@@ -375,3 +375,93 @@ class TestMacroSequencePattern:
         assert "TestMacro" in conn["metasound_asset"]
         wiring_froms = [w["from"] for w in conn["wiring"]]
         assert "blueprint.MacroStep1" in wiring_froms
+
+
+# ---------------------------------------------------------------------------
+# Integration spec — Wwise JSON templates with cross-layer links
+# ---------------------------------------------------------------------------
+
+class TestIntegrationSpec:
+    """Wwise JSON templates provide signal_flow, audiolink, and cross-layer links."""
+
+    def test_gunshot_has_integration(self):
+        result = _parse(build_audio_system("gunshot"))
+        assert "integration" in result
+        assert result["integration"] is not None
+
+    def test_integration_signal_flow(self):
+        result = _parse(build_audio_system("gunshot"))
+        flow = result["integration"]["signal_flow"]
+        assert len(flow) > 0
+        assert any("BLUEPRINT" in step for step in flow)
+        assert any("WWISE" in step for step in flow)
+        assert any("METASOUNDS" in step for step in flow)
+
+    def test_integration_audiolink(self):
+        result = _parse(build_audio_system("gunshot"))
+        al = result["integration"]["audiolink"]
+        assert al is not None
+        assert al["enabled"] is True
+        assert al["direction"] == "MetaSounds → Wwise"
+        assert "setup_steps" in al
+        assert len(al["setup_steps"]) > 0
+
+    def test_integration_metasound_link(self):
+        result = _parse(build_audio_system("footsteps"))
+        ms_link = result["integration"]["metasound_link"]
+        assert ms_link is not None
+        assert ms_link["template"] == "metasounds/footsteps.json"
+        assert "parameter_mapping" in ms_link
+        assert len(ms_link["parameter_mapping"]) > 0
+
+    def test_integration_blueprint_link(self):
+        result = _parse(build_audio_system("weather"))
+        bp_link = result["integration"]["blueprint_link"]
+        assert bp_link is not None
+        assert bp_link["template"] == "blueprints/wind_system.json"
+        assert "parameter_mapping" in bp_link
+        assert len(bp_link["parameter_mapping"]) > 0
+        assert "states_set" in bp_link
+        assert "Weather" in bp_link["states_set"]
+
+    def test_all_wwise_patterns_have_integration(self):
+        """Every pattern with a wwise_json should return integration spec."""
+        for name, cfg in PATTERNS.items():
+            result = _parse(build_audio_system(name))
+            if cfg.get("wwise_json"):
+                assert result["integration"] is not None, \
+                    "{} should have integration".format(name)
+            else:
+                assert result["integration"] is None, \
+                    "{} should not have integration".format(name)
+
+    def test_connection_map_has_audiolink_bus(self):
+        result = _parse(build_audio_system("ambient"))
+        conn = result["connections"]
+        assert "audiolink_bus" in conn
+        assert conn["audiolink_bus"] == "AudioLink_Ambience"
+
+    def test_connection_wiring_has_types(self):
+        result = _parse(build_audio_system("weather"))
+        wiring = result["connections"]["wiring"]
+        types = {w["type"] for w in wiring}
+        assert "event" in types
+        assert "state" in types
+        assert "param" in types
+        assert "audiolink" in types
+
+    def test_spatial_no_integration(self):
+        result = _parse(build_audio_system("spatial"))
+        assert result["integration"] is None
+
+    def test_blueprint_layers_now_planned(self):
+        """Most patterns should now have bp_template linked."""
+        linked = 0
+        for name, cfg in PATTERNS.items():
+            if cfg.get("bp_template"):
+                result = _parse(build_audio_system(name))
+                bp = result["layers"]["blueprint"]
+                assert bp["mode"] == "planned", \
+                    "{} blueprint should be planned".format(name)
+                linked += 1
+        assert linked >= 7  # All except macro_sequence

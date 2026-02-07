@@ -703,7 +703,27 @@
       "lastAccessed": "2026-02-07T14:13:46.141Z",
       "lastVerified": "2026-02-07T14:13:46.141Z",
       "status": "fresh"
+    },
+    {
+      "id": "mem_1770478466721_fdco4ciyl",
+      "content": "MetaSounds Pin/Node Name Changes Required\n\nAll references found in 22 JSON templates under /Users/radek/Documents/GIthub/UE5-WWISE/src/ue_audio_mcp/templates/metasounds/\n\nOLD PIN NAMES TO UPDATE:\n- WaveAsset → Wave Asset (in \"to_pin\" connections to wave_player input)\n- PitchShift → Pitch Shift (in \"to_pin\" connections to wave_player input)  \n- StartTime → Start Time (in wave_player defaults)\n- LoopStart → Loop Start (in wave_player defaults)\n- LoopDuration → Loop Duration (in wave_player defaults)\n- OnFinished → On Finished (output pin from Wave Player)\n- OnLooped → On Looped (output pin from Wave Player)\n- Array → In Array (input to Array Random Get / Random Get)\n- Trigger → Next (input to Array Random Get / Random Get)\n- NoRepeat → No Repeats (default in Array Random Get / Random Get)\n- Audio L → Out Left (output from Stereo Mixer when connected to __graph__)\n- Audio R → Out Right (output from Stereo Mixer when connected to __graph__)\n\nOLD NODE TYPES:\n- \"Array Random Get\" → \"Random Get (WaveAsset:Array)\" or similar pattern\n- Output \"Trigger\" on Array Random Get → \"On Next\"\n\nKEY FINDINGS:\n1. random_playback.json already uses correct NEW names (On Next, In Array, Wave Asset, No Repeats, On Finished)\n2. Older templates use OLD names consistently\n3. Crossfade nodes Output_L/Output_R are NOT changed (keep as-is) - different pin naming convention\n4. Index pin only appears in 2 locations (sound_pad.json, footsteps.json) but NOT being changed by user request\n5. Internal node output pins like \"Audio\", \"Out\", \"Value\" keep their current names\n6. Graph-level output pins vary (Out Left, Out Right, Out Mono, Out Stereo L, etc.) - THESE ARE NOT BEING CHANGED\n\nFiles affected: 22 total templates, 18+ have at least one old name to update",
+      "type": "concept",
+      "tags": [
+        "concept",
+        "pin-names",
+        "metasounds",
+        "wave-player",
+        "random-get",
+        "templates",
+        "wave-asset",
+        "pitch-shift"
+      ],
+      "timestamp": "2026-02-07T15:34:26.721Z",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-07T15:34:26.721Z",
+      "lastVerified": "2026-02-07T15:34:26.721Z",
+      "status": "fresh"
     }
   ],
-  "lastUpdated": "2026-02-07T14:13:46.141Z"
+  "lastUpdated": "2026-02-07T15:34:26.721Z"
 }

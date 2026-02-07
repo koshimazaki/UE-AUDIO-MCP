@@ -1,0 +1,146 @@
+{
+  "name": "Gunshot — Full 3-Layer System",
+  "type": "wwise",
+  "description": "Complete weapon fire system wiring Wwise (mixing/spatialization) + MetaSounds (DSP synthesis) + Blueprint (gameplay trigger). Wwise handles the RandomSequenceContainer for variation management, RTPC for distance-based mixing, and bus routing. MetaSounds builds the actual gunshot DSP (sample player + pitch randomization + ADSR). Blueprint fires the event and sets distance/weapon parameters.",
+
+  "wwise_objects": {
+    "hierarchy": {
+      "type": "RandomSequenceContainer",
+      "name": "Gunshot_{weapon_name}",
+      "parent": "\\Actor-Mixer Hierarchy\\Default Work Unit",
+      "properties": {
+        "RandomOrSequence": 0,
+        "NormalOrShuffle": 1
+      },
+      "children": [
+        {
+          "type": "Sound",
+          "name": "{weapon_name}_Shot_{n:02d}",
+          "count": "{num_variations}",
+          "properties": {
+            "PitchModMin": "{-pitch_randomization/2}",
+            "PitchModMax": "{pitch_randomization/2}"
+          },
+          "note": "Empty Sound slots — import .wav files or use AudioLink source from MetaSounds"
+        }
+      ]
+    },
+    "event": {
+      "type": "Event",
+      "name": "Play_Gunshot_{weapon_name}",
+      "parent": "\\Events\\Default Work Unit",
+      "actions": [
+        {"type": "Play", "target": "Gunshot_{weapon_name}"}
+      ]
+    },
+    "game_parameters": [
+      {
+        "name": "RTPC_Gunshot_Distance",
+        "parent": "\\Game Parameters\\Default Work Unit",
+        "range": [0.0, 100.0],
+        "default": 50.0,
+        "note": "Normalized distance (0=close, 100=far) — drives low-pass filter and reverb send"
+      }
+    ],
+    "buses": {
+      "output_bus": "\\Master-Mixer Hierarchy\\Weapons",
+      "aux_buses": [
+        {
+          "name": "Weapons_Reverb",
+          "note": "Distance-dependent reverb send via RTPC curve"
+        }
+      ]
+    },
+    "attenuation": {
+      "name": "Atten_Gunshot",
+      "max_distance": 5000.0,
+      "curves": {
+        "VolumeDryUsage": "logarithmic",
+        "LowPassFilterUsage": "linear_ramp_at_distance"
+      },
+      "note": "Standard weapon attenuation — sharp close, gradual tail"
+    }
+  },
+
+  "audiolink": {
+    "enabled": true,
+    "direction": "MetaSounds → Wwise",
+    "bus": "AudioLink_Weapons",
+    "note": "AudioLink routes MetaSounds DSP output into Wwise for mixing/spatialization. Requires AudioLink plugin enabled in UE5 project. The MetaSounds Source asset outputs audio which AudioLink captures and routes to this Wwise bus.",
+    "setup_steps": [
+      "1. Enable AudioLink plugin in UE5 Project Settings > Plugins",
+      "2. Create AudioLink bus in Wwise: Master-Mixer Hierarchy > AudioLink_Weapons",
+      "3. In UE5 AudioComponent, set AudioLink Settings to route to AudioLink_Weapons",
+      "4. MetaSounds Source output → AudioLink → Wwise AudioLink_Weapons bus",
+      "5. Wwise applies attenuation, reverb, and mixing on the AudioLink bus"
+    ]
+  },
+
+  "metasound_link": {
+    "template": "metasounds/gunshot.json",
+    "asset_name": "MS_{weapon_name}_Gunshot",
+    "asset_type": "Source",
+    "parameter_mapping": [
+      {
+        "wwise_source": "Event Play_Gunshot_{weapon_name}",
+        "metasound_target": "OnPlay (Trigger)",
+        "direction": "Wwise → MetaSounds",
+        "mechanism": "AudioComponent.Play() fires MetaSounds OnPlay trigger",
+        "note": "Blueprint calls PostEvent → Wwise plays → AudioComponent triggers MetaSounds"
+      },
+      {
+        "wwise_source": "RTPC_Gunshot_Distance",
+        "metasound_target": "Distance (Float input)",
+        "direction": "Blueprint → MetaSounds (via SetFloatParameter)",
+        "mechanism": "Blueprint SetFloatParameter('Distance', value) on AudioComponent",
+        "note": "MetaSounds uses Distance to crossfade close/far layers or adjust filter"
+      }
+    ]
+  },
+
+  "blueprint_link": {
+    "template": "blueprints/weapon_burst_control.json",
+    "class_name": "BP_WeaponAudio",
+    "parameter_mapping": [
+      {
+        "blueprint_action": "PostEvent('Play_Gunshot_{weapon_name}')",
+        "target": "Wwise",
+        "when": "On weapon fire input",
+        "note": "AkComponent.PostEvent or UAkGameplayStatics::PostEvent"
+      },
+      {
+        "blueprint_action": "SetRTPCValue('RTPC_Gunshot_Distance', NormalizedDistance)",
+        "target": "Wwise RTPC",
+        "when": "Per tick or on distance change",
+        "note": "Maps player→listener distance to 0-100 range"
+      },
+      {
+        "blueprint_action": "SetFloatParameter('Distance', NormalizedDistance)",
+        "target": "MetaSounds input",
+        "when": "Per tick or on distance change",
+        "note": "Direct parameter on AudioComponent → MetaSounds graph input"
+      }
+    ],
+    "events_posted": ["Play_Gunshot_{weapon_name}", "Stop_Gunshot_{weapon_name}"],
+    "rtpcs_set": ["RTPC_Gunshot_Distance"],
+    "switches_set": [],
+    "states_set": []
+  },
+
+  "signal_flow": [
+    "1. BLUEPRINT: Player fires weapon → PostEvent('Play_Gunshot_{weapon_name}')",
+    "2. WWISE: Event triggers Play action on RandomSequenceContainer",
+    "3. METASOUNDS: AudioComponent.Play() fires OnPlay trigger in MetaSounds graph",
+    "4. METASOUNDS: Graph runs DSP: RandomGet → WavePlayer → ADSR → Multiply → Output",
+    "5. AUDIOLINK: MetaSounds audio output → AudioLink → Wwise AudioLink_Weapons bus",
+    "6. WWISE: Applies attenuation, distance LPF, reverb send, bus mixing",
+    "7. BLUEPRINT: Per-tick SetRTPCValue for distance-based mixing in Wwise",
+    "8. BLUEPRINT: Per-tick SetFloatParameter for distance-based DSP in MetaSounds"
+  ],
+
+  "parameters": {
+    "weapon_name": {"type": "string", "default": "Rifle", "description": "Weapon name prefix for all objects"},
+    "num_variations": {"type": "int", "default": 3, "description": "Number of sound variation slots"},
+    "pitch_randomization": {"type": "int", "default": 100, "description": "Pitch randomization in cents"}
+  }
+}

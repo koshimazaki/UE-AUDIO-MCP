@@ -74,7 +74,7 @@ def ms_graph_from_template(
 ) -> str:
     """Generate a complete graph spec from a template.
 
-    Available templates: gunshot, footsteps, ambient, spatial, ui_sound, weather.
+    Available templates: gunshot, footsteps, ambient, spatial, ui_sound, weather, vehicle_engine.
 
     Args:
         template_name: Template name (e.g. "gunshot", "footsteps")
@@ -83,7 +83,7 @@ def ms_graph_from_template(
     Returns:
         JSON with the complete graph specification ready for validation.
     """
-    valid_templates = {"gunshot", "footsteps", "ambient", "spatial", "ui_sound", "weather"}
+    valid_templates = {"gunshot", "footsteps", "ambient", "spatial", "ui_sound", "weather", "vehicle_engine"}
     if template_name not in valid_templates:
         return _error("Unknown template '{}'. Available: {}".format(
             template_name, ", ".join(sorted(valid_templates))

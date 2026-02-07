@@ -35218,5 +35218,7 @@
     "GetMeshLODNodeUids",
     "RemoveMeshLODNodeUid",
     "ResetMeshLODNodeUids"
-  ]
+  ],
+  "Services/Mobile/Location/OnLocationChanged": [],
+  "Synth/Components/Audio/OnSamplePlaybackProgress": []
 }

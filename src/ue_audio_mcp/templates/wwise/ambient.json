@@ -1,0 +1,156 @@
+{
+  "name": "Ambient — Full 3-Layer System",
+  "type": "wwise",
+  "description": "Complete RTPC-driven ambient blend system wiring Wwise (layer mixing/spatialization) + MetaSounds (procedural ambient synthesis) + Blueprint (environment parameter driving). Wwise manages the BlendContainer with RTPC-driven volume curves per layer. MetaSounds generates the procedural ambient audio (noise + filter + LFO modulation). Blueprint reads gameplay state (weather, time, zone) and drives RTPCs.",
+
+  "wwise_objects": {
+    "hierarchy": {
+      "type": "BlendContainer",
+      "name": "Ambient_{parameter_name}",
+      "parent": "\\Actor-Mixer Hierarchy\\Default Work Unit",
+      "children": [
+        {
+          "type": "Sound",
+          "name": "{layer}",
+          "for_each": "{layer_names}",
+          "properties": {
+            "IsLoopingEnabled": true,
+            "IsLoopingInfinite": true
+          },
+          "note": "Each layer plays simultaneously — volume controlled by RTPC curve"
+        }
+      ]
+    },
+    "event": {
+      "type": "Event",
+      "name": "Play_Ambient_{parameter_name}",
+      "parent": "\\Events\\Default Work Unit",
+      "actions": [
+        {"type": "Play", "target": "Ambient_{parameter_name}"}
+      ]
+    },
+    "game_parameters": [
+      {
+        "name": "RTPC_{parameter_name}",
+        "range": [0.0, 100.0],
+        "default": 0.0,
+        "note": "Main blend parameter — each layer has a volume curve responding to this value"
+      },
+      {
+        "name": "RTPC_TimeOfDay",
+        "range": [0.0, 24.0],
+        "default": 12.0,
+        "note": "Optional: time-of-day modulation for dawn/dusk volume changes"
+      }
+    ],
+    "buses": {
+      "output_bus": "\\Master-Mixer Hierarchy\\Ambience",
+      "aux_buses": [
+        {
+          "name": "Ambience_Reverb",
+          "note": "Environmental reverb for ambient sounds"
+        }
+      ]
+    },
+    "attenuation": {
+      "name": "Atten_Ambient",
+      "max_distance": 10000.0,
+      "curves": {
+        "VolumeDryUsage": "linear",
+        "SpreadUsage": "constant_100"
+      },
+      "note": "Large radius, full spread for enveloping ambient sound"
+    }
+  },
+
+  "audiolink": {
+    "enabled": true,
+    "direction": "MetaSounds → Wwise",
+    "bus": "AudioLink_Ambience",
+    "setup_steps": [
+      "1. Enable AudioLink plugin",
+      "2. Create AudioLink bus: Master-Mixer > AudioLink_Ambience",
+      "3. MetaSounds ambient Source → AudioLink → Wwise Ambience bus",
+      "4. Wwise BlendContainer RTPC curves control layer volumes",
+      "5. Wwise applies environmental reverb and spatial processing"
+    ]
+  },
+
+  "metasound_link": {
+    "template": "metasounds/ambient.json",
+    "asset_name": "MS_{name}_Ambient",
+    "asset_type": "Source",
+    "parameter_mapping": [
+      {
+        "wwise_source": "Event Play_Ambient_{parameter_name}",
+        "metasound_target": "OnPlay (Trigger)",
+        "mechanism": "AudioComponent.Play() fires MetaSounds OnPlay trigger"
+      },
+      {
+        "wwise_source": "RTPC_{parameter_name}",
+        "metasound_target": "Intensity (Float input)",
+        "direction": "Blueprint → MetaSounds",
+        "mechanism": "SetFloatParameter('Intensity', normalizedValue)",
+        "note": "MetaSounds uses Intensity to modulate filter cutoff and noise amplitude"
+      },
+      {
+        "wwise_source": "RTPC_TimeOfDay",
+        "metasound_target": "TimeOfDay (Float input)",
+        "direction": "Blueprint → MetaSounds",
+        "mechanism": "SetFloatParameter('TimeOfDay', hours)",
+        "note": "Optional: MetaSounds adjusts timbre based on time (brighter midday, darker night)"
+      }
+    ]
+  },
+
+  "blueprint_link": {
+    "template": "blueprints/ambient_height_wind.json",
+    "class_name": "BP_AmbientAudio",
+    "parameter_mapping": [
+      {
+        "blueprint_action": "PostEvent('Play_Ambient_{parameter_name}')",
+        "target": "Wwise",
+        "when": "On zone enter (BeginOverlap)",
+        "note": "Start ambient when player enters zone — AkComponent attached to zone actor"
+      },
+      {
+        "blueprint_action": "PostEvent('Stop_Ambient_{parameter_name}')",
+        "target": "Wwise",
+        "when": "On zone exit (EndOverlap)"
+      },
+      {
+        "blueprint_action": "SetRTPCValue('RTPC_{parameter_name}', intensity)",
+        "target": "Wwise RTPC",
+        "when": "Per tick or on gameplay state change",
+        "note": "Height-based wind: MapRangeClamped(PlayerZ, GroundZ, PeakZ, 0, 100)"
+      },
+      {
+        "blueprint_action": "SetFloatParameter('Intensity', normalizedIntensity)",
+        "target": "MetaSounds input",
+        "when": "Same as RTPC update",
+        "note": "Dual-drive: Wwise RTPC controls layer mix, MetaSounds parameter controls DSP"
+      }
+    ],
+    "events_posted": ["Play_Ambient_{parameter_name}", "Stop_Ambient_{parameter_name}"],
+    "rtpcs_set": ["RTPC_{parameter_name}", "RTPC_TimeOfDay"],
+    "switches_set": [],
+    "states_set": []
+  },
+
+  "signal_flow": [
+    "1. BLUEPRINT: Player enters ambient zone → PostEvent('Play_Ambient_Wind_Intensity')",
+    "2. WWISE: Event triggers Play on BlendContainer — all layers start looping",
+    "3. METASOUNDS: OnPlay trigger → noise generators + LFO + filter begin processing",
+    "4. BLUEPRINT: Per-tick reads player height → SetRTPCValue for Wwise, SetFloatParameter for MetaSounds",
+    "5. WWISE: RTPC curves adjust per-layer volumes (light wind at 0, heavy wind at 100)",
+    "6. METASOUNDS: Intensity input modulates filter cutoff and noise amplitude",
+    "7. AUDIOLINK: MetaSounds audio → AudioLink → Wwise Ambience bus",
+    "8. WWISE: Applies reverb, spatial spread, bus mixing",
+    "9. BLUEPRINT: Player exits zone → PostEvent('Stop_Ambient_Wind_Intensity')"
+  ],
+
+  "parameters": {
+    "layer_names": {"type": "string[]", "default": ["Wind_Light", "Wind_Medium", "Wind_Heavy"], "description": "Ambient layer names"},
+    "parameter_name": {"type": "string", "default": "Wind_Intensity", "description": "RTPC parameter name"}
+  }
+}

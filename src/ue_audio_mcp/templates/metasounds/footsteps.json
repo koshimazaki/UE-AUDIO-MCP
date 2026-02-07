@@ -2,69 +2,191 @@
   "name": "Footsteps",
   "asset_type": "Source",
   "description": "Surface-based footstep system with trigger routing, random sample selection, AD envelope shaping, and low-pass filtering.",
-  "interfaces": ["UE.Source.OneShot"],
+  "interfaces": [
+    "UE.Source.OneShot"
+  ],
   "inputs": [
-    {"name": "OnPlay", "type": "Trigger"},
-    {"name": "SurfaceType", "type": "Int32"},
-    {"name": "Samples", "type": "WaveAsset[]"}
+    {
+      "name": "OnPlay",
+      "type": "Trigger"
+    },
+    {
+      "name": "SurfaceType",
+      "type": "Int32"
+    },
+    {
+      "name": "Samples",
+      "type": "WaveAsset[]"
+    }
   ],
   "outputs": [
-    {"name": "Out Mono", "type": "Audio"},
-    {"name": "Out Stereo L", "type": "Audio"},
-    {"name": "Out Stereo R", "type": "Audio"},
-    {"name": "OnFinished", "type": "Trigger"}
+    {
+      "name": "Out Mono",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo L",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo R",
+      "type": "Audio"
+    },
+    {
+      "name": "On Finished",
+      "type": "Trigger"
+    }
   ],
   "nodes": [
     {
       "id": "trigger_route",
       "node_type": "Trigger Route",
-      "position": [0, 0],
-      "defaults": {"NumOutputs": 4}
+      "position": [
+        0,
+        0
+      ],
+      "defaults": {
+        "NumOutputs": 4
+      }
     },
     {
       "id": "random_get",
-      "node_type": "Array Random Get",
-      "position": [200, 0],
-      "defaults": {"NoRepeat": true}
+      "node_type": "Random Get (WaveAssetArray)",
+      "position": [
+        200,
+        0
+      ],
+      "defaults": {
+        "No Repeats": 1
+      }
     },
     {
       "id": "wave_player",
       "node_type": "Wave Player (Mono)",
-      "position": [500, 0],
-      "defaults": {"Loop": false}
+      "position": [
+        500,
+        0
+      ],
+      "defaults": {
+        "Loop": false
+      }
     },
     {
       "id": "ad_env",
       "node_type": "AD Envelope (Audio)",
-      "position": [500, 200],
-      "defaults": {"Attack": 0.005, "Decay": 0.15}
+      "position": [
+        500,
+        200
+      ],
+      "defaults": {
+        "Attack": 0.005,
+        "Decay": 0.15
+      }
     },
     {
       "id": "amp_multiply",
       "node_type": "Multiply (Audio)",
-      "position": [800, 0]
+      "position": [
+        800,
+        0
+      ]
     },
     {
       "id": "lowpass",
       "node_type": "One-Pole Low Pass Filter",
-      "position": [1000, 0],
-      "defaults": {"Cutoff Frequency": 4000.0}
+      "position": [
+        1000,
+        0
+      ],
+      "defaults": {
+        "Cutoff Frequency": 4000.0
+      }
     }
   ],
   "connections": [
-    {"from_node": "__graph__", "from_pin": "OnPlay", "to_node": "trigger_route", "to_pin": "Trigger"},
-    {"from_node": "__graph__", "from_pin": "SurfaceType", "to_node": "trigger_route", "to_pin": "Index"},
-    {"from_node": "trigger_route", "from_pin": "Trigger 0", "to_node": "random_get", "to_pin": "Trigger"},
-    {"from_node": "__graph__", "from_pin": "Samples", "to_node": "random_get", "to_pin": "Array"},
-    {"from_node": "random_get", "from_pin": "Value", "to_node": "wave_player", "to_pin": "WaveAsset"},
-    {"from_node": "random_get", "from_pin": "Trigger", "to_node": "wave_player", "to_pin": "Play"},
-    {"from_node": "random_get", "from_pin": "Trigger", "to_node": "ad_env", "to_pin": "Trigger"},
-    {"from_node": "wave_player", "from_pin": "Audio", "to_node": "amp_multiply", "to_pin": "A"},
-    {"from_node": "ad_env", "from_pin": "Envelope", "to_node": "amp_multiply", "to_pin": "B"},
-    {"from_node": "amp_multiply", "from_pin": "Result", "to_node": "lowpass", "to_pin": "Audio"},
-    {"from_node": "lowpass", "from_pin": "Audio", "to_node": "__graph__", "to_pin": "Out Mono"},
-    {"from_node": "lowpass", "from_pin": "Audio", "to_node": "__graph__", "to_pin": "Out Stereo L"},
-    {"from_node": "lowpass", "from_pin": "Audio", "to_node": "__graph__", "to_pin": "Out Stereo R"},
-    {"from_node": "ad_env", "from_pin": "OnDone", "to_node": "__graph__", "to_pin": "OnFinished"}
+    {
+      "from_node": "__graph__",
+      "from_pin": "OnPlay",
+      "to_node": "trigger_route",
+      "to_pin": "Trigger"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "SurfaceType",
+      "to_node": "trigger_route",
+      "to_pin": "Index"
+    },
+    {
+      "from_node": "trigger_route",
+      "from_pin": "Trigger 0",
+      "to_node": "random_get",
+      "to_pin": "Next"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Samples",
+      "to_node": "random_get",
+      "to_pin": "In Array"
+    },
+    {
+      "from_node": "random_get",
+      "from_pin": "Value",
+      "to_node": "wave_player",
+      "to_pin": "Wave Asset"
+    },
+    {
+      "from_node": "random_get",
+      "from_pin": "On Next",
+      "to_node": "wave_player",
+      "to_pin": "Play"
+    },
+    {
+      "from_node": "random_get",
+      "from_pin": "On Next",
+      "to_node": "ad_env",
+      "to_pin": "Trigger"
+    },
+    {
+      "from_node": "wave_player",
+      "from_pin": "Audio",
+      "to_node": "amp_multiply",
+      "to_pin": "A"
+    },
+    {
+      "from_node": "ad_env",
+      "from_pin": "Envelope",
+      "to_node": "amp_multiply",
+      "to_pin": "B"
+    },
+    {
+      "from_node": "amp_multiply",
+      "from_pin": "Result",
+      "to_node": "lowpass",
+      "to_pin": "Audio"
+    },
+    {
+      "from_node": "lowpass",
+      "from_pin": "Audio",
+      "to_node": "__graph__",
+      "to_pin": "Out Mono"
+    },
+    {
+      "from_node": "lowpass",
+      "from_pin": "Audio",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo L"
+    },
+    {
+      "from_node": "lowpass",
+      "from_pin": "Audio",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo R"
+    },
+    {
+      "from_node": "ad_env",
+      "from_pin": "OnDone",
+      "to_node": "__graph__",
+      "to_pin": "On Finished"
+    }
   ]
 }

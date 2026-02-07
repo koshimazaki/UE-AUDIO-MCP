@@ -2,109 +2,285 @@
   "name": "MacroSequence",
   "asset_type": "Source",
   "description": "Cinematic macro sequence: trigger inputs set graph variables that smoothly drive filter cutoff and bandwidth via InterpTo. Fire MacroStep triggers in sequence for scripted audio cues.",
-  "interfaces": ["UE.Source.Looping"],
+  "interfaces": [
+    "UE.Source.Looping"
+  ],
   "variables": [
-    {"name": "TargetCutoff", "type": "Float", "default": 2000.0},
-    {"name": "TargetBandwidth", "type": "Float", "default": 1.0}
+    {
+      "name": "TargetCutoff",
+      "type": "Float",
+      "default": 2000.0
+    },
+    {
+      "name": "TargetBandwidth",
+      "type": "Float",
+      "default": 1.0
+    }
   ],
   "inputs": [
-    {"name": "OnPlay", "type": "Trigger"},
-    {"name": "OnStop", "type": "Trigger"},
-    {"name": "MacroStep1", "type": "Trigger"},
-    {"name": "MacroStep2", "type": "Trigger"},
-    {"name": "MacroStep3", "type": "Trigger"},
-    {"name": "WaveAsset", "type": "WaveAsset"}
+    {
+      "name": "OnPlay",
+      "type": "Trigger"
+    },
+    {
+      "name": "OnStop",
+      "type": "Trigger"
+    },
+    {
+      "name": "MacroStep1",
+      "type": "Trigger"
+    },
+    {
+      "name": "MacroStep2",
+      "type": "Trigger"
+    },
+    {
+      "name": "MacroStep3",
+      "type": "Trigger"
+    },
+    {
+      "name": "WaveAsset",
+      "type": "WaveAsset"
+    }
   ],
   "outputs": [
-    {"name": "Out Mono", "type": "Audio"},
-    {"name": "Out Stereo L", "type": "Audio"},
-    {"name": "Out Stereo R", "type": "Audio"},
-    {"name": "OnFinished", "type": "Trigger"},
-    {"name": "OnLooped", "type": "Trigger"}
+    {
+      "name": "Out Mono",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo L",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo R",
+      "type": "Audio"
+    },
+    {
+      "name": "On Finished",
+      "type": "Trigger"
+    },
+    {
+      "name": "On Looped",
+      "type": "Trigger"
+    }
   ],
   "nodes": [
     {
       "id": "wave_player",
       "node_type": "Wave Player (Mono)",
-      "position": [0, 0],
-      "defaults": {"Loop": true}
+      "position": [
+        0,
+        0
+      ],
+      "defaults": {
+        "Loop": true
+      }
     },
     {
       "id": "set_cutoff_1",
       "node_type": "__variable_set__",
       "variable_name": "TargetCutoff",
-      "position": [0, 300],
+      "position": [
+        0,
+        300
+      ],
       "defaults": {}
     },
     {
       "id": "set_bw_1",
       "node_type": "__variable_set__",
       "variable_name": "TargetBandwidth",
-      "position": [0, 500],
+      "position": [
+        0,
+        500
+      ],
       "defaults": {}
     },
     {
       "id": "cutoff_const",
       "node_type": "Clamp",
-      "position": [-200, 300],
-      "defaults": {"Value": 500.0, "Min": 20.0, "Max": 20000.0}
+      "position": [
+        -200,
+        300
+      ],
+      "defaults": {
+        "Value": 500.0,
+        "Min": 20.0,
+        "Max": 20000.0
+      }
     },
     {
       "id": "bw_const",
       "node_type": "Clamp",
-      "position": [-200, 500],
-      "defaults": {"Value": 2.0, "Min": 0.1, "Max": 10.0}
+      "position": [
+        -200,
+        500
+      ],
+      "defaults": {
+        "Value": 2.0,
+        "Min": 0.1,
+        "Max": 10.0
+      }
     },
     {
       "id": "get_cutoff",
       "node_type": "__variable_get__",
       "variable_name": "TargetCutoff",
-      "position": [400, 200],
+      "position": [
+        400,
+        200
+      ],
       "defaults": {}
     },
     {
       "id": "get_bw",
       "node_type": "__variable_get__",
       "variable_name": "TargetBandwidth",
-      "position": [400, 400],
+      "position": [
+        400,
+        400
+      ],
       "defaults": {}
     },
     {
       "id": "interp_cutoff",
       "node_type": "InterpTo",
-      "position": [600, 200],
-      "defaults": {"Speed": 3.0, "Current": 2000.0}
+      "position": [
+        600,
+        200
+      ],
+      "defaults": {
+        "Speed": 3.0,
+        "Current": 2000.0
+      }
     },
     {
       "id": "interp_bw",
       "node_type": "InterpTo",
-      "position": [600, 400],
-      "defaults": {"Speed": 3.0, "Current": 1.0}
+      "position": [
+        600,
+        400
+      ],
+      "defaults": {
+        "Speed": 3.0,
+        "Current": 1.0
+      }
     },
     {
       "id": "filter",
       "node_type": "Biquad Filter",
-      "position": [900, 0],
-      "defaults": {"FilterType": "LPF"}
+      "position": [
+        900,
+        0
+      ],
+      "defaults": {
+        "FilterType": "LPF"
+      }
     }
   ],
   "connections": [
-    {"from_node": "__graph__", "from_pin": "OnPlay", "to_node": "wave_player", "to_pin": "Play"},
-    {"from_node": "__graph__", "from_pin": "OnStop", "to_node": "wave_player", "to_pin": "Stop"},
-    {"from_node": "__graph__", "from_pin": "WaveAsset", "to_node": "wave_player", "to_pin": "WaveAsset"},
-    {"from_node": "__graph__", "from_pin": "MacroStep1", "to_node": "set_cutoff_1", "to_pin": "Execute"},
-    {"from_node": "cutoff_const", "from_pin": "Result", "to_node": "set_cutoff_1", "to_pin": "Value"},
-    {"from_node": "__graph__", "from_pin": "MacroStep1", "to_node": "set_bw_1", "to_pin": "Execute"},
-    {"from_node": "bw_const", "from_pin": "Result", "to_node": "set_bw_1", "to_pin": "Value"},
-    {"from_node": "get_cutoff", "from_pin": "Value", "to_node": "interp_cutoff", "to_pin": "Target"},
-    {"from_node": "get_bw", "from_pin": "Value", "to_node": "interp_bw", "to_pin": "Target"},
-    {"from_node": "interp_cutoff", "from_pin": "Result", "to_node": "filter", "to_pin": "Cutoff Frequency"},
-    {"from_node": "interp_bw", "from_pin": "Result", "to_node": "filter", "to_pin": "Bandwidth"},
-    {"from_node": "wave_player", "from_pin": "Audio", "to_node": "filter", "to_pin": "Audio"},
-    {"from_node": "filter", "from_pin": "Audio", "to_node": "__graph__", "to_pin": "Out Mono"},
-    {"from_node": "filter", "from_pin": "Audio", "to_node": "__graph__", "to_pin": "Out Stereo L"},
-    {"from_node": "filter", "from_pin": "Audio", "to_node": "__graph__", "to_pin": "Out Stereo R"},
-    {"from_node": "wave_player", "from_pin": "OnFinished", "to_node": "__graph__", "to_pin": "OnFinished"},
-    {"from_node": "wave_player", "from_pin": "OnLooped", "to_node": "__graph__", "to_pin": "OnLooped"}
+    {
+      "from_node": "__graph__",
+      "from_pin": "OnPlay",
+      "to_node": "wave_player",
+      "to_pin": "Play"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "OnStop",
+      "to_node": "wave_player",
+      "to_pin": "Stop"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "WaveAsset",
+      "to_node": "wave_player",
+      "to_pin": "Wave Asset"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "MacroStep1",
+      "to_node": "set_cutoff_1",
+      "to_pin": "Execute"
+    },
+    {
+      "from_node": "cutoff_const",
+      "from_pin": "Result",
+      "to_node": "set_cutoff_1",
+      "to_pin": "Value"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "MacroStep1",
+      "to_node": "set_bw_1",
+      "to_pin": "Execute"
+    },
+    {
+      "from_node": "bw_const",
+      "from_pin": "Result",
+      "to_node": "set_bw_1",
+      "to_pin": "Value"
+    },
+    {
+      "from_node": "get_cutoff",
+      "from_pin": "Value",
+      "to_node": "interp_cutoff",
+      "to_pin": "Target"
+    },
+    {
+      "from_node": "get_bw",
+      "from_pin": "Value",
+      "to_node": "interp_bw",
+      "to_pin": "Target"
+    },
+    {
+      "from_node": "interp_cutoff",
+      "from_pin": "Result",
+      "to_node": "filter",
+      "to_pin": "Cutoff Frequency"
+    },
+    {
+      "from_node": "interp_bw",
+      "from_pin": "Result",
+      "to_node": "filter",
+      "to_pin": "Bandwidth"
+    },
+    {
+      "from_node": "wave_player",
+      "from_pin": "Audio",
+      "to_node": "filter",
+      "to_pin": "Audio"
+    },
+    {
+      "from_node": "filter",
+      "from_pin": "Audio",
+      "to_node": "__graph__",
+      "to_pin": "Out Mono"
+    },
+    {
+      "from_node": "filter",
+      "from_pin": "Audio",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo L"
+    },
+    {
+      "from_node": "filter",
+      "from_pin": "Audio",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo R"
+    },
+    {
+      "from_node": "wave_player",
+      "from_pin": "On Finished",
+      "to_node": "__graph__",
+      "to_pin": "On Finished"
+    },
+    {
+      "from_node": "wave_player",
+      "from_pin": "On Looped",
+      "to_node": "__graph__",
+      "to_pin": "On Looped"
+    }
   ]
 }

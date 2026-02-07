@@ -1,0 +1,285 @@
+{
+  "name": "Quartz Transitional Music State Machine",
+  "type": "blueprint",
+  "blueprint_type": "actor",
+  "author": "Richard Stevens (Leeds Beckett University)",
+  "description": "Full bidirectional music state machine from Quartz Music System course (Barghest encounter). 4 intensity states (Ambient/Low/Mid/High) with Core+Unhidden layer pairs per state. 6 trigger volumes (3 up + 3 down) control directional transitions. AI PlayerSeen event triggers tension riser timeline. Beat-aligned harmonic stingers selected by bar position. Cover triggers allow player to reduce intensity while hiding. Success/Failure transition stingers. FadeVolumeLevel crossfades between layer pairs at bar boundaries. LoopLengthBars retrigger with ResetTransportQuantized. UE 4.27 origin — Quartz API stable through UE5.",
+  "source_url": "https://dev.epicgames.com/community/learning/courses/XAw/unreal-engine-quartz-music-system",
+  "ue_version": "4.27+ (UE5 compatible)",
+  "nodes": [
+    {
+      "id": "begin_play",
+      "node_type": "ReceiveBeginPlay",
+      "position": [0, 0],
+      "comment": "Initialize Quartz clock and bind AI events"
+    },
+    {
+      "id": "setup_quartz",
+      "node_type": "CreateNewClock",
+      "position": [200, 0],
+      "defaults": {"ClockName": "BarghestMusic"},
+      "comment": "Create master music clock"
+    },
+    {
+      "id": "set_bpm",
+      "node_type": "SetBeatsPerMinute",
+      "position": [400, 0],
+      "defaults": {"BeatsPerMinute": 112.0},
+      "comment": "112 BPM — Barghest encounter tempo"
+    },
+    {
+      "id": "start_clock",
+      "node_type": "StartClock",
+      "position": [600, 0],
+      "comment": "Start clock — layers quantized from here"
+    },
+    {
+      "id": "subscribe_events",
+      "node_type": "SubscribeToQuantizationEvent",
+      "position": [600, -100],
+      "comment": "Bar-level callbacks for counting and retrigger"
+    },
+    {
+      "id": "create_amb_core",
+      "node_type": "CreateSound2D",
+      "position": [200, 150],
+      "comment": "Ambient core layer — always present at base"
+    },
+    {
+      "id": "create_amb_unhidden",
+      "node_type": "CreateSound2D",
+      "position": [200, 220],
+      "comment": "Ambient unhidden layer — reveals on player proximity"
+    },
+    {
+      "id": "create_low_core",
+      "node_type": "CreateSound2D",
+      "position": [200, 290],
+      "comment": "Low intensity core layer"
+    },
+    {
+      "id": "create_low_unhidden",
+      "node_type": "CreateSound2D",
+      "position": [200, 360],
+      "comment": "Low intensity unhidden layer"
+    },
+    {
+      "id": "play_quantized_layers",
+      "node_type": "PlayQuantized",
+      "position": [400, 150],
+      "comment": "All layers start quantized to bar boundary — initially at volume 0"
+    },
+    {
+      "id": "start_trigger",
+      "node_type": "OnComponentBeginOverlap",
+      "position": [0, 500],
+      "defaults": {"Component": "StartTrigger"},
+      "comment": "Player enters encounter area — start ambient state"
+    },
+    {
+      "id": "start_music",
+      "node_type": "CustomEvent",
+      "position": [200, 500],
+      "defaults": {"EventName": "Start_Music"},
+      "comment": "Begin ambient music state — fade in core layers"
+    },
+    {
+      "id": "transition_up_1",
+      "node_type": "OnActorBeginOverlap",
+      "position": [0, 700],
+      "defaults": {"Component": "UpMusicTransitionPoint1"},
+      "comment": "Transition point up: Ambient → Low"
+    },
+    {
+      "id": "transition_to_low",
+      "node_type": "CustomEvent",
+      "position": [200, 700],
+      "defaults": {"EventName": "TransitionToLow"},
+      "comment": "Crossfade from ambient to low intensity layers"
+    },
+    {
+      "id": "transition_up_2",
+      "node_type": "OnActorBeginOverlap",
+      "position": [0, 800],
+      "defaults": {"Component": "UpMusicTransitionPoint2"},
+      "comment": "Transition point up: Low → Mid"
+    },
+    {
+      "id": "transition_to_mid",
+      "node_type": "CustomEvent",
+      "position": [200, 800],
+      "defaults": {"EventName": "TransitionToMid"},
+      "comment": "Crossfade from low to mid intensity layers"
+    },
+    {
+      "id": "transition_up_3",
+      "node_type": "OnActorBeginOverlap",
+      "position": [0, 900],
+      "defaults": {"Component": "UpMusicTransitionPoint3"},
+      "comment": "Transition point up: Mid → High"
+    },
+    {
+      "id": "transition_to_high",
+      "node_type": "CustomEvent",
+      "position": [200, 900],
+      "defaults": {"EventName": "TransitionToHigh"},
+      "comment": "Crossfade to high intensity — full combat music"
+    },
+    {
+      "id": "transition_down_1",
+      "node_type": "OnActorBeginOverlap",
+      "position": [0, 1050],
+      "defaults": {"Component": "DownMusicTransitionPoint1"},
+      "comment": "Transition point down: Low → Ambient"
+    },
+    {
+      "id": "transition_to_amb",
+      "node_type": "CustomEvent",
+      "position": [200, 1050],
+      "defaults": {"EventName": "TransitionToAmb"},
+      "comment": "Crossfade back to ambient — de-escalation"
+    },
+    {
+      "id": "player_seen",
+      "node_type": "CustomEvent",
+      "position": [0, 1200],
+      "defaults": {"EventName": "BargPlayerSeen"},
+      "comment": "AI sees player — trigger tension riser"
+    },
+    {
+      "id": "tension_riser",
+      "node_type": "PlayFromStart",
+      "position": [200, 1200],
+      "comment": "Start tension riser timeline — fades in PreSeen layer"
+    },
+    {
+      "id": "fade_core_up",
+      "node_type": "FadeVolumeLevel",
+      "position": [400, 700],
+      "defaults": {"FadeVolumeLevel": 1.0, "FadeInDuration": 2.0},
+      "comment": "Fade in target state core layer"
+    },
+    {
+      "id": "fade_unhidden_up",
+      "node_type": "FadeVolumeLevel",
+      "position": [400, 800],
+      "defaults": {"FadeVolumeLevel": 1.0, "FadeInDuration": 2.0},
+      "comment": "Fade in target state unhidden layer"
+    },
+    {
+      "id": "fade_old_down",
+      "node_type": "FadeVolumeLevel",
+      "position": [400, 900],
+      "defaults": {"FadeVolumeLevel": 0.0, "FadeInDuration": 2.0},
+      "comment": "Fade out previous state layers"
+    },
+    {
+      "id": "get_harmonic_stinger",
+      "node_type": "CustomEvent",
+      "position": [0, 1400],
+      "defaults": {"EventName": "GetHarmonicStinger"},
+      "comment": "Select bar-position-appropriate stinger from variants"
+    },
+    {
+      "id": "get_stinger_by_beat",
+      "node_type": "Array_Get",
+      "position": [200, 1400],
+      "comment": "Index into stinger array by current bar position (A/B/C/D harmonic variants)"
+    },
+    {
+      "id": "play_stinger",
+      "node_type": "PlaySound2D",
+      "position": [400, 1400],
+      "comment": "Fire stinger — beat-specific or harmonically aligned"
+    },
+    {
+      "id": "bar_callback",
+      "node_type": "CustomEvent",
+      "position": [0, 1600],
+      "defaults": {"EventName": "OnQuartzMetronomeEventBP"},
+      "comment": "Bar callback — count bars, retrigger at loop end"
+    },
+    {
+      "id": "count_bars",
+      "node_type": "Add_IntInt",
+      "position": [200, 1600],
+      "comment": "Increment bar counter"
+    },
+    {
+      "id": "check_loop",
+      "node_type": "Branch",
+      "position": [400, 1600],
+      "comment": "BarRelative >= LoopLengthBars? Retrigger"
+    },
+    {
+      "id": "queue_music",
+      "node_type": "CustomEvent",
+      "position": [600, 1600],
+      "defaults": {"EventName": "QueueMusic"},
+      "comment": "Queue next loop iteration with ResetTransportQuantized"
+    },
+    {
+      "id": "reset_transport",
+      "node_type": "ResetTransportQuantized",
+      "position": [800, 1600],
+      "comment": "Reset bar/beat counters for seamless retrigger"
+    },
+    {
+      "id": "success_transition",
+      "node_type": "CustomEvent",
+      "position": [0, 1800],
+      "defaults": {"EventName": "SuccessTransition"},
+      "comment": "Victory — play success stinger, fade all layers"
+    },
+    {
+      "id": "failure_transition",
+      "node_type": "CustomEvent",
+      "position": [400, 1800],
+      "defaults": {"EventName": "FailureTransition"},
+      "comment": "Defeat — play failure stinger, camera fade"
+    },
+    {
+      "id": "camera_fade",
+      "node_type": "StartCameraFade",
+      "position": [600, 1800],
+      "comment": "Camera fade on failure — audio follows visual"
+    }
+  ],
+  "variables": [
+    {"name": "QuartzClock", "type": "QuartzClockHandle", "description": "Master music clock handle"},
+    {"name": "AmbCore", "type": "AudioComponent", "description": "Ambient state core layer"},
+    {"name": "AmbUnhidden", "type": "AudioComponent", "description": "Ambient state unhidden/reveal layer"},
+    {"name": "LowCore", "type": "AudioComponent", "description": "Low intensity core layer"},
+    {"name": "LowUnhidden", "type": "AudioComponent", "description": "Low intensity unhidden layer"},
+    {"name": "MidCore", "type": "AudioComponent", "description": "Mid intensity core layer"},
+    {"name": "MidUnhidden", "type": "AudioComponent", "description": "Mid intensity unhidden layer"},
+    {"name": "HighCore", "type": "AudioComponent", "description": "High intensity core layer"},
+    {"name": "HighUnhidden", "type": "AudioComponent", "description": "High intensity unhidden layer"},
+    {"name": "SeenRiserVolume", "type": "AudioComponent", "description": "Tension riser layer on AI sight"},
+    {"name": "LoopLengthBars", "type": "Int32", "default": 16, "description": "Bars per music section loop"},
+    {"name": "BarRelative", "type": "Int32", "description": "Current bar within loop (0 to LoopLengthBars)"},
+    {"name": "BarCount", "type": "Int32", "description": "Total bar count for harmonic stinger selection"},
+    {"name": "BeatCount", "type": "Int32", "description": "Beat within bar for beat-specific stingers"},
+    {"name": "PlayerSeen", "type": "Bool", "default": false, "description": "AI sight state — triggers tension riser"},
+    {"name": "BarghestActive", "type": "Bool", "default": false, "description": "Whether Barghest encounter is active"},
+    {"name": "HarmonicStingers", "type": "SoundBase[]", "description": "4 harmonically aligned stinger variants (A/B/C/D by bar position)"},
+    {"name": "BeatStingers", "type": "SoundBase[]", "description": "Beat-specific stinger variants"},
+    {"name": "CoverTriggers", "type": "TriggerBox[]", "description": "Player hiding spots — reduce intensity while in cover"}
+  ],
+  "connections": [
+    {"from_node": "begin_play", "from_pin": "Exec", "to_node": "setup_quartz", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "setup_quartz", "from_pin": "ReturnValue", "to_node": "set_bpm", "to_pin": "InClockHandle", "type": "data"},
+    {"from_node": "start_trigger", "from_pin": "Exec", "to_node": "start_music", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "transition_up_1", "from_pin": "Exec", "to_node": "transition_to_low", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "transition_up_2", "from_pin": "Exec", "to_node": "transition_to_mid", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "transition_up_3", "from_pin": "Exec", "to_node": "transition_to_high", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "transition_down_1", "from_pin": "Exec", "to_node": "transition_to_amb", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "player_seen", "from_pin": "Exec", "to_node": "tension_riser", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "bar_callback", "from_pin": "Exec", "to_node": "count_bars", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "check_loop", "from_pin": "True", "to_node": "queue_music", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "queue_music", "from_pin": "Exec", "to_node": "reset_transport", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "get_harmonic_stinger", "from_pin": "Exec", "to_node": "get_stinger_by_beat", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "get_stinger_by_beat", "from_pin": "Item", "to_node": "play_stinger", "to_pin": "Sound", "type": "data"}
+  ],
+  "notes": "Key patterns: (1) Core+Unhidden layer pair per intensity state — 8 layers total (Amb/Low/Mid/High × Core/Unhidden). All play simultaneously, volume controls which are audible. (2) Bidirectional transitions: Up triggers (Amb→Low→Mid→High) and Down triggers (High→Mid→Low→Amb) using separate TriggerVolumes. (3) Harmonic stinger system: 4 variants (A/B/C/D) aligned to bar position within 4-bar harmonic cycle. GetHarmonicStinger indexes by (BarCount % 4). (4) Beat-specific stingers: HiddenOnBeat plays on next beat, HiddenUntimed plays immediately (unquantized). Hidden_1Pre fires 1 beat before next bar. (5) AI event binding: K2Node_AddDelegate binds to Barghest's BargPlayerSeen delegate — triggers PreSeenRiserFadeIns timeline. (6) Cover triggers: OnActorBeginOverlap on CoverTrigger volumes reduces current intensity state. (7) ResetTransportQuantized resets bar counter without stopping clock — enables seamless loop retrigger. (8) CancelPendingEvents cleans up before StopClock on encounter end. (9) StartCameraFade on failure syncs visual with audio fade. (10) Music states: Amb_Core, Amb_Unhidden, Low_Core, Low_Unhidden, Mid_Core, Mid_Unhidden, High_FASTER_Core, High_FASTER_Unhidden — High uses faster BPM variant."
+}

@@ -1,0 +1,152 @@
+{
+  "name": "Footsteps — Full 3-Layer System",
+  "type": "wwise",
+  "description": "Complete surface-switched footstep system wiring Wwise (switch logic/mixing) + MetaSounds (procedural step synthesis) + Blueprint (character movement detection). Wwise manages the SwitchContainer by surface type and handles spatialization. MetaSounds runs the per-step DSP (sample selection, AD envelope, low-pass filter). Blueprint detects footfalls from AnimNotify or movement speed and posts events with surface type.",
+
+  "wwise_objects": {
+    "hierarchy": {
+      "type": "SwitchContainer",
+      "name": "Footstep_Surface",
+      "parent": "\\Actor-Mixer Hierarchy\\Default Work Unit",
+      "switch_group_ref": "Surface_Type",
+      "children": [
+        {
+          "type": "RandomSequenceContainer",
+          "name": "Footstep_{surface}",
+          "assigned_to_switch": "{surface}",
+          "for_each": "{surface_types}",
+          "properties": {
+            "RandomOrSequence": 0,
+            "NormalOrShuffle": 1
+          },
+          "note": "Per-surface random variation container — import surface-specific samples or use AudioLink from MetaSounds"
+        }
+      ]
+    },
+    "switch_group": {
+      "type": "SwitchGroup",
+      "name": "Surface_Type",
+      "parent": "\\Switches\\Default Work Unit",
+      "values": "{surface_types}",
+      "note": "Surface types: Concrete, Wood, Grass, Metal, Gravel, Water, etc."
+    },
+    "event": {
+      "type": "Event",
+      "name": "Play_Footstep",
+      "parent": "\\Events\\Default Work Unit",
+      "actions": [
+        {"type": "Play", "target": "Footstep_Surface"}
+      ]
+    },
+    "game_parameters": [
+      {
+        "name": "RTPC_Footstep_Speed",
+        "range": [0.0, 1.0],
+        "default": 0.5,
+        "note": "Character movement speed — drives volume and pitch variation in Wwise and filter in MetaSounds"
+      }
+    ],
+    "buses": {
+      "output_bus": "\\Master-Mixer Hierarchy\\Foley",
+      "note": "Foley bus for footsteps, cloth, gear rattle"
+    },
+    "attenuation": {
+      "name": "Atten_Footstep",
+      "max_distance": 2000.0,
+      "curves": {
+        "VolumeDryUsage": "logarithmic"
+      }
+    }
+  },
+
+  "audiolink": {
+    "enabled": true,
+    "direction": "MetaSounds → Wwise",
+    "bus": "AudioLink_Foley",
+    "setup_steps": [
+      "1. Enable AudioLink plugin in UE5",
+      "2. Create AudioLink bus: Master-Mixer > AudioLink_Foley",
+      "3. MetaSounds footstep Source → AudioLink → Wwise Foley bus",
+      "4. Wwise applies surface-specific attenuation and bus mixing"
+    ]
+  },
+
+  "metasound_link": {
+    "template": "metasounds/footsteps.json",
+    "asset_name": "MS_{name}_Footsteps",
+    "asset_type": "Source",
+    "parameter_mapping": [
+      {
+        "wwise_source": "Event Play_Footstep",
+        "metasound_target": "OnPlay (Trigger)",
+        "direction": "Wwise → MetaSounds",
+        "mechanism": "AudioComponent.Play() fires MetaSounds OnPlay trigger"
+      },
+      {
+        "wwise_source": "Switch Surface_Type",
+        "metasound_target": "SurfaceType (Int32 input)",
+        "direction": "Blueprint → MetaSounds (via SetIntParameter)",
+        "mechanism": "Blueprint SetIntParameter('SurfaceType', index) on AudioComponent",
+        "note": "Int index maps to surface: 0=Concrete, 1=Wood, 2=Grass, 3=Metal..."
+      },
+      {
+        "wwise_source": "RTPC_Footstep_Speed",
+        "metasound_target": "Speed (Float input)",
+        "direction": "Blueprint → both",
+        "mechanism": "Blueprint sets RTPC for Wwise AND SetFloatParameter for MetaSounds",
+        "note": "Speed modulates pitch/volume in Wwise RTPC curve, modulates filter in MetaSounds"
+      }
+    ]
+  },
+
+  "blueprint_link": {
+    "template": "blueprints/footfalls_simple.json",
+    "class_name": "BP_FootstepAudio",
+    "parameter_mapping": [
+      {
+        "blueprint_action": "PostEvent('Play_Footstep')",
+        "target": "Wwise",
+        "when": "AnimNotify_Footstep or movement-speed timer",
+        "note": "AnimNotify on walk/run animations, or timer at speed-dependent interval"
+      },
+      {
+        "blueprint_action": "SetSwitch('Surface_Type', '{surface}')",
+        "target": "Wwise Switch",
+        "when": "On surface change (line trace to ground)",
+        "note": "Line trace from foot → physical material → surface type name"
+      },
+      {
+        "blueprint_action": "SetIntParameter('SurfaceType', surfaceIndex)",
+        "target": "MetaSounds input",
+        "when": "On surface change",
+        "note": "Same line trace result, but as integer index for MetaSounds"
+      },
+      {
+        "blueprint_action": "SetRTPCValue('RTPC_Footstep_Speed', normalizedSpeed)",
+        "target": "Wwise RTPC",
+        "when": "Per movement update",
+        "note": "CharacterMovement.Velocity magnitude → normalize to 0-1"
+      }
+    ],
+    "events_posted": ["Play_Footstep"],
+    "rtpcs_set": ["RTPC_Footstep_Speed"],
+    "switches_set": ["Surface_Type"],
+    "states_set": []
+  },
+
+  "signal_flow": [
+    "1. BLUEPRINT: AnimNotify fires on foot-down → line trace gets surface physical material",
+    "2. BLUEPRINT: SetSwitch('Surface_Type', 'Grass') on AkComponent",
+    "3. BLUEPRINT: SetIntParameter('SurfaceType', 2) on AudioComponent for MetaSounds",
+    "4. BLUEPRINT: PostEvent('Play_Footstep')",
+    "5. WWISE: SwitchContainer routes to Footstep_Grass RandomSequenceContainer",
+    "6. METASOUNDS: OnPlay trigger fires → TriggerRoute by SurfaceType → sample selection → AD envelope → LPF → Output",
+    "7. AUDIOLINK: MetaSounds audio → AudioLink → Wwise Foley bus",
+    "8. WWISE: Applies attenuation, bus mixing, final output"
+  ],
+
+  "parameters": {
+    "surface_types": {"type": "string[]", "default": ["Concrete", "Wood", "Grass", "Metal", "Gravel", "Water"], "description": "Surface type names"},
+    "with_switch_group": {"type": "bool", "default": true, "description": "Create SwitchGroup (false if exists)"}
+  }
+}

@@ -1,0 +1,175 @@
+{
+  "name": "Quartz Multi-Clock Time Signatures",
+  "type": "blueprint",
+  "blueprint_type": "actor",
+  "author": "Richard Stevens (Leeds Beckett University)",
+  "description": "Dual Quartz clock system with different time signatures from Quartz Music System course (Impossible Cave). Clock 1 runs 4/4 at 79 BPM for entrance music. Clock 2 runs 5/4 at 158 BPM for cave percussion/tonal elements. StartOtherClock synchronises Clock 2 start to Clock 1 quantization boundary. SubscribeToAllQuantizationEvents on Clock 2 drives beat-level queueing of percussion and tonal chunks. Beat count tracks position for retrigger. Multiple trigger zones transition between entrance and cave music. Failure/success transition stingers. UE 4.27 origin — Quartz API stable through UE5.",
+  "source_url": "https://dev.epicgames.com/community/learning/courses/XAw/unreal-engine-quartz-music-system",
+  "ue_version": "4.27+ (UE5 compatible)",
+  "nodes": [
+    {
+      "id": "entrance_trigger",
+      "node_type": "OnComponentBeginOverlap",
+      "position": [0, 0],
+      "defaults": {"Component": "EntranceTrigger"},
+      "comment": "Player enters — start Clock 1 with entrance music"
+    },
+    {
+      "id": "setup_clock1",
+      "node_type": "CreateNewClock",
+      "position": [200, 0],
+      "defaults": {"ClockName": "Clock01"},
+      "comment": "Create Clock 1 — entrance music, 4/4 time"
+    },
+    {
+      "id": "make_settings_1",
+      "node_type": "MakeQuartzClockSettings",
+      "position": [200, -100],
+      "comment": "Clock 1 settings: 4/4 time signature"
+    },
+    {
+      "id": "make_timesig_1",
+      "node_type": "MakeQuartzTimeSignature",
+      "position": [0, -100],
+      "defaults": {"NumBeats": 4, "BeatType": "QuarterNote"},
+      "comment": "4/4 standard time for entrance music"
+    },
+    {
+      "id": "set_bpm_1",
+      "node_type": "SetBeatsPerMinute",
+      "position": [400, 0],
+      "defaults": {"BeatsPerMinute": 79.0},
+      "comment": "79 BPM for entrance theme"
+    },
+    {
+      "id": "play_entrance",
+      "node_type": "PlayQuantized",
+      "position": [600, 0],
+      "comment": "Start entrance music quantized to Clock 1"
+    },
+    {
+      "id": "subscribe_clock1",
+      "node_type": "SubscribeToQuantizationEvent",
+      "position": [600, -100],
+      "comment": "Bar callbacks for entrance music bar counting"
+    },
+    {
+      "id": "cave_trigger",
+      "node_type": "OnComponentBeginOverlap",
+      "position": [0, 300],
+      "defaults": {"Component": "CaveTrigger"},
+      "comment": "Player enters cave — fade entrance, start Clock 2"
+    },
+    {
+      "id": "fade_entrance",
+      "node_type": "FadeVolumeLevel",
+      "position": [200, 300],
+      "defaults": {"FadeVolumeLevel": 0.0, "FadeInDuration": 2.0},
+      "comment": "Fade out entrance music"
+    },
+    {
+      "id": "stop_clock1",
+      "node_type": "StopClock",
+      "position": [400, 300],
+      "comment": "Stop Clock 1 after entrance music fades"
+    },
+    {
+      "id": "setup_clock2",
+      "node_type": "CreateNewClock",
+      "position": [200, 500],
+      "defaults": {"ClockName": "Clock02"},
+      "comment": "Create Clock 2 — cave music, 5/4 time"
+    },
+    {
+      "id": "make_timesig_2",
+      "node_type": "MakeQuartzTimeSignature",
+      "position": [0, 500],
+      "defaults": {"NumBeats": 5, "BeatType": "QuarterNote"},
+      "comment": "5/4 odd meter for cave percussion"
+    },
+    {
+      "id": "set_bpm_2",
+      "node_type": "SetBeatsPerMinute",
+      "position": [400, 500],
+      "defaults": {"BeatsPerMinute": 158.0},
+      "comment": "158 BPM for cave music (double-time feel)"
+    },
+    {
+      "id": "start_clock2",
+      "node_type": "StartClock",
+      "position": [600, 500],
+      "comment": "Start Clock 2 — can be quantized to Clock 1 boundary"
+    },
+    {
+      "id": "subscribe_clock2",
+      "node_type": "SubscribeToAllQuantizationEvents",
+      "position": [600, 400],
+      "comment": "Beat-level callbacks for percussion/tonal queueing"
+    },
+    {
+      "id": "metronome_callback",
+      "node_type": "CustomEvent",
+      "position": [0, 700],
+      "defaults": {"EventName": "OnQuartzMetronomeEventBP"},
+      "comment": "Clock 2 beat callback — queue percussion and tonal chunks"
+    },
+    {
+      "id": "queue_perc",
+      "node_type": "CustomEvent",
+      "position": [400, 700],
+      "defaults": {"EventName": "QueuePerc_Beat"},
+      "comment": "Queue percussion chunk on specific beat positions"
+    },
+    {
+      "id": "queue_tonal",
+      "node_type": "CustomEvent",
+      "position": [400, 800],
+      "defaults": {"EventName": "QueueTonal_Beat"},
+      "comment": "Queue tonal chunk on beat — different quantization from percussion"
+    },
+    {
+      "id": "play_quantized_perc",
+      "node_type": "PlayQuantized",
+      "position": [600, 700],
+      "comment": "Play percussion chunk quantized to Clock 2"
+    },
+    {
+      "id": "play_quantized_tonal",
+      "node_type": "PlayQuantized",
+      "position": [600, 800],
+      "comment": "Play tonal chunk quantized to Clock 2"
+    },
+    {
+      "id": "make_beat_boundary",
+      "node_type": "MakeQuartzQuantizationBoundary",
+      "position": [400, 600],
+      "defaults": {"Quantization": "Beat", "Multiplier": 1},
+      "comment": "Beat-level quantization for chunk queueing"
+    }
+  ],
+  "variables": [
+    {"name": "Clock01", "type": "QuartzClockHandle", "description": "Handle to Clock 1 (entrance music, 4/4)"},
+    {"name": "Clock02", "type": "QuartzClockHandle", "description": "Handle to Clock 2 (cave music, 5/4)"},
+    {"name": "EntranceMusic", "type": "AudioComponent", "description": "Entrance music AudioComponent"},
+    {"name": "BarRelative", "type": "Int32", "description": "Current bar within loop section"},
+    {"name": "BeatCount", "type": "Int32", "description": "Current beat count for percussion/tonal queueing"},
+    {"name": "PercChunks", "type": "SoundBase[]", "description": "Array of percussion chunk variants (2-8 and 3-8 bar chunks)"},
+    {"name": "TonalChunks", "type": "SoundBase[]", "description": "Array of tonal chunk variants"},
+    {"name": "IsPlaying", "type": "Bool", "default": false, "description": "Whether cave music system is active"}
+  ],
+  "connections": [
+    {"from_node": "entrance_trigger", "from_pin": "Exec", "to_node": "setup_clock1", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "make_timesig_1", "from_pin": "ReturnValue", "to_node": "make_settings_1", "to_pin": "TimeSignature", "type": "data"},
+    {"from_node": "make_settings_1", "from_pin": "ReturnValue", "to_node": "setup_clock1", "to_pin": "Settings", "type": "data"},
+    {"from_node": "setup_clock1", "from_pin": "ReturnValue", "to_node": "set_bpm_1", "to_pin": "InClockHandle", "type": "data"},
+    {"from_node": "set_bpm_1", "from_pin": "Exec", "to_node": "play_entrance", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "cave_trigger", "from_pin": "Exec", "to_node": "fade_entrance", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "fade_entrance", "from_pin": "Exec", "to_node": "stop_clock1", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "stop_clock1", "from_pin": "Exec", "to_node": "setup_clock2", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "setup_clock2", "from_pin": "ReturnValue", "to_node": "set_bpm_2", "to_pin": "InClockHandle", "type": "data"},
+    {"from_node": "set_bpm_2", "from_pin": "Exec", "to_node": "start_clock2", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "metronome_callback", "from_pin": "Exec", "to_node": "queue_perc", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "make_beat_boundary", "from_pin": "ReturnValue", "to_node": "play_quantized_perc", "to_pin": "QuantizationBoundary", "type": "data"}
+  ],
+  "notes": "Key patterns: (1) Multiple Quartz clocks can run simultaneously with different time signatures and tempos. (2) StopClock + CancelPendingEvents cleanly shuts down one clock before starting another. (3) StartOtherClock can synchronise Clock 2 start to Clock 1 quantization boundary for seamless transitions. (4) SubscribeToAllQuantizationEvents gives beat/bar/sub-beat callbacks — use for beat-level element queueing. (5) SubscribeToQuantizationEvent for specific quantization types (Bar, Beat, EighthNote, DottedQuarterNote). (6) ResetTransportQuantized resets bar/beat counters for retrigger. (7) Percussion and tonal chunks can use different quantization — perc on beats, tonal on bars. (8) EQuartzCommandQuantization enum: Bar, Beat, QuarterNote, EighthNote, SixteenthNote, ThirtySecondNote, HalfNote, WholeNote, Tick, all dotted and triplet variants. (9) For UE5: Quartz API unchanged from 4.27→5.x."
+}

@@ -1,0 +1,479 @@
+{
+  "name": "Vehicle Engine",
+  "asset_type": "Source",
+  "description": "Vehicle audio with layered repulsor loops (trigger-sequenced random sample selection) and mono engine layers (turbo start, turbo stop, idle) through parallel compression (30:1 brick-wall limiter, Wet/Dry 0.5). From Ambient Procedural Sound project.",
+  "author": "Chris Payne / Ambient Procedural Sound",
+  "interfaces": [
+    "UE.Source.OneShot"
+  ],
+  "inputs": [
+    {
+      "name": "OnPlay",
+      "type": "Trigger"
+    },
+    {
+      "name": "RepulsorSamples_0",
+      "type": "WaveAsset[]",
+      "description": "Repulsor loop layer 0 variations"
+    },
+    {
+      "name": "RepulsorSamples_1",
+      "type": "WaveAsset[]",
+      "description": "Repulsor loop layer 1 variations"
+    },
+    {
+      "name": "RepulsorSamples_2",
+      "type": "WaveAsset[]",
+      "description": "Repulsor loop layer 2 variations"
+    },
+    {
+      "name": "TurboStartSample",
+      "type": "WaveAsset",
+      "description": "Turbo spool-up one-shot"
+    },
+    {
+      "name": "TurboStopSample",
+      "type": "WaveAsset",
+      "description": "Turbo spool-down one-shot"
+    },
+    {
+      "name": "IdleSample",
+      "type": "WaveAsset",
+      "description": "Idle engine loop"
+    },
+    {
+      "name": "TurboStartTrigger",
+      "type": "Trigger",
+      "description": "Fire to play turbo start"
+    },
+    {
+      "name": "TurboStopTrigger",
+      "type": "Trigger",
+      "description": "Fire to play turbo stop"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "Out Left",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Right",
+      "type": "Audio"
+    },
+    {
+      "name": "On Finished",
+      "type": "Trigger"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "trigger_seq",
+      "node_type": "Trigger Sequence",
+      "position": [
+        0,
+        0
+      ],
+      "defaults": {
+        "Loop": true
+      },
+      "comment": "Cycles through 3 repulsor layers in round-robin order"
+    },
+    {
+      "id": "random_get_0",
+      "node_type": "Random Get (WaveAssetArray)",
+      "position": [
+        300,
+        0
+      ],
+      "defaults": {
+        "Seed": -1,
+        "No Repeats": 1
+      },
+      "comment": "Random sample from repulsor layer 0"
+    },
+    {
+      "id": "random_get_1",
+      "node_type": "Random Get (WaveAssetArray)",
+      "position": [
+        300,
+        200
+      ],
+      "defaults": {
+        "Seed": -1,
+        "No Repeats": 1
+      },
+      "comment": "Random sample from repulsor layer 1"
+    },
+    {
+      "id": "random_get_2",
+      "node_type": "Random Get (WaveAssetArray)",
+      "position": [
+        300,
+        400
+      ],
+      "defaults": {
+        "Seed": -1,
+        "No Repeats": 1
+      },
+      "comment": "Random sample from repulsor layer 2"
+    },
+    {
+      "id": "repulsor_wp_0",
+      "node_type": "Wave Player (Stereo)",
+      "position": [
+        600,
+        0
+      ],
+      "defaults": {
+        "Loop": true,
+        "Start Time": 0.0,
+        "Pitch Shift": 0.0,
+        "Loop Start": 0.0,
+        "Loop Duration": -1.0
+      },
+      "comment": "Repulsor loop layer 0 \u2014 stereo playback"
+    },
+    {
+      "id": "repulsor_wp_1",
+      "node_type": "Wave Player (Stereo)",
+      "position": [
+        600,
+        200
+      ],
+      "defaults": {
+        "Loop": true,
+        "Start Time": 0.0,
+        "Pitch Shift": 0.0,
+        "Loop Start": 0.0,
+        "Loop Duration": -1.0
+      },
+      "comment": "Repulsor loop layer 1 \u2014 offset start for variation"
+    },
+    {
+      "id": "repulsor_wp_2",
+      "node_type": "Wave Player (Stereo)",
+      "position": [
+        600,
+        400
+      ],
+      "defaults": {
+        "Loop": true,
+        "Start Time": 0.0,
+        "Pitch Shift": 0.0
+      },
+      "comment": "Repulsor loop layer 2 \u2014 further offset for phasing"
+    },
+    {
+      "id": "repulsor_mixer",
+      "node_type": "Stereo Mixer",
+      "position": [
+        1000,
+        100
+      ],
+      "defaults": {
+        "Gain 0": 1.0,
+        "Gain 1": 1.0,
+        "Gain 2": 1.0
+      },
+      "comment": "Combines 3 stereo repulsor layers \u2014 Stereo Mixer (3) in UE"
+    },
+    {
+      "id": "turbo_start_wp",
+      "node_type": "Wave Player (Mono)",
+      "position": [
+        300,
+        700
+      ],
+      "defaults": {
+        "Loop": false
+      },
+      "comment": "Turbo spool-up one-shot"
+    },
+    {
+      "id": "turbo_stop_wp",
+      "node_type": "Wave Player (Mono)",
+      "position": [
+        300,
+        900
+      ],
+      "defaults": {
+        "Loop": false
+      },
+      "comment": "Turbo spool-down one-shot"
+    },
+    {
+      "id": "idle_wp",
+      "node_type": "Wave Player (Mono)",
+      "position": [
+        300,
+        1100
+      ],
+      "defaults": {
+        "Loop": true
+      },
+      "comment": "Engine idle continuous loop"
+    },
+    {
+      "id": "engine_mixer",
+      "node_type": "Mono Mixer",
+      "position": [
+        700,
+        900
+      ],
+      "defaults": {
+        "Gain 0": 1.0,
+        "Gain 1": 1.0,
+        "Gain 2": 2.0,
+        "Gain 3": 1.0
+      },
+      "comment": "Mono mix: turbo start (1.0) + turbo stop (1.0) + idle (2.0 = louder base) + spare"
+    },
+    {
+      "id": "compressor",
+      "node_type": "Compressor",
+      "position": [
+        1000,
+        900
+      ],
+      "defaults": {
+        "Ratio": 30.0,
+        "Threshold dB": -30.0,
+        "Attack Time": 0.01,
+        "Release Time": 0.1,
+        "Lookahead Time": 0.01,
+        "Knee": 1.0,
+        "Envelope Mode": "Peak",
+        "Analog Mode": true,
+        "Upwards Mode": false,
+        "Wet/Dry": 0.5
+      },
+      "comment": "Brick-wall limiter (30:1) with parallel compression (50% wet). Tames stacked engine layers at runtime."
+    },
+    {
+      "id": "final_mixer",
+      "node_type": "Stereo Mixer",
+      "position": [
+        1400,
+        500
+      ],
+      "defaults": {
+        "Gain 0": 1.0,
+        "Gain 1": 1.0
+      },
+      "comment": "Combines stereo repulsor layers + compressed mono engine into final output"
+    }
+  ],
+  "connections": [
+    {
+      "from_node": "__graph__",
+      "from_pin": "OnPlay",
+      "to_node": "trigger_seq",
+      "to_pin": "In"
+    },
+    {
+      "from_node": "trigger_seq",
+      "from_pin": "Out 0",
+      "to_node": "random_get_0",
+      "to_pin": "Next"
+    },
+    {
+      "from_node": "trigger_seq",
+      "from_pin": "Out 1",
+      "to_node": "random_get_1",
+      "to_pin": "Next"
+    },
+    {
+      "from_node": "trigger_seq",
+      "from_pin": "Out 2",
+      "to_node": "random_get_2",
+      "to_pin": "Next"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "RepulsorSamples_0",
+      "to_node": "random_get_0",
+      "to_pin": "In Array"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "RepulsorSamples_1",
+      "to_node": "random_get_1",
+      "to_pin": "In Array"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "RepulsorSamples_2",
+      "to_node": "random_get_2",
+      "to_pin": "In Array"
+    },
+    {
+      "from_node": "random_get_0",
+      "from_pin": "Value",
+      "to_node": "repulsor_wp_0",
+      "to_pin": "Wave Asset"
+    },
+    {
+      "from_node": "random_get_0",
+      "from_pin": "On Next",
+      "to_node": "repulsor_wp_0",
+      "to_pin": "Play"
+    },
+    {
+      "from_node": "random_get_1",
+      "from_pin": "Value",
+      "to_node": "repulsor_wp_1",
+      "to_pin": "Wave Asset"
+    },
+    {
+      "from_node": "random_get_1",
+      "from_pin": "On Next",
+      "to_node": "repulsor_wp_1",
+      "to_pin": "Play"
+    },
+    {
+      "from_node": "random_get_2",
+      "from_pin": "Value",
+      "to_node": "repulsor_wp_2",
+      "to_pin": "Wave Asset"
+    },
+    {
+      "from_node": "random_get_2",
+      "from_pin": "On Next",
+      "to_node": "repulsor_wp_2",
+      "to_pin": "Play"
+    },
+    {
+      "from_node": "repulsor_wp_0",
+      "from_pin": "Out Left",
+      "to_node": "repulsor_mixer",
+      "to_pin": "In 0 L"
+    },
+    {
+      "from_node": "repulsor_wp_0",
+      "from_pin": "Out Right",
+      "to_node": "repulsor_mixer",
+      "to_pin": "In 0 R"
+    },
+    {
+      "from_node": "repulsor_wp_1",
+      "from_pin": "Out Left",
+      "to_node": "repulsor_mixer",
+      "to_pin": "In 1 L"
+    },
+    {
+      "from_node": "repulsor_wp_1",
+      "from_pin": "Out Right",
+      "to_node": "repulsor_mixer",
+      "to_pin": "In 1 R"
+    },
+    {
+      "from_node": "repulsor_wp_2",
+      "from_pin": "Out Left",
+      "to_node": "repulsor_mixer",
+      "to_pin": "In 2 L"
+    },
+    {
+      "from_node": "repulsor_wp_2",
+      "from_pin": "Out Right",
+      "to_node": "repulsor_mixer",
+      "to_pin": "In 2 R"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "TurboStartTrigger",
+      "to_node": "turbo_start_wp",
+      "to_pin": "Play"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "TurboStartSample",
+      "to_node": "turbo_start_wp",
+      "to_pin": "Wave Asset"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "TurboStopTrigger",
+      "to_node": "turbo_stop_wp",
+      "to_pin": "Play"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "TurboStopSample",
+      "to_node": "turbo_stop_wp",
+      "to_pin": "Wave Asset"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "OnPlay",
+      "to_node": "idle_wp",
+      "to_pin": "Play"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "IdleSample",
+      "to_node": "idle_wp",
+      "to_pin": "Wave Asset"
+    },
+    {
+      "from_node": "turbo_start_wp",
+      "from_pin": "Audio",
+      "to_node": "engine_mixer",
+      "to_pin": "In 0"
+    },
+    {
+      "from_node": "turbo_stop_wp",
+      "from_pin": "Audio",
+      "to_node": "engine_mixer",
+      "to_pin": "In 1"
+    },
+    {
+      "from_node": "idle_wp",
+      "from_pin": "Audio",
+      "to_node": "engine_mixer",
+      "to_pin": "In 2"
+    },
+    {
+      "from_node": "engine_mixer",
+      "from_pin": "Out",
+      "to_node": "compressor",
+      "to_pin": "Audio"
+    },
+    {
+      "from_node": "repulsor_mixer",
+      "from_pin": "Out L",
+      "to_node": "final_mixer",
+      "to_pin": "In 0 L"
+    },
+    {
+      "from_node": "repulsor_mixer",
+      "from_pin": "Out R",
+      "to_node": "final_mixer",
+      "to_pin": "In 0 R"
+    },
+    {
+      "from_node": "compressor",
+      "from_pin": "Audio",
+      "to_node": "final_mixer",
+      "to_pin": "In 1 L"
+    },
+    {
+      "from_node": "compressor",
+      "from_pin": "Audio",
+      "to_node": "final_mixer",
+      "to_pin": "In 1 R"
+    },
+    {
+      "from_node": "final_mixer",
+      "from_pin": "Out L",
+      "to_node": "__graph__",
+      "to_pin": "Out Left"
+    },
+    {
+      "from_node": "final_mixer",
+      "from_pin": "Out R",
+      "to_node": "__graph__",
+      "to_pin": "Out Right"
+    }
+  ]
+}
