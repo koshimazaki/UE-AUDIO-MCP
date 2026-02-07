@@ -78,8 +78,8 @@ def test_search_invalid_source(knowledge_db):
 
 def test_node_info_scraped(knowledge_db):
     """Scraped nodes should include inputs/outputs pin specs."""
-    # Use a node we know exists in the scraped sample data
-    result = json.loads(bp_node_info("CreateSound2D"))
+    # Use a node that exists in bp_node_specs.json but NOT in curated data
+    result = json.loads(bp_node_info("AIMoveTo"))
     assert result["status"] == "ok"
     assert result["source"] == "scraped"
     assert "inputs" in result

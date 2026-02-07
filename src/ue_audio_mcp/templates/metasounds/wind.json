@@ -27,7 +27,7 @@
       "type": "Audio"
     },
     {
-      "name": "On Finished",
+      "name": "OnFinished",
       "type": "Trigger"
     }
   ],
@@ -125,13 +125,13 @@
       "from_node": "lpf",
       "from_pin": "Audio",
       "to_node": "stereo_mixer",
-      "to_pin": "In 0 Left"
+      "to_pin": "In 0 L"
     },
     {
       "from_node": "lpf",
       "from_pin": "Audio",
       "to_node": "stereo_mixer",
-      "to_pin": "In 0 Right"
+      "to_pin": "In 0 R"
     },
     {
       "from_node": "lfo",
@@ -165,13 +165,13 @@
     },
     {
       "from_node": "stereo_mixer",
-      "from_pin": "Out Left",
+      "from_pin": "Out L",
       "to_node": "__graph__",
       "to_pin": "Out Left"
     },
     {
       "from_node": "stereo_mixer",
-      "from_pin": "Out Right",
+      "from_pin": "Out R",
       "to_node": "__graph__",
       "to_pin": "Out Right"
     },

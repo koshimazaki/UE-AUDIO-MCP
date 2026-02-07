@@ -181,7 +181,7 @@
   ],
   "outputs": [
     {
-      "name": "On Finished",
+      "name": "OnFinished",
       "type": "Trigger"
     },
     {
@@ -724,25 +724,25 @@
       "from_node": "amp_lfo_multiply",
       "from_pin": "Result",
       "to_node": "effects_mixer",
-      "to_pin": "Audio 0"
+      "to_pin": "In 0"
     },
     {
       "from_node": "delay_send",
       "from_pin": "Audio",
       "to_node": "effects_mixer",
-      "to_pin": "Audio 1"
+      "to_pin": "In 1"
     },
     {
       "from_node": "flanger_send",
       "from_pin": "Audio",
       "to_node": "effects_mixer",
-      "to_pin": "Audio 2"
+      "to_pin": "In 2"
     },
     {
       "from_node": "reverb_send",
       "from_pin": "Audio",
       "to_node": "effects_mixer",
-      "to_pin": "Audio 3"
+      "to_pin": "In 3"
     },
     {
       "from_node": "__graph__",
@@ -764,19 +764,19 @@
     },
     {
       "from_node": "effects_mixer",
-      "from_pin": "Audio",
+      "from_pin": "Out",
       "to_node": "__graph__",
       "to_pin": "Out Mono"
     },
     {
       "from_node": "effects_mixer",
-      "from_pin": "Audio",
+      "from_pin": "Out",
       "to_node": "wave_writer",
       "to_pin": "Audio"
     },
     {
       "from_node": "effects_mixer",
-      "from_pin": "Audio",
+      "from_pin": "Out",
       "to_node": "env_follower",
       "to_pin": "Audio"
     },
@@ -796,7 +796,7 @@
       "from_node": "amp_env",
       "from_pin": "OnDone",
       "to_node": "__graph__",
-      "to_pin": "On Finished"
+      "to_pin": "OnFinished"
     }
   ],
   "notes": "Key architecture patterns from TechAudioTools SFX Generator: (1) Single workhorse synth topology: Generator\u2192Spectral\u2192Filter\u2192Amp\u2192Effects. (2) Spectral effects in series (WaveShaper\u2192BitCrusher\u2192RingMod) for harmonic richness. (3) SVF crossfade filter acts like DJ filter \u2014 smooth LP\u2194BP\u2194HP transition. (4) Temporal effects processed in PARALLEL and mixed back (not series). (5) Envelope Follower on output detects when sound+tails have fully decayed. (6) Wave Writer captures output to wav for iteration. (7) All parameters designed for Preset Widget randomization \u2014 each has meaningful default and range. (8) Audio Buses can feed mid-graph data to analyzer widgets for real-time visualization."

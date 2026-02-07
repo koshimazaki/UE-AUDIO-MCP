@@ -1,35 +1,70 @@
 {
   "name": "Subtractive Synthesis",
   "asset_type": "Source",
-  "description": "Classic subtractive synthesis: White Noise through a Biquad Band Pass filter with LFO modulating cutoff frequency. LFO sweeps cutoff between Min Value (300 Hz) and Max Value (20000 Hz) at the Frequency rate. Mixer Vol controls noise amplitude before filtering. Bandwidth controls filter resonance width. Produces evolving filtered noise textures — wind, sci-fi ambience, sweeps.",
+  "description": "Classic subtractive synthesis: White Noise through a Biquad Band Pass filter with LFO modulating cutoff frequency. LFO sweeps cutoff between Min Value (300 Hz) and Max Value (20000 Hz) at the Frequency rate. Mixer Vol controls noise amplitude before filtering. Bandwidth controls filter resonance width. Produces evolving filtered noise textures \u2014 wind, sci-fi ambience, sweeps.",
   "author": "Matt Spendlove (msp)",
   "source_url": "https://dev.epicgames.com/community/learning/tutorials/metasound-subtractive-synthesis",
-  "interfaces": ["UE.Source.Default"],
+  "interfaces": [
+    "UE.Source.Default"
+  ],
   "inputs": [
-    {"name": "OnPlay", "type": "Trigger"},
-    {"name": "Frequency", "type": "Float", "default": 0.096, "widget": "slider", "description": "LFO rate in Hz — slow values (0.01-0.5) for sweeps, faster (1-10) for wobble"},
-    {"name": "Mixer Vol", "type": "Float", "default": -7.618, "widget": "slider", "description": "Noise volume into mixer (dB-scaled knob)"},
-    {"name": "Bandwidth", "type": "Float", "default": 0.444, "widget": "slider", "description": "Band pass filter width — lower = more resonant, higher = wider pass band"}
+    {
+      "name": "OnPlay",
+      "type": "Trigger"
+    },
+    {
+      "name": "Frequency",
+      "type": "Float",
+      "default": 0.096,
+      "widget": "slider",
+      "description": "LFO rate in Hz \u2014 slow values (0.01-0.5) for sweeps, faster (1-10) for wobble"
+    },
+    {
+      "name": "Mixer Vol",
+      "type": "Float",
+      "default": -7.618,
+      "widget": "slider",
+      "description": "Noise volume into mixer (dB-scaled knob)"
+    },
+    {
+      "name": "Bandwidth",
+      "type": "Float",
+      "default": 0.444,
+      "widget": "slider",
+      "description": "Band pass filter width \u2014 lower = more resonant, higher = wider pass band"
+    }
   ],
   "outputs": [
-    {"name": "Out Mono", "type": "Audio"},
-    {"name": "On Finished", "type": "Trigger"}
+    {
+      "name": "Out Mono",
+      "type": "Audio"
+    },
+    {
+      "name": "OnFinished",
+      "type": "Trigger"
+    }
   ],
   "nodes": [
     {
       "id": "noise",
       "node_type": "Noise",
-      "position": [0, 200],
+      "position": [
+        0,
+        200
+      ],
       "defaults": {
         "Seed": -1,
         "Type": "White Noise"
       },
-      "comment": "White noise source — seed -1 for random each play"
+      "comment": "White noise source \u2014 seed -1 for random each play"
     },
     {
       "id": "mono_mixer",
       "node_type": "Mono Mixer (2)",
-      "position": [300, 200],
+      "position": [
+        300,
+        200
+      ],
       "defaults": {
         "Gain 1 (Lin)": 1.0
       },
@@ -38,7 +73,10 @@
     {
       "id": "lfo",
       "node_type": "LFO",
-      "position": [300, 0],
+      "position": [
+        300,
+        0
+      ],
       "defaults": {
         "Shape": "Sine",
         "Min Value": 300.0,
@@ -52,22 +90,65 @@
     {
       "id": "biquad_filter",
       "node_type": "Biquad Filter",
-      "position": [600, 200],
+      "position": [
+        600,
+        200
+      ],
       "defaults": {
         "Gain (dB)": 0.0,
         "Type": "Band Pass"
       },
-      "comment": "Band pass filter — cutoff driven by LFO, bandwidth by graph input"
+      "comment": "Band pass filter \u2014 cutoff driven by LFO, bandwidth by graph input"
     }
   ],
   "connections": [
-    {"from_node": "__graph__", "from_pin": "OnPlay", "to_node": "noise", "to_pin": "Play"},
-    {"from_node": "__graph__", "from_pin": "Mixer Vol", "to_node": "mono_mixer", "to_pin": "Gain 0 (Lin)"},
-    {"from_node": "__graph__", "from_pin": "Frequency", "to_node": "lfo", "to_pin": "Frequency"},
-    {"from_node": "__graph__", "from_pin": "Bandwidth", "to_node": "biquad_filter", "to_pin": "Bandwidth"},
-    {"from_node": "noise", "from_pin": "Audio", "to_node": "mono_mixer", "to_pin": "In 0"},
-    {"from_node": "mono_mixer", "from_pin": "Out", "to_node": "biquad_filter", "to_pin": "In"},
-    {"from_node": "lfo", "from_pin": "Out", "to_node": "biquad_filter", "to_pin": "Cutoff Frequency"},
-    {"from_node": "biquad_filter", "from_pin": "Out", "to_node": "__graph__", "to_pin": "Out Mono"}
+    {
+      "from_node": "__graph__",
+      "from_pin": "OnPlay",
+      "to_node": "noise",
+      "to_pin": "Play"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Mixer Vol",
+      "to_node": "mono_mixer",
+      "to_pin": "Gain 0 (Lin)"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Frequency",
+      "to_node": "lfo",
+      "to_pin": "Frequency"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Bandwidth",
+      "to_node": "biquad_filter",
+      "to_pin": "Bandwidth"
+    },
+    {
+      "from_node": "noise",
+      "from_pin": "Audio",
+      "to_node": "mono_mixer",
+      "to_pin": "In 0"
+    },
+    {
+      "from_node": "mono_mixer",
+      "from_pin": "Out",
+      "to_node": "biquad_filter",
+      "to_pin": "In"
+    },
+    {
+      "from_node": "lfo",
+      "from_pin": "Out",
+      "to_node": "biquad_filter",
+      "to_pin": "Cutoff Frequency"
+    },
+    {
+      "from_node": "biquad_filter",
+      "from_pin": "Out",
+      "to_node": "__graph__",
+      "to_pin": "Out Mono"
+    }
   ]
 }

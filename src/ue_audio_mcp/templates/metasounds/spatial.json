@@ -38,7 +38,7 @@
       "type": "Audio"
     },
     {
-      "name": "On Finished",
+      "name": "OnFinished",
       "type": "Trigger"
     }
   ],
@@ -116,7 +116,7 @@
       "from_node": "wave_player",
       "from_pin": "On Finished",
       "to_node": "__graph__",
-      "to_pin": "On Finished"
+      "to_pin": "OnFinished"
     }
   ]
 }

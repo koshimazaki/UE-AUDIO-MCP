@@ -35220,5 +35220,22 @@
     "ResetMeshLODNodeUids"
   ],
   "Services/Mobile/Location/OnLocationChanged": [],
-  "Synth/Components/Audio/OnSamplePlaybackProgress": []
+  "Synth/Components/Audio/OnSamplePlaybackProgress": [],
+  "Audio/MetaSound/BuilderListener/InputDelegates/OnGraphInputAdded": [],
+  "Audio/MetaSound/BuilderListener/InputDelegates/OnGraphInputDefa-": [],
+  "Audio/MetaSound/BuilderListener/InputDelegates/OnGraphInputInhe-": [],
+  "Audio/MetaSound/BuilderListener/InputDelegates/OnGraphInputIsAd-": [],
+  "Audio/MetaSound/BuilderListener/InputDelegates/OnGraphInputIsCo-": [],
+  "Audio/MetaSound/BuilderListener/InputDelegates/OnGraphInputName-": [],
+  "Audio/MetaSound/BuilderListener/InputDelegates/OnGraphInputRemoved": [],
+  "Audio/MetaSound/BuilderListener/InputDelegates/OnGraphInputSort-": [],
+  "Audio/MetaSound/BuilderListener/OutputDelegates/OnGraphOutputAdded": [],
+  "Audio/MetaSound/BuilderListener/OutputDelegates/OnGraphOutputDat-": [],
+  "Audio/MetaSound/BuilderListener/OutputDelegates/OnGraphOutputDes-": [],
+  "Audio/MetaSound/BuilderListener/OutputDelegates/OnGraphOutputDis-": [],
+  "Audio/MetaSound/BuilderListener/OutputDelegates/OnGraphOutputIsA-": [],
+  "Audio/MetaSound/BuilderListener/OutputDelegates/OnGraphOutputIsC-": [],
+  "Audio/MetaSound/BuilderListener/OutputDelegates/OnGraphOutputNam-": [],
+  "Audio/MetaSound/BuilderListener/OutputDelegates/OnGraphOutputRemoved": [],
+  "Audio/MetaSound/BuilderListener/OutputDelegates/OnGraphOutputSor-": []
 }
