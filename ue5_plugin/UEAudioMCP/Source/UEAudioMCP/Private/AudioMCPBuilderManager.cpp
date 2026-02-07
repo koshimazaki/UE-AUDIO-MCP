@@ -293,25 +293,25 @@ bool FAudioMCPBuilderManager::ConnectNodes(const FString& FromNode, const FStrin
 	FMetaSoundBuilderNodeOutputHandle OutputHandle;
 	if (FromNode == AudioMCP::GRAPH_BOUNDARY)
 	{
-		int32* IdxPtr = GraphInputOutputIndices.Find(FromPin);
-		if (!IdxPtr)
+		FMetaSoundBuilderNodeOutputHandle* HandlePtr = GraphInputOutputHandles.Find(FromPin);
+		if (!HandlePtr)
 		{
 			OutError = FString::Printf(TEXT("Graph input '%s' not found"), *FromPin);
 			return false;
 		}
-		OutputHandle = NodeOutputHandles[*IdxPtr];
+		OutputHandle = *HandlePtr;
 	}
 	else
 	{
-		int32* IdxPtr = NodeHandleIndices.Find(FromNode);
-		if (!IdxPtr)
+		FMetaSoundNodeHandle* NodeHandlePtr = NodeHandles.Find(FromNode);
+		if (!NodeHandlePtr)
 		{
 			OutError = FString::Printf(TEXT("Source node '%s' not found"), *FromNode);
 			return false;
 		}
-		// Find the specific output pin by name
+		// Find the specific output pin by name using the actual node handle
 		OutputHandle = ActiveBuilder->FindNodeOutputByName(
-			FMetaSoundNodeHandle(), FName(*FromPin), Result);
+			*NodeHandlePtr, FName(*FromPin), Result);
 		if (Result != EMetaSoundBuilderResult::Succeeded)
 		{
 			OutError = FString::Printf(TEXT("Output pin '%s' not found on node '%s'"), *FromPin, *FromNode);
@@ -323,24 +323,25 @@ bool FAudioMCPBuilderManager::ConnectNodes(const FString& FromNode, const FStrin
 	FMetaSoundBuilderNodeInputHandle InputHandle;
 	if (ToNode == AudioMCP::GRAPH_BOUNDARY)
 	{
-		int32* IdxPtr = GraphOutputInputIndices.Find(ToPin);
-		if (!IdxPtr)
+		FMetaSoundBuilderNodeInputHandle* HandlePtr = GraphOutputInputHandles.Find(ToPin);
+		if (!HandlePtr)
 		{
 			OutError = FString::Printf(TEXT("Graph output '%s' not found"), *ToPin);
 			return false;
 		}
-		InputHandle = NodeInputHandles[*IdxPtr];
+		InputHandle = *HandlePtr;
 	}
 	else
 	{
-		int32* IdxPtr = NodeHandleIndices.Find(ToNode);
-		if (!IdxPtr)
+		FMetaSoundNodeHandle* NodeHandlePtr = NodeHandles.Find(ToNode);
+		if (!NodeHandlePtr)
 		{
 			OutError = FString::Printf(TEXT("Destination node '%s' not found"), *ToNode);
 			return false;
 		}
+		// Find the specific input pin by name using the actual node handle
 		InputHandle = ActiveBuilder->FindNodeInputByName(
-			FMetaSoundNodeHandle(), FName(*ToPin), Result);
+			*NodeHandlePtr, FName(*ToPin), Result);
 		if (Result != EMetaSoundBuilderResult::Succeeded)
 		{
 			OutError = FString::Printf(TEXT("Input pin '%s' not found on node '%s'"), *ToPin, *ToNode);

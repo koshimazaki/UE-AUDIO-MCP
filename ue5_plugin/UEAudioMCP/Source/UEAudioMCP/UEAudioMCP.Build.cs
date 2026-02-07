@@ -21,6 +21,7 @@ public class UEAudioMCP : ModuleRules
 			"Networking",
 			"Json",
 			"JsonUtilities",
+			"Projects",
 			"MetasoundEngine",
 			"MetasoundFrontend",
 			"MetasoundGraphCore",

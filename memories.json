@@ -20,8 +20,8 @@
       ],
       "timestamp": "2026-02-06T13:39:22.175Z",
       "context": "Exploration of UE5-WWISE project at /Users/radek/Documents/GIthub/UE5-WWISE",
-      "accessCount": 0,
-      "lastAccessed": "2026-02-06T13:39:22.175Z",
+      "accessCount": 1,
+      "lastAccessed": "2026-02-07T01:33:25.182Z",
       "lastVerified": "2026-02-06T13:39:22.175Z",
       "status": "fresh"
     },
@@ -39,8 +39,8 @@
       ],
       "timestamp": "2026-02-06T13:43:15.012Z",
       "context": "Initial project agent setup for UE Audio MCP",
-      "accessCount": 0,
-      "lastAccessed": "2026-02-06T13:43:15.012Z",
+      "accessCount": 1,
+      "lastAccessed": "2026-02-07T01:33:25.182Z",
       "lastVerified": "2026-02-06T13:43:15.012Z",
       "status": "fresh"
     },
@@ -83,8 +83,8 @@
       ],
       "timestamp": "2026-02-06T13:49:55.551Z",
       "context": "Research for UE5-WWISE project - deciding build vs fork strategy for game audio MCP server",
-      "accessCount": 0,
-      "lastAccessed": "2026-02-06T13:49:55.551Z",
+      "accessCount": 1,
+      "lastAccessed": "2026-02-07T01:33:25.182Z",
       "lastVerified": "2026-02-06T13:49:55.551Z",
       "status": "fresh"
     },
@@ -144,8 +144,8 @@
       ],
       "timestamp": "2026-02-06T14:30:32.998Z",
       "context": "Research completed on BilkentAudio/Wwise-MCP and ahujasid/blender-mcp repositories to understand MCP server patterns for reference in UE5-WWISE project",
-      "accessCount": 0,
-      "lastAccessed": "2026-02-06T14:30:32.998Z",
+      "accessCount": 1,
+      "lastAccessed": "2026-02-07T01:33:25.182Z",
       "lastVerified": "2026-02-06T14:30:32.998Z",
       "status": "fresh"
     },
@@ -219,8 +219,8 @@
       ],
       "timestamp": "2026-02-06T15:09:24.940Z",
       "context": "Phase 2 comprehensive analysis for UE5-WWISE MCP project",
-      "accessCount": 0,
-      "lastAccessed": "2026-02-06T15:09:24.940Z",
+      "accessCount": 1,
+      "lastAccessed": "2026-02-07T01:33:25.182Z",
       "lastVerified": "2026-02-06T15:09:24.940Z",
       "status": "fresh"
     },
@@ -320,8 +320,8 @@
       ],
       "timestamp": "2026-02-06T16:40:06.090Z",
       "context": "Research task for UE5-WWISE MCP project. These functions are what our MCP server needs to be able to trigger via the UE5 C++ plugin bridge on port 9877.",
-      "accessCount": 0,
-      "lastAccessed": "2026-02-06T16:40:06.090Z",
+      "accessCount": 1,
+      "lastAccessed": "2026-02-07T01:33:25.182Z",
       "lastVerified": "2026-02-06T16:40:06.090Z",
       "status": "fresh"
     },
@@ -366,45 +366,103 @@
       "status": "fresh"
     },
     {
-      "id": "mem_1770427490371_w859eaq88",
-      "content": "UE5 Audio MCP - Complete TCP Command Protocol Specification\n\nTCP CONNECTION PROTOCOL:\n- Host: 127.0.0.1 (default)\n- Port: 9877\n- Framing: 4-byte big-endian uint32 length prefix + UTF-8 JSON payload\n- Timeout: 30 seconds\n- Flow: Client sends JSON command → Plugin responds with JSON result\n\nCOMMAND FORMAT:\nAll commands are JSON objects with required \"action\" field. Response is always a JSON dict.\n\nCOMPLETE ACTION LIST (10 ACTIONS):\n\n1. PING (Connection Test)\n   Input:  {\"action\": \"ping\"}\n   Output: {\"status\": \"ok\", \"engine\": \"UnrealEngine\", \"version\": \"5.4.0\", \"project\": \"TestProject\", \"features\": [\"MetaSounds\", \"AudioLink\"]}\n\n2. CREATE_BUILDER (MetaSounds Graph Initialization)\n   Input:  {\"action\": \"create_builder\", \"asset_type\": \"Source|Patch|Preset\", \"name\": \"<string>\"}\n   Output: {\"status\": \"ok\"} (or varies by plugin implementation)\n   Note:   First command in any MetaSounds build sequence\n\n3. ADD_INTERFACE (Add Pre-defined Interface to Graph)\n   Input:  {\"action\": \"add_interface\", \"interface\": \"<string>\"}\n   Output: {\"status\": \"ok\"}\n   Purpose: Adds standard audio interfaces (Mono, Stereo, etc.) to graph\n\n4. ADD_GRAPH_INPUT (Declare Graph-level Input Pin)\n   Input:  {\"action\": \"add_graph_input\", \"name\": \"<string>\", \"type\": \"<DataType>\", \"default\": <optional>}\n   Output: {\"status\": \"ok\"}\n   Types:  Audio, Trigger, Float, Int32, Bool, Time, String, WaveAsset, UObject, Enum\n\n5. ADD_GRAPH_OUTPUT (Declare Graph-level Output Pin)\n   Input:  {\"action\": \"add_graph_output\", \"name\": \"<string>\", \"type\": \"<DataType>\"}\n   Output: {\"status\": \"ok\"}\n   Types:  Same as ADD_GRAPH_INPUT\n\n6. ADD_NODE (Add MetaSounds Node to Graph)\n   Input:  {\"action\": \"add_node\", \"id\": \"<string>\", \"node_type\": \"<string>\", \"position\": [<x: int>, <y: int>]}\n   Output: {\"status\": \"ok\"}\n   Fields: id = unique node instance ID, position = editor coordinates [0,0] default\n\n7. SET_DEFAULT (Set Input Pin Default Value)\n   Input:  {\"action\": \"set_default\", \"node_id\": \"<string>\", \"input\": \"<string>\", \"value\": <JSON-encoded>}\n   Output: {\"status\": \"ok\"}\n   Note:   Value can be number, bool, string, or object (JSON-parsed)\n\n8. CONNECT (Connect Two Node Pins)\n   Input:  {\"action\": \"connect\", \"from_node\": \"<string>\", \"from_pin\": \"<string>\", \"to_node\": \"<string>\", \"to_pin\": \"<string>\"}\n   Output: {\"status\": \"ok\"}\n   Special: from_node/to_node can be \"__graph__\" for graph-level I/O connections\n\n9. BUILD_TO_ASSET (Finalize & Save MetaSounds Asset)\n   Input:  {\"action\": \"build_to_asset\", \"name\": \"<string>\", \"path\": \"/Game/Audio/...\"}\n   Output: {\"status\": \"ok\"}\n   Note:   Last command in MetaSounds build sequence\n\n10. AUDITION (Preview MetaSounds in Editor)\n    Input:  {\"action\": \"audition\", \"name\": \"<string>\"}\n    Output: {\"status\": \"ok\"}\n    Note:   Preview/play current graph\n\n11. CALL_FUNCTION (Execute Blueprint Function)\n    Input:  {\"action\": \"call_function\", \"function\": \"<string>\", \"args\": {<dict>}}\n    Output: {\"status\": \"ok\", \"result\": <value>}\n    Purpose: Call Blueprint functions via plugin (e.g., PlaySound2D, SpawnSoundAtLocation)\n\nTYPICAL BUILD SEQUENCE (from graph_to_builder_commands):\n1. create_builder\n2. add_interface (zero or more)\n3. add_graph_input (zero or more)\n4. add_graph_output (zero or more)\n5. add_node (one per node)\n6. set_default (one per non-None default)\n7. connect (one per connection)\n8. build_to_asset\n\nExample Gunshot Graph: ~8-12 commands\nExample UI Sound: ~5-8 commands\n\nSENTINEL NODE ID:\n\"__graph__\" = special ID representing graph boundary for connecting internal nodes to graph I/O\n\nERROR HANDLING:\n- Errors returned in same JSON format: {\"status\": \"error\", \"message\": \"<string>\"}\n- Plugin MUST return valid JSON for every command\n- Connection lost raises ConnectionError(\"UE5 plugin connection closed unexpectedly\")\n\nIMPLEMENTED IN PYTHON VIA:\n- ue5_connection.py: UE5PluginConnection class, send_command(dict) → dict\n- ms_builder.py: 7 tools (ms_build_graph, ms_create_source, ms_add_node, ms_connect_pins, ms_set_default, ms_save_asset, ms_audition)\n- blueprints.py: bp_call_function tool\n- ue5_core.py: ue5_connect, ue5_get_info, ue5_status\n",
-      "type": "tip",
+      "id": "mem_1770424373888_v1byu7gmk",
+      "content": "Epic Tutorial Pages for Agent Knowledge Base — 6 complete guides scraped:\n\n1. MetaSounds Quick Start — Bomb (spatial, explosion variations) + Wind (noise synthesis, LFO filter, velocity-reactive)\n   URL: dev.epicgames.com/documentation/en-us/unreal-engine/metasounds-quick-start\n\n2. Audio Modulation Quick Start — Control Buses (CB_Main, CB_SFX, CB_Music), Sound Classes, Bus Mixes, Level Blueprint control\n   URL: dev.epicgames.com/documentation/en-us/unreal-engine/audio-modulation-quick-start-guide\n\n3. Quartz Quick Start — Sample-accurate timing, Quartz clock, quantized playback, beat-sync actor scaling\n   URL: dev.epicgames.com/documentation/en-us/unreal-engine/quartz-quick-start\n\n4. WaveTables Quick Start — Fixed Resolution + Fixed Sample Rate banks, WaveTable Player, WaveTable Envelope\n   URL: dev.epicgames.com/documentation/en-us/unreal-engine/wavetables-quick-start-in-unreal-engine\n\n5. Procedural Music — Full synthesizer: melody generation (Random Get → Scale to Note Array → MIDI to Freq), sine/saw oscillators, crossfade, ladder filter + LFO (500-5000Hz), AD envelope, stereo delay (ping-pong). Blueprint Actor with 3 trigger zones controlling BPM, crossfade, and melody regeneration.\n   URL: dev.epicgames.com/documentation/en-us/unreal-engine/creating-procedural-music-with-metasounds\n\n6. Audio Gameplay Volumes Quick Start — Reverb zones, Sound Class routing, Audio Gameplay Volumes plugin\n   URL: dev.epicgames.com/documentation/en-us/unreal-engine/audio-gameplay-volumes-quick-start\n\nTotal: ~12 MetaSounds graphs, ~8 Blueprint graphs, ~8 complete audio systems.\nAll instructions follow parseable patterns: \"create X node\", \"drag off Y and create Z\", \"enter V for Pin\", \"connect A to B\".",
+      "type": "solution",
       "tags": [
-        "tip",
-        "python",
-        "TCP-Protocol",
-        "UE5-Plugin",
-        "MetaSounds",
-        "Builder-API",
-        "Command-Schema"
+        "solution",
+        "ue5",
+        "tutorials",
+        "workflows",
+        "scraping",
+        "knowledge-base"
       ],
-      "timestamp": "2026-02-07T01:24:50.370Z",
+      "timestamp": "2026-02-07T00:32:53.888Z",
+      "context": "Blueprint+MetaSounds workflow sources for agent training data",
       "accessCount": 0,
-      "lastAccessed": "2026-02-07T01:24:50.370Z",
-      "lastVerified": "2026-02-07T01:24:50.370Z",
+      "lastAccessed": "2026-02-07T00:32:53.888Z",
+      "lastVerified": "2026-02-07T00:32:53.888Z",
       "status": "fresh"
     },
     {
-      "id": "mem_1770427554748_vrer3uzcg",
-      "content": "C++ Plugin Architecture Research - UE5 Audio MCP Phase 3\n\nKEY FINDINGS from research/research_unreal_mcp_landscape.md:\n\nREFERENCE ARCHITECTURES:\n1. blender-mcp (16.9k stars) - GOLD STANDARD\n   - Two-component pattern: Addon (socket server) + MCP Server (client)\n   - TCP socket server INSIDE the DCC app (port 9876 for Blender)\n   - JSON over TCP: {\"type\": \"command_name\", \"params\": {...}}\n   - Main thread scheduling via app timers (bpy.app.timers for Blender)\n   - Extension pattern: add command handler + JSON response\n   - Why 16.9k stars: simplicity, two files, clear separation\n\n2. chongdashu/unreal-mcp (1,370 stars) - UE5 LEADER\n   - Python MCP Server + C++ UE Plugin (TCP socket :55557)\n   - Tools in modular Python files (auto-registered at startup)\n   - Communication: unreal = get_unreal_connection(); response = unreal.send_command()\n   - Tool files: blueprint_tools.py, editor_tools.py, node_tools.py, project_tools.py, umg_tools.py\n   - NO audio capabilities - good reference for architecture, NOT for audio\n\n3. kvick-games/UnrealMCP (493 stars)\n   - TCP socket on port 13377 with JSON protocol\n   - Explicitly inspired by blender-mcp pattern\n   - Roadmap mentions MetaSound (not implemented)\n\nRECOMMENDED ARCHITECTURE FOR UE-AUDIO-MCP:\n```\nClaude/Cursor (AI Client)\n    |  MCP Protocol (stdio)\n    v\nPython MCP Server (FastMCP)\n    |  WAAPI WebSocket :8080\n    |  TCP Socket :9877 (C++ Plugin)\n    |  Python Remote Execution (Blueprint)\n    v\nMulti-Channel Bridge:\n  - Wwise App (WAAPI)\n  - C++ UE5 Plugin (MetaSounds Builder API)\n  - UE5 Editor Python (Blueprint tools)\n```\n\nKEY DESIGN DECISIONS:\n1. TCP Socket for C++ Plugin (port 9877) - proven pattern from chongdashu\n2. JSON protocol for simplicity and debuggability\n3. Main thread scheduling required (like Blender addon)\n4. Three communication channels: WAAPI (WebSocket), C++ plugin (TCP), Python remote exec\n\nPATTERN SYNTHESIS (Best of Each):\n- blender-mcp: Two-component architecture, JSON over TCP, socket server inside app\n- chongdashu: Modular tool files, @mcp.tool() decorator, tool auto-registration\n- BilkentAudio: WAAPI wrapper as reference library\n- runreal: Plugin-free Blueprint tools via Python remote execution (NO custom plugin needed for basic Blueprint work)\n\nBUILDER API CRITICAL DETAILS:\n- Experimental API (UE 5.4+) - may change between versions\n- Core classes: MetaSoundBuilderSubsystem, MetaSoundSourceBuilder, MetaSoundPatchBuilder\n- Key operations: CreateSourceBuilder(), AddNode(), ConnectNodes(), BuildToAsset(), SetNodeLocation()\n- Node class names NOT publicly documented - must discover via Shift+hover in Editor\n- No JSON-to-MetaSound path exists - must build it via Builder API or UAssetAPI\n\nTECHNICAL STACK:\n- MCP: Python FastMCP\n- Wwise: waapi-client (official Python lib, WebSocket)\n- UE5 MetaSounds: C++ plugin with Builder API calls via TCP\n- UE5 Blueprint: Python remote execution (runreal pattern, NO plugin needed)\n- Knowledge: SQLite (local, fast, <1K entries)\n- Templates: 6 parameterized JSON patterns (gunshot, footsteps, ambient, spatial, ui, weather)\n\nCRITICAL GOTCHAS:\n- Builder API is experimental - check UE version compatibility\n- Node class names change between UE versions - must use Shift+hover discovery\n- No template node support in Builder API (reroutes not available)\n- Handle IDs must not be serialized - change between versions\n- WaveAsset references require actual .wav files in project\n- SetNodeLocation() needed for editor visibility\n- LiveUpdateEnabled in beta 5.5 provides real-time topology changes\n\nPORT ASSIGNMENTS:\n- WAAPI: 8080 (Wwise)\n- TCP Plugin: 9877 (C++ UE5 Plugin)\n- (Python remote exec: uses built-in UE5 mechanism)",
+      "id": "mem_1770424679539_84wm8j9pn",
+      "content": "Epic Documentation Pages — Additional Reference Material Scraped:\n\n7. MetaSounds Function Nodes Reference — 107+ nodes across 16 categories:\n   General(7), Array(8), Debug(2), Delays(5), Dynamics(5), Envelopes(6), External IO(2), Filters(11), Generators(15), Math(15), Mix(2), Music(4), Random(4), Spatialization(4), Triggers(16)\n   URL: dev.epicgames.com/.../metasound-function-nodes-reference-guide-in-unreal-engine\n\n8. MetaSounds Reference Guide — Type system: 9 pin types (Trigger, Audio, Time, String, UObject, Bool, Float, Int32, Enum), conversion table, 3 interfaces (OneShot, Attenuation, Spatialization), 2 asset types (Source, Patch)\n   URL: dev.epicgames.com/.../metasounds-reference-guide-in-unreal-engine\n\n9. MetaSound Builder API — 109 Blueprint functions: CreateSourceBuilder, AddNode, ConnectNodes, Audition, BuildToAsset, etc. Beta, live updates supported.\n   URL: dev.epicgames.com/.../metasound-builder-api-in-unreal-engine\n\n10. Soundscape Quick Start — Procedural ambient: SoundscapeStates (GameplayTags), Palettes, Colors, Trigger Volumes. Blueprint: OnOverlap → SetState/ClearState via SoundscapeSubsystem.\n    URL: dev.epicgames.com/.../soundscape-quick-start\n\n11. Spatialization Overview — 3 methods: Panning (linear/equal-power/VBAP), Soundfield (Ambisonics), Binaural (HRTF/ITD/ILD). Only mono/stereo sources supported.\n    URL: dev.epicgames.com/.../spatialization-overview-in-unreal-engine\n\n12. Sound Attenuation Reference — 8 subsystems: Volume (5 curve types + shapes), Spatialization (panning/binaural), Air Absorption (LP/HP freq curves), Focus (azimuth-based), Reverb (distance-based send), Occlusion (trace-based LPF), Priority (distance-based), Submix (distance-based routing).\n    URL: dev.epicgames.com/.../sound-attenuation-in-unreal-engine\n\nOur DB comparison: Python catalogues have 112 MetaSounds nodes (close to Epic's 107+ official), 948 Blueprint nodes, 55 Blueprint audio functions. DB tables exist but are empty (seed not run).",
+      "type": "troubleshooting",
+      "tags": [
+        "troubleshooting",
+        "python",
+        "api",
+        "ue5",
+        "reference",
+        "metasounds",
+        "spatial",
+        "attenuation",
+        "knowledge-base"
+      ],
+      "timestamp": "2026-02-07T00:37:59.539Z",
+      "context": "Additional Epic docs pages scraped for agent knowledge base",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-07T00:37:59.539Z",
+      "lastVerified": "2026-02-07T00:37:59.539Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770427308922_al99133vk",
+      "content": "Phase 3 Code Review Complete (2026-02-07). 156 tests pass. Key findings: (1) CRITICAL: No max message size check on TCP recv - uint32 allows up to 4GB allocation. (2) CRITICAL: Socket not cleaned up on send failure - is_connected() false positives. (3) WARNING: _seed_console_commands mutates imported data. (4) WARNING: bp_search/bp_node_info use private _fetch method. (5) WARNING: No validation on source param in bp_search/bp_list_categories. (6) WARNING: bp_search test has vacuous assertion (assert True). (7) SUGGESTION: table_counts() could be a loop. Full review written up with code references.",
       "type": "warning",
       "tags": [
         "warning",
-        "python",
-        "api",
-        "c++_plugin",
-        "architecture",
-        "builder_api",
-        "reference",
-        "phase_3"
+        "code-review",
+        "phase3",
+        "ue5-plugin",
+        "security"
       ],
-      "timestamp": "2026-02-07T01:25:54.748Z",
-      "context": "UE5-WWISE project Phase 3 planning - C++ Plugin architecture research completed",
+      "timestamp": "2026-02-07T01:21:48.922Z",
+      "context": "Code review of Phase 3 UE5 Plugin Connectivity",
       "accessCount": 0,
-      "lastAccessed": "2026-02-07T01:25:54.748Z",
-      "lastVerified": "2026-02-07T01:25:54.748Z",
+      "lastAccessed": "2026-02-07T01:21:48.922Z",
+      "lastVerified": "2026-02-07T01:21:48.922Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770428276910_6ceaq94hy",
+      "content": "ORCHESTRATION LAYER DESIGN - COMPLETE BUILDING BLOCKS INVENTORY\n\n## 1. TEMPLATES STRUCTURE\nMetaSounds Templates (8 JSON files in src/ue_audio_mcp/templates/metasounds/):\n- gunshot.json: OneShot, random sample selection + pitch variation + ADSR\n- footsteps.json: OneShot, trigger routing by surface type + random sample + AD envelope + lowpass\n- ambient.json: Looping, wave player + LFO modulation + stereo mixer\n- spatial.json: OneShot + Spatialization, wave player + ITD panner for binaural\n- ui_sound.json: OneShot, sine oscillator + AD envelope (procedural click)\n- weather.json: Looping, wave player + InterpTo smoothing + Map Range cutoff + Biquad filter\n- snare.json: (8 days old, added after Phase 2)\n- wind.json: (8 days old, added after Phase 2)\n\nBlueprint Templates (9 JSON files in src/ue_audio_mcp/templates/blueprints/):\n- bomb_fuse.json: BeginPlay → SpawnSound2D → Delay → SetBoolParameter (timer pattern)\n- wind_system.json, audio_modulation.json, quartz_beat_sync.json, etc. (8 more templates)\n\nWwise Templates (5 template_* functions in tools/templates.py):\n- template_gunshot(weapon_name, num_variations, pitch_randomization)\n- template_footsteps(surface_types, with_switch_group)\n- template_ambient(layer_names, rtpc_parameter_name)\n- template_ui_sound(sound_name, bus_path)\n- template_weather_states(weather_states)\nAll wrap WAAPI calls in undo groups for atomic rollback.\n\n## 2. GRAPH SYSTEM (MetaSounds)\nGraphSpec JSON Format (from graph_schema.py):\n- Required fields: name, asset_type, nodes, connections\n- Optional: inputs, outputs, interfaces, descriptions\n- Node sentinel: \"__graph__\" represents graph boundary for I/O wiring\n\nValidation (validate_graph):\n- 7-stage validator: required fields, asset_type, interfaces, nodes, connections, required inputs, interface pins\n- Returns ALL errors in one pass (accumulation, not early exit)\n- Pin type compatibility via PIN_COMPATIBILITY matrix\n- Checks for duplicate IDs, missing nodes, type mismatches\n\nBuilder Command Generation (graph_to_builder_commands):\n- 8-stage sequential command ordering:\n  1. create_builder\n  2. add_interface (per interface)\n  3. add_graph_input (per input)\n  4. add_graph_output (per output)\n  5. add_node (per node with position)\n  6. set_default (per non-None default value)\n  7. connect (per connection)\n  8. build_to_asset\n- Returns list[dict] with \"action\" key for each command\n\nms_graph_from_template tool:\n- Loads template JSON from disk\n- Applies parameter overrides using dotted syntax: \"node_id.input_name\": value\n- Returns spec + validation result\n\n## 3. KNOWLEDGE SEARCH CAPABILITIES\nKnowledgeDB (db.py) - 14 query methods:\n- query_nodes(category, tag, name): MetaSounds nodes\n- query_waapi(namespace, operation): WAAPI functions\n- query_patterns(pattern_type): Audio patterns\n- query_errors(signature): Error learning (SIDKIT pattern)\n- query_tutorial_workflows(tag): Tutorial workflows\n- search_blueprint_curated(query, category): Blueprint audio+core\n- search_blueprint_scraped(query): Blueprints by text search\n- query_builder_api(category): Builder API functions\n- count_nodes_by_category(), table_counts(), is_seeded()\n\nEmbeddingIndex (embeddings.py) - TF-IDF semantic search:\n- Tokenizes name + description + tags\n- 39 stop words removed\n- Builds vocabulary + document frequency\n- L2-normalize vectors for cosine similarity\n- search(query, top_k) returns scored results\n- build_index_from_nodes(METASOUND_NODES) creates index\n- Lightweight: no ML deps, <1ms queries on 400 entries\n\nDatabase Tables (14 total):\n1. metasound_nodes: 112 entries (category, description, inputs/outputs, tags, complexity)\n2. waapi_functions: 32 entries (namespace, operation, description, params, returns)\n3. wwise_types: 19 entries (type_name, category, properties)\n4. audio_patterns: 6 entries (name, pattern_type, description, graph_spec, key_nodes)\n5. error_patterns: 0 entries (grows at runtime via store_error)\n6. ue_game_examples: 5 entries (game, system_type, details)\n7. blueprint_audio: 24 entries (class_name, category, params, returns, tags)\n8. blueprint_core: 36 entries (same structure as blueprint_audio)\n9. blueprint_nodes_scraped: ~200 entries (name, target, category, description, inputs, outputs)\n10. builder_api_functions: 109 entries (Builder API reference)\n11. tutorial_workflows: 8 entries (tutorial, url, layers, tags, bp_template, ms_template)\n12. audio_console_commands: ~20 entries (cmd, category, type, default, description)\n13. spatialization_methods: 6 entries (description, details)\n14. attenuation_subsystems: 8 entries (description, params, details)\n\n## 4. ALL 37 TOOLS INVENTORY\nGrouped by specialization:\n\nWWISE CORE (5 tools - core.py):\n- wwise_connect(url): WAAPI connection\n- wwise_get_info(): Version + platform + project\n- wwise_query(waql, return_fields): WAQL object queries\n- wwise_save(): Save project\n- execute_waapi(uri, args_json, options_json): Raw WAAPI RPC\n\nWWISE OBJECTS (4 tools - objects.py):\n- wwise_create_object(parent_path, object_type, name, on_conflict)\n- wwise_set_property(object_path, property_name, value)\n- wwise_set_reference(object_path, reference_name, value)\n- wwise_import_audio(import_path, destination_parent)\n\nWWISE EVENTS & MIXING (4 tools - events.py):\n- wwise_create_event(name, target_path, action_type, event_parent)\n- wwise_create_game_parameter(name, min_value, max_value, default_value)\n- wwise_assign_switch(object_path, switch_group_id, switch_id)\n- wwise_set_attenuation(object_path, attenuation_curve_json)\n\nWWISE PREVIEW & GENERATION (2 tools - preview.py):\n- wwise_preview(object_path, duration_ms)\n- wwise_generate_banks(language, platform)\n\nWWISE TEMPLATES (5 tools - templates.py):\n- template_gunshot(weapon_name, num_variations, pitch_randomization)\n- template_footsteps(surface_types, with_switch_group)\n- template_ambient(layer_names, rtpc_parameter_name)\n- template_ui_sound(sound_name, bus_path)\n- template_weather_states(weather_states)\n→ All return JSON with IDs, wrap WAAPI calls in undo groups\n\nMETASOUNDS KNOWLEDGE (4 tools - metasounds.py):\n- ms_list_nodes(category, tag): MetaSounds node list\n- ms_node_info(node_name): Full node spec (inputs/outputs/defaults)\n- ms_search_nodes(query): Semantic search via TF-IDF\n- ms_list_categories(): Node category counts\n\nMETASOUNDS GRAPH (3 tools - ms_graph.py):\n- ms_validate_graph(graph_spec): 7-stage validation\n- ms_graph_to_commands(graph_spec): Convert to Builder command sequence\n- ms_graph_from_template(template_name, params): Load + override template\n\nMETASOUNDS BUILDER (7 tools - ms_builder.py):\n- ms_build_graph(graph_spec): Validate + convert + execute full pipeline\n- ms_create_source(name, asset_type): Create builder in UE5\n- ms_add_node(node_type, node_id, position_x, position_y): Add node\n- ms_connect_pins(from_node, from_pin, to_node, to_pin): Wire connection\n- ms_set_default(node_id, input, value): Set default value\n- ms_audition(duration_ms): Preview MetaSound\n- ms_save_asset(name, path): Save to disk\n\nUE5 CORE (3 tools - ue5_core.py):\n- ue5_connect(host, port): TCP connection to plugin (port 9877)\n- ue5_get_info(): Ping plugin for version/features\n- ue5_status(): Combined Wwise + UE5 connection status\n\nBLUEPRINTS (2 tools - blueprints.py):\n- bp_search(query, category, source): Search nodes (curated + scraped)\n- bp_node_info(node_name): Full pin specs from db\n- bp_call_function(node_name, args_json): Execute Blueprint node\n- bp_list_categories(): Category counts\n\nTOOL CHARACTERISTICS:\n- Low-level: Single-action tools (create 1 object, set 1 property, query 1 type)\n- Medium-level: Template tools (3-5 WAAPI calls wrapped in undo)\n- High-level: Pipeline tools (validate + convert + execute full graph)\n- Pattern: All return _ok(dict) or _error(str)\n\n## 5. AUDIO PATTERNS TABLE\n6 patterns stored in db (table: audio_patterns):\n- gunshot: pattern_type=procedural, graph_spec={...}\n- footsteps: pattern_type=procedural\n- ambient: pattern_type=layered\n- spatial: pattern_type=spatialization\n- ui_sound: pattern_type=procedural\n- weather: pattern_type=layered\n\nEach stores: name, pattern_type, description, graph_spec (full JSON), complexity (1-5), key_nodes (list)\n\n## 6. TUTORIAL WORKFLOWS TABLE\n8 tutorials in db:\n- name, tutorial (Epic doc title), url, layers (list), description, tags, bp_template, ms_template\n- Curated from Epic's official Quick Start docs\n- Each entry maps to one Blueprint template + one MetaSound template\n\n## ORCHESTRATION LAYER DESIGN IMPLICATIONS\n\nThe orchestration layer will:\n1. Take high-level description (NL): \"footsteps with surface switching\"\n2. Query tutorial_workflows OR audio_patterns tables to find matching system\n3. Instantiate Blueprint template (Blueprint layer - WHEN game events trigger)\n4. Instantiate MetaSound template (MetaSound layer - WHAT DSP synthesis)\n5. Instantiate Wwise template (Wwise layer - HOW final mixing/spatializ)\n6. Wire layer outputs together via UE5 Remote Control API + AudioLink\n7. Return combined asset spec (paths to all 3 generated objects)\n\nKey orchestration decisions:\n- Use template + parameter overrides as generation primitives\n- Fall back to knowledge search when no exact template match\n- Error learning: store failed generation attempts for future refinement\n- Layer composition: BP → MetaSounds → Wwise (data flow direction)\n- Atomicity: Wrap all 3-layer generation in Wwise undo group for rollback",
+      "type": "config",
+      "tags": [
+        "config",
+        "api",
+        "database",
+        "orchestration",
+        "ue-audio-mcp",
+        "phase-4-design",
+        "templates",
+        "graph-system",
+        "knowledge-db"
+      ],
+      "timestamp": "2026-02-07T01:37:56.910Z",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-07T01:37:56.910Z",
+      "lastVerified": "2026-02-07T01:37:56.910Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770430509907_jq02m2s17",
+      "content": "UE5 Plugin Security Review (2026-02-07):\nCRITICAL findings:\n1. ConnectNodes() in AudioMCPBuilderManager.cpp references undeclared members (GraphInputOutputIndices, NodeOutputHandles, NodeHandleIndices, etc.) - code WILL NOT COMPILE\n2. call_function command allows arbitrary UE reflection calls with no allowlist - any Blueprint-exposed function on GameplayStatics/World/GameInstance callable via TCP\n3. ActiveBuilder is raw UObject* without GC protection (UPROPERTY) - dangling pointer risk\n4. Shutdown race: ShutdownModule on game thread blocks in WaitForCompletion while AsyncTask needs game thread - 25s timeout delay\n5. No authentication on TCP server (mitigated by 127.0.0.1 binding)",
+      "type": "code",
+      "tags": [
+        "code",
+        "authentication",
+        "ue5-plugin",
+        "security-review",
+        "code-review"
+      ],
+      "timestamp": "2026-02-07T02:15:09.907Z",
+      "context": "Full security and quality review of UE5 C++ plugin at ue5_plugin/UEAudioMCP/",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-07T02:15:09.907Z",
+      "lastVerified": "2026-02-07T02:15:09.907Z",
       "status": "fresh"
     }
   ],
-  "lastUpdated": "2026-02-07T01:25:54.748Z"
+  "lastUpdated": "2026-02-07T02:15:09.907Z"
 }
