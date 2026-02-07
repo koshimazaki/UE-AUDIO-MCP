@@ -140,6 +140,42 @@ PATTERNS: dict[str, dict[str, Any]] = {
             ],
         },
     },
+    "preset_morph": {
+        "ms_template": "preset_morph",
+        "wwise_template": None,
+        "bp_template": None,
+        "default_params": {
+            "wwise": {},
+            "metasounds": {},
+            "blueprint": {},
+        },
+        "connections": {
+            "wwise_event": None,
+            "metasound_asset": "MS_{name}_PresetMorph",
+            "wiring": [
+                {"from": "blueprint.Morph", "to": "metasound.Morph"},
+            ],
+        },
+    },
+    "macro_sequence": {
+        "ms_template": "macro_sequence",
+        "wwise_template": None,
+        "bp_template": None,
+        "default_params": {
+            "wwise": {},
+            "metasounds": {},
+            "blueprint": {},
+        },
+        "connections": {
+            "wwise_event": None,
+            "metasound_asset": "MS_{name}_MacroSequence",
+            "wiring": [
+                {"from": "blueprint.MacroStep1", "to": "metasound.MacroStep1"},
+                {"from": "blueprint.MacroStep2", "to": "metasound.MacroStep2"},
+                {"from": "blueprint.MacroStep3", "to": "metasound.MacroStep3"},
+            ],
+        },
+    },
 }
 
 # Map wwise_template names to template functions (imported lazily)
@@ -422,7 +458,7 @@ def build_audio_system(
     - Wwise-only: executes Wwise, returns MetaSounds commands for later
     - Offline: returns all 3 layer specs as JSON (dry-run preview)
 
-    Available patterns: gunshot, footsteps, ambient, spatial, ui_sound, weather.
+    Available patterns: gunshot, footsteps, ambient, spatial, ui_sound, weather, preset_morph, macro_sequence.
 
     Args:
         pattern: Pattern name (e.g. "gunshot", "footsteps")

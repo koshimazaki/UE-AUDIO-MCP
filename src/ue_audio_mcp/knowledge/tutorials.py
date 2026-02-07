@@ -203,6 +203,56 @@ BUILDER_API_FUNCTIONS = [
     {"name": "ContainsNodeOutput", "category": "query", "description": "Check if node has named output", "params": ["Node", "OutputPin"]},
     {"name": "GetNodeInputs", "category": "query", "description": "List all inputs on a node", "params": ["NodeHandle"]},
     {"name": "GetNodeOutputs", "category": "query", "description": "List all outputs on a node", "params": ["NodeHandle"]},
+
+    # UE 5.7: Graph variables
+    {"name": "AddGraphVariable", "category": "variables", "description": "Add a typed variable to the graph", "params": ["Name", "DataType", "DefaultValue"]},
+    {"name": "AddGraphVariableGetNode", "category": "variables", "description": "Add a getter node for a graph variable", "params": ["VariableName"]},
+    {"name": "AddGraphVariableSetNode", "category": "variables", "description": "Add a setter node for a graph variable", "params": ["VariableName"]},
+    {"name": "AddGraphVariableGetDelayedNode", "category": "variables", "description": "Add a delayed getter (reads previous frame value)", "params": ["VariableName"]},
+    {"name": "RemoveGraphVariable", "category": "variables", "description": "Remove a variable from the graph", "params": ["VariableName"]},
+    {"name": "GetGraphVariableDefault", "category": "variables", "description": "Get default value of a graph variable", "params": ["VariableName"]},
+
+    # UE 5.7: Graph pages
+    {"name": "AddGraphPage", "category": "pages", "description": "Add a new page to the graph for organization", "params": ["PageName"]},
+    {"name": "RemoveGraphPage", "category": "pages", "description": "Remove a graph page", "params": ["PageName"]},
+    {"name": "ResetGraphPages", "category": "pages", "description": "Reset all graph pages to default", "params": []},
+
+    # UE 5.7: Viewmodel / Preset widget
+    {"name": "InitializeBuilder", "category": "viewmodel", "description": "Initialize MetaSoundEditorViewModel from a builder instance", "params": ["MetaSoundEditorViewModel", "Builder"]},
+    {"name": "InitializeMetaSound", "category": "viewmodel", "description": "Initialize MetaSoundEditorViewModel from a MetaSound asset", "params": ["MetaSoundEditorViewModel", "MetaSoundAsset"]},
+    {"name": "SetLiteralWidgetInputViewmodels", "category": "viewmodel", "description": "Bind a literal widget (knob/slider) to MetaSoundEditorViewModel", "params": ["LiteralWidget", "MetaSoundViewmodel", "WorldContext"]},
+    {"name": "GetSupportedMetaSounds", "category": "viewmodel", "description": "Interface function: specify which MetaSound assets a preset widget supports", "params": ["SupportAllPresets", "ExcludedMetaSounds", "IncludedMetaSounds"]},
+
+    # UE 5.7: Transactions (undo/redo observation)
+    {"name": "AddTransactionListener", "category": "transactions", "description": "Register a listener for builder graph transactions (undo/redo)", "params": ["Listener"]},
+    {"name": "RemoveTransactionListener", "category": "transactions", "description": "Unregister a transaction listener", "params": ["Listener"]},
+    {"name": "GetLastTransactionRegistered", "category": "transactions", "description": "Get the most recently registered transaction for undo tracking", "params": []},
+
+    # UE 5.7: Live updates
+    {"name": "SetLiveUpdatesEnabled", "category": "live_update", "description": "Enable or disable real-time topology changes while auditioning", "params": ["bEnabled"]},
+
+    # UE 5.7: Expanded connections
+    {"name": "ConnectNodeInputToGraphInput", "category": "connections", "description": "Connect a node input pin directly to a graph-level input", "params": ["Node", "InputPin", "GraphInputName"]},
+    {"name": "ConnectNodeOutputToGraphOutput", "category": "connections", "description": "Connect a node output pin directly to a graph-level output", "params": ["Node", "OutputPin", "GraphOutputName"]},
+    {"name": "DisconnectNodesByInterfaceBindings", "category": "connections", "description": "Disconnect all connections made via interface bindings between two nodes", "params": ["FromNode", "ToNode"]},
+
+    # UE 5.7: Expanded metadata
+    {"name": "FindMemberMetadata", "category": "metadata", "description": "Find metadata attached to a graph member (node, input, output)", "params": ["MemberID", "MetadataKey"]},
+    {"name": "SetMemberMetadata", "category": "metadata", "description": "Set metadata on a graph member", "params": ["MemberID", "MetadataKey", "MetadataValue"]},
+    {"name": "ClearMemberMetadata", "category": "metadata", "description": "Remove metadata from a graph member", "params": ["MemberID", "MetadataKey"]},
+    {"name": "FindGraphComment", "category": "metadata", "description": "Find an existing graph comment by ID", "params": ["CommentID"]},
+    {"name": "FindOrAddGraphComment", "category": "metadata", "description": "Find or create a graph comment at a position", "params": ["CommentText", "X", "Y"]},
+    {"name": "RemoveGraphComment", "category": "metadata", "description": "Remove a graph comment by ID", "params": ["CommentID"]},
+    {"name": "SetNodeCommentVisible", "category": "metadata", "description": "Toggle visibility of a node's comment bubble", "params": ["Node", "bVisible"]},
+
+    # UE 5.7: Expanded conversion
+    {"name": "GetReferencedPresetAsset", "category": "conversion", "description": "Get the parent asset that a preset references", "params": []},
+
+    # UE 5.7: Expanded query
+    {"name": "GetGraphInputNames", "category": "query", "description": "List all graph-level input names", "params": []},
+    {"name": "GetGraphOutputNames", "category": "query", "description": "List all graph-level output names", "params": []},
+    {"name": "FindGraphInputNode", "category": "query", "description": "Find the node handle for a named graph input", "params": ["InputName"]},
+    {"name": "FindGraphOutputNode", "category": "query", "description": "Find the node handle for a named graph output", "params": ["OutputName"]},
 ]
 
 
@@ -408,5 +458,71 @@ TUTORIAL_WORKFLOWS = [
         "blueprint_template": "blueprints/submix_recording.json",
         "description": "Record submix output to WAV file",
         "tags": ["recording", "submix", "capture", "wav"],
+    },
+    {
+        "name": "First Person Footfalls",
+        "tutorial": "Creating First Person Footfalls with MetaSounds",
+        "url": "https://dev.epicgames.com/community/learning/recommended-community-tutorial/WzJ/creating-first-person-footfalls-with-metasounds",
+        "layers": ["blueprint", "metasounds"],
+        "blueprint_template": "blueprints/footfalls_simple.json",
+        "metasound_template": "metasounds/footfalls_simple.json",
+        "description": "Random footfall samples with timed repeat, graceful stop via custom trigger, Blueprint velocity+ground check with DoOnce gate",
+        "tags": ["footsteps", "movement", "first_person", "random", "trigger_repeat"],
+    },
+    {
+        "name": "Random Audio Playback",
+        "tutorial": "Random audio file playback in MetaSound - Ambient Sounds",
+        "url": "https://dev.epicgames.com/community/learning/tutorials/random-audio-metasound",
+        "layers": ["metasounds"],
+        "metasound_template": "metasounds/random_playback.json",
+        "description": "Weighted random WaveAsset selection with timed repetition. OnPlay → Trigger Repeat (Period) → Random Get picks from array using Weights float array for probability control (e.g. [0.1, 0.1, 0.7, 0.1] = 70% index 2). No-repeat guarantee prevents consecutive duplicates. Core building block for ambient, footsteps, and variation-based sounds.",
+        "tags": ["random", "ambient", "weighted", "variation", "trigger_repeat", "building_block"],
+    },
+    {
+        "name": "Ambient Stingers with Trigger Boxes",
+        "tutorial": "Ambient Sounds - Stingers, Transitions & Day/Night Cycles",
+        "url": "https://dev.epicgames.com/community/learning/tutorials/ambient-sounds-metasound",
+        "layers": ["blueprint", "metasounds"],
+        "blueprint_template": "blueprints/ambient_stingers.json",
+        "metasound_template": "metasounds/ambient_stingers.json",
+        "description": "Multi-layer ambient with trigger-box crossfades. Base ambient loop + birds/bugs layers faded in via InterpTo (3s). Level Blueprint fires named triggers through Audio Parameter Interface.",
+        "tags": ["ambient", "stingers", "trigger_box", "crossfade", "interp", "layers", "level_blueprint"],
+    },
+    {
+        "name": "MetaSound Preset Widget",
+        "tutorial": "Creating MetaSound Preset Widgets (UE 5.7)",
+        "url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/creating-metasound-preset-widgets",
+        "layers": ["blueprint"],
+        "blueprint_template": "blueprints/metasound_preset_widget.json",
+        "description": "Editor Utility Widget with custom knob/slider UI for MetaSound presets. OnPresetWidgetConstructed caches Builder, Construct initializes viewmodel, SetLiteralWidgetInputViewmodels binds float knobs. TechAudioTools plugin (5.7+).",
+        "tags": ["preset", "widget", "ui", "viewmodel", "editor", "knob", "5.7", "TechAudioTools"],
+    },
+    {
+        "name": "Sample Player with Loop Controls",
+        "tutorial": "Random audio file playback in MetaSound - Ambient Sounds",
+        "url": "https://dev.epicgames.com/community/learning/tutorials/random-audio-metasound",
+        "layers": ["metasounds"],
+        "metasound_template": "metasounds/sample_player.json",
+        "description": "Minimal stereo Wave Player with Loop Start and Loop Duration exposed as slider inputs. Scrub Loop Start to find clean loop points. Duration -1.0 loops whole file. Simplest possible MetaSound Source.",
+        "tags": ["playback", "loop", "sample", "slider", "minimal", "building_block"],
+    },
+    {
+        "name": "Subtractive Synthesis",
+        "tutorial": "Subtractive synthesis with MetaSounds - Noise + LFO + Filter",
+        "url": "https://dev.epicgames.com/community/learning/tutorials/metasound-subtractive-synthesis",
+        "layers": ["metasounds"],
+        "metasound_template": "metasounds/subtractive_synth.json",
+        "description": "Classic subtractive synthesis: White Noise → Mono Mixer → Biquad Filter (Band Pass). LFO (Sine) sweeps cutoff between 300 Hz and 20 kHz. Frequency input controls LFO rate (0.096 Hz default = slow sweep). Bandwidth controls filter resonance. Produces wind, sci-fi ambience, evolving textures.",
+        "tags": ["synthesis", "subtractive", "noise", "lfo", "filter", "bandpass", "procedural"],
+    },
+    {
+        "name": "Mono Synth (Minimoog-style)",
+        "tutorial": "Minimoog-style mono synthesizer with MetaSounds",
+        "url": "https://dev.epicgames.com/community/learning/tutorials/metasound-mono-synth",
+        "layers": ["blueprint", "metasounds"],
+        "blueprint_template": "blueprints/set_float_parameter.json",
+        "metasound_template": "metasounds/mono_synth.json",
+        "description": "Minimoog-inspired mono synth: Saw + Pink Noise + Square → Mono Mixer (4) → Biquad Filter (Low Pass). Looping AD Envelope sweeps filter cutoff via Map Range (base Cutoff → Filter env amount). MSP_Sequencer steps MIDI notes with Glide portamento. MSP_ADControl splits Period by attack/decay ratio. Blueprint uses Event Tick → Set Float Parameter for real-time knob updates.",
+        "tags": ["synthesis", "mono", "minimoog", "sequencer", "envelope", "filter", "oscillator", "procedural"],
     },
 ]

@@ -211,6 +211,32 @@ def ms_save_asset(name: str, path: str = "/Game/Audio/Generated/") -> str:
 
 
 @mcp.tool()
+def ms_convert_to_preset(referenced_asset: str) -> str:
+    """Convert the current MetaSounds builder to a preset of a referenced asset.
+
+    The builder's graph becomes read-only, inheriting the referenced asset's
+    topology. Only exposed input defaults can be overridden.
+
+    Args:
+        referenced_asset: Content path of the source MetaSound (e.g. /Game/Audio/MySynth)
+    """
+    if not referenced_asset.startswith("/Game/"):
+        return _error("referenced_asset must start with /Game/ (got '{}')".format(referenced_asset))
+    conn = get_ue5_connection()
+    try:
+        result = conn.send_command({
+            "action": "convert_to_preset",
+            "referenced_asset": referenced_asset,
+        })
+        return _ok({
+            "message": "Converted to preset of '{}'".format(referenced_asset),
+            "result": result,
+        })
+    except Exception as e:
+        return _error(str(e))
+
+
+@mcp.tool()
 def ms_audition(name: str = "") -> str:
     """Preview/audition the current MetaSounds graph in the editor.
 

@@ -309,3 +309,69 @@ class TestNaming:
         result = _parse(build_audio_system("ambient", name="Ocean"))
         ms = result["layers"]["metasounds"]
         assert ms["graph_spec"]["name"] == "Ocean"
+
+
+# ---------------------------------------------------------------------------
+# New patterns: preset_morph and macro_sequence
+# ---------------------------------------------------------------------------
+
+class TestPresetMorphPattern:
+    """preset_morph pattern in offline mode."""
+
+    def test_preset_morph_offline(self):
+        result = _parse(build_audio_system("preset_morph"))
+        assert result["status"] == "ok"
+        assert result["mode"] == "offline"
+        assert result["pattern"] == "preset_morph"
+        # No Wwise template
+        assert result["layers"]["wwise"]["mode"] == "skipped"
+        assert result["layers"]["metasounds"]["mode"] == "planned"
+
+    def test_preset_morph_has_morph_input(self):
+        result = _parse(build_audio_system("preset_morph"))
+        ms = result["layers"]["metasounds"]
+        graph_inputs = [p["name"] for p in ms["graph_spec"].get("inputs", [])]
+        assert "Morph" in graph_inputs
+
+    def test_preset_morph_connection_map(self):
+        result = _parse(build_audio_system("preset_morph", name="TestMorph"))
+        conn = result["connections"]
+        assert conn["wwise_event"] is None
+        assert "TestMorph" in conn["metasound_asset"]
+
+
+class TestMacroSequencePattern:
+    """macro_sequence pattern in offline mode."""
+
+    def test_macro_sequence_offline(self):
+        result = _parse(build_audio_system("macro_sequence"))
+        assert result["status"] == "ok"
+        assert result["mode"] == "offline"
+        assert result["pattern"] == "macro_sequence"
+        assert result["layers"]["wwise"]["mode"] == "skipped"
+        assert result["layers"]["metasounds"]["mode"] == "planned"
+
+    def test_macro_sequence_has_variables(self):
+        result = _parse(build_audio_system("macro_sequence"))
+        ms = result["layers"]["metasounds"]
+        spec = ms["graph_spec"]
+        assert "variables" in spec
+        var_names = [v["name"] for v in spec["variables"]]
+        assert "TargetCutoff" in var_names
+        assert "TargetBandwidth" in var_names
+
+    def test_macro_sequence_has_variable_commands(self):
+        result = _parse(build_audio_system("macro_sequence"))
+        ms = result["layers"]["metasounds"]
+        actions = [c["action"] for c in ms["commands"]]
+        assert "add_graph_variable" in actions
+        assert "add_variable_set_node" in actions
+        assert "add_variable_get_node" in actions
+
+    def test_macro_sequence_connection_map(self):
+        result = _parse(build_audio_system("macro_sequence", name="TestMacro"))
+        conn = result["connections"]
+        assert conn["wwise_event"] is None
+        assert "TestMacro" in conn["metasound_asset"]
+        wiring_froms = [w["from"] for w in conn["wiring"]]
+        assert "blueprint.MacroStep1" in wiring_froms

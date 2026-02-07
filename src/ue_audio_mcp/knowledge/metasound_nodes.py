@@ -1315,6 +1315,25 @@ _register(_node(
     complexity=1,
 ))
 
+_register(_node(
+    "Get Variable", "General",
+    "Reads the current value of a graph variable.",
+    [],
+    [_out("Value", "Float")],
+    ["variable", "state", "get", "read", "graph variable"],
+    complexity=1,
+))
+
+_register(_node(
+    "Set Variable", "General",
+    "Writes a new value to a graph variable. Execute pin triggers the write.",
+    [_in("Value", "Float"),
+     _in("Execute", "Trigger")],
+    [],
+    ["variable", "state", "set", "write", "graph variable"],
+    complexity=1,
+))
+
 
 # ===================================================================
 # Query / search helpers

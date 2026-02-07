@@ -47,6 +47,33 @@ public:
 	bool ConnectNodes(const FString& FromNode, const FString& FromPin,
 	                  const FString& ToNode, const FString& ToPin, FString& OutError);
 
+	// -- Graph variables (UE 5.7) --
+
+	/** Add a typed variable to the graph. */
+	bool AddGraphVariable(const FString& Name, const FString& TypeName, const FString& DefaultValue, FString& OutError);
+
+	/** Add a Get Variable node (reads current or delayed previous-frame value). */
+	bool AddVariableGetNode(const FString& NodeId, const FString& VariableName, bool bDelayed, FString& OutError);
+
+	/** Add a Set Variable node (writes a value to a graph variable). */
+	bool AddVariableSetNode(const FString& NodeId, const FString& VariableName, FString& OutError);
+
+	// -- Preset conversion --
+
+	/** Convert the current builder to a preset of a referenced asset. */
+	bool ConvertToPreset(const FString& ReferencedAsset, FString& OutError);
+
+	/** Convert a preset back to a full editable graph. */
+	bool ConvertFromPreset(FString& OutError);
+
+	// -- Query / Introspection --
+
+	/** List all graph-level input names. */
+	bool GetGraphInputNames(TArray<FString>& OutNames, FString& OutError);
+
+	/** Enable or disable live topology updates during audition. */
+	bool SetLiveUpdates(bool bEnabled, FString& OutError);
+
 	// -- Build & Audition --
 
 	/** Build the current graph to a .uasset. */

@@ -405,6 +405,220 @@ bool FAudioMCPBuilderManager::ConnectNodes(const FString& FromNode, const FStrin
 }
 
 // ---------------------------------------------------------------------------
+// Graph variables (UE 5.7)
+// ---------------------------------------------------------------------------
+
+bool FAudioMCPBuilderManager::AddGraphVariable(const FString& Name, const FString& TypeName, const FString& DefaultValue, FString& OutError)
+{
+	if (!ActiveBuilder.IsValid())
+	{
+		OutError = TEXT("No active builder. Call create_builder first.");
+		return false;
+	}
+
+	EMetaSoundBuilderResult Result;
+	FMetasoundFrontendLiteral DefaultLiteral;
+
+	// Parse default value if provided
+	if (!DefaultValue.IsEmpty())
+	{
+		if (DefaultValue.IsNumeric())
+		{
+			DefaultLiteral.Set(FCString::Atof(*DefaultValue));
+		}
+		else if (DefaultValue.Equals(TEXT("true"), ESearchCase::IgnoreCase))
+		{
+			DefaultLiteral.Set(true);
+		}
+		else if (DefaultValue.Equals(TEXT("false"), ESearchCase::IgnoreCase))
+		{
+			DefaultLiteral.Set(false);
+		}
+		else
+		{
+			DefaultLiteral.Set(DefaultValue);
+		}
+	}
+
+	ActiveBuilder.Get()->AddGraphVariable(FName(*Name), FName(*TypeName), DefaultLiteral, Result);
+
+	if (Result != EMetaSoundBuilderResult::Succeeded)
+	{
+		OutError = FString::Printf(TEXT("Failed to add graph variable '%s' of type '%s'"), *Name, *TypeName);
+		return false;
+	}
+
+	UE_LOG(LogAudioMCPBuilder, Log, TEXT("Added graph variable: %s (%s)"), *Name, *TypeName);
+	return true;
+}
+
+bool FAudioMCPBuilderManager::AddVariableGetNode(const FString& NodeId, const FString& VariableName, bool bDelayed, FString& OutError)
+{
+	if (!ActiveBuilder.IsValid())
+	{
+		OutError = TEXT("No active builder. Call create_builder first.");
+		return false;
+	}
+
+	if (NodeHandles.Contains(NodeId))
+	{
+		OutError = FString::Printf(TEXT("Duplicate node ID: '%s'"), *NodeId);
+		return false;
+	}
+
+	EMetaSoundBuilderResult Result;
+	FMetaSoundNodeHandle NodeHandle;
+
+	if (bDelayed)
+	{
+		NodeHandle = ActiveBuilder.Get()->AddGraphVariableGetDelayedNode(FName(*VariableName), Result);
+	}
+	else
+	{
+		NodeHandle = ActiveBuilder.Get()->AddGraphVariableGetNode(FName(*VariableName), Result);
+	}
+
+	if (Result != EMetaSoundBuilderResult::Succeeded)
+	{
+		OutError = FString::Printf(TEXT("Failed to add %svariable get node for '%s'"),
+			bDelayed ? TEXT("delayed ") : TEXT(""), *VariableName);
+		return false;
+	}
+
+	NodeHandles.Add(NodeId, NodeHandle);
+
+	UE_LOG(LogAudioMCPBuilder, Log, TEXT("Added %svariable get node: %s -> %s"),
+		bDelayed ? TEXT("delayed ") : TEXT(""), *NodeId, *VariableName);
+	return true;
+}
+
+bool FAudioMCPBuilderManager::AddVariableSetNode(const FString& NodeId, const FString& VariableName, FString& OutError)
+{
+	if (!ActiveBuilder.IsValid())
+	{
+		OutError = TEXT("No active builder. Call create_builder first.");
+		return false;
+	}
+
+	if (NodeHandles.Contains(NodeId))
+	{
+		OutError = FString::Printf(TEXT("Duplicate node ID: '%s'"), *NodeId);
+		return false;
+	}
+
+	EMetaSoundBuilderResult Result;
+	FMetaSoundNodeHandle NodeHandle = ActiveBuilder.Get()->AddGraphVariableSetNode(FName(*VariableName), Result);
+
+	if (Result != EMetaSoundBuilderResult::Succeeded)
+	{
+		OutError = FString::Printf(TEXT("Failed to add variable set node for '%s'"), *VariableName);
+		return false;
+	}
+
+	NodeHandles.Add(NodeId, NodeHandle);
+
+	UE_LOG(LogAudioMCPBuilder, Log, TEXT("Added variable set node: %s -> %s"), *NodeId, *VariableName);
+	return true;
+}
+
+// ---------------------------------------------------------------------------
+// Preset conversion
+// ---------------------------------------------------------------------------
+
+bool FAudioMCPBuilderManager::ConvertToPreset(const FString& ReferencedAsset, FString& OutError)
+{
+	if (!ActiveBuilder.IsValid())
+	{
+		OutError = TEXT("No active builder. Call create_builder first.");
+		return false;
+	}
+
+	// Load the referenced MetaSound asset
+	UObject* Asset = StaticLoadObject(UObject::StaticClass(), nullptr, *ReferencedAsset);
+	if (!Asset)
+	{
+		OutError = FString::Printf(TEXT("Could not load referenced asset '%s'"), *ReferencedAsset);
+		return false;
+	}
+
+	EMetaSoundBuilderResult Result;
+	ActiveBuilder.Get()->ConvertToPreset(Asset, Result);
+
+	if (Result != EMetaSoundBuilderResult::Succeeded)
+	{
+		OutError = FString::Printf(TEXT("Failed to convert to preset of '%s'"), *ReferencedAsset);
+		return false;
+	}
+
+	UE_LOG(LogAudioMCPBuilder, Log, TEXT("Converted to preset of: %s"), *ReferencedAsset);
+	return true;
+}
+
+bool FAudioMCPBuilderManager::ConvertFromPreset(FString& OutError)
+{
+	if (!ActiveBuilder.IsValid())
+	{
+		OutError = TEXT("No active builder. Call create_builder first.");
+		return false;
+	}
+
+	EMetaSoundBuilderResult Result;
+	ActiveBuilder.Get()->ConvertFromPreset(Result);
+
+	if (Result != EMetaSoundBuilderResult::Succeeded)
+	{
+		OutError = TEXT("Failed to convert from preset to full graph");
+		return false;
+	}
+
+	UE_LOG(LogAudioMCPBuilder, Log, TEXT("Converted from preset to full graph"));
+	return true;
+}
+
+// ---------------------------------------------------------------------------
+// Query / Introspection
+// ---------------------------------------------------------------------------
+
+bool FAudioMCPBuilderManager::GetGraphInputNames(TArray<FString>& OutNames, FString& OutError)
+{
+	if (!ActiveBuilder.IsValid())
+	{
+		OutError = TEXT("No active builder. Call create_builder first.");
+		return false;
+	}
+
+	OutNames.Empty();
+	for (const auto& Pair : GraphInputOutputHandles)
+	{
+		OutNames.Add(Pair.Key);
+	}
+
+	return true;
+}
+
+bool FAudioMCPBuilderManager::SetLiveUpdates(bool bEnabled, FString& OutError)
+{
+	if (!ActiveBuilder.IsValid())
+	{
+		OutError = TEXT("No active builder. Call create_builder first.");
+		return false;
+	}
+
+	EMetaSoundBuilderResult Result;
+	ActiveBuilder.Get()->SetLiveUpdatesEnabled(bEnabled, Result);
+
+	if (Result != EMetaSoundBuilderResult::Succeeded)
+	{
+		OutError = FString::Printf(TEXT("Failed to %s live updates"),
+			bEnabled ? TEXT("enable") : TEXT("disable"));
+		return false;
+	}
+
+	UE_LOG(LogAudioMCPBuilder, Log, TEXT("Live updates %s"), bEnabled ? TEXT("enabled") : TEXT("disabled"));
+	return true;
+}
+
+// ---------------------------------------------------------------------------
 // Build & Audition
 // ---------------------------------------------------------------------------
 

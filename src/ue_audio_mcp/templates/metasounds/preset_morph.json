@@ -1,0 +1,74 @@
+{
+  "name": "PresetMorph",
+  "asset_type": "Source",
+  "description": "One-knob morph between two sound characters. Morph input (0-1) interpolates Cutoff and Bandwidth between set A and set B values via Map Range + InterpTo.",
+  "interfaces": ["UE.Source.Looping"],
+  "inputs": [
+    {"name": "OnPlay", "type": "Trigger"},
+    {"name": "OnStop", "type": "Trigger"},
+    {"name": "Morph", "type": "Float", "default": 0.0},
+    {"name": "WaveAsset", "type": "WaveAsset"}
+  ],
+  "outputs": [
+    {"name": "Out Mono", "type": "Audio"},
+    {"name": "Out Stereo L", "type": "Audio"},
+    {"name": "Out Stereo R", "type": "Audio"},
+    {"name": "OnFinished", "type": "Trigger"},
+    {"name": "OnLooped", "type": "Trigger"}
+  ],
+  "nodes": [
+    {
+      "id": "wave_player",
+      "node_type": "Wave Player (Mono)",
+      "position": [0, 0],
+      "defaults": {"Loop": true}
+    },
+    {
+      "id": "map_cutoff",
+      "node_type": "Map Range",
+      "position": [200, 200],
+      "defaults": {"InMin": 0.0, "InMax": 1.0, "OutMin": 500.0, "OutMax": 8000.0, "Clamped": true}
+    },
+    {
+      "id": "map_bw",
+      "node_type": "Map Range",
+      "position": [200, 400],
+      "defaults": {"InMin": 0.0, "InMax": 1.0, "OutMin": 0.5, "OutMax": 4.0, "Clamped": true}
+    },
+    {
+      "id": "interp_cutoff",
+      "node_type": "InterpTo",
+      "position": [500, 200],
+      "defaults": {"Speed": 5.0, "Current": 500.0}
+    },
+    {
+      "id": "interp_bw",
+      "node_type": "InterpTo",
+      "position": [500, 400],
+      "defaults": {"Speed": 5.0, "Current": 0.5}
+    },
+    {
+      "id": "filter",
+      "node_type": "Biquad Filter",
+      "position": [800, 0],
+      "defaults": {"FilterType": "LPF"}
+    }
+  ],
+  "connections": [
+    {"from_node": "__graph__", "from_pin": "OnPlay", "to_node": "wave_player", "to_pin": "Play"},
+    {"from_node": "__graph__", "from_pin": "OnStop", "to_node": "wave_player", "to_pin": "Stop"},
+    {"from_node": "__graph__", "from_pin": "WaveAsset", "to_node": "wave_player", "to_pin": "WaveAsset"},
+    {"from_node": "__graph__", "from_pin": "Morph", "to_node": "map_cutoff", "to_pin": "Value"},
+    {"from_node": "__graph__", "from_pin": "Morph", "to_node": "map_bw", "to_pin": "Value"},
+    {"from_node": "map_cutoff", "from_pin": "Result", "to_node": "interp_cutoff", "to_pin": "Target"},
+    {"from_node": "map_bw", "from_pin": "Result", "to_node": "interp_bw", "to_pin": "Target"},
+    {"from_node": "interp_cutoff", "from_pin": "Result", "to_node": "filter", "to_pin": "Cutoff Frequency"},
+    {"from_node": "interp_bw", "from_pin": "Result", "to_node": "filter", "to_pin": "Bandwidth"},
+    {"from_node": "wave_player", "from_pin": "Audio", "to_node": "filter", "to_pin": "Audio"},
+    {"from_node": "filter", "from_pin": "Audio", "to_node": "__graph__", "to_pin": "Out Mono"},
+    {"from_node": "filter", "from_pin": "Audio", "to_node": "__graph__", "to_pin": "Out Stereo L"},
+    {"from_node": "filter", "from_pin": "Audio", "to_node": "__graph__", "to_pin": "Out Stereo R"},
+    {"from_node": "wave_player", "from_pin": "OnFinished", "to_node": "__graph__", "to_pin": "OnFinished"},
+    {"from_node": "wave_player", "from_pin": "OnLooped", "to_node": "__graph__", "to_pin": "OnLooped"}
+  ]
+}

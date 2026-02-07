@@ -98,3 +98,29 @@ def test_ms_list_nodes_by_category_and_tag(knowledge_db):
     for n in result["nodes"]:
         assert n["category"] == "Filters"
         assert "lowpass" in [t.lower() for t in n["tags"]]
+
+
+def test_variable_nodes_exist(knowledge_db):
+    """Get Variable and Set Variable nodes should be in the catalogue."""
+    from ue_audio_mcp.knowledge.metasound_nodes import METASOUND_NODES
+    assert "Get Variable" in METASOUND_NODES
+    assert "Set Variable" in METASOUND_NODES
+    get_var = METASOUND_NODES["Get Variable"]
+    assert get_var["category"] == "General"
+    assert "variable" in get_var["tags"]
+
+
+def test_builder_api_count(knowledge_db):
+    """Builder API should have 68+ entries after UE 5.7 additions."""
+    from ue_audio_mcp.knowledge.tutorials import BUILDER_API_FUNCTIONS
+    assert len(BUILDER_API_FUNCTIONS) >= 68
+
+
+def test_builder_api_new_categories(knowledge_db):
+    """New UE 5.7 categories should be present."""
+    from ue_audio_mcp.knowledge.tutorials import BUILDER_API_FUNCTIONS
+    categories = {f["category"] for f in BUILDER_API_FUNCTIONS}
+    assert "variables" in categories
+    assert "pages" in categories
+    assert "transactions" in categories
+    assert "live_update" in categories

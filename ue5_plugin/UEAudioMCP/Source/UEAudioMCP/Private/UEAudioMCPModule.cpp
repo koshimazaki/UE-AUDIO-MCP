@@ -9,6 +9,9 @@
 #include "Commands/BuilderCommands.h"
 #include "Commands/NodeCommands.h"
 #include "Commands/BlueprintCommands.h"
+#include "Commands/VariableCommands.h"
+#include "Commands/PresetCommands.h"
+#include "Commands/QueryCommands.h"
 #include "Modules/ModuleManager.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogAudioMCPModule, Log, All);
@@ -27,7 +30,7 @@ void FUEAudioMCPModule::StartupModule()
 	if (TcpServer->StartListening(AudioMCP::DEFAULT_PORT))
 	{
 		UE_LOG(LogAudioMCPModule, Log,
-			TEXT("UE Audio MCP ready — listening on port %d (11 commands registered)"),
+			TEXT("UE Audio MCP ready — listening on port %d (18 commands registered)"),
 			AudioMCP::DEFAULT_PORT);
 	}
 	else
@@ -96,6 +99,26 @@ void FUEAudioMCPModule::RegisterCommands()
 	// 11. Blueprint reflection
 	Dispatcher->RegisterCommand(TEXT("call_function"),
 		MakeShared<FCallFunctionCommand>());
+
+	// 12-14. Graph variables (UE 5.7)
+	Dispatcher->RegisterCommand(TEXT("add_graph_variable"),
+		MakeShared<FAddGraphVariableCommand>());
+	Dispatcher->RegisterCommand(TEXT("add_variable_get_node"),
+		MakeShared<FAddVariableGetNodeCommand>());
+	Dispatcher->RegisterCommand(TEXT("add_variable_set_node"),
+		MakeShared<FAddVariableSetNodeCommand>());
+
+	// 15-16. Preset conversion
+	Dispatcher->RegisterCommand(TEXT("convert_to_preset"),
+		MakeShared<FConvertToPresetCommand>());
+	Dispatcher->RegisterCommand(TEXT("convert_from_preset"),
+		MakeShared<FConvertFromPresetCommand>());
+
+	// 17-18. Query & live updates
+	Dispatcher->RegisterCommand(TEXT("get_graph_input_names"),
+		MakeShared<FGetGraphInputNamesCommand>());
+	Dispatcher->RegisterCommand(TEXT("set_live_updates"),
+		MakeShared<FSetLiveUpdatesCommand>());
 }
 
 IMPLEMENT_MODULE(FUEAudioMCPModule, UEAudioMCP)

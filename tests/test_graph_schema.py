@@ -7,6 +7,9 @@ from ue_audio_mcp.knowledge.graph_schema import (
     graph_to_builder_commands,
     GRAPH_SPEC_FIELDS,
     GRAPH_BOUNDARY,
+    VARIABLE_GET_TYPE,
+    VARIABLE_SET_TYPE,
+    VARIABLE_GET_DELAYED_TYPE,
 )
 
 
@@ -142,3 +145,82 @@ def test_graph_spec_fields_constant():
 
 def test_graph_boundary_constant():
     assert GRAPH_BOUNDARY == "__graph__"
+
+
+# ---------------------------------------------------------------------------
+# Variable support
+# ---------------------------------------------------------------------------
+
+def _var_spec():
+    """Return a graph spec with variables and variable nodes."""
+    return {
+        "name": "VarTest",
+        "asset_type": "Patch",
+        "interfaces": [],
+        "variables": [
+            {"name": "Health", "type": "Float", "default": 100.0},
+        ],
+        "inputs": [{"name": "Trigger", "type": "Trigger"}],
+        "outputs": [{"name": "Out", "type": "Float"}],
+        "nodes": [
+            {"id": "get_health", "node_type": "__variable_get__", "variable_name": "Health", "position": [0, 0], "defaults": {}},
+            {"id": "set_health", "node_type": "__variable_set__", "variable_name": "Health", "position": [0, 200], "defaults": {}},
+        ],
+        "connections": [
+            {"from_node": "get_health", "from_pin": "Value", "to_node": "__graph__", "to_pin": "Out"},
+            {"from_node": "__graph__", "from_pin": "Trigger", "to_node": "set_health", "to_pin": "Execute"},
+        ],
+    }
+
+
+def test_variable_spec_valid():
+    errors = validate_graph(_var_spec())
+    assert errors == []
+
+
+def test_variable_duplicate_name():
+    spec = _var_spec()
+    spec["variables"].append({"name": "Health", "type": "Int32"})
+    errors = validate_graph(spec)
+    assert any("Duplicate variable" in e for e in errors)
+
+
+def test_variable_invalid_type():
+    spec = _var_spec()
+    spec["variables"] = [{"name": "X", "type": "FakeType"}]
+    spec["nodes"] = []
+    spec["connections"] = []
+    errors = validate_graph(spec)
+    assert any("invalid type" in e for e in errors)
+
+
+def test_variable_node_undeclared():
+    spec = _var_spec()
+    spec["variables"] = []  # remove declaration
+    errors = validate_graph(spec)
+    assert any("undeclared variable" in e for e in errors)
+
+
+def test_variable_commands_emitted():
+    spec = _var_spec()
+    cmds = graph_to_builder_commands(spec)
+    actions = [c["action"] for c in cmds]
+    assert "add_graph_variable" in actions
+    assert "add_variable_get_node" in actions
+    assert "add_variable_set_node" in actions
+    # Variable commands should appear before graph I/O but after interfaces
+    var_idx = actions.index("add_graph_variable")
+    assert var_idx > 0  # after create_builder
+    get_idx = actions.index("add_variable_get_node")
+    set_idx = actions.index("add_variable_set_node")
+    assert get_idx > var_idx
+    assert set_idx > var_idx
+
+
+def test_variable_no_set_default_for_variable_nodes():
+    spec = _var_spec()
+    cmds = graph_to_builder_commands(spec)
+    set_defaults = [c for c in cmds if c["action"] == "set_default"]
+    var_node_ids = {"get_health", "set_health"}
+    for sd in set_defaults:
+        assert sd["node_id"] not in var_node_ids

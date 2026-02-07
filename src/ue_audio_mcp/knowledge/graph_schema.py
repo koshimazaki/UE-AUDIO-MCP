@@ -32,6 +32,12 @@ GRAPH_SPEC_FIELDS: set[str] = {"name", "asset_type", "nodes", "connections"}
 #: Sentinel node ID representing the graph boundary (inputs/outputs).
 GRAPH_BOUNDARY: str = "__graph__"
 
+#: Special node types for graph variable access (skip METASOUND_NODES lookup).
+VARIABLE_GET_TYPE: str = "__variable_get__"
+VARIABLE_SET_TYPE: str = "__variable_set__"
+VARIABLE_GET_DELAYED_TYPE: str = "__variable_get_delayed__"
+_VARIABLE_NODE_TYPES: set[str] = {VARIABLE_GET_TYPE, VARIABLE_SET_TYPE, VARIABLE_GET_DELAYED_TYPE}
+
 #: Default output path for generated assets.
 DEFAULT_ASSET_PATH: str = "/Game/Audio/Generated/"
 
@@ -73,6 +79,21 @@ def validate_graph(spec: dict[str, Any]) -> list[str]:
                 f"Valid interfaces: {sorted(INTERFACES)}"
             )
 
+    # -- 3b. Variables (optional) --------------------------------------------
+    variables: list[dict] = spec.get("variables", [])
+    variable_names: set[str] = set()
+    for var in variables:
+        vname = var.get("name", "<missing>")
+        vtype = var.get("type", "<missing>")
+        if vname in variable_names:
+            errors.append(f"Duplicate variable name: '{vname}'")
+        variable_names.add(vname)
+        if vtype not in PIN_TYPES:
+            errors.append(
+                f"Variable '{vname}' has invalid type '{vtype}'. "
+                f"Must be one of: {sorted(PIN_TYPES)}"
+            )
+
     # -- 4. Node definitions -------------------------------------------------
     nodes: list[dict] = spec["nodes"]
     node_map: dict[str, dict] = {}  # id -> node spec
@@ -86,9 +107,18 @@ def validate_graph(spec: dict[str, Any]) -> list[str]:
             errors.append(f"Duplicate node ID: '{nid}'")
         seen_ids.add(nid)
 
-        # Node type existence
+        # Node type existence — variable node types skip METASOUND_NODES lookup
         ntype = node.get("node_type", "<missing>")
-        if ntype not in METASOUND_NODES:
+        if ntype in _VARIABLE_NODE_TYPES:
+            # Validate that variable_name references a declared variable
+            var_name = node.get("variable_name", "")
+            if var_name and var_name not in variable_names:
+                errors.append(
+                    f"Node '{nid}' references undeclared variable '{var_name}'. "
+                    f"Declared variables: {sorted(variable_names)}"
+                )
+            node_map[nid] = node
+        elif ntype not in METASOUND_NODES:
             errors.append(
                 f"Node '{nid}' references unknown node_type '{ntype}'"
             )
@@ -96,6 +126,13 @@ def validate_graph(spec: dict[str, Any]) -> list[str]:
             node_map[nid] = node
 
     # Build lookup structures for pin resolution
+    def _resolve_variable_type(var_name: str) -> str | None:
+        """Return the declared type for a variable, or None."""
+        for var in variables:
+            if var["name"] == var_name:
+                return var.get("type")
+        return None
+
     def _resolve_output_pin(node_id: str, pin_name: str) -> str | None:
         """Return the pin type for an output, or None if not found."""
         if node_id == GRAPH_BOUNDARY:
@@ -107,7 +144,12 @@ def validate_graph(spec: dict[str, Any]) -> list[str]:
         node_spec = node_map.get(node_id)
         if node_spec is None:
             return None
-        node_def = METASOUND_NODES.get(node_spec["node_type"])
+        ntype = node_spec.get("node_type", "")
+        # Variable get nodes output the variable's type
+        if ntype in (VARIABLE_GET_TYPE, VARIABLE_GET_DELAYED_TYPE):
+            var_name = node_spec.get("variable_name", "")
+            return _resolve_variable_type(var_name)
+        node_def = METASOUND_NODES.get(ntype)
         if node_def is None:
             return None
         for pin in node_def["outputs"]:
@@ -126,7 +168,16 @@ def validate_graph(spec: dict[str, Any]) -> list[str]:
         node_spec = node_map.get(node_id)
         if node_spec is None:
             return None
-        node_def = METASOUND_NODES.get(node_spec["node_type"])
+        ntype = node_spec.get("node_type", "")
+        # Variable set nodes accept Value (variable's type) and Execute (Trigger)
+        if ntype == VARIABLE_SET_TYPE:
+            var_name = node_spec.get("variable_name", "")
+            if pin_name == "Execute":
+                return "Trigger"
+            if pin_name == "Value":
+                return _resolve_variable_type(var_name)
+            return None
+        node_def = METASOUND_NODES.get(ntype)
         if node_def is None:
             return None
         for pin in node_def["inputs"]:
@@ -189,6 +240,9 @@ def validate_graph(spec: dict[str, Any]) -> list[str]:
     for node in nodes:
         nid = node.get("id", "<missing>")
         ntype = node.get("node_type", "")
+        # Variable nodes have dynamic pins — skip required-input check
+        if ntype in _VARIABLE_NODE_TYPES:
+            continue
         node_def = METASOUND_NODES.get(ntype)
         if node_def is None:
             continue  # already reported in step 4
@@ -284,6 +338,17 @@ def graph_to_builder_commands(
             "interface": iface,
         })
 
+    # 2b. Graph variables (between interfaces and graph I/O)
+    for var in spec.get("variables", []):
+        var_cmd: dict[str, Any] = {
+            "action": "add_graph_variable",
+            "name": var["name"],
+            "type": var["type"],
+        }
+        if "default" in var:
+            var_cmd["default"] = var["default"]
+        commands.append(var_cmd)
+
     # 3. Graph-level inputs
     for pin in spec.get("inputs", []):
         cmd: dict[str, Any] = {
@@ -303,17 +368,40 @@ def graph_to_builder_commands(
             "type": pin["type"],
         })
 
-    # 5. Nodes
+    # 5. Nodes (variable nodes emit special commands)
     for node in spec["nodes"]:
-        commands.append({
-            "action": "add_node",
-            "id": node["id"],
-            "node_type": node["node_type"],
-            "position": node.get("position", [0, 0]),
-        })
+        ntype = node["node_type"]
+        if ntype == VARIABLE_GET_TYPE:
+            commands.append({
+                "action": "add_variable_get_node",
+                "id": node["id"],
+                "variable_name": node["variable_name"],
+            })
+        elif ntype == VARIABLE_GET_DELAYED_TYPE:
+            commands.append({
+                "action": "add_variable_get_node",
+                "id": node["id"],
+                "variable_name": node["variable_name"],
+                "delayed": True,
+            })
+        elif ntype == VARIABLE_SET_TYPE:
+            commands.append({
+                "action": "add_variable_set_node",
+                "id": node["id"],
+                "variable_name": node["variable_name"],
+            })
+        else:
+            commands.append({
+                "action": "add_node",
+                "id": node["id"],
+                "node_type": ntype,
+                "position": node.get("position", [0, 0]),
+            })
 
-    # 6. Defaults
+    # 6. Defaults (skip variable nodes — they have no user-settable defaults)
     for node in spec["nodes"]:
+        if node["node_type"] in _VARIABLE_NODE_TYPES:
+            continue
         defaults = node.get("defaults", {})
         for input_name, value in defaults.items():
             commands.append({
