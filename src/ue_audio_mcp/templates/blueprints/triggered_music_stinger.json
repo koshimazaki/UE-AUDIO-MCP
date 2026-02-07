@@ -1,0 +1,58 @@
+{
+  "name": "Triggered Music Stinger",
+  "type": "blueprint",
+  "blueprint_type": "actor",
+  "author": "Richard Stevens (Leeds Beckett University)",
+  "description": "One-shot music stinger trigger from Audio-Driven Gameplay course. BoxComponent overlap checks for player character, DoOnce macro prevents re-triggering. SetSound dynamically assigns the stinger SoundBase, then Play fires it. Simple but essential pattern for area-entry musical moments, discovery sounds, and narrative audio cues. UE 4.26 origin — node names may need UE5 adjustment.",
+  "source_url": "https://dev.epicgames.com/community/learning/paths/60/unreal-engine-audio-driven-gameplay",
+  "ue_version": "4.26+ (UE5 compatible)",
+  "components": [
+    {"name": "DefaultSceneRoot", "type": "SceneComponent"},
+    {"name": "Box", "type": "BoxComponent", "defaults": {"bGenerateOverlapEvents": true}},
+    {"name": "Audio", "type": "AudioComponent", "defaults": {"bAutoActivate": false}}
+  ],
+  "nodes": [
+    {
+      "id": "overlap_begin",
+      "node_type": "OnComponentBeginOverlap",
+      "position": [0, 0],
+      "defaults": {"Component": "Box"},
+      "comment": "Player enters stinger trigger zone"
+    },
+    {
+      "id": "check_player",
+      "node_type": "Branch",
+      "position": [300, 0],
+      "comment": "Verify it's the player character"
+    },
+    {
+      "id": "do_once",
+      "node_type": "DoOnce",
+      "position": [500, 0],
+      "comment": "Prevent re-trigger — stinger plays exactly once"
+    },
+    {
+      "id": "set_sound",
+      "node_type": "SetSound",
+      "position": [700, 0],
+      "comment": "Assign stinger SoundBase to AudioComponent"
+    },
+    {
+      "id": "play",
+      "node_type": "Play",
+      "position": [900, 0],
+      "comment": "Fire the stinger"
+    }
+  ],
+  "variables": [
+    {"name": "NewSound", "type": "SoundBase", "description": "The stinger sound asset to play (Sound Cue or MetaSound Source)"}
+  ],
+  "connections": [
+    {"from_node": "overlap_begin", "from_pin": "Exec", "to_node": "check_player", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "check_player", "from_pin": "True", "to_node": "do_once", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "do_once", "from_pin": "Completed", "to_node": "set_sound", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "set_sound", "from_pin": "Exec", "to_node": "play", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "var:NewSound", "from_pin": "Value", "to_node": "set_sound", "to_pin": "NewSound", "type": "data"}
+  ],
+  "notes": "Key patterns: (1) DoOnce macro is the essential gate — prevents re-triggering on repeated overlap. Reset pin available for level-reload scenarios. (2) SetSound allows dynamic assignment — same trigger actor, different stinger per instance. (3) For looping stingers, remove DoOnce and add cooldown timer instead. (4) Can combine with Quartz PlayQuantized for beat-aligned stingers — replace Play with PlayQuantized and pass QuartzClockHandle. (5) Non-spatial (2D) stingers use SpawnSound2D instead of AudioComponent Play. (6) For UE5: same pattern, use MetaSounds Source assets instead of Sound Cues."
+}

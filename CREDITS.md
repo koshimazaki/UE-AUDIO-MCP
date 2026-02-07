@@ -135,12 +135,19 @@ Templates derived from official UE5 audio tutorials and documentation:
 - `blueprints/ambient_weighted_trigger.json` — Probability-gated ambient one-shots
 - `blueprints/player_oriented_sound.json` — Player-relative directional sound spawning
 - `blueprints/audio_visualiser.json` — Attenuation debug visualiser (LPF/HPF/occlusion)
+- `blueprints/submix_spectral_fireflies.json` — Submix FFT → particle color/size feedback
+- `blueprints/audio_input_butterflies.json` — Microphone input → creature spawning
+- `blueprints/physics_audio.json` — Physics rolling/impact/scraping → audio
+- `blueprints/quartz_vertical_music.json` — Quartz-synchronised vertical music layers
+- `blueprints/triggered_music_stinger.json` — One-shot overlap-triggered stinger
 
 **Knowledge informed by this work:**
 - Sound Class hierarchy (Master → Area_Loops + Source_Loops + One_Shots + Footsteps + Foley + Night_Day + Dialogue)
 - 3 occlusion methods: fake switching, Ambient Zones, raycasting
 - Component-based sound decomposition (4 categories × 3 variants = 81 combinations)
 - Audio analysis patterns: Envelope Following, Spectral Analysis, Audio Capture (microphone), Synesthesia NRT
+- Quartz music system: vertical layering, bar-quantized transitions, metronome callbacks
+- Physics audio: angular velocity → rolling, NormalImpulse → impacts, linear velocity → scraping
 
 ---
 

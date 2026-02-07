@@ -1,0 +1,136 @@
+{
+  "name": "Submix Spectral Analysis to Particle Color",
+  "type": "blueprint",
+  "blueprint_type": "actor",
+  "author": "Richard Stevens (Leeds Beckett University)",
+  "description": "Audio-reactive particle system from Audio-Driven Gameplay course. Adds spectral analysis delegate on submix, receives frequency band magnitudes via OnSubmixSpectralAnalysisBP callback. Maps 3 frequency bands (low/mid/high) to particle color channels (R/G/B) and size via SetFloatParameter/SetColorParameter. MakeFullSpectrumSpectralAnalysisBandSettings configures FFT bands. Overlap-gated: starts/stops analysis when player enters/exits zone. UE 4.26 origin — node names may need UE5 adjustment.",
+  "source_url": "https://dev.epicgames.com/community/learning/paths/60/unreal-engine-audio-driven-gameplay",
+  "ue_version": "4.26+ (UE5 compatible)",
+  "components": [
+    {"name": "DefaultSceneRoot", "type": "SceneComponent"},
+    {"name": "Sphere", "type": "SphereComponent", "defaults": {"SphereRadius": 500.0, "bGenerateOverlapEvents": true}},
+    {"name": "ParticleSystem", "type": "ParticleSystemComponent", "defaults": {"Template": "<Pfx_AnalysisFireflies>"}}
+  ],
+  "nodes": [
+    {
+      "id": "overlap_begin",
+      "node_type": "OnComponentBeginOverlap",
+      "position": [0, 0],
+      "defaults": {"Component": "Sphere"},
+      "comment": "Player enters analysis zone"
+    },
+    {
+      "id": "overlap_end",
+      "node_type": "OnComponentEndOverlap",
+      "position": [0, 400],
+      "defaults": {"Component": "Sphere"},
+      "comment": "Player exits analysis zone"
+    },
+    {
+      "id": "check_player",
+      "node_type": "Branch",
+      "position": [300, 0],
+      "comment": "Verify overlapping actor is player"
+    },
+    {
+      "id": "make_band_settings",
+      "node_type": "MakeFullSpectrumSpectralAnalysisBandSettings",
+      "position": [500, 0],
+      "defaults": {"NumBands": 3, "MinimumFrequency": 40.0, "MaximumFrequency": 16000.0},
+      "comment": "Configure 3 FFT bands: low (~40-400Hz), mid (~400-4kHz), high (~4-16kHz)"
+    },
+    {
+      "id": "add_delegate",
+      "node_type": "AddSpectralAnalysisDelegate",
+      "position": [700, 0],
+      "comment": "Register OnSubmixSpectralAnalysisBP callback on the analysis submix"
+    },
+    {
+      "id": "start_analysis",
+      "node_type": "StartSpectralAnalysis",
+      "position": [900, 0],
+      "comment": "Begin spectral analysis on the submix — starts FFT processing"
+    },
+    {
+      "id": "stop_analysis",
+      "node_type": "StopSpectralAnalysis",
+      "position": [500, 400],
+      "comment": "Stop FFT processing when player leaves zone"
+    },
+    {
+      "id": "analysis_callback",
+      "node_type": "CustomEvent",
+      "position": [0, 200],
+      "defaults": {"EventName": "OnSubmixSpectralAnalysisBP"},
+      "comment": "Receives Magnitude array from FFT — called per analysis frame"
+    },
+    {
+      "id": "get_band0",
+      "node_type": "Array_Get",
+      "position": [300, 200],
+      "defaults": {"Index": 0},
+      "comment": "Low frequency band magnitude"
+    },
+    {
+      "id": "get_band1",
+      "node_type": "Array_Get",
+      "position": [300, 280],
+      "defaults": {"Index": 1},
+      "comment": "Mid frequency band magnitude"
+    },
+    {
+      "id": "get_band2",
+      "node_type": "Array_Get",
+      "position": [300, 360],
+      "defaults": {"Index": 2},
+      "comment": "High frequency band magnitude"
+    },
+    {
+      "id": "map_band0",
+      "node_type": "MapRangeClamped",
+      "position": [500, 200],
+      "defaults": {"InRangeA": 0.0, "InRangeB": 1.0, "OutRangeA": 0.0, "OutRangeB": 1.0},
+      "comment": "Map low band magnitude to usable range — power curve optional"
+    },
+    {
+      "id": "make_color",
+      "node_type": "MakeLinearColor",
+      "position": [700, 200],
+      "comment": "R=low band, G=mid band, B=high band — frequency→color mapping"
+    },
+    {
+      "id": "set_particle_color",
+      "node_type": "SetColorParameter",
+      "position": [900, 200],
+      "defaults": {"ParameterName": "ParticleColour"},
+      "comment": "Drive particle color from frequency bands"
+    },
+    {
+      "id": "set_particle_size",
+      "node_type": "SetFloatParameter",
+      "position": [900, 300],
+      "comment": "Drive particle size from overall magnitude"
+    }
+  ],
+  "variables": [
+    {"name": "AnalysisSubmix", "type": "SoundSubmix", "description": "Submix to analyse (route target audio here)"},
+    {"name": "NumBands", "type": "Int32", "default": 3, "description": "Number of spectral analysis bands"},
+    {"name": "SpawnedOverlapping", "type": "Bool", "default": false, "description": "Whether actor spawned already inside overlap zone"}
+  ],
+  "connections": [
+    {"from_node": "overlap_begin", "from_pin": "Exec", "to_node": "check_player", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "check_player", "from_pin": "True", "to_node": "make_band_settings", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "make_band_settings", "from_pin": "ReturnValue", "to_node": "add_delegate", "to_pin": "InBandSettings", "type": "data"},
+    {"from_node": "add_delegate", "from_pin": "Exec", "to_node": "start_analysis", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "var:AnalysisSubmix", "from_pin": "Value", "to_node": "start_analysis", "to_pin": "Submix", "type": "data"},
+    {"from_node": "overlap_end", "from_pin": "Exec", "to_node": "stop_analysis", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "analysis_callback", "from_pin": "Magnitude", "to_node": "get_band0", "to_pin": "Array", "type": "data"},
+    {"from_node": "analysis_callback", "from_pin": "Magnitude", "to_node": "get_band1", "to_pin": "Array", "type": "data"},
+    {"from_node": "analysis_callback", "from_pin": "Magnitude", "to_node": "get_band2", "to_pin": "Array", "type": "data"},
+    {"from_node": "get_band0", "from_pin": "Item", "to_node": "make_color", "to_pin": "R", "type": "data"},
+    {"from_node": "get_band1", "from_pin": "Item", "to_node": "make_color", "to_pin": "G", "type": "data"},
+    {"from_node": "get_band2", "from_pin": "Item", "to_node": "make_color", "to_pin": "B", "type": "data"},
+    {"from_node": "make_color", "from_pin": "ReturnValue", "to_node": "set_particle_color", "to_pin": "Value", "type": "data"}
+  ],
+  "notes": "Key patterns: (1) AddSpectralAnalysisDelegate + OnSubmixSpectralAnalysisBP is the core audio→visual feedback loop. (2) MakeFullSpectrumSpectralAnalysisBandSettings divides spectrum into N equal bands, returns SoundSubmixSpectralAnalysisBandSettings. (3) MakeMusicalSpectralAnalysisBandSettings (Scriabin variant) uses musical note-based frequency bands. (4) EFFTPeakInterpolationMethod controls how peaks between FFT bins are interpolated. (5) Overlap-gating prevents wasting FFT cycles when player is far away. (6) Power curve (MultiplyMultiply_FloatFloat) on magnitude values helps compensate for linear FFT output — makes visual response feel more natural. (7) SwitchOnInteger routes individual band values to different parameters. (8) For UE5: same API unchanged, AudioMixerBlueprintLibrary still provides spectral analysis. MetaSounds has Envelope Follower but NOT native FFT — still need submix analysis for frequency decomposition."
+}

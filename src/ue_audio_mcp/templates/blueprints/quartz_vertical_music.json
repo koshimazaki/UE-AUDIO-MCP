@@ -1,0 +1,148 @@
+{
+  "name": "Quartz Vertical Music Layer System",
+  "type": "blueprint",
+  "blueprint_type": "actor",
+  "author": "Richard Stevens (Leeds Beckett University)",
+  "description": "Quartz-synchronised vertical music layer system from Audio-Driven Gameplay course. Creates QuartzClock (112 BPM, 5/4 time), spawns multiple music layers as Sound2D AudioComponents via CreateSound2D. SubscribeToAllQuantizationEvents receives beat/bar callbacks. Gameplay triggers (overlap zones, creature AI events) queue layer transitions quantized to bar boundaries. FadeVolumeLevel crossfades between core/unhidden layers. Music states: ambient → tension riser → low/mid/high intensity → success/failure transitions. Stingers triggered as one-shots. UE 4.26 origin — Quartz API stable through UE5.",
+  "source_url": "https://dev.epicgames.com/community/learning/paths/60/unreal-engine-audio-driven-gameplay",
+  "ue_version": "4.26+ (UE5 compatible — Quartz API stable)",
+  "nodes": [
+    {
+      "id": "begin_play",
+      "node_type": "ReceiveBeginPlay",
+      "position": [0, 0],
+      "comment": "Initialize Quartz clock and spawn music layers"
+    },
+    {
+      "id": "create_clock",
+      "node_type": "CreateNewClock",
+      "position": [200, 0],
+      "defaults": {"ClockName": "BarghestMusic"},
+      "comment": "Create named Quartz clock — returned handle used for all sync operations"
+    },
+    {
+      "id": "make_clock_settings",
+      "node_type": "MakeQuartzClockSettings",
+      "position": [200, -100],
+      "comment": "Clock settings: BPM, time signature, persistence across levels"
+    },
+    {
+      "id": "make_time_sig",
+      "node_type": "MakeQuartzTimeSignature",
+      "position": [0, -100],
+      "defaults": {"NumBeats": 4, "BeatType": "QuarterNote"},
+      "comment": "Time signature — 4/4 standard, 5/4 for odd meter"
+    },
+    {
+      "id": "set_bpm",
+      "node_type": "SetBeatsPerMinute",
+      "position": [400, 0],
+      "defaults": {"BeatsPerMinute": 112.0},
+      "comment": "Set tempo — Quartz ensures sample-accurate timing"
+    },
+    {
+      "id": "subscribe_events",
+      "node_type": "SubscribeToAllQuantizationEvents",
+      "position": [600, 0],
+      "comment": "Receive bar/beat callbacks for sequencing — OnQuartzMetronomeEventBP"
+    },
+    {
+      "id": "create_core_layer",
+      "node_type": "CreateSound2D",
+      "position": [200, 200],
+      "comment": "Spawn core music layer — always playing, volume varies"
+    },
+    {
+      "id": "create_unhidden_layer",
+      "node_type": "CreateSound2D",
+      "position": [200, 300],
+      "comment": "Spawn unhidden/reveal layer — fades in on gameplay triggers"
+    },
+    {
+      "id": "play_quantized_core",
+      "node_type": "PlayQuantized",
+      "position": [400, 200],
+      "comment": "Start core layer quantized to next bar boundary"
+    },
+    {
+      "id": "play_quantized_unhidden",
+      "node_type": "PlayQuantized",
+      "position": [400, 300],
+      "comment": "Start unhidden layer quantized — initially at volume 0"
+    },
+    {
+      "id": "make_quantization_boundary",
+      "node_type": "MakeQuartzQuantizationBoundary",
+      "position": [400, 100],
+      "defaults": {"Quantization": "Bar", "Multiplier": 1},
+      "comment": "Sync to bar boundary — all layer transitions snap to bars"
+    },
+    {
+      "id": "metronome_callback",
+      "node_type": "CustomEvent",
+      "position": [0, 500],
+      "defaults": {"EventName": "OnQuartzMetronomeEventBP"},
+      "comment": "Beat/bar callback — NumBars tracks position for loop control"
+    },
+    {
+      "id": "check_loop",
+      "node_type": "Branch",
+      "position": [300, 500],
+      "comment": "Bar count > LoopLengthBars? Queue next music section"
+    },
+    {
+      "id": "queue_music",
+      "node_type": "CustomEvent",
+      "position": [0, 700],
+      "defaults": {"EventName": "QueueMusic"},
+      "comment": "Queue transition to next music state — bar-aligned"
+    },
+    {
+      "id": "transition_trigger",
+      "node_type": "OnComponentBeginOverlap",
+      "position": [0, 900],
+      "comment": "Gameplay trigger zone — player crosses transition boundary"
+    },
+    {
+      "id": "fade_core_up",
+      "node_type": "FadeVolumeLevel",
+      "position": [400, 700],
+      "defaults": {"FadeVolumeLevel": 1.0, "FadeInDuration": 2.0},
+      "comment": "Fade core layer volume — crossfade with unhidden layer"
+    },
+    {
+      "id": "fade_unhidden_up",
+      "node_type": "FadeVolumeLevel",
+      "position": [400, 800],
+      "defaults": {"FadeVolumeLevel": 1.0, "FadeInDuration": 2.0},
+      "comment": "Fade in unhidden/reveal layer on gameplay trigger"
+    },
+    {
+      "id": "play_stinger",
+      "node_type": "SpawnSound2D",
+      "position": [400, 900],
+      "comment": "Fire-and-forget stinger on transition events"
+    }
+  ],
+  "variables": [
+    {"name": "QuartzClock", "type": "QuartzClockHandle", "description": "Handle to the Quartz clock driving all sync"},
+    {"name": "CoreLayer", "type": "AudioComponent", "description": "Always-playing base music layer"},
+    {"name": "UnhiddenLayer", "type": "AudioComponent", "description": "Reveal/intensity layer — volume controlled by gameplay"},
+    {"name": "LoopLengthBars", "type": "Int32", "default": 10, "description": "Bars per music loop section"},
+    {"name": "BarRelative", "type": "Int32", "description": "Current bar within loop (0 to LoopLengthBars)"},
+    {"name": "PlayerSeen", "type": "Bool", "default": false, "description": "AI sight state — triggers tension riser"},
+    {"name": "TransitionPoint1_Direction", "type": "Int32", "default": 0, "description": "Music intensity direction at transition point"}
+  ],
+  "connections": [
+    {"from_node": "begin_play", "from_pin": "Exec", "to_node": "create_clock", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "make_time_sig", "from_pin": "ReturnValue", "to_node": "make_clock_settings", "to_pin": "TimeSignature", "type": "data"},
+    {"from_node": "make_clock_settings", "from_pin": "ReturnValue", "to_node": "create_clock", "to_pin": "Settings", "type": "data"},
+    {"from_node": "create_clock", "from_pin": "ReturnValue", "to_node": "set_bpm", "to_pin": "InClockHandle", "type": "data"},
+    {"from_node": "set_bpm", "from_pin": "Exec", "to_node": "subscribe_events", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "create_core_layer", "from_pin": "ReturnValue", "to_node": "play_quantized_core", "to_pin": "AudioComponent", "type": "data"},
+    {"from_node": "make_quantization_boundary", "from_pin": "ReturnValue", "to_node": "play_quantized_core", "to_pin": "QuantizationBoundary", "type": "data"},
+    {"from_node": "metronome_callback", "from_pin": "Exec", "to_node": "check_loop", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "transition_trigger", "from_pin": "Exec", "to_node": "fade_unhidden_up", "to_pin": "Exec", "type": "exec"}
+  ],
+  "notes": "Key patterns: (1) QuartzClockHandle is the sync primitive — CreateNewClock returns it, every quantized operation takes it. (2) PlayQuantized starts audio at next quantization boundary (Bar/Beat/Note subdivisions). (3) SubscribeToAllQuantizationEvents gives bar/beat callbacks via OnQuartzMetronomeEventBP. (4) Vertical layering: multiple Sound2D components play simultaneously, FadeVolumeLevel crossfades between intensity layers. (5) Music states: Ambient (core only) → Tension (riser fade) → Low/Mid/High intensity (transition points) → Success/Failure stingers. (6) EQuartzCommandQuantization enum: Bar, Beat, QuarterNote, EighthNote, SixteenthNote, ThirtySecondNote, Tick, all triplet/dotted variants. (7) EQuartzCommandDelegateSubType: CommandOnQueued, CommandOnAboutToStart, CommandOnStarted, CommandOnCanceled, CommandOnFailedToQueue. (8) For UE5: Quartz API unchanged from 4.27→5.x. MetaSounds can receive Quartz triggers via Audio Bus + Trigger pin. (9) Barghest example: 5/4 time at 112 BPM, 10-bar loops, AI sight events trigger tension→intensity transitions."
+}

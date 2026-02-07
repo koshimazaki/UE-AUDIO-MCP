@@ -35196,5 +35196,27 @@
     "GetCustomPreferC-",
     "SetCustomAllowNonPowerOfTwo",
     "SetCustomPreferC-"
+  ],
+  "Interchange/Node/Texture/UDIMs": [
+    "GetSourceBlock",
+    "GetSourceBlockbyCoordinates",
+    "GetSourceBlocks",
+    "SetSourceBlock",
+    "SetSourceBlockbyCoordinates",
+    "SetSourceBlocks"
+  ],
+  "Interchange/Scene/Component/Instanced": [
+    "AddInstanceTransform",
+    "AddInstanceTransforms",
+    "GetCustomInstancedAssetUid",
+    "GetInstanceTransforms",
+    "GetParentSceneNodeandTransform",
+    "SetCustomInstancedAssetUid"
+  ],
+  "Interchange/Scene/Component/LODContainer": [
+    "AddMeshLODNodeUid",
+    "GetMeshLODNodeUids",
+    "RemoveMeshLODNodeUid",
+    "ResetMeshLODNodeUids"
   ]
 }

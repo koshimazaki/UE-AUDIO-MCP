@@ -1,0 +1,109 @@
+{
+  "name": "Physics-Driven Audio (Rolling + Impact + Scraping)",
+  "type": "blueprint",
+  "blueprint_type": "actor",
+  "author": "Richard Stevens (Leeds Beckett University)",
+  "description": "Physics-driven audio from Audio-Driven Gameplay course. Combines two patterns: (1) Rolling barrel — Tick reads GetPhysicsAngularVelocityInDegrees, VSize gives rotation speed, MapRangeClamped drives VolumeMultiplier and PitchMultiplier on rolling loop AudioComponent. (2) Impact — ReceiveHit event with NormalImpulse magnitude check against threshold, plays one-shot. (3) Scraping variant — GetPhysicsLinearVelocity + VSize for slide speed, FadeVolumeLevel for smooth transitions. DoOnceMultiInput gates overlapping hits. UE 4.26 origin — node names may need UE5 adjustment.",
+  "source_url": "https://dev.epicgames.com/community/learning/paths/60/unreal-engine-audio-driven-gameplay",
+  "ue_version": "4.26+ (UE5 compatible)",
+  "components": [
+    {"name": "Mesh", "type": "StaticMeshComponent", "defaults": {"bSimulatePhysics": true, "bGenerateHitEvents": true}},
+    {"name": "RollingSound", "type": "AudioComponent", "defaults": {"Sound": "<RollingLoopCue>", "bAutoActivate": false}},
+    {"name": "ImpactSound", "type": "AudioComponent", "defaults": {"Sound": "<ImpactOneShotCue>", "bAutoActivate": false}}
+  ],
+  "nodes": [
+    {
+      "id": "tick",
+      "node_type": "ReceiveTick",
+      "position": [0, 0],
+      "comment": "Per-frame velocity check for rolling/scraping sound"
+    },
+    {
+      "id": "get_angular_velocity",
+      "node_type": "GetPhysicsAngularVelocityInDegrees",
+      "position": [200, 0],
+      "comment": "Get rotation speed — barrel rolling"
+    },
+    {
+      "id": "vsize_rotation",
+      "node_type": "VSize",
+      "position": [400, 0],
+      "comment": "Vector length = scalar rotation speed"
+    },
+    {
+      "id": "map_volume",
+      "node_type": "MapRangeClamped",
+      "position": [600, 0],
+      "defaults": {"InRangeA": 0.0, "InRangeB": 500.0, "OutRangeA": 0.0, "OutRangeB": 1.0},
+      "comment": "Map rotation speed to volume (0-1)"
+    },
+    {
+      "id": "set_volume",
+      "node_type": "SetVolumeMultiplier",
+      "position": [800, 0],
+      "comment": "Drive rolling loop volume from rotation speed"
+    },
+    {
+      "id": "map_pitch",
+      "node_type": "MapRangeClamped",
+      "position": [600, 100],
+      "defaults": {"InRangeA": 0.0, "InRangeB": 500.0, "OutRangeA": 0.8, "OutRangeB": 1.5},
+      "comment": "Map rotation speed to pitch (0.8-1.5x)"
+    },
+    {
+      "id": "set_pitch",
+      "node_type": "SetPitchMultiplier",
+      "position": [800, 100],
+      "comment": "Faster rolling = higher pitch"
+    },
+    {
+      "id": "receive_hit",
+      "node_type": "ReceiveHit",
+      "position": [0, 300],
+      "comment": "Physics collision event — NormalImpulse indicates hit force"
+    },
+    {
+      "id": "get_hit_speed",
+      "node_type": "VSize",
+      "position": [200, 300],
+      "comment": "NormalImpulse magnitude = impact force"
+    },
+    {
+      "id": "check_threshold",
+      "node_type": "Branch",
+      "position": [400, 300],
+      "comment": "Impact force > threshold? Play impact sound"
+    },
+    {
+      "id": "map_impact_volume",
+      "node_type": "MapRangeClamped",
+      "position": [600, 300],
+      "defaults": {"InRangeA": 0.0, "InRangeB": 1000.0, "OutRangeA": 0.3, "OutRangeB": 1.0},
+      "comment": "Map impact force to volume"
+    },
+    {
+      "id": "play_impact",
+      "node_type": "Play",
+      "position": [800, 300],
+      "comment": "Play impact one-shot with force-proportional volume"
+    }
+  ],
+  "variables": [
+    {"name": "RotationSpeed", "type": "Float", "description": "Current angular velocity magnitude (degrees/sec)"},
+    {"name": "ImpactThreshold", "type": "Float", "default": 100.0, "description": "Minimum NormalImpulse to trigger impact sound"},
+    {"name": "RollingThreshold", "type": "Float", "default": 10.0, "description": "Minimum angular velocity to play rolling sound"}
+  ],
+  "connections": [
+    {"from_node": "tick", "from_pin": "Exec", "to_node": "get_angular_velocity", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "get_angular_velocity", "from_pin": "ReturnValue", "to_node": "vsize_rotation", "to_pin": "A", "type": "data"},
+    {"from_node": "vsize_rotation", "from_pin": "ReturnValue", "to_node": "map_volume", "to_pin": "Value", "type": "data"},
+    {"from_node": "map_volume", "from_pin": "ReturnValue", "to_node": "set_volume", "to_pin": "VolumeMultiplier", "type": "data"},
+    {"from_node": "vsize_rotation", "from_pin": "ReturnValue", "to_node": "map_pitch", "to_pin": "Value", "type": "data"},
+    {"from_node": "map_pitch", "from_pin": "ReturnValue", "to_node": "set_pitch", "to_pin": "PitchMultiplier", "type": "data"},
+    {"from_node": "receive_hit", "from_pin": "NormalImpulse", "to_node": "get_hit_speed", "to_pin": "A", "type": "data"},
+    {"from_node": "get_hit_speed", "from_pin": "ReturnValue", "to_node": "check_threshold", "to_pin": "Condition", "type": "data"},
+    {"from_node": "check_threshold", "from_pin": "True", "to_node": "play_impact", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "map_impact_volume", "from_pin": "ReturnValue", "to_node": "play_impact", "to_pin": "VolumeMultiplier", "type": "data"}
+  ],
+  "notes": "Key patterns: (1) GetPhysicsAngularVelocityInDegrees for rolling, GetPhysicsLinearVelocity for sliding — both return FVector, VSize() for magnitude. (2) ReceiveHit fires on collision with NormalImpulse (FVector) — magnitude indicates force. (3) Scraping variant: uses FadeVolumeLevel instead of SetVolumeMultiplier for smooth transitions, DoOnceMultiInput prevents overlapping hits. (4) MapRangeClamped is essential — maps physics ranges (0-500 deg/s) to audio ranges (0-1 volume). (5) PitchMultiplier adds realism — faster = higher pitch. (6) bSimulatePhysics AND bGenerateHitEvents must both be true on the mesh component. (7) For UE5: same physics events, same AudioComponent API. Can also use Chaos physics callbacks."
+}

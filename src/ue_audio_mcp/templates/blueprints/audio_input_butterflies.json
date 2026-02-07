@@ -1,0 +1,133 @@
+{
+  "name": "Audio Input (Microphone) to Creature Spawning",
+  "type": "blueprint",
+  "blueprint_type": "actor",
+  "author": "Richard Stevens (Leeds Beckett University)",
+  "description": "Microphone-driven creature spawning from Audio-Driven Gameplay course. AudioCaptureComponent captures microphone input, routes to SourceBus and analysis Submix. GetMagnitudeForFrequencies extracts amplitude at specific frequencies. Tick checks thresholds — above threshold spawns butterfly actors via BeginDeferredActorSpawnFromClass in random positions around player (Forward vector + RandomUnitVector). Inner/Outer sphere zones control active area. FInterpTo smooths magnitude values. UE 4.26 origin — node names may need UE5 adjustment.",
+  "source_url": "https://dev.epicgames.com/community/learning/paths/60/unreal-engine-audio-driven-gameplay",
+  "ue_version": "4.26+ (UE5 compatible)",
+  "components": [
+    {"name": "DefaultSceneRoot", "type": "SceneComponent"},
+    {"name": "OuterSphere", "type": "SphereComponent", "defaults": {"SphereRadius": 1000.0, "bGenerateOverlapEvents": true}},
+    {"name": "InnerSphere", "type": "SphereComponent", "defaults": {"SphereRadius": 300.0, "bGenerateOverlapEvents": true}},
+    {"name": "AudioCapture", "type": "AudioCaptureComponent", "defaults": {"SourceBus": "<SourceBus_Butterflies>"}}
+  ],
+  "nodes": [
+    {
+      "id": "outer_overlap_begin",
+      "node_type": "OnComponentBeginOverlap",
+      "position": [0, 0],
+      "defaults": {"Component": "OuterSphere"},
+      "comment": "Player enters outer detection zone — start listening"
+    },
+    {
+      "id": "outer_overlap_end",
+      "node_type": "OnComponentEndOverlap",
+      "position": [0, 200],
+      "defaults": {"Component": "OuterSphere"},
+      "comment": "Player exits outer zone — stop listening"
+    },
+    {
+      "id": "enable_tick",
+      "node_type": "SetActorTickEnabled",
+      "position": [400, 0],
+      "defaults": {"bEnabled": true},
+      "comment": "Enable tick for magnitude monitoring"
+    },
+    {
+      "id": "disable_tick",
+      "node_type": "SetActorTickEnabled",
+      "position": [400, 200],
+      "defaults": {"bEnabled": false},
+      "comment": "Disable tick when player leaves — save CPU"
+    },
+    {
+      "id": "tick",
+      "node_type": "ReceiveTick",
+      "position": [0, 400],
+      "comment": "Per-frame magnitude check"
+    },
+    {
+      "id": "get_magnitudes",
+      "node_type": "GetMagnitudeForFrequencies",
+      "position": [200, 400],
+      "comment": "Get amplitude at target frequencies from SourceBus submix"
+    },
+    {
+      "id": "interp_magnitude",
+      "node_type": "FInterpTo",
+      "position": [400, 400],
+      "comment": "Smooth magnitude value to prevent jitter"
+    },
+    {
+      "id": "check_threshold",
+      "node_type": "Branch",
+      "position": [600, 400],
+      "comment": "Magnitude > threshold? Spawn creature"
+    },
+    {
+      "id": "get_forward",
+      "node_type": "GetActorForwardVector",
+      "position": [800, 350],
+      "comment": "Player facing direction for spawn offset"
+    },
+    {
+      "id": "random_offset",
+      "node_type": "RandomUnitVector",
+      "position": [800, 430],
+      "comment": "Random direction for scattered spawning"
+    },
+    {
+      "id": "random_distance",
+      "node_type": "RandomFloatInRange",
+      "position": [800, 510],
+      "defaults": {"Min": 100.0, "Max": 500.0},
+      "comment": "Random spawn distance from origin"
+    },
+    {
+      "id": "calc_spawn_pos",
+      "node_type": "Add_VectorVector",
+      "position": [1000, 400],
+      "comment": "Origin + (RandomDirection × RandomDistance) = spawn position"
+    },
+    {
+      "id": "make_transform",
+      "node_type": "MakeTransform",
+      "position": [1000, 500],
+      "comment": "Spawn transform with random rotation"
+    },
+    {
+      "id": "spawn_creature",
+      "node_type": "BeginDeferredActorSpawnFromClass",
+      "position": [1200, 400],
+      "defaults": {"Class": "BP_DC_ButterflyWhispers"},
+      "comment": "Deferred spawn — allows setting properties before FinishSpawning"
+    },
+    {
+      "id": "finish_spawn",
+      "node_type": "FinishSpawningActor",
+      "position": [1400, 400],
+      "comment": "Complete deferred spawn"
+    }
+  ],
+  "variables": [
+    {"name": "SubmixToAnalyse", "type": "SoundSubmix", "description": "Submix receiving AudioCapture output"},
+    {"name": "SpawnedSourceBus", "type": "SoundSourceBus", "description": "SourceBus for routing mic audio (Manual send level)"},
+    {"name": "Thresholds", "type": "Float[]", "description": "Amplitude thresholds per frequency band"},
+    {"name": "CurrentMagnitudes", "type": "Float[]", "description": "Current smoothed magnitude values"},
+    {"name": "InnerRadius", "type": "Float", "default": 300.0, "description": "Inner sphere radius (close interaction zone)"},
+    {"name": "OuterRadius", "type": "Float", "default": 1000.0, "description": "Outer sphere radius (activation zone)"}
+  ],
+  "connections": [
+    {"from_node": "outer_overlap_begin", "from_pin": "Exec", "to_node": "enable_tick", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "outer_overlap_end", "from_pin": "Exec", "to_node": "disable_tick", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "tick", "from_pin": "Exec", "to_node": "get_magnitudes", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "get_magnitudes", "from_pin": "Magnitudes", "to_node": "interp_magnitude", "to_pin": "Current", "type": "data"},
+    {"from_node": "interp_magnitude", "from_pin": "ReturnValue", "to_node": "check_threshold", "to_pin": "Condition", "type": "data"},
+    {"from_node": "check_threshold", "from_pin": "True", "to_node": "spawn_creature", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "calc_spawn_pos", "from_pin": "ReturnValue", "to_node": "make_transform", "to_pin": "Location", "type": "data"},
+    {"from_node": "make_transform", "from_pin": "ReturnValue", "to_node": "spawn_creature", "to_pin": "SpawnTransform", "type": "data"},
+    {"from_node": "spawn_creature", "from_pin": "ReturnValue", "to_node": "finish_spawn", "to_pin": "Actor", "type": "data"}
+  ],
+  "notes": "Key patterns: (1) AudioCaptureComponent is the microphone input — requires AudioCapture plugin enabled. (2) Routes to SourceBus with Manual send level control (ESourceBusSendLevelControlMethod::Manual). (3) GetMagnitudeForFrequencies returns amplitude at specific Hz values — different from spectral analysis which returns bands. (4) FInterpTo smooths raw amplitude — prevents flickering spawns. (5) BeginDeferredActorSpawnFromClass + FinishSpawningActor allows property injection before construction script runs. (6) Inner/Outer sphere pattern: outer enables tick, inner changes behavior intensity. (7) For UE5: AudioCaptureComponent unchanged, AudioCapture plugin still required. MetaSounds can also receive audio input via Audio Bus routing."
+}
