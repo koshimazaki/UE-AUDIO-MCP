@@ -1,0 +1,4782 @@
+[
+  {
+    "category": "blueprint_audio_pattern",
+    "name": "Audio_Cave_Door_bp_01",
+    "description": "Audio blueprint using: SpawnSoundAttached",
+    "functions": [
+      "SpawnSoundAttached"
+    ],
+    "components": [
+      "Attach to Component",
+      "AttachToComponent",
+      "AudioComponent",
+      "K2Node_ComponentBoundEvent_OverlappedComponent",
+      "K2_GetRootComponent",
+      "Overlapped Component",
+      "OverlappedComponent",
+      "PrimitiveComponent",
+      "RootComponent",
+      "SceneComponent",
+      "SphereComponent"
+    ],
+    "variables": [
+      "DefaultSceneRoot",
+      "Sphere"
+    ],
+    "events": [
+      {
+        "component": "Sphere",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentBeginOverlapSignature"
+      },
+      {
+        "component": "Sphere",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentEndOverlapSignature"
+      }
+    ],
+    "references": [
+      "/Game/Audio/Props/Cave_Close_Closed",
+      "/Game/Audio/Props/Cave_Door_Close",
+      "/Game/Audio/Props/Cave_Door_Open",
+      "/Game/Audio/Props/Cave_Finish_Open",
+      "/Game/Audio/_BluePrints/Audio_FlyAway",
+      "/Game/Audio/_Sequences/Cave_Door_01"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "blueprint_audio_pattern",
+    "name": "Audio_Fairy_01_Public",
+    "description": "Audio blueprint using: SpawnSoundAtLocation",
+    "functions": [
+      "SpawnSoundAtLocation"
+    ],
+    "components": [
+      "AudioComponent",
+      "RootComponent",
+      "SceneComponent",
+      "StaticMeshComponent"
+    ],
+    "variables": [
+      "DefaultSceneRoot"
+    ],
+    "events": [],
+    "references": [
+      "/Game/Audio/_BluePrints/Audio_Wood_Fairy_Parent"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "blueprint_audio_pattern",
+    "name": "Audio_Fairy_02_Public",
+    "description": "Audio blueprint using: SpawnSoundAtLocation",
+    "functions": [
+      "SpawnSoundAtLocation"
+    ],
+    "components": [
+      "AudioComponent",
+      "ParticleSystemComponent",
+      "RootComponent",
+      "SceneComponent",
+      "SphereComponent",
+      "StaticMeshComponent"
+    ],
+    "variables": [
+      "DefaultSceneRoot",
+      "ParticleSystem",
+      "Sphere"
+    ],
+    "events": [],
+    "references": [
+      "/Game/Audio/_BluePrints/Audio_Wood_Fairy_Parent"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "blueprint_audio_pattern",
+    "name": "Audio_FlyAway",
+    "description": "Audio blueprint using: IsPlaying, K2_SetActorLocation",
+    "functions": [
+      "IsPlaying",
+      "K2_SetActorLocation"
+    ],
+    "components": [
+      "ActorComponent",
+      "AudioComponent",
+      "ParticleSystemComponent",
+      "SceneComponent"
+    ],
+    "variables": [
+      "Audio",
+      "DefaultSceneRoot",
+      "ParticleSystem"
+    ],
+    "events": [],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "blueprint_audio_pattern",
+    "name": "Audio_Mushroom_Pickup_Detect",
+    "description": "Audio blueprint using: Add_FloatFloat, GetDistanceTo, Multiply_FloatFloat, RandomFloatInRange, Subtract_FloatFloat",
+    "functions": [
+      "Add_FloatFloat",
+      "GetDistanceTo",
+      "Multiply_FloatFloat",
+      "RandomFloatInRange",
+      "Subtract_FloatFloat"
+    ],
+    "components": [
+      "K2Node_ComponentBoundEvent_OverlappedComponent",
+      "Overlapped Component",
+      "OverlappedComponent",
+      "PrimitiveComponent",
+      "SceneComponent",
+      "SphereComponent",
+      "StaticMeshComponent"
+    ],
+    "variables": [
+      "DefaultSceneRoot",
+      "Shroom",
+      "Sphere",
+      "Sphere1"
+    ],
+    "events": [
+      {
+        "component": "Sphere1",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentBeginOverlapSignature"
+      },
+      {
+        "component": "Sphere1",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentEndOverlapSignature"
+      },
+      {
+        "component": "Sphere",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentBeginOverlapSignature"
+      },
+      {
+        "component": "Sphere",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentEndOverlapSignature"
+      }
+    ],
+    "references": [
+      "/Game/Audio/Props/Detector/as_pr_detector",
+      "/Game/Audio/_BluePrints/Audio_Fairy_02_Public",
+      "/Game/Audio/_Concurrency/Shroom",
+      "/Game/Audio/_Curves/Detect_Curve"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "blueprint_audio_pattern",
+    "name": "Audio_POS_DEMO",
+    "description": "Audio blueprint using: RandomFloatInRange, SpawnSoundAtLocation",
+    "functions": [
+      "RandomFloatInRange",
+      "SpawnSoundAtLocation"
+    ],
+    "components": [
+      "AudioComponent",
+      "BoxComponent",
+      "CapsuleComponent",
+      "PrimitiveComponent",
+      "SceneComponent",
+      "SphereComponent"
+    ],
+    "variables": [
+      "Box",
+      "Capsule",
+      "DefaultSceneRoot",
+      "Sphere"
+    ],
+    "events": [],
+    "references": [
+      "/Game/Audio/_BluePrints/Audio_POS_Shape",
+      "/Game/Audio/_BluePrints/POS_Test_Visualizer"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "blueprint_audio_pattern",
+    "name": "Audio_Particle_Splash",
+    "description": "Audio blueprint using: RandomFloatInRange, SpawnSoundAttached",
+    "functions": [
+      "RandomFloatInRange",
+      "SpawnSoundAttached"
+    ],
+    "components": [
+      "ActorComponent",
+      "Attach to Component",
+      "AttachToComponent",
+      "AudioComponent",
+      "K2_GetRootComponent",
+      "ParticleSystemComponent",
+      "RootComponent",
+      "SceneComponent"
+    ],
+    "variables": [
+      "DefaultSceneRoot",
+      "P_GooPool"
+    ],
+    "events": [
+      {
+        "component": "P_GooPool",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ParticleSpawnSignature"
+      }
+    ],
+    "references": [
+      "/Game/Audio/Ambience/as_ab_so_Particle_Drips"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "blueprint_audio_pattern",
+    "name": "Audio_Trees_Wind_Height",
+    "description": "Audio blueprint using: Add_FloatFloat, Greater_FloatFloat, MapRangeClamped, Multiply_FloatFloat, RandomFloatInRange",
+    "functions": [
+      "Add_FloatFloat",
+      "Greater_FloatFloat",
+      "MapRangeClamped",
+      "Multiply_FloatFloat",
+      "RandomFloatInRange"
+    ],
+    "components": [
+      "K2Node_ComponentBoundEvent_OverlappedComponent",
+      "Overlapped Component",
+      "OverlappedComponent",
+      "PrimitiveComponent",
+      "SceneComponent",
+      "SphereComponent",
+      "StaticMeshComponent"
+    ],
+    "variables": [
+      "DefaultSceneRoot",
+      "Sphere"
+    ],
+    "events": [
+      {
+        "component": "Sphere",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentBeginOverlapSignature"
+      },
+      {
+        "component": "Sphere",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentEndOverlapSignature"
+      }
+    ],
+    "references": [
+      "/Game/Audio/Ambience/Trees/as_ab_ao_Tree_Creaks",
+      "/Game/Audio/Ambience/Weather/as_ab_ao_Trees_Wind_Trig"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "blueprint_audio_pattern",
+    "name": "Audio_Wood_Fairy_Parent",
+    "description": "Audio blueprint using: Add_FloatFloat, K2_SetActorLocation, MakeVector, Multiply_FloatFloat",
+    "functions": [
+      "Add_FloatFloat",
+      "K2_SetActorLocation",
+      "MakeVector",
+      "Multiply_FloatFloat"
+    ],
+    "components": [
+      "ActorSequenceComponent",
+      "K2Node_ComponentBoundEvent_OverlappedComponent",
+      "Overlapped Component",
+      "OverlappedComponent",
+      "ParticleSystemComponent",
+      "PrimitiveComponent",
+      "RootComponent",
+      "SceneComponent",
+      "SphereComponent",
+      "StaticMeshComponent",
+      "TimelineComponent"
+    ],
+    "variables": [
+      "DefaultSceneRoot",
+      "ParticleSystem",
+      "Sphere"
+    ],
+    "events": [
+      {
+        "component": "Sphere",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentBeginOverlapSignature"
+      },
+      {
+        "component": "Sphere",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentEndOverlapSignature"
+      }
+    ],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "blueprint_audio_pattern",
+    "name": "BP_DC_2DManager",
+    "description": "Audio blueprint using: K2_GetActorRotation, Subtract_FloatFloat",
+    "functions": [
+      "K2_GetActorRotation",
+      "Subtract_FloatFloat"
+    ],
+    "components": [
+      "SceneComponent",
+      "StaticMeshComponent"
+    ],
+    "variables": [
+      "DefaultSceneRoot",
+      "Sphere"
+    ],
+    "events": [
+      {
+        "component": "2DEntranceTrigger",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ActorBeginOverlapSignature"
+      }
+    ],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "blueprint_audio_pattern",
+    "name": "BP_DC_Barrel",
+    "description": "Audio blueprint using: VSize",
+    "functions": [
+      "VSize"
+    ],
+    "components": [
+      "PrimitiveComponent",
+      "SceneComponent",
+      "StaticMeshComponent"
+    ],
+    "variables": [
+      "DefaultSceneRoot",
+      "SM_Barrel"
+    ],
+    "events": [],
+    "references": [
+      "/Game/Audio/Collision/BarrelImpacts/as_pr_SC_BarrelHard",
+      "/Game/Audio/Collision/BarrelImpacts/as_pr_SC_BarrelMedium",
+      "/Game/Audio/Collision/BarrelImpacts/as_pr_SC_BarrelSoft",
+      "/Game/Audio/_Curves/Curve_Impact_Hard",
+      "/Game/Audio/_Curves/Curve_Impact_Medium",
+      "/Game/Audio/_Curves/Curve_Impact_Soft"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "blueprint_audio_pattern",
+    "name": "BP_DC_BarrelDestructible",
+    "description": "Audio blueprint using: SpawnSoundAtLocation",
+    "functions": [
+      "SpawnSoundAtLocation"
+    ],
+    "components": [
+      "ActorComponent",
+      "AudioComponent",
+      "DestructibleComponent",
+      "Hit Component",
+      "HitComponent",
+      "K2Node_ComponentBoundEvent_HitComponent",
+      "PrimitiveComponent",
+      "SceneComponent"
+    ],
+    "variables": [
+      "DefaultSceneRoot",
+      "Destructible"
+    ],
+    "events": [
+      {
+        "component": "Destructible",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentFractureSignature"
+      },
+      {
+        "component": "Destructible",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentHitSignature"
+      }
+    ],
+    "references": [
+      "/Game/Audio/Props/Fruit_Drop/as_pr_Fruit_Drop_01"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "blueprint_audio_pattern",
+    "name": "BP_DC_BarrelPushPlatform",
+    "description": "Audio blueprint using: K2_GetActorRotation, MapRangeClamped, Subtract_FloatFloat",
+    "functions": [
+      "K2_GetActorRotation",
+      "MapRangeClamped",
+      "Subtract_FloatFloat"
+    ],
+    "components": [
+      "ActorComponent",
+      "BoxComponent",
+      "K2Node_ComponentBoundEvent_OverlappedComponent",
+      "Overlapped Component",
+      "OverlappedComponent",
+      "ParticleSystemComponent",
+      "PhysicsThrusterComponent",
+      "PrimitiveComponent",
+      "SceneComponent",
+      "StaticMeshComponent"
+    ],
+    "variables": [
+      "DefaultSceneRoot",
+      "P_Summon_Child_Startup",
+      "Platform1",
+      "Platform2",
+      "Platform3",
+      "Platform4",
+      "Platform5",
+      "Platform6",
+      "SM_Fence_Var03",
+      "SM_Fence_Var04",
+      "SM_Fence_Var05",
+      "SM_Fence_Var06",
+      "SM_Fence_Var07",
+      "SM_Fence_Var08",
+      "SM_Fence_Var09",
+      "SmoothCollision",
+      "SpawnPoint",
+      "Support1",
+      "Support2",
+      "Support3",
+      "Support4",
+      "Support5",
+      "Support6",
+      "TriggerBox"
+    ],
+    "events": [
+      {
+        "component": "Box",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentBeginOverlapSignature"
+      },
+      {
+        "component": "Box",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentEndOverlapSignature"
+      }
+    ],
+    "references": [
+      "/Game/Audio/_BluePrints/BP_DC_PhysicsBarrel_Rolling",
+      "/Game/Audio/_BluePrints/BP_DC_PhysicsSpell"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "blueprint_audio_pattern",
+    "name": "BP_DC_CratePushPlatform",
+    "description": "Audio blueprint using: K2_GetActorRotation, MapRangeClamped, Subtract_FloatFloat",
+    "functions": [
+      "K2_GetActorRotation",
+      "MapRangeClamped",
+      "Subtract_FloatFloat"
+    ],
+    "components": [
+      "ActorComponent",
+      "BoxComponent",
+      "K2Node_ComponentBoundEvent_OverlappedComponent",
+      "Overlapped Component",
+      "OverlappedComponent",
+      "ParticleSystemComponent",
+      "PhysicsThrusterComponent",
+      "PrimitiveComponent",
+      "SceneComponent",
+      "StaticMeshComponent"
+    ],
+    "variables": [
+      "DefaultSceneRoot",
+      "P_Summon_Child_Startup",
+      "Platform1",
+      "Platform2",
+      "Platform3",
+      "Platform4",
+      "Platform5",
+      "Platform6",
+      "SM_Fence_Var03",
+      "SM_Fence_Var04",
+      "SM_Fence_Var05",
+      "SM_Fence_Var06",
+      "SM_Fence_Var07",
+      "SM_Fence_Var08",
+      "SM_Fence_Var09",
+      "SmoothCollision",
+      "SpawnPoint",
+      "Support1",
+      "Support2",
+      "Support3",
+      "Support4",
+      "Support5",
+      "Support6",
+      "TriggerBox"
+    ],
+    "events": [
+      {
+        "component": "Box",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentBeginOverlapSignature"
+      },
+      {
+        "component": "Box",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentEndOverlapSignature"
+      }
+    ],
+    "references": [
+      "/Game/Audio/_BluePrints/BP_DC_PhysicsBox_Scraping",
+      "/Game/Audio/_BluePrints/BP_DC_PhysicsSpell"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "blueprint_audio_pattern",
+    "name": "BP_DC_Griffon",
+    "description": "Audio blueprint using: Subtract_FloatFloat",
+    "functions": [
+      "Subtract_FloatFloat"
+    ],
+    "components": [
+      "BoxComponent",
+      "Component",
+      "K2Node_ComponentBoundEvent_OverlappedComponent",
+      "Overlapped Component",
+      "OverlappedComponent",
+      "PrimitiveComponent",
+      "RootComponent",
+      "SceneComponent",
+      "SkeletalMeshComponent"
+    ],
+    "variables": [
+      "Box",
+      "DefaultSceneRoot"
+    ],
+    "events": [
+      {
+        "component": "Box",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentBeginOverlapSignature"
+      },
+      {
+        "component": "Box",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentEndOverlapSignature"
+      }
+    ],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "blueprint_audio_pattern",
+    "name": "BP_DC_ListenerSpell",
+    "description": "Audio blueprint using: Subtract_FloatFloat",
+    "functions": [
+      "Subtract_FloatFloat"
+    ],
+    "components": [
+      "AttachToComponent",
+      "BoxComponent",
+      "CameraComponent",
+      "HitComponent",
+      "K2Node_ComponentBoundEvent_OverlappedComponent",
+      "Overlapped Component",
+      "OverlappedComponent",
+      "PrimitiveComponent",
+      "SceneComponent"
+    ],
+    "variables": [
+      "Box",
+      "DefaultSceneRoot"
+    ],
+    "events": [
+      {
+        "component": "Box",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentBeginOverlapSignature"
+      },
+      {
+        "component": "Box",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentEndOverlapSignature"
+      }
+    ],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "blueprint_audio_pattern",
+    "name": "BP_DC_MagicBolt",
+    "description": "Audio blueprint using: Add_FloatFloat, K2_GetActorRotation",
+    "functions": [
+      "Add_FloatFloat",
+      "K2_GetActorRotation"
+    ],
+    "components": [
+      "Hit Component",
+      "HitComponent",
+      "K2Node_ComponentBoundEvent_HitComponent",
+      "ParticleSystemComponent",
+      "PrimitiveComponent",
+      "ProjectileMovementComponent",
+      "SceneComponent",
+      "SphereComponent"
+    ],
+    "variables": [
+      "Collision",
+      "DefaultSceneRoot",
+      "ParticleSystem",
+      "ProjectileMovement"
+    ],
+    "events": [
+      {
+        "component": "Collision",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentHitSignature"
+      }
+    ],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "blueprint_audio_pattern",
+    "name": "BP_DC_MagicBoltSpell",
+    "description": "Audio blueprint using: Add_FloatFloat, K2_SetActorLocation, MakeVector, MapRangeClamped, SpawnSoundAtLocation",
+    "functions": [
+      "Add_FloatFloat",
+      "K2_SetActorLocation",
+      "MakeVector",
+      "MapRangeClamped",
+      "SpawnSoundAtLocation",
+      "SpawnSoundAttached"
+    ],
+    "components": [
+      "ActorComponent",
+      "AttachToComponent",
+      "AudioComponent",
+      "CameraComponent",
+      "K2Node_ComponentBoundEvent_OverlappedComponent",
+      "K2_GetRootComponent",
+      "Overlapped Component",
+      "OverlappedComponent",
+      "ParticleSystemComponent",
+      "PrimitiveComponent",
+      "RootComponent",
+      "SceneComponent",
+      "SphereComponent",
+      "TimelineComponent"
+    ],
+    "variables": [
+      "ChargingFX",
+      "DefaultSceneRoot",
+      "Sphere"
+    ],
+    "events": [
+      {
+        "component": "Sphere",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentBeginOverlapSignature"
+      },
+      {
+        "component": "Sphere",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentEndOverlapSignature"
+      }
+    ],
+    "references": [
+      "/Game/Audio/Dialogue/Fairy_03/Fairy_03_First_Stone",
+      "/Game/Audio/Dialogue/Fairy_03/Fairy_03_Second_Stone",
+      "/Game/Audio/Dialogue/Fairy_03/Fairy_03_Spell",
+      "/Game/Audio/Dialogue/Fairy_03/Fairy_03_Third_Stone_Complete",
+      "/Game/Audio/Magic/Magic_Bolt_Layer_01",
+      "/Game/Audio/Magic/Magic_Bolt_Layer_02",
+      "/Game/Audio/Magic/Magic_bolt_spell_fire",
+      "/Game/Audio/_BluePrints/BP_DC_MagicBolt",
+      "/Game/Audio/_Curves/Magic_Bolt_Volume_Curve",
+      "/Game/Audio/_Curves/Magic_Bolt_Volume_Curve_02"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "blueprint_audio_pattern",
+    "name": "BP_DC_MagicBoltSpellCave",
+    "description": "Audio blueprint using: Add_FloatFloat, K2_SetActorLocation, MakeVector, MapRangeClamped, SpawnSoundAttached",
+    "functions": [
+      "Add_FloatFloat",
+      "K2_SetActorLocation",
+      "MakeVector",
+      "MapRangeClamped",
+      "SpawnSoundAttached"
+    ],
+    "components": [
+      "ActorComponent",
+      "Attach to Component",
+      "AttachToComponent",
+      "AudioComponent",
+      "BoxComponent",
+      "CameraComponent",
+      "K2Node_ComponentBoundEvent_OverlappedComponent",
+      "K2_GetRootComponent",
+      "Overlapped Component",
+      "OverlappedComponent",
+      "ParticleSystemComponent",
+      "PrimitiveComponent",
+      "RootComponent",
+      "SceneComponent"
+    ],
+    "variables": [
+      "Box",
+      "ChargingFX",
+      "DefaultSceneRoot"
+    ],
+    "events": [
+      {
+        "component": "Box",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentBeginOverlapSignature"
+      },
+      {
+        "component": "Box",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentEndOverlapSignature"
+      }
+    ],
+    "references": [
+      "/Game/Audio/Magic/Magic_Bolt_01",
+      "/Game/Audio/Magic/as_pr_Magic_Bolt_Cue",
+      "/Game/Audio/_BluePrints/BP_DC_MagicBolt",
+      "/Game/Audio/_Curves/Magic_Bolt_Volume_Curve",
+      "/Game/Audio/_Curves/Magic_Bolt_Volume_Curve_02"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "blueprint_audio_pattern",
+    "name": "BP_DC_MagicSlider",
+    "description": "Audio blueprint using: Add_FloatFloat, K2_SetActorLocation, MakeVector, MapRangeClamped, Multiply_FloatFloat",
+    "functions": [
+      "Add_FloatFloat",
+      "K2_SetActorLocation",
+      "MakeVector",
+      "MapRangeClamped",
+      "Multiply_FloatFloat",
+      "SpawnSoundAtLocation",
+      "SpawnSoundAttached",
+      "Subtract_FloatFloat"
+    ],
+    "components": [
+      "ActorComponent",
+      "AttachToComponent",
+      "AudioComponent",
+      "BoxComponent",
+      "CameraComponent",
+      "K2Node_ComponentBoundEvent_OverlappedComponent",
+      "K2Node_ComponentBoundEvent_TouchedComponent",
+      "K2_GetRootComponent",
+      "Overlapped Component",
+      "OverlappedComponent",
+      "ParticleSystemComponent",
+      "PrimitiveComponent",
+      "RootComponent",
+      "SceneComponent",
+      "StaticMeshComponent",
+      "TimelineComponent",
+      "Touched Component",
+      "TouchedComponent"
+    ],
+    "variables": [
+      "Box",
+      "Camera",
+      "DefaultSceneRoot",
+      "Notch1",
+      "Notch2",
+      "Notch3",
+      "Notch4",
+      "P_Summon_Portal",
+      "Pos1",
+      "Pos2",
+      "Pos3",
+      "Pos4",
+      "SM_Torch_Var01",
+      "Scene",
+      "Sphere",
+      "StaticMesh"
+    ],
+    "events": [
+      {
+        "component": "Box",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentBeginOverlapSignature"
+      },
+      {
+        "component": "Box",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentEndOverlapSignature"
+      },
+      {
+        "component": "SM_Torch_Var01",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentOnClickedSignature"
+      },
+      {
+        "component": "SM_Torch_Var01",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentBeginOverlapSignature"
+      },
+      {
+        "component": "SM_Torch_Var01",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentEndOverlapSignature"
+      },
+      {
+        "component": "Sphere",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentOnClickedSignature"
+      }
+    ],
+    "references": [
+      "/Game/Audio/Magic/Magic_bolt_spell_stone_active",
+      "/Game/Audio/Magic/Stone_Circle_02_Magic_Spell_Layer_01",
+      "/Game/Audio/Magic/Stone_Circle_02_Magic_Spell_Layer_02",
+      "/Game/Audio/Props/Cave_Door_Moving",
+      "/Game/Audio/Props/Cave_Door_Stop",
+      "/Game/Audio/_Attenutations/Magic_Stone",
+      "/Game/Audio/_BluePrints/BP_DC_MagicStonesExtras",
+      "/Game/Audio/_Curves/Curve_MagicSlider",
+      "/Game/Audio/_Curves/Magic_Slider_Curve_01",
+      "/Game/Audio/_Curves/Magic_Slider_Curve_02"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "blueprint_audio_pattern",
+    "name": "BP_DC_MovingSounds",
+    "description": "Audio blueprint using: Greater_FloatFloat, Multiply_FloatFloat",
+    "functions": [
+      "Greater_FloatFloat",
+      "Multiply_FloatFloat"
+    ],
+    "components": [
+      "/Script/Engine.ActorComponent",
+      "ActorComponent",
+      "AudioComponent",
+      "SceneComponent",
+      "SplineComponent",
+      "StaticMeshComponent",
+      "TimelineComponent"
+    ],
+    "variables": [
+      "Audio",
+      "DefaultSceneRoot",
+      "Sphere",
+      "Spline",
+      "Spline1",
+      "Spline2"
+    ],
+    "events": [],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "blueprint_audio_pattern",
+    "name": "BP_DC_PhysicsBarrel_Rolling",
+    "description": "Audio blueprint using: Greater_FloatFloat, MapRangeClamped, RandomFloatInRange, Subtract_FloatFloat, VSize",
+    "functions": [
+      "Greater_FloatFloat",
+      "MapRangeClamped",
+      "RandomFloatInRange",
+      "Subtract_FloatFloat",
+      "VSize"
+    ],
+    "components": [
+      "AudioComponent",
+      "CapsuleComponent",
+      "PhysicsThrusterComponent",
+      "PrimitiveComponent",
+      "SceneComponent",
+      "StaticMeshComponent"
+    ],
+    "variables": [
+      "BarrelAnchor",
+      "Capsule",
+      "DefaultSceneRoot",
+      "ImpactSound",
+      "PhysicsThruster",
+      "RollingSound",
+      "StaticMesh"
+    ],
+    "events": [],
+    "references": [
+      "/Game/Audio/Collision/BarrelImpacts/Barrel_Roll_03",
+      "/Game/Audio/Collision/BarrelImpacts/as_pr_SC_BarrelHard"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "blueprint_audio_pattern",
+    "name": "BP_DC_PhysicsBox_Scraping",
+    "description": "Audio blueprint using: GetPhysicsLinearVelocity, Greater_FloatFloat, MapRangeClamped, RandomFloatInRange, Subtract_FloatFloat",
+    "functions": [
+      "GetPhysicsLinearVelocity",
+      "Greater_FloatFloat",
+      "MapRangeClamped",
+      "RandomFloatInRange",
+      "Subtract_FloatFloat",
+      "VSize"
+    ],
+    "components": [
+      "AudioComponent",
+      "BoxComponent",
+      "PhysicsThrusterComponent",
+      "PrimitiveComponent",
+      "SceneComponent",
+      "StaticMeshComponent"
+    ],
+    "variables": [
+      "BarrelAnchor",
+      "Box",
+      "DefaultSceneRoot",
+      "ImpactSound",
+      "PhysicsThruster",
+      "ScrapingSound",
+      "StaticMesh"
+    ],
+    "events": [],
+    "references": [
+      "/Game/Audio/Collision/BarrelImpacts/Crate_slide",
+      "/Game/Audio/Collision/BarrelImpacts/Wooden_Crate_Impact"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "blueprint_audio_pattern",
+    "name": "BP_DC_PhysicsSpell",
+    "description": "Audio blueprint using: K2_SetActorLocation, MakeVector, SpawnSoundAtLocation",
+    "functions": [
+      "K2_SetActorLocation",
+      "MakeVector",
+      "SpawnSoundAtLocation"
+    ],
+    "components": [
+      "ActorComponent",
+      "AudioComponent",
+      "CameraComponent",
+      "ParticleSystemComponent",
+      "SceneComponent"
+    ],
+    "variables": [
+      "ChargingFX",
+      "DefaultSceneRoot"
+    ],
+    "events": [],
+    "references": [
+      "/Game/Audio/Magic/Magic_Bolt_Simple",
+      "/Game/Audio/Magic/Magic_bolt_spell_fire",
+      "/Game/Audio/_Curves/Magic_Bolt_Volume_Curve",
+      "/Game/Audio/_Curves/Magic_Bolt_Volume_Curve_02"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "blueprint_audio_pattern",
+    "name": "BP_DC_Pumpkin",
+    "description": "Audio blueprint using: SpawnSoundAtLocation",
+    "functions": [
+      "SpawnSoundAtLocation"
+    ],
+    "components": [
+      "ActorComponent",
+      "AudioComponent",
+      "DestructibleComponent",
+      "Hit Component",
+      "HitComponent",
+      "K2Node_ComponentBoundEvent_HitComponent",
+      "PrimitiveComponent",
+      "SceneComponent"
+    ],
+    "variables": [
+      "DefaultSceneRoot",
+      "Destructible"
+    ],
+    "events": [
+      {
+        "component": "Destructible",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentFractureSignature"
+      },
+      {
+        "component": "Destructible",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentHitSignature"
+      }
+    ],
+    "references": [
+      "/Game/Audio/Props/Fruit_Drop/as_pr_Fruit_Drop_01"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "blueprint_audio_pattern",
+    "name": "BP_DC_RockBlockage",
+    "description": "Audio blueprint using: Add_FloatFloat, Multiply_FloatFloat, Subtract_FloatFloat",
+    "functions": [
+      "Add_FloatFloat",
+      "Multiply_FloatFloat",
+      "Subtract_FloatFloat"
+    ],
+    "components": [
+      "ActorComponent",
+      "BoxComponent",
+      "DestructibleComponent",
+      "K2Node_ComponentBoundEvent_OverlappedComponent",
+      "K2_GetRootComponent",
+      "Overlapped Component",
+      "OverlappedComponent",
+      "ParticleSystemComponent",
+      "PrimitiveComponent",
+      "RootComponent",
+      "SceneComponent",
+      "TimelineComponent"
+    ],
+    "variables": [
+      "Box",
+      "Box1",
+      "DefaultSceneRoot",
+      "Explosion",
+      "Explosion1",
+      "P_Charge_Target_Beam_Ice",
+      "P_Charge_Target_Beam_Ice1",
+      "P_Charge_Target_Beam_Ice2",
+      "P_Charge_Target_Beam_Ice3",
+      "Sparkle",
+      "Sparkle1",
+      "Spell",
+      "Spell1"
+    ],
+    "events": [
+      {
+        "component": "Box1",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentBeginOverlapSignature"
+      },
+      {
+        "component": "Box1",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentEndOverlapSignature"
+      },
+      {
+        "component": "Box",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentBeginOverlapSignature"
+      },
+      {
+        "component": "Box",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentEndOverlapSignature"
+      }
+    ],
+    "references": [
+      "/Game/Audio/Magic/Rock_Blockage",
+      "/Game/Audio/_Reverb/Tunnel_Opened"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "blueprint_audio_pattern",
+    "name": "BP_DC_Spline",
+    "description": "Audio blueprint using: Add_FloatFloat, MakeVector, MapRangeUnclamped, Multiply_FloatFloat, RandomFloatInRange",
+    "functions": [
+      "Add_FloatFloat",
+      "MakeVector",
+      "MapRangeUnclamped",
+      "Multiply_FloatFloat",
+      "RandomFloatInRange",
+      "VSize"
+    ],
+    "components": [
+      "AudioComponent",
+      "SceneComponent",
+      "SplineComponent"
+    ],
+    "variables": [
+      "Audio1",
+      "Audio2",
+      "Audio3",
+      "Audio4",
+      "DefaultSceneRoot",
+      "Spline"
+    ],
+    "events": [],
+    "references": [
+      "/Game/Audio/_BluePrints/SplineType"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "blueprint_audio_pattern",
+    "name": "BP_DC_SweepThroughLauncher",
+    "description": "Audio blueprint using: RandomFloatInRange",
+    "functions": [
+      "RandomFloatInRange"
+    ],
+    "components": [
+      "AudioComponent",
+      "SceneComponent"
+    ],
+    "variables": [
+      "DefaultSceneRoot"
+    ],
+    "events": [],
+    "references": [
+      "/Game/Audio/_BluePrints/BP_DC_SweepThrough_Sound"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "blueprint_audio_pattern",
+    "name": "BP_DC_SweepThrough_Sound",
+    "description": "Audio blueprint using: K2_SetActorLocation",
+    "functions": [
+      "K2_SetActorLocation"
+    ],
+    "components": [
+      "AudioComponent",
+      "ParticleSystemComponent",
+      "SceneComponent"
+    ],
+    "variables": [
+      "Audio",
+      "DefaultSceneRoot",
+      "ParticleSystem"
+    ],
+    "events": [],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "blueprint_audio_pattern",
+    "name": "BP_DC_WaterdripsArea",
+    "description": "Audio blueprint using: SpawnSoundAtLocation",
+    "functions": [
+      "SpawnSoundAtLocation"
+    ],
+    "components": [
+      "ArrowComponent",
+      "AudioComponent",
+      "BillboardComponent",
+      "ParticleSystemComponent",
+      "RootComponent",
+      "SceneComponent",
+      "SpriteComponent"
+    ],
+    "variables": [
+      "DefaultSceneRoot"
+    ],
+    "events": [
+      {
+        "component": "ParticleSystemComponent",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ParticleDeathSignature"
+      }
+    ],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "blueprint_audio_pattern",
+    "name": "BP_Misc_DayNight_Cycle",
+    "description": "Audio blueprint using: Lerp",
+    "functions": [
+      "Lerp"
+    ],
+    "components": [
+      "ArrowComponent",
+      "DirectionalLightComponent",
+      "LightComponent",
+      "SceneComponent",
+      "TimelineComponent"
+    ],
+    "variables": [],
+    "events": [],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "blueprint_audio_pattern",
+    "name": "Cave_Fairy_Moving",
+    "description": "Audio blueprint using: Add_FloatFloat, K2_SetActorLocation, MakeVector, MapRangeClamped, Multiply_FloatFloat",
+    "functions": [
+      "Add_FloatFloat",
+      "K2_SetActorLocation",
+      "MakeVector",
+      "MapRangeClamped",
+      "Multiply_FloatFloat",
+      "RandomFloatInRange"
+    ],
+    "components": [
+      "AudioComponent",
+      "K2Node_ComponentBoundEvent_OverlappedComponent",
+      "Overlapped Component",
+      "OverlappedComponent",
+      "ParticleSystemComponent",
+      "PawnMovementComponent",
+      "PrimitiveComponent",
+      "SceneComponent",
+      "SphereComponent",
+      "StaticMeshComponent",
+      "TimelineComponent"
+    ],
+    "variables": [
+      "Cave_Fairy",
+      "DefaultSceneRoot",
+      "FloatingPawnMovement",
+      "ParticleSystem",
+      "Sphere",
+      "StaticMesh"
+    ],
+    "events": [
+      {
+        "component": "Cave_Fairy",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "OnAudioSingleEnvelopeValue"
+      },
+      {
+        "component": "Sphere",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentBeginOverlapSignature"
+      },
+      {
+        "component": "Sphere",
+        "node_type": "ComponentBoundEvent",
+        "delegate": "ComponentEndOverlapSignature"
+      }
+    ],
+    "references": [
+      "/Game/Audio/Dialogue/V_WF_0301_L12A",
+      "/Game/Audio/Dialogue/av_ch_cave_fairy",
+      "/Game/Audio/_Attenutations/Cave_Fairy"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Attne_01",
+    "properties": [],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "as_ab_al_meadow_ambience",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Ambience/Area_Loops/Attne_01",
+      "/Game/Audio/Ambience/Area_Loops/as_ab_al_meadow_01",
+      "/Game/Audio/Ambience/Area_Loops/as_ab_al_meadow_01.as_ab_al_meadow_01",
+      "/Game/Audio/Ambience/Area_Loops/as_ab_al_meadow_wind",
+      "/Game/Audio/Ambience/Area_Loops/as_ab_al_meadow_wind.as_ab_al_meadow_wind",
+      "/Game/Audio/Ambience/as_ab_al_Grasses_005",
+      "/Game/Audio/Ambience/as_ab_al_Grasses_005.as_ab_al_Grasses_005",
+      "/Game/Audio/_SoundClassesAndMixes/Area_Loops"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "as_ab_al_village_wind_01",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Ambience/Area_Loops/Attne_01",
+      "/Game/Audio/_SoundClassesAndMixes/Area_Loops"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "as_am_ao_Bird_Kite",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Ambience/Birds/Kite/Bird_Kite_-001_MONO",
+      "/Game/Audio/Ambience/Birds/Kite/Bird_Kite_-001_MONO.Bird_Kite_-001_MONO",
+      "/Game/Audio/Ambience/Birds/Kite/Bird_Kite_-002_MONO",
+      "/Game/Audio/Ambience/Birds/Kite/Bird_Kite_-002_MONO.Bird_Kite_-002_MONO",
+      "/Game/Audio/Ambience/Birds/Kite/Bird_Kite_-003_MONO",
+      "/Game/Audio/Ambience/Birds/Kite/Bird_Kite_-003_MONO.Bird_Kite_-003_MONO",
+      "/Game/Audio/Ambience/Birds/Kite/Bird_Kite_-004_MONO",
+      "/Game/Audio/Ambience/Birds/Kite/Bird_Kite_-004_MONO.Bird_Kite_-004_MONO",
+      "/Game/Audio/Ambience/Birds/Kite/Bird_Kite_-007_MONO",
+      "/Game/Audio/Ambience/Birds/Kite/Bird_Kite_-007_MONO.Bird_Kite_-007_MONO",
+      "/Game/Audio/Ambience/Birds/Kite/Bird_Kite_-008_MONO",
+      "/Game/Audio/Ambience/Birds/Kite/Bird_Kite_-008_MONO.Bird_Kite_-008_MONO",
+      "/Game/Audio/_Attenutations/Bird_Kite",
+      "/Game/Audio/_SoundClassesAndMixes/One_Shots"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Fire_Loop",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/_Attenutations/Fire_torch"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "as_pr_Walkway_Creak",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Ambience/Lake/Wood_Creak-001",
+      "/Game/Audio/Ambience/Lake/Wood_Creak-001.Wood_Creak-001",
+      "/Game/Audio/Ambience/Lake/Wood_Creak-002",
+      "/Game/Audio/Ambience/Lake/Wood_Creak-002.Wood_Creak-002",
+      "/Game/Audio/Ambience/Lake/Wood_Creak-003",
+      "/Game/Audio/Ambience/Lake/Wood_Creak-003.Wood_Creak-003",
+      "/Game/Audio/Ambience/Lake/Wood_Creak-004",
+      "/Game/Audio/Ambience/Lake/Wood_Creak-004.Wood_Creak-004",
+      "/Game/Audio/Ambience/Lake/Wood_Creak-005",
+      "/Game/Audio/Ambience/Lake/Wood_Creak-005.Wood_Creak-005",
+      "/Game/Audio/_Attenutations/Wooden_Creak",
+      "/Game/Audio/_SoundClassesAndMixes/Source_Loops"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Bird_Flap_Test",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/_Attenutations/Test_Attenuation"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "as_ab_so_Creature04_Trig",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_01-001",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_01-001.MFCreature_Night_01-001",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_01-002",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_01-002.MFCreature_Night_01-002",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_01-004",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_01-004.MFCreature_Night_01-004",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_01-005",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_01-005.MFCreature_Night_01-005",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_02-001",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_02-001.MFCreature_Night_02-001",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_02-002",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_02-002.MFCreature_Night_02-002",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_02-003",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_02-003.MFCreature_Night_02-003",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_02-004",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_02-004.MFCreature_Night_02-004",
+      "/Game/Audio/_Attenutations/Forest_Creature"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "as_ab_so_MF_Creature_Flap_Move",
+    "properties": [
+      "AttenuationShapeExtents",
+      "FalloffDistance",
+      "MaxDistance",
+      "OmniRadius"
+    ],
+    "references": [
+      "/Game/Audio/Ambience/MFCreatures/ANIMAL_bird_flap",
+      "/Game/Audio/Ambience/MFCreatures/ANIMAL_bird_flap_03",
+      "/Game/Audio/Ambience/MFCreatures/ANIMAL_bird_flap_03.ANIMAL_bird_flap_03",
+      "/Game/Audio/Ambience/MFCreatures/ANIMAL_bird_flap_05",
+      "/Game/Audio/Ambience/MFCreatures/ANIMAL_bird_flap_05.ANIMAL_bird_flap_05",
+      "/Game/Audio/Ambience/MFCreatures/ANIMAL_bird_flap_06",
+      "/Game/Audio/Ambience/MFCreatures/ANIMAL_bird_flap_06.ANIMAL_bird_flap_06",
+      "/Game/Audio/Ambience/MFCreatures/ANIMAL_bird_flap_07",
+      "/Game/Audio/Ambience/MFCreatures/ANIMAL_bird_flap_07.ANIMAL_bird_flap_07",
+      "/Game/Audio/Ambience/MFCreatures/ANIMAL_bird_flap_08",
+      "/Game/Audio/Ambience/MFCreatures/ANIMAL_bird_flap_08.ANIMAL_bird_flap_08",
+      "/Game/Audio/Ambience/MFCreatures/ANIMAL_bird_flap_09",
+      "/Game/Audio/Ambience/MFCreatures/ANIMAL_bird_flap_09.ANIMAL_bird_flap_09",
+      "/Game/Audio/Ambience/MFCreatures/ANIMAL_bird_flap_10.ANIMAL_bird_flap",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_01-001",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_01-001.MFCreature_01-001",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_01-003",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_01-003.MFCreature_01-003",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_01-008",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_01-008.MFCreature_01-008",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_01-009",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_01-009.MFCreature_01-009",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_01-010",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_01-010.MFCreature_01-010",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_01-013",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_01-013.MFCreature_01-013"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "as_ab_sl_fire_torch",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Ambience/Fire/Fire_Loop",
+      "/Game/Audio/Ambience/Fire/Fire_Loop.Fire_Loop",
+      "/Game/Audio/_Attenutations/Fire_torch"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Bite_attack_bird",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/_Attenutations/Griffon",
+      "/Game/Audio/_SoundClassesAndMixes/Character"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Bite_attack_lion",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/_Attenutations/Griffon",
+      "/Game/Audio/_SoundClassesAndMixes/Character"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Combo_bitevocal",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Characters/Griffon_combobite_vocal_bird-001",
+      "/Game/Audio/Characters/Griffon_combobite_vocal_bird-001.Griffon_combobite_vocal_bird-001",
+      "/Game/Audio/Characters/Griffon_combobite_vocal_bird-002",
+      "/Game/Audio/Characters/Griffon_combobite_vocal_bird-002.Griffon_combobite_vocal_bird-002",
+      "/Game/Audio/Characters/Griffon_combobite_vocal_bird-003",
+      "/Game/Audio/Characters/Griffon_combobite_vocal_bird-003.Griffon_combobite_vocal_bird-003",
+      "/Game/Audio/Characters/Griffon_combobite_vocal_lion1-001",
+      "/Game/Audio/Characters/Griffon_combobite_vocal_lion1-001.Griffon_combobite_vocal_lion1-001",
+      "/Game/Audio/Characters/Griffon_combobite_vocal_lion1-003",
+      "/Game/Audio/Characters/Griffon_combobite_vocal_lion1-003.Griffon_combobite_vocal_lion1-003",
+      "/Game/Audio/Characters/Griffon_combobite_vocal_lion2-001",
+      "/Game/Audio/Characters/Griffon_combobite_vocal_lion2-001.Griffon_combobite_vocal_lion2-001",
+      "/Game/Audio/Characters/Griffon_combobite_vocal_lion2-002",
+      "/Game/Audio/Characters/Griffon_combobite_vocal_lion2-002.Griffon_combobite_vocal_lion2-002",
+      "/Game/Audio/Characters/Griffon_combobite_vocal_lion2-003",
+      "/Game/Audio/Characters/Griffon_combobite_vocal_lion2-003.Griffon_combobite_vocal_lion2-003",
+      "/Game/Audio/_Attenutations/Griffon",
+      "/Game/Audio/_SoundClassesAndMixes/Character"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Combo_scratchvocal",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Characters/Combo_scracth_Lion2_layer-005",
+      "/Game/Audio/Characters/Combo_scracth_Lion2_layer-005.Combo_scracth_Lion2_layer-005",
+      "/Game/Audio/Characters/Combo_scracth_Lion2_layer-006",
+      "/Game/Audio/Characters/Combo_scracth_Lion2_layer-006.Combo_scracth_Lion2_layer-006",
+      "/Game/Audio/Characters/Combo_scracth_bird_layer-001",
+      "/Game/Audio/Characters/Combo_scracth_bird_layer-001.Combo_scracth_bird_layer-001",
+      "/Game/Audio/Characters/Combo_scracth_bird_layer-002",
+      "/Game/Audio/Characters/Combo_scracth_bird_layer-002.Combo_scracth_bird_layer-002",
+      "/Game/Audio/Characters/Combo_scracth_bird_layer-003",
+      "/Game/Audio/Characters/Combo_scracth_bird_layer-003.Combo_scracth_bird_layer-003",
+      "/Game/Audio/Characters/Combo_scracth_bird_layer-004",
+      "/Game/Audio/Characters/Combo_scracth_bird_layer-004.Combo_scracth_bird_layer-004",
+      "/Game/Audio/Characters/Combo_scracth_lion_layer-001",
+      "/Game/Audio/Characters/Combo_scracth_lion_layer-001.Combo_scracth_lion_layer-001",
+      "/Game/Audio/Characters/Combo_scracth_lion_layer-002",
+      "/Game/Audio/Characters/Combo_scracth_lion_layer-002.Combo_scracth_lion_layer-002",
+      "/Game/Audio/Characters/Combo_scracth_lion_layer-003",
+      "/Game/Audio/Characters/Combo_scracth_lion_layer-003.Combo_scracth_lion_layer-003",
+      "/Game/Audio/Characters/Combo_scracth_lion_layer-004",
+      "/Game/Audio/Characters/Combo_scracth_lion_layer-004.Combo_scracth_lion_layer-004",
+      "/Game/Audio/_Attenutations/Griffon",
+      "/Game/Audio/_SoundClassesAndMixes/Character"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Foley_FS_grass_R",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Characters/Foley/Foley_run_grass-001",
+      "/Game/Audio/Characters/Foley/Foley_run_grass-001.Foley_run_grass-001",
+      "/Game/Audio/Characters/Foley/Foley_run_grass-002",
+      "/Game/Audio/Characters/Foley/Foley_run_grass-002.Foley_run_grass-002",
+      "/Game/Audio/Characters/Foley/Foley_run_grass-003",
+      "/Game/Audio/Characters/Foley/Foley_run_grass-003.Foley_run_grass-003",
+      "/Game/Audio/Characters/Foley/Foley_run_grass-004",
+      "/Game/Audio/Characters/Foley/Foley_run_grass-004.Foley_run_grass-004",
+      "/Game/Audio/Characters/Foley/Foley_run_grass-005",
+      "/Game/Audio/Characters/Foley/Foley_run_grass-005.Foley_run_grass-005",
+      "/Game/Audio/Characters/Foley/Foley_run_grass-006",
+      "/Game/Audio/Characters/Foley/Foley_run_grass-006.Foley_run_grass-006",
+      "/Game/Audio/Characters/Foley/Foley_run_grass-007",
+      "/Game/Audio/Characters/Foley/Foley_run_grass-007.Foley_run_grass-007",
+      "/Game/Audio/Characters/Foley/Foley_run_grass-008",
+      "/Game/Audio/Characters/Foley/Foley_run_grass-008.Foley_run_grass-008",
+      "/Game/Audio/Characters/Foley/Foley_run_grass-009",
+      "/Game/Audio/Characters/Foley/Foley_run_grass-009.Foley_run_grass-009",
+      "/Game/Audio/Characters/Foley/Foley_run_grass-010",
+      "/Game/Audio/Characters/Foley/Foley_run_grass-010.Foley_run_grass-010",
+      "/Game/Audio/_Attenutations/Footsteps",
+      "/Game/Audio/_SoundClassesAndMixes/Character"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Foley_FS_grass_W",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Characters/Foley/Foley_walk_grass-001",
+      "/Game/Audio/Characters/Foley/Foley_walk_grass-001.Foley_walk_grass-001",
+      "/Game/Audio/Characters/Foley/Foley_walk_grass-002",
+      "/Game/Audio/Characters/Foley/Foley_walk_grass-002.Foley_walk_grass-002",
+      "/Game/Audio/Characters/Foley/Foley_walk_grass-003",
+      "/Game/Audio/Characters/Foley/Foley_walk_grass-003.Foley_walk_grass-003",
+      "/Game/Audio/Characters/Foley/Foley_walk_grass-004",
+      "/Game/Audio/Characters/Foley/Foley_walk_grass-004.Foley_walk_grass-004",
+      "/Game/Audio/Characters/Foley/Foley_walk_grass-005",
+      "/Game/Audio/Characters/Foley/Foley_walk_grass-005.Foley_walk_grass-005",
+      "/Game/Audio/Characters/Foley/Foley_walk_grass-006",
+      "/Game/Audio/Characters/Foley/Foley_walk_grass-006.Foley_walk_grass-006",
+      "/Game/Audio/Characters/Foley/Foley_walk_grass-007",
+      "/Game/Audio/Characters/Foley/Foley_walk_grass-007.Foley_walk_grass-007",
+      "/Game/Audio/Characters/Foley/Foley_walk_grass-008",
+      "/Game/Audio/Characters/Foley/Foley_walk_grass-008.Foley_walk_grass-008",
+      "/Game/Audio/Characters/Foley/Foley_walk_grass-009",
+      "/Game/Audio/Characters/Foley/Foley_walk_grass-009.Foley_walk_grass-009",
+      "/Game/Audio/Characters/Foley/Foley_walk_grass-010",
+      "/Game/Audio/Characters/Foley/Foley_walk_grass-010.Foley_walk_grass-010",
+      "/Game/Audio/_Attenutations/Footsteps",
+      "/Game/Audio/_SoundClassesAndMixes/Character"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "as_ch_Foley_FS_DirtRocks_R",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirtrocks",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirtrocks_01",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirtrocks_01.FOLEY_run_dirtrocks_01",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirtrocks_02",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirtrocks_02.FOLEY_run_dirtrocks_02",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirtrocks_03",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirtrocks_03.FOLEY_run_dirtrocks_03",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirtrocks_04",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirtrocks_04.FOLEY_run_dirtrocks_04",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirtrocks_05",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirtrocks_05.FOLEY_run_dirtrocks_05",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirtrocks_06",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirtrocks_06.FOLEY_run_dirtrocks_06",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirtrocks_07",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirtrocks_07.FOLEY_run_dirtrocks_07",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirtrocks_08",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirtrocks_08.FOLEY_run_dirtrocks_08",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirtrocks_09",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirtrocks_09.FOLEY_run_dirtrocks_09",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirtrocks_10.FOLEY_run_dirtrocks",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirtrocks_06",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirtrocks_06.FOLEY_walk_dirtrocks_06",
+      "/Game/Audio/_Attenutations/Footsteps",
+      "/Game/Audio/_SoundClassesAndMixes/Character"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "as_ch_Foley_FS_DirtRocks_W",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirtrocks",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirtrocks_01",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirtrocks_01.FOLEY_walk_dirtrocks_01",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirtrocks_02",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirtrocks_02.FOLEY_walk_dirtrocks_02",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirtrocks_03",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirtrocks_03.FOLEY_walk_dirtrocks_03",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirtrocks_04",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirtrocks_04.FOLEY_walk_dirtrocks_04",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirtrocks_05",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirtrocks_05.FOLEY_walk_dirtrocks_05",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirtrocks_06",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirtrocks_06.FOLEY_walk_dirtrocks_06",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirtrocks_07",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirtrocks_07.FOLEY_walk_dirtrocks_07",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirtrocks_08",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirtrocks_08.FOLEY_walk_dirtrocks_08",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirtrocks_09",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirtrocks_09.FOLEY_walk_dirtrocks_09",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirtrocks_10.FOLEY_walk_dirtrocks",
+      "/Game/Audio/_Attenutations/Footsteps",
+      "/Game/Audio/_SoundClassesAndMixes/Character"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "as_ch_Foley_FS_Dirt_R",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirt",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirt_01",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirt_01.FOLEY_run_dirt_01",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirt_02",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirt_02.FOLEY_run_dirt_02",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirt_03",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirt_03.FOLEY_run_dirt_03",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirt_04",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirt_04.FOLEY_run_dirt_04",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirt_05",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirt_05.FOLEY_run_dirt_05",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirt_06",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirt_06.FOLEY_run_dirt_06",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirt_07",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirt_07.FOLEY_run_dirt_07",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirt_08",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirt_08.FOLEY_run_dirt_08",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirt_09",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirt_09.FOLEY_run_dirt_09",
+      "/Game/Audio/Characters/Foley/FOLEY_run_dirt_10.FOLEY_run_dirt",
+      "/Game/Audio/_Attenutations/Footsteps",
+      "/Game/Audio/_SoundClassesAndMixes/Character"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "as_ch_Foley_FS_Dirt_W",
+    "properties": [
+      "MaxDistance",
+      "bEnableReverbSend"
+    ],
+    "references": [
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirt",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirt_01",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirt_01.FOLEY_walk_dirt_01",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirt_02",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirt_02.FOLEY_walk_dirt_02",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirt_03",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirt_03.FOLEY_walk_dirt_03",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirt_04",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirt_04.FOLEY_walk_dirt_04",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirt_05",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirt_05.FOLEY_walk_dirt_05",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirt_06",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirt_06.FOLEY_walk_dirt_06",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirt_07",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirt_07.FOLEY_walk_dirt_07",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirt_08",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirt_08.FOLEY_walk_dirt_08",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirt_09",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirt_09.FOLEY_walk_dirt_09",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_dirt_10.FOLEY_walk_dirt",
+      "/Game/Audio/_Attenutations/Footsteps",
+      "/Game/Audio/_SoundClassesAndMixes/Character"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "as_ch_Foley_FS_Stone_R",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Characters/Foley/FOLEY_run_stone",
+      "/Game/Audio/Characters/Foley/FOLEY_run_stone_01",
+      "/Game/Audio/Characters/Foley/FOLEY_run_stone_01.FOLEY_run_stone_01",
+      "/Game/Audio/Characters/Foley/FOLEY_run_stone_02",
+      "/Game/Audio/Characters/Foley/FOLEY_run_stone_02.FOLEY_run_stone_02",
+      "/Game/Audio/Characters/Foley/FOLEY_run_stone_03",
+      "/Game/Audio/Characters/Foley/FOLEY_run_stone_03.FOLEY_run_stone_03",
+      "/Game/Audio/Characters/Foley/FOLEY_run_stone_04",
+      "/Game/Audio/Characters/Foley/FOLEY_run_stone_04.FOLEY_run_stone_04",
+      "/Game/Audio/Characters/Foley/FOLEY_run_stone_05",
+      "/Game/Audio/Characters/Foley/FOLEY_run_stone_05.FOLEY_run_stone_05",
+      "/Game/Audio/Characters/Foley/FOLEY_run_stone_06",
+      "/Game/Audio/Characters/Foley/FOLEY_run_stone_06.FOLEY_run_stone_06",
+      "/Game/Audio/Characters/Foley/FOLEY_run_stone_07",
+      "/Game/Audio/Characters/Foley/FOLEY_run_stone_07.FOLEY_run_stone_07",
+      "/Game/Audio/Characters/Foley/FOLEY_run_stone_08",
+      "/Game/Audio/Characters/Foley/FOLEY_run_stone_08.FOLEY_run_stone_08",
+      "/Game/Audio/Characters/Foley/FOLEY_run_stone_09",
+      "/Game/Audio/Characters/Foley/FOLEY_run_stone_09.FOLEY_run_stone_09",
+      "/Game/Audio/Characters/Foley/FOLEY_run_stone_10.FOLEY_run_stone",
+      "/Game/Audio/_Attenutations/Footsteps",
+      "/Game/Audio/_SoundClassesAndMixes/Character"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "as_ch_Foley_FS_Stone_W",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Characters/Foley/FOLEY_walk_stone",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_stone_01",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_stone_01.FOLEY_walk_stone_01",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_stone_02",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_stone_02.FOLEY_walk_stone_02",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_stone_03",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_stone_03.FOLEY_walk_stone_03",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_stone_04",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_stone_04.FOLEY_walk_stone_04",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_stone_05",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_stone_05.FOLEY_walk_stone_05",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_stone_06",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_stone_06.FOLEY_walk_stone_06",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_stone_07",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_stone_07.FOLEY_walk_stone_07",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_stone_08",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_stone_08.FOLEY_walk_stone_08",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_stone_09",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_stone_09.FOLEY_walk_stone_09",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_stone_10.FOLEY_walk_stone",
+      "/Game/Audio/_Attenutations/Footsteps",
+      "/Game/Audio/_SoundClassesAndMixes/Character"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "as_ch_Foley_FS_Water_R",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Characters/Foley/FOLEY_run_shallowwater",
+      "/Game/Audio/Characters/Foley/FOLEY_run_shallowwater_01",
+      "/Game/Audio/Characters/Foley/FOLEY_run_shallowwater_01.FOLEY_run_shallowwater_01",
+      "/Game/Audio/Characters/Foley/FOLEY_run_shallowwater_02",
+      "/Game/Audio/Characters/Foley/FOLEY_run_shallowwater_02.FOLEY_run_shallowwater_02",
+      "/Game/Audio/Characters/Foley/FOLEY_run_shallowwater_03",
+      "/Game/Audio/Characters/Foley/FOLEY_run_shallowwater_03.FOLEY_run_shallowwater_03",
+      "/Game/Audio/Characters/Foley/FOLEY_run_shallowwater_04",
+      "/Game/Audio/Characters/Foley/FOLEY_run_shallowwater_04.FOLEY_run_shallowwater_04",
+      "/Game/Audio/Characters/Foley/FOLEY_run_shallowwater_05",
+      "/Game/Audio/Characters/Foley/FOLEY_run_shallowwater_05.FOLEY_run_shallowwater_05",
+      "/Game/Audio/Characters/Foley/FOLEY_run_shallowwater_06",
+      "/Game/Audio/Characters/Foley/FOLEY_run_shallowwater_06.FOLEY_run_shallowwater_06",
+      "/Game/Audio/Characters/Foley/FOLEY_run_shallowwater_07",
+      "/Game/Audio/Characters/Foley/FOLEY_run_shallowwater_07.FOLEY_run_shallowwater_07",
+      "/Game/Audio/Characters/Foley/FOLEY_run_shallowwater_08",
+      "/Game/Audio/Characters/Foley/FOLEY_run_shallowwater_08.FOLEY_run_shallowwater_08",
+      "/Game/Audio/Characters/Foley/FOLEY_run_shallowwater_09",
+      "/Game/Audio/Characters/Foley/FOLEY_run_shallowwater_09.FOLEY_run_shallowwater_09",
+      "/Game/Audio/Characters/Foley/FOLEY_run_shallowwater_10.FOLEY_run_shallowwater",
+      "/Game/Audio/_Attenutations/Footsteps",
+      "/Game/Audio/_SoundClassesAndMixes/Character"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "as_ch_Foley_FS_Water_W",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Characters/Foley/FOLEY_walk_shallowwater",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_shallowwater_01",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_shallowwater_01.FOLEY_walk_shallowwater_01",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_shallowwater_02",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_shallowwater_02.FOLEY_walk_shallowwater_02",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_shallowwater_03",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_shallowwater_03.FOLEY_walk_shallowwater_03",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_shallowwater_04",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_shallowwater_04.FOLEY_walk_shallowwater_04",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_shallowwater_05",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_shallowwater_05.FOLEY_walk_shallowwater_05",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_shallowwater_06",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_shallowwater_06.FOLEY_walk_shallowwater_06",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_shallowwater_07",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_shallowwater_07.FOLEY_walk_shallowwater_07",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_shallowwater_08",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_shallowwater_08.FOLEY_walk_shallowwater_08",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_shallowwater_09",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_shallowwater_09.FOLEY_walk_shallowwater_09",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_shallowwater_10.FOLEY_walk_shallowwater",
+      "/Game/Audio/_Attenutations/Footsteps",
+      "/Game/Audio/_SoundClassesAndMixes/Character"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "as_ch_Foley_FS_Wood_R",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Characters/Foley/FOLEY_run_hollowwood",
+      "/Game/Audio/Characters/Foley/FOLEY_run_hollowwood_01",
+      "/Game/Audio/Characters/Foley/FOLEY_run_hollowwood_01.FOLEY_run_hollowwood_01",
+      "/Game/Audio/Characters/Foley/FOLEY_run_hollowwood_02",
+      "/Game/Audio/Characters/Foley/FOLEY_run_hollowwood_02.FOLEY_run_hollowwood_02",
+      "/Game/Audio/Characters/Foley/FOLEY_run_hollowwood_03",
+      "/Game/Audio/Characters/Foley/FOLEY_run_hollowwood_03.FOLEY_run_hollowwood_03",
+      "/Game/Audio/Characters/Foley/FOLEY_run_hollowwood_04",
+      "/Game/Audio/Characters/Foley/FOLEY_run_hollowwood_04.FOLEY_run_hollowwood_04",
+      "/Game/Audio/Characters/Foley/FOLEY_run_hollowwood_05",
+      "/Game/Audio/Characters/Foley/FOLEY_run_hollowwood_05.FOLEY_run_hollowwood_05",
+      "/Game/Audio/Characters/Foley/FOLEY_run_hollowwood_06",
+      "/Game/Audio/Characters/Foley/FOLEY_run_hollowwood_06.FOLEY_run_hollowwood_06",
+      "/Game/Audio/Characters/Foley/FOLEY_run_hollowwood_07",
+      "/Game/Audio/Characters/Foley/FOLEY_run_hollowwood_07.FOLEY_run_hollowwood_07",
+      "/Game/Audio/Characters/Foley/FOLEY_run_hollowwood_08",
+      "/Game/Audio/Characters/Foley/FOLEY_run_hollowwood_08.FOLEY_run_hollowwood_08",
+      "/Game/Audio/Characters/Foley/FOLEY_run_hollowwood_09",
+      "/Game/Audio/Characters/Foley/FOLEY_run_hollowwood_09.FOLEY_run_hollowwood_09",
+      "/Game/Audio/Characters/Foley/FOLEY_run_hollowwood_10.FOLEY_run_hollowwood",
+      "/Game/Audio/_Attenutations/Footsteps",
+      "/Game/Audio/_SoundClassesAndMixes/Character"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "as_ch_Foley_FS_Wood_W",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Characters/Foley/FOLEY_walk_hollowwood",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_hollowwood_01",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_hollowwood_01.FOLEY_walk_hollowwood_01",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_hollowwood_02",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_hollowwood_02.FOLEY_walk_hollowwood_02",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_hollowwood_03",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_hollowwood_03.FOLEY_walk_hollowwood_03",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_hollowwood_04",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_hollowwood_04.FOLEY_walk_hollowwood_04",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_hollowwood_05",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_hollowwood_05.FOLEY_walk_hollowwood_05",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_hollowwood_06",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_hollowwood_06.FOLEY_walk_hollowwood_06",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_hollowwood_07",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_hollowwood_07.FOLEY_walk_hollowwood_07",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_hollowwood_08",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_hollowwood_08.FOLEY_walk_hollowwood_08",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_hollowwood_09",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_hollowwood_09.FOLEY_walk_hollowwood_09",
+      "/Game/Audio/Characters/Foley/FOLEY_walk_hollowwood_10.FOLEY_walk_hollowwood",
+      "/Game/Audio/_Attenutations/Footsteps",
+      "/Game/Audio/_SoundClassesAndMixes/Character"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Griffon_Big_scrapes",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Characters/Griffon_Big_TallonScrapes-001",
+      "/Game/Audio/Characters/Griffon_Big_TallonScrapes-001.Griffon_Big_TallonScrapes-001",
+      "/Game/Audio/Characters/Griffon_Big_TallonScrapes-002",
+      "/Game/Audio/Characters/Griffon_Big_TallonScrapes-002.Griffon_Big_TallonScrapes-002",
+      "/Game/Audio/Characters/Griffon_Big_TallonScrapes-003",
+      "/Game/Audio/Characters/Griffon_Big_TallonScrapes-003.Griffon_Big_TallonScrapes-003",
+      "/Game/Audio/Characters/Griffon_Big_TallonScrapes-004",
+      "/Game/Audio/Characters/Griffon_Big_TallonScrapes-004.Griffon_Big_TallonScrapes-004",
+      "/Game/Audio/_Attenutations/Griffon",
+      "/Game/Audio/_SoundClassesAndMixes/Character"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Griffon_Scratch",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Characters/combo_scratch_attacks-001",
+      "/Game/Audio/Characters/combo_scratch_attacks-001.combo_scratch_attacks-001",
+      "/Game/Audio/Characters/combo_scratch_attacks-002",
+      "/Game/Audio/Characters/combo_scratch_attacks-002.combo_scratch_attacks-002",
+      "/Game/Audio/Characters/combo_scratch_attacks-003",
+      "/Game/Audio/Characters/combo_scratch_attacks-003.combo_scratch_attacks-003",
+      "/Game/Audio/Characters/combo_scratch_attacks-004",
+      "/Game/Audio/Characters/combo_scratch_attacks-004.combo_scratch_attacks-004",
+      "/Game/Audio/_Attenutations/Griffon",
+      "/Game/Audio/_SoundClassesAndMixes/Character"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Griffon_WingDown",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Characters/Griffo_Wingdown-001",
+      "/Game/Audio/Characters/Griffo_Wingdown-001.Griffo_Wingdown-001",
+      "/Game/Audio/Characters/Griffo_Wingdown-002",
+      "/Game/Audio/Characters/Griffo_Wingdown-002.Griffo_Wingdown-002",
+      "/Game/Audio/Characters/Griffo_Wingdown-003",
+      "/Game/Audio/Characters/Griffo_Wingdown-003.Griffo_Wingdown-003",
+      "/Game/Audio/Characters/Griffo_Wingdown-004",
+      "/Game/Audio/Characters/Griffo_Wingdown-004.Griffo_Wingdown-004",
+      "/Game/Audio/Characters/Griffo_Wingdown-005",
+      "/Game/Audio/Characters/Griffo_Wingdown-005.Griffo_Wingdown-005",
+      "/Game/Audio/Characters/Griffo_Wingdown-006",
+      "/Game/Audio/Characters/Griffo_Wingdown-006.Griffo_Wingdown-006",
+      "/Game/Audio/Characters/Griffo_Wingdown-007",
+      "/Game/Audio/Characters/Griffo_Wingdown-007.Griffo_Wingdown-007",
+      "/Game/Audio/Characters/Griffo_Wingdown-008",
+      "/Game/Audio/Characters/Griffo_Wingdown-008.Griffo_Wingdown-008",
+      "/Game/Audio/Characters/Griffo_Wingdown-009",
+      "/Game/Audio/Characters/Griffo_Wingdown-009.Griffo_Wingdown-009",
+      "/Game/Audio/Characters/Griffo_Wingdown-010",
+      "/Game/Audio/Characters/Griffo_Wingdown-010.Griffo_Wingdown-010",
+      "/Game/Audio/Characters/Griffon_wingflap_extra-001",
+      "/Game/Audio/Characters/Griffon_wingflap_extra-001.Griffon_wingflap_extra-001",
+      "/Game/Audio/Characters/Griffon_wingflap_extra-002",
+      "/Game/Audio/Characters/Griffon_wingflap_extra-002.Griffon_wingflap_extra-002",
+      "/Game/Audio/Characters/Griffon_wingflap_extra-003",
+      "/Game/Audio/Characters/Griffon_wingflap_extra-003.Griffon_wingflap_extra-003",
+      "/Game/Audio/Characters/Griffon_wingflap_extra-004",
+      "/Game/Audio/Characters/Griffon_wingflap_extra-004.Griffon_wingflap_extra-004",
+      "/Game/Audio/Characters/Griffon_wingflap_extra-005",
+      "/Game/Audio/Characters/Griffon_wingflap_extra-005.Griffon_wingflap_extra-005",
+      "/Game/Audio/Characters/Griffon_wingflap_extra-006",
+      "/Game/Audio/Characters/Griffon_wingflap_extra-006.Griffon_wingflap_extra-006",
+      "/Game/Audio/_Attenutations/Griffon",
+      "/Game/Audio/_SoundClassesAndMixes/Character"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Griffon_bite_foley",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Characters/Griffon_BIte_foley-001",
+      "/Game/Audio/Characters/Griffon_BIte_foley-001.Griffon_BIte_foley-001",
+      "/Game/Audio/Characters/Griffon_BIte_foley-002",
+      "/Game/Audio/Characters/Griffon_BIte_foley-002.Griffon_BIte_foley-002",
+      "/Game/Audio/Characters/Griffon_BIte_foley-003",
+      "/Game/Audio/Characters/Griffon_BIte_foley-003.Griffon_BIte_foley-003",
+      "/Game/Audio/Characters/Griffon_BIte_foley-004",
+      "/Game/Audio/Characters/Griffon_BIte_foley-004.Griffon_BIte_foley-004",
+      "/Game/Audio/_Attenutations/Griffon",
+      "/Game/Audio/_SoundClassesAndMixes/Character"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Griffon_breaths",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Characters/Griffon_Breathe_brid_layer",
+      "/Game/Audio/Characters/Griffon_Breathe_brid_layer.Griffon_Breathe_brid_layer",
+      "/Game/Audio/Characters/Griffon_Breathes-001",
+      "/Game/Audio/Characters/Griffon_Breathes-001.Griffon_Breathes-001",
+      "/Game/Audio/Characters/Griffon_Breathes-002",
+      "/Game/Audio/Characters/Griffon_Breathes-002.Griffon_Breathes-002",
+      "/Game/Audio/Characters/Griffon_Breathes-003",
+      "/Game/Audio/Characters/Griffon_Breathes-003.Griffon_Breathes-003",
+      "/Game/Audio/_Attenutations/Griffon",
+      "/Game/Audio/_SoundClassesAndMixes/Character"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Griffon_foley",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/_Attenutations/Griffon",
+      "/Game/Audio/_SoundClassesAndMixes/Character"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Griffon_scratch_foley",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Characters/Griffon_Scratch_foley-001",
+      "/Game/Audio/Characters/Griffon_Scratch_foley-001.Griffon_Scratch_foley-001",
+      "/Game/Audio/Characters/Griffon_Scratch_foley-002",
+      "/Game/Audio/Characters/Griffon_Scratch_foley-002.Griffon_Scratch_foley-002",
+      "/Game/Audio/Characters/Griffon_Scratch_foley-003",
+      "/Game/Audio/Characters/Griffon_Scratch_foley-003.Griffon_Scratch_foley-003",
+      "/Game/Audio/Characters/Griffon_Scratch_foley-004",
+      "/Game/Audio/Characters/Griffon_Scratch_foley-004.Griffon_Scratch_foley-004",
+      "/Game/Audio/_Attenutations/Griffon",
+      "/Game/Audio/_SoundClassesAndMixes/Character"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Griffon_steps",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Characters/Griffon_sub_steps-001",
+      "/Game/Audio/Characters/Griffon_sub_steps-001.Griffon_sub_steps-001",
+      "/Game/Audio/Characters/Griffon_sub_steps-002",
+      "/Game/Audio/Characters/Griffon_sub_steps-002.Griffon_sub_steps-002",
+      "/Game/Audio/Characters/Griffon_sub_steps-003",
+      "/Game/Audio/Characters/Griffon_sub_steps-003.Griffon_sub_steps-003",
+      "/Game/Audio/Characters/Griffon_sub_steps-004",
+      "/Game/Audio/Characters/Griffon_sub_steps-004.Griffon_sub_steps-004",
+      "/Game/Audio/Characters/Griffon_sub_steps-005",
+      "/Game/Audio/Characters/Griffon_sub_steps-005.Griffon_sub_steps-005",
+      "/Game/Audio/Characters/Griffon_sub_steps-006",
+      "/Game/Audio/Characters/Griffon_sub_steps-006.Griffon_sub_steps-006",
+      "/Game/Audio/Characters/Griffon_sub_steps-007",
+      "/Game/Audio/Characters/Griffon_sub_steps-007.Griffon_sub_steps-007",
+      "/Game/Audio/Characters/Griffon_sub_steps-008",
+      "/Game/Audio/Characters/Griffon_sub_steps-008.Griffon_sub_steps-008",
+      "/Game/Audio/Characters/talon_layer-001",
+      "/Game/Audio/Characters/talon_layer-001.talon_layer-001",
+      "/Game/Audio/Characters/talon_layer-002",
+      "/Game/Audio/Characters/talon_layer-002.talon_layer-002",
+      "/Game/Audio/Characters/talon_layer-003",
+      "/Game/Audio/Characters/talon_layer-003.talon_layer-003",
+      "/Game/Audio/Characters/talon_layer-004",
+      "/Game/Audio/Characters/talon_layer-004.talon_layer-004",
+      "/Game/Audio/Characters/talon_layer-005",
+      "/Game/Audio/Characters/talon_layer-005.talon_layer-005",
+      "/Game/Audio/_Attenutations/Griffon",
+      "/Game/Audio/_SoundClassesAndMixes/Character"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Griffon_tailswings",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Characters/Griffon_tail_swings-001",
+      "/Game/Audio/Characters/Griffon_tail_swings-001.Griffon_tail_swings-001",
+      "/Game/Audio/Characters/Griffon_tail_swings-002",
+      "/Game/Audio/Characters/Griffon_tail_swings-002.Griffon_tail_swings-002",
+      "/Game/Audio/Characters/Griffon_tail_swings-003",
+      "/Game/Audio/Characters/Griffon_tail_swings-003.Griffon_tail_swings-003",
+      "/Game/Audio/Characters/Griffon_tail_swings-004",
+      "/Game/Audio/Characters/Griffon_tail_swings-004.Griffon_tail_swings-004",
+      "/Game/Audio/Characters/Griffon_tail_swings-005",
+      "/Game/Audio/Characters/Griffon_tail_swings-005.Griffon_tail_swings-005",
+      "/Game/Audio/_Attenutations/Griffon",
+      "/Game/Audio/_SoundClassesAndMixes/Character"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Griffon_wingup",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Characters/Griffo_Wingup-001",
+      "/Game/Audio/Characters/Griffo_Wingup-001.Griffo_Wingup-001",
+      "/Game/Audio/Characters/Griffo_Wingup-002",
+      "/Game/Audio/Characters/Griffo_Wingup-002.Griffo_Wingup-002",
+      "/Game/Audio/Characters/Griffo_Wingup-003",
+      "/Game/Audio/Characters/Griffo_Wingup-003.Griffo_Wingup-003",
+      "/Game/Audio/Characters/Griffo_Wingup-004",
+      "/Game/Audio/Characters/Griffo_Wingup-004.Griffo_Wingup-004",
+      "/Game/Audio/Characters/Griffo_Wingup-005",
+      "/Game/Audio/Characters/Griffo_Wingup-005.Griffo_Wingup-005",
+      "/Game/Audio/Characters/Griffo_Wingup-006",
+      "/Game/Audio/Characters/Griffo_Wingup-006.Griffo_Wingup-006",
+      "/Game/Audio/Characters/Griffo_Wingup-007",
+      "/Game/Audio/Characters/Griffo_Wingup-007.Griffo_Wingup-007",
+      "/Game/Audio/_Attenutations/Griffon",
+      "/Game/Audio/_SoundClassesAndMixes/Character"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Talon_scrapes",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/_Attenutations/Griffon",
+      "/Game/Audio/_SoundClassesAndMixes/Character"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Attenuations_Barrel",
+    "properties": [
+      "AttenuationShapeExtents",
+      "FalloffDistance"
+    ],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "barrel_roll",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Collision/BarrelImpacts/Attenuations_Barrel",
+      "/Game/Audio/_SoundClassesAndMixes/Barrel"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Fairy_01_Line01",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Dialogue/Fairy_01/V_WF_01_R_",
+      "/Game/Audio/Dialogue/Fairy_01/V_WF_01_R_.V_WF_01_R_",
+      "/Game/Audio/_Attenutations/Dialogue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Fairy_01_Line01_Alt",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Dialogue/Fairy_01/V_WF_01_R_Alt01_",
+      "/Game/Audio/Dialogue/Fairy_01/V_WF_01_R_Alt01_.V_WF_01_R_Alt01_",
+      "/Game/Audio/Dialogue/Fairy_01/V_WF_01_R_Alt02",
+      "/Game/Audio/Dialogue/Fairy_01/V_WF_01_R_Alt02.V_WF_01_R_Alt02",
+      "/Game/Audio/Dialogue/Fairy_01/V_WF_01_R_Alt03",
+      "/Game/Audio/Dialogue/Fairy_01/V_WF_01_R_Alt03.V_WF_01_R_Alt03",
+      "/Game/Audio/_Attenutations/Dialogue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Fairy_01_Line02",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Dialogue/Fairy_01/V_WF_01_C_",
+      "/Game/Audio/Dialogue/Fairy_01/V_WF_01_C_.V_WF_01_C_",
+      "/Game/Audio/_Attenutations/Dialogue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Fairy_01_Line02_Alt",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Dialogue/Fairy_01/V_WF_01_C_FALT01",
+      "/Game/Audio/Dialogue/Fairy_01/V_WF_01_C_FALT01.V_WF_01_C_FALT01",
+      "/Game/Audio/Dialogue/Fairy_01/V_WF_01_C_FALT03_",
+      "/Game/Audio/Dialogue/Fairy_01/V_WF_01_C_FALT03_.V_WF_01_C_FALT03_",
+      "/Game/Audio/_Attenutations/Dialogue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Fairy_01_Simple_Switch",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Dialogue/Fairy_01/V_WF_01_C_",
+      "/Game/Audio/Dialogue/Fairy_01/V_WF_01_C_.V_WF_01_C_",
+      "/Game/Audio/Dialogue/Fairy_01/V_WF_01_R_",
+      "/Game/Audio/Dialogue/Fairy_01/V_WF_01_R_.V_WF_01_R_",
+      "/Game/Audio/_Attenutations/Dialogue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Fairy_02_Line01",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Dialogue/Fairy_02/V_WF_02_R",
+      "/Game/Audio/Dialogue/Fairy_02/V_WF_02_R.V_WF_02_R",
+      "/Game/Audio/_Attenutations/Dialogue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Fairy_02_Line_01_Alt",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Dialogue/Fairy_02/V_WF_02_RALT01",
+      "/Game/Audio/Dialogue/Fairy_02/V_WF_02_RALT01.V_WF_02_RALT01",
+      "/Game/Audio/Dialogue/Fairy_02/V_WF_02_RALT02",
+      "/Game/Audio/Dialogue/Fairy_02/V_WF_02_RALT02.V_WF_02_RALT02",
+      "/Game/Audio/Dialogue/Fairy_02/V_WF_02_RALT03",
+      "/Game/Audio/Dialogue/Fairy_02/V_WF_02_RALT03.V_WF_02_RALT03",
+      "/Game/Audio/_Attenutations/Dialogue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Fairy_02_Line_02",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Dialogue/Fairy_02/V_WF_02_C",
+      "/Game/Audio/Dialogue/Fairy_02/V_WF_02_C.V_WF_02_C",
+      "/Game/Audio/_Attenutations/Dialogue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Fairy_02_Line_02_Alt",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Dialogue/Fairy_02/V_WF_02_C_FALT01",
+      "/Game/Audio/Dialogue/Fairy_02/V_WF_02_C_FALT01.V_WF_02_C_FALT01",
+      "/Game/Audio/Dialogue/Fairy_02/V_WF_02_C_FALT02_",
+      "/Game/Audio/Dialogue/Fairy_02/V_WF_02_C_FALT02_.V_WF_02_C_FALT02_",
+      "/Game/Audio/Dialogue/Fairy_02/V_WF_02_C_FALT03",
+      "/Game/Audio/Dialogue/Fairy_02/V_WF_02_C_FALT03.V_WF_02_C_FALT03",
+      "/Game/Audio/_Attenutations/Dialogue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "V_WF_02_H_04_Cue",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Dialogue/Fairy_02/V_WF_02_H_04",
+      "/Game/Audio/Dialogue/Fairy_02/V_WF_02_H_04.V_WF_02_H_04",
+      "/Game/Audio/_Attenutations/Dialogue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Fairy_03_First_Stone",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Dialogue/Fairy_02/V_WF_02_H_01",
+      "/Game/Audio/Dialogue/Fairy_02/V_WF_02_H_01.V_WF_02_H_01",
+      "/Game/Audio/_Attenutations/Dialogue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Fairy_03_Second_Stone",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Dialogue/Fairy_02/V_WF_02_H_02",
+      "/Game/Audio/Dialogue/Fairy_02/V_WF_02_H_02.V_WF_02_H_02",
+      "/Game/Audio/_Attenutations/Dialogue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Fairy_03_Spell",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Dialogue/Fairy_02/V_WF_02_R2",
+      "/Game/Audio/Dialogue/Fairy_02/V_WF_02_R2.V_WF_02_R2",
+      "/Game/Audio/_Attenutations/Dialogue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Fairy_03_Stone_Count",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Dialogue/Fairy_02/V_WF_02_H_01",
+      "/Game/Audio/Dialogue/Fairy_02/V_WF_02_H_01.V_WF_02_H_01",
+      "/Game/Audio/Dialogue/Fairy_02/V_WF_02_H_02",
+      "/Game/Audio/Dialogue/Fairy_02/V_WF_02_H_02.V_WF_02_H_02",
+      "/Game/Audio/Dialogue/Fairy_02/V_WF_02_H_03",
+      "/Game/Audio/Dialogue/Fairy_02/V_WF_02_H_03.V_WF_02_H_03",
+      "/Game/Audio/_Attenutations/Dialogue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Fairy_03_Third_Stone_Complete",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Dialogue/Fairy_02/V_WF_02_H_03",
+      "/Game/Audio/Dialogue/Fairy_02/V_WF_02_H_03.V_WF_02_H_03",
+      "/Game/Audio/_Attenutations/Dialogue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Lost_Fairy_Thankyou",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Dialogue/V_WF_0301_L12A",
+      "/Game/Audio/Dialogue/V_WF_0301_L12A.V_WF_0301_L12A",
+      "/Game/Audio/Dialogue/V_WF_0301_L12B",
+      "/Game/Audio/Dialogue/V_WF_0301_L12B.V_WF_0301_L12B",
+      "/Game/Audio/_Attenutations/Cave_Fairy"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "V_WF_0301_L12A",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/_Attenutations/Cave_Fairy"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "av_ps_Whistle_Entice",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Dialogue/Whistles-001",
+      "/Game/Audio/Dialogue/Whistles-001.Whistles-001",
+      "/Game/Audio/Dialogue/Whistles-002",
+      "/Game/Audio/Dialogue/Whistles-002.Whistles-002",
+      "/Game/Audio/Dialogue/Whistles-003",
+      "/Game/Audio/Dialogue/Whistles-003.Whistles-003",
+      "/Game/Audio/Dialogue/Whistles-004",
+      "/Game/Audio/Dialogue/Whistles-004.Whistles-004",
+      "/Game/Audio/Dialogue/Whistles-005",
+      "/Game/Audio/Dialogue/Whistles-005.Whistles-005",
+      "/Game/Audio/Dialogue/Whistles-006",
+      "/Game/Audio/Dialogue/Whistles-006.Whistles-006",
+      "/Game/Audio/Dialogue/Whistles-007",
+      "/Game/Audio/Dialogue/Whistles-007.Whistles-007",
+      "/Game/Audio/_Attenutations/Dialogue",
+      "/Game/Audio/_SoundClassesAndMixes/One_Shots"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Cave02_Ring_V02",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/_Attenutations/Torus",
+      "/Game/Audio/_SoundClassesAndMixes/Source_Loops"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Cave_Particle_spawn01",
+    "properties": [
+      "AttenuationShapeExtents",
+      "FalloffDistance",
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Magic/Cave_particle_Spawn_L1-001",
+      "/Game/Audio/Magic/Cave_particle_Spawn_L1-001.Cave_particle_Spawn_L1-001",
+      "/Game/Audio/Magic/Cave_particle_Spawn_L1-002",
+      "/Game/Audio/Magic/Cave_particle_Spawn_L1-002.Cave_particle_Spawn_L1-002",
+      "/Game/Audio/Magic/Cave_particle_Spawn_L1-003",
+      "/Game/Audio/Magic/Cave_particle_Spawn_L1-003.Cave_particle_Spawn_L1-003",
+      "/Game/Audio/Magic/Cave_particle_Spawn_L1-004",
+      "/Game/Audio/Magic/Cave_particle_Spawn_L1-004.Cave_particle_Spawn_L1-004",
+      "/Game/Audio/Magic/Cave_particle_Spawn_L1-005",
+      "/Game/Audio/Magic/Cave_particle_Spawn_L1-005.Cave_particle_Spawn_L1-005",
+      "/Game/Audio/Magic/Cave_particle_Spawn_L2-001",
+      "/Game/Audio/Magic/Cave_particle_Spawn_L2-001.Cave_particle_Spawn_L2-001",
+      "/Game/Audio/Magic/Cave_particle_Spawn_L2-002",
+      "/Game/Audio/Magic/Cave_particle_Spawn_L2-002.Cave_particle_Spawn_L2-002",
+      "/Game/Audio/Magic/Cave_particle_Spawn_L2-003",
+      "/Game/Audio/Magic/Cave_particle_Spawn_L2-003.Cave_particle_Spawn_L2-003",
+      "/Game/Audio/Magic/Cave_particle_Spawn_L2-004",
+      "/Game/Audio/Magic/Cave_particle_Spawn_L2-004.Cave_particle_Spawn_L2-004",
+      "/Game/Audio/Magic/Cave_particle_Spawn_L3-001",
+      "/Game/Audio/Magic/Cave_particle_Spawn_L3-001.Cave_particle_Spawn_L3-001",
+      "/Game/Audio/Magic/Cave_particle_Spawn_L3-002",
+      "/Game/Audio/Magic/Cave_particle_Spawn_L3-002.Cave_particle_Spawn_L3-002",
+      "/Game/Audio/Magic/Cave_particle_Spawn_L3-003",
+      "/Game/Audio/Magic/Cave_particle_Spawn_L3-003.Cave_particle_Spawn_L3-003",
+      "/Game/Audio/Magic/Cave_particle_Spawn_L3-004",
+      "/Game/Audio/Magic/Cave_particle_Spawn_L3-004.Cave_particle_Spawn_L3-004",
+      "/Game/Audio/Magic/Magic_Glitch_spark-001",
+      "/Game/Audio/Magic/Magic_Glitch_spark-001.Magic_Glitch_spark-001",
+      "/Game/Audio/Magic/Magic_Glitch_spark-002",
+      "/Game/Audio/Magic/Magic_Glitch_spark-002.Magic_Glitch_spark-002",
+      "/Game/Audio/Magic/Magic_Glitch_spark-003",
+      "/Game/Audio/Magic/Magic_Glitch_spark-003.Magic_Glitch_spark-003",
+      "/Game/Audio/Magic/Magic_Glitch_spark-004",
+      "/Game/Audio/Magic/Magic_Glitch_spark-004.Magic_Glitch_spark-004",
+      "/Game/Audio/_SoundClassesAndMixes/One_Shots"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Cave_particle_spawn02",
+    "properties": [
+      "AttenuationShapeExtents",
+      "FalloffDistance",
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Magic/Cave_particle_drip_pitchbent-001",
+      "/Game/Audio/Magic/Cave_particle_drip_pitchbent-001.Cave_particle_drip_pitchbent-001",
+      "/Game/Audio/Magic/Cave_particle_drip_pitchbent-002",
+      "/Game/Audio/Magic/Cave_particle_drip_pitchbent-002.Cave_particle_drip_pitchbent-002",
+      "/Game/Audio/Magic/Cave_particle_drip_pitchbent-003",
+      "/Game/Audio/Magic/Cave_particle_drip_pitchbent-003.Cave_particle_drip_pitchbent-003",
+      "/Game/Audio/Magic/Cave_particle_drip_pitchbent-004",
+      "/Game/Audio/Magic/Cave_particle_drip_pitchbent-004.Cave_particle_drip_pitchbent-004",
+      "/Game/Audio/Magic/Cave_particle_drip_pitchbent-005",
+      "/Game/Audio/Magic/Cave_particle_drip_pitchbent-005.Cave_particle_drip_pitchbent-005",
+      "/Game/Audio/Magic/Cave_particle_drip_pitched-001",
+      "/Game/Audio/Magic/Cave_particle_drip_pitched-001.Cave_particle_drip_pitched-001",
+      "/Game/Audio/Magic/Cave_particle_drip_pitched-002",
+      "/Game/Audio/Magic/Cave_particle_drip_pitched-002.Cave_particle_drip_pitched-002",
+      "/Game/Audio/Magic/Cave_particle_drip_pitched-003",
+      "/Game/Audio/Magic/Cave_particle_drip_pitched-003.Cave_particle_drip_pitched-003",
+      "/Game/Audio/Magic/Cave_particle_drip_pitched-004",
+      "/Game/Audio/Magic/Cave_particle_drip_pitched-004.Cave_particle_drip_pitched-004",
+      "/Game/Audio/Magic/Cave_particle_drips-001",
+      "/Game/Audio/Magic/Cave_particle_drips-001.Cave_particle_drips-001",
+      "/Game/Audio/Magic/Cave_particle_drips-002",
+      "/Game/Audio/Magic/Cave_particle_drips-002.Cave_particle_drips-002",
+      "/Game/Audio/Magic/Cave_particle_drips-003",
+      "/Game/Audio/Magic/Cave_particle_drips-003.Cave_particle_drips-003",
+      "/Game/Audio/Magic/Cave_particle_drips-004",
+      "/Game/Audio/Magic/Cave_particle_drips-004.Cave_particle_drips-004",
+      "/Game/Audio/Magic/Cave_particle_drips-005",
+      "/Game/Audio/Magic/Cave_particle_drips-005.Cave_particle_drips-005",
+      "/Game/Audio/_SoundClassesAndMixes/One_Shots"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Crypt_Orbs",
+    "properties": [
+      "FalloffDistance",
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/_SoundClassesAndMixes/Source_Loops"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Magic_bolt_spell_stone_active",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/_Attenutations/Magic_Stone",
+      "/Game/Audio/_SoundClassesAndMixes/Source_Loops"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Cave_Door_Close",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Props/Cave_Open_Moving",
+      "/Game/Audio/Props/Cave_Open_Moving.Cave_Open_Moving",
+      "/Game/Audio/Props/Cave_Start_Closing",
+      "/Game/Audio/Props/Cave_Start_Closing.Cave_Start_Closing",
+      "/Game/Audio/_Attenutations/Cave_Door"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Cave_Door_Closed",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Props/Cave_Close_Closed",
+      "/Game/Audio/Props/Cave_Close_Closed.Cave_Close_Closed",
+      "/Game/Audio/_Attenutations/Cave_Door"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Cave_Door_Open",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Props/Cave_Door_Start",
+      "/Game/Audio/Props/Cave_Door_Start.Cave_Door_Start",
+      "/Game/Audio/Props/Cave_Open_Moving",
+      "/Game/Audio/Props/Cave_Open_Moving.Cave_Open_Moving",
+      "/Game/Audio/_Attenutations/Cave_Door"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Cave_Door_Opened",
+    "properties": [
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Props/Cave_Finish_Open",
+      "/Game/Audio/Props/Cave_Finish_Open.Cave_Finish_Open",
+      "/Game/Audio/_Attenutations/Cave_Door"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "as_pr_Fruit_Drop_01",
+    "properties": [
+      "AttenuationShapeExtents",
+      "FalloffDistance",
+      "MaxDistance"
+    ],
+    "references": [
+      "/Game/Audio/Props/Fruit_Drop/Squish_Break-002",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Break-002.Squish_Break-002",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Break-003",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Break-003.Squish_Break-003",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Break-004",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Break-004.Squish_Break-004",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Break-005",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Break-005.Squish_Break-005",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Break-006",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Break-006.Squish_Break-006",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Mid-001",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Mid-001.Squish_Mid-001",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Mid-002",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Mid-002.Squish_Mid-002",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Mid-003",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Mid-003.Squish_Mid-003",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Mid-004",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Mid-004.Squish_Mid-004",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Mid-005",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Mid-005.Squish_Mid-005",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Mid-006",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Mid-006.Squish_Mid-006",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Mid-007",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Mid-007.Squish_Mid-007",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Mid-008",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Mid-008.Squish_Mid-008",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Mid-009",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Mid-009.Squish_Mid-009",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Mid-010",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Mid-010.Squish_Mid-010",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Tails-002",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Tails-002.Squish_Tails-002",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Tails-003",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Tails-003.Squish_Tails-003",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Tails-004",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Tails-004.Squish_Tails-004",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Tails-006",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Tails-006.Squish_Tails-006",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Tails-007",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Tails-007.Squish_Tails-007",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Tails-008",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Tails-008.Squish_Tails-008",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Tails-009",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Tails-009.Squish_Tails-009",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Tails-010",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Tails-010.Squish_Tails-010",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Thump-004",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Thump-004.Squish_Thump-004",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Thump-005",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Thump-005.Squish_Thump-005",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Thump-006",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Thump-006.Squish_Thump-006",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Thump-007",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Thump-007.Squish_Thump-007",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Thump-008",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Thump-008.Squish_Thump-008",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Thump-009",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Thump-009.Squish_Thump-009",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Thump-010",
+      "/Game/Audio/Props/Fruit_Drop/Squish_Thump-010.Squish_Thump-010"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Bees",
+    "properties": [
+      "AttenuationShapeExtents",
+      "FalloffDistance"
+    ],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Bird_FlyAway",
+    "properties": [
+      "AttenuationShapeExtents",
+      "LPFFrequencyAtMax",
+      "LPFRadiusMax",
+      "LPFRadiusMin",
+      "bAttenuateWithLPF"
+    ],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Bird_Kite",
+    "properties": [
+      "AttenuationShapeExtents",
+      "FalloffDistance"
+    ],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Cave_Door",
+    "properties": [],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Cave_Fairy",
+    "properties": [
+      "AttenuationShapeExtents",
+      "FalloffDistance"
+    ],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Creatures",
+    "properties": [
+      "AttenuationShapeExtents",
+      "FalloffDistance",
+      "LPFFrequencyAtMax",
+      "LPFRadiusMax",
+      "LPFRadiusMin",
+      "bAttenuateWithLPF",
+      "bEnableReverbSend"
+    ],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Dialogue",
+    "properties": [
+      "AttenuationShapeExtents",
+      "FalloffDistance"
+    ],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Fire_torch",
+    "properties": [
+      "AttenuationShapeExtents",
+      "FalloffDistance"
+    ],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Flies_Looping",
+    "properties": [
+      "AttenuationShapeExtents",
+      "FalloffDistance"
+    ],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "FocusOff",
+    "properties": [
+      "AttenuationShapeExtents",
+      "FalloffDistance"
+    ],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "FocusOn",
+    "properties": [
+      "bEnableFocusInterpolation",
+      "bEnableListenerFocus"
+    ],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Footsteps",
+    "properties": [
+      "AttenuationShapeExtents",
+      "FalloffDistance",
+      "OmniRadius",
+      "StereoSpread"
+    ],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Forest_Creature",
+    "properties": [
+      "AttenuationShapeExtents",
+      "FalloffDistance",
+      "LPFFrequencyAtMax",
+      "LPFRadiusMax",
+      "LPFRadiusMin",
+      "OmniRadius",
+      "bAttenuateWithLPF"
+    ],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Griffon",
+    "properties": [
+      "AttenuationShapeExtents",
+      "FalloffDistance"
+    ],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "IceSourceAttenuation",
+    "properties": [
+      "FalloffDistance"
+    ],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Magic_Stone",
+    "properties": [
+      "AttenuationShapeExtents",
+      "FalloffDistance"
+    ],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Moving_Orb",
+    "properties": [
+      "AttenuationShapeExtents",
+      "FalloffDistance",
+      "LPFFrequencyAtMax",
+      "LPFRadiusMax",
+      "LPFRadiusMin",
+      "bAttenuateWithLPF"
+    ],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Music_Box",
+    "properties": [
+      "AttenuationShape",
+      "AttenuationShapeExtents",
+      "FalloffDistance"
+    ],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "NewSoundAttenuation",
+    "properties": [],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Skylark",
+    "properties": [
+      "AttenuationShapeExtents",
+      "FalloffDistance",
+      "LPFFrequencyAtMax",
+      "LPFFrequencyAtMin",
+      "LPFRadiusMax",
+      "LPFRadiusMin",
+      "bAttenuateWithLPF"
+    ],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "SoundSourceTest01",
+    "properties": [
+      "AttenuationShapeExtents",
+      "FalloffDistance"
+    ],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "SoundSourceTest02",
+    "properties": [
+      "AttenuationShapeExtents",
+      "FalloffDistance"
+    ],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "SplineAttenuations",
+    "properties": [
+      "AttenuationShapeExtents",
+      "FalloffDistance",
+      "OmniRadius"
+    ],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Test_Attenuation",
+    "properties": [
+      "AttenuationShapeExtents",
+      "FalloffDistance"
+    ],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Torus",
+    "properties": [
+      "AttenuationShapeExtents",
+      "FalloffDistance",
+      "bEnableOcclusion"
+    ],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "attenuation_preset",
+    "name": "Wooden_Creak",
+    "properties": [
+      "AttenuationShapeExtents",
+      "FalloffDistance"
+    ],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_class",
+    "name": "Area_Loops",
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_class",
+    "name": "Barrel",
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_class",
+    "name": "Character",
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_class",
+    "name": "Collision",
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_class",
+    "name": "Foley",
+    "references": [
+      "/Game/Audio/_SoundClassesAndMixes/Audio_Demo_Master"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_class",
+    "name": "Footsteps",
+    "references": [
+      "/Game/Audio/_SoundClassesAndMixes/Audio_Demo_Master"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_class",
+    "name": "Night_Day",
+    "references": [
+      "/Game/Audio/_SoundClassesAndMixes/Audio_Demo_Master"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_class",
+    "name": "No_Bleed",
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_class",
+    "name": "One_Shots",
+    "references": [
+      "/Game/Audio/_SoundClassesAndMixes/Audio_Demo_Master"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_class",
+    "name": "Source_Loops",
+    "references": [
+      "/Game/Audio/_SoundClassesAndMixes/Audio_Demo_Master"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_class",
+    "name": "Test_Class",
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "audio_effect",
+    "name": "av_ch_cave_fairy",
+    "audio_classes": [
+      "SoundAttenuation",
+      "SoundClass",
+      "SoundCue",
+      "SoundEffectSourcePresetChain"
+    ],
+    "effect_params": [],
+    "references": [
+      "/Game/Audio/Dialogue/V_WF_0301_L009",
+      "/Game/Audio/Dialogue/V_WF_0301_L009.V_WF_0301_L009",
+      "/Game/Audio/Dialogue/V_WF_0301_L01_",
+      "/Game/Audio/Dialogue/V_WF_0301_L01_.V_WF_0301_L01_",
+      "/Game/Audio/Dialogue/V_WF_0301_L02",
+      "/Game/Audio/Dialogue/V_WF_0301_L02.V_WF_0301_L02",
+      "/Game/Audio/Dialogue/V_WF_0301_L03",
+      "/Game/Audio/Dialogue/V_WF_0301_L03.V_WF_0301_L03",
+      "/Game/Audio/Dialogue/V_WF_0301_L04",
+      "/Game/Audio/Dialogue/V_WF_0301_L04.V_WF_0301_L04",
+      "/Game/Audio/Dialogue/V_WF_0301_L05",
+      "/Game/Audio/Dialogue/V_WF_0301_L05.V_WF_0301_L05",
+      "/Game/Audio/Dialogue/V_WF_0301_L06",
+      "/Game/Audio/Dialogue/V_WF_0301_L06.V_WF_0301_L06",
+      "/Game/Audio/Dialogue/V_WF_0301_L07",
+      "/Game/Audio/Dialogue/V_WF_0301_L07.V_WF_0301_L07",
+      "/Game/Audio/Dialogue/V_WF_0301_L08",
+      "/Game/Audio/Dialogue/V_WF_0301_L08.V_WF_0301_L08",
+      "/Game/Audio/Dialogue/V_WF_0301_L09b",
+      "/Game/Audio/Dialogue/V_WF_0301_L09b.V_WF_0301_L09b",
+      "/Game/Audio/Dialogue/V_WF_0301_L10",
+      "/Game/Audio/Dialogue/V_WF_0301_L10.V_WF_0301_L10",
+      "/Game/Audio/Dialogue/V_WF_0301_L11",
+      "/Game/Audio/Dialogue/V_WF_0301_L11.V_WF_0301_L11",
+      "/Game/Audio/_Attenutations/Dialogue",
+      "/Game/Audio/_Effects/SEPC_EnvFollower",
+      "/Game/Audio/_SoundClassesAndMixes/One_Shots"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "audio_effect",
+    "name": "NewSoundEffectSourcePreset",
+    "audio_classes": [],
+    "effect_params": [],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "audio_effect",
+    "name": "NewSoundEffectSourcePresetChain",
+    "audio_classes": [
+      "SoundEffectSourcePresetChain"
+    ],
+    "effect_params": [],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "audio_effect",
+    "name": "NewSoundEffectSourcePresetChain1",
+    "audio_classes": [
+      "SoundEffectSourcePresetChain"
+    ],
+    "effect_params": [],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "audio_effect",
+    "name": "NewSoundEffectSubmixPreset",
+    "audio_classes": [],
+    "effect_params": [],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "audio_effect",
+    "name": "Reverb_SoundEffectSubmixPreset",
+    "audio_classes": [],
+    "effect_params": [
+      "WetLevel"
+    ],
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "audio_effect",
+    "name": "SEPC_EnvFollower",
+    "audio_classes": [
+      "SoundEffectSourcePresetChain",
+      "SourceEffectEnvelopeFollowerPreset"
+    ],
+    "effect_params": [],
+    "references": [
+      "/Game/Audio/_Effects/SEP_EnvFollower"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "audio_effect",
+    "name": "SourceBus_Butterflies",
+    "audio_classes": [
+      "SoundEffectSourcePresetChain",
+      "SoundSourceBus",
+      "SoundSubmix"
+    ],
+    "effect_params": [],
+    "references": [
+      "/Game/Audio/_Effects/SourceFxChain_Butterflies",
+      "/Game/Audio/_Effects/Submix_Butterflies",
+      "/Game/Audio/_Effects/Submix_MagicReverb"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "audio_effect",
+    "name": "SourceFxChain_Butterflies",
+    "audio_classes": [
+      "SoundEffectSourcePresetChain",
+      "SourceEffectChorusPreset",
+      "SourceEffectFilterPreset",
+      "SourceEffectStereoDelayPreset"
+    ],
+    "effect_params": [],
+    "references": [
+      "/Game/Audio/_Effects/SourceFx_Chorus",
+      "/Game/Audio/_Effects/SourceFx_Filter",
+      "/Game/Audio/_Effects/SourceFx_StereoDelay"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "submix",
+    "name": "as_ab_ao_Woodpecker",
+    "references": [
+      "/Game/Audio/Ambience/Birds/Woodpecker-001",
+      "/Game/Audio/Ambience/Birds/Woodpecker-001.Woodpecker-001",
+      "/Game/Audio/Ambience/Birds/Woodpecker-002",
+      "/Game/Audio/Ambience/Birds/Woodpecker-002.Woodpecker-002",
+      "/Game/Audio/Ambience/Birds/Woodpecker-003",
+      "/Game/Audio/Ambience/Birds/Woodpecker-003.Woodpecker-003",
+      "/Game/Audio/Ambience/Birds/Woodpecker-004",
+      "/Game/Audio/Ambience/Birds/Woodpecker-004.Woodpecker-004",
+      "/Game/Audio/Ambience/Birds/Woodpecker-005",
+      "/Game/Audio/Ambience/Birds/Woodpecker-005.Woodpecker-005",
+      "/Game/Audio/_Effects/Woodpecker_Submix",
+      "/Game/Audio/_SoundClassesAndMixes/One_Shots"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "submix",
+    "name": "as_pr_detector",
+    "references": [
+      "/Game/Audio/Props/Detector/Shroom_D-001",
+      "/Game/Audio/Props/Detector/Shroom_D-001.Shroom_D-001",
+      "/Game/Audio/Props/Detector/Shroom_D-002",
+      "/Game/Audio/Props/Detector/Shroom_D-002.Shroom_D-002",
+      "/Game/Audio/Props/Detector/Shroom_D-003",
+      "/Game/Audio/Props/Detector/Shroom_D-003.Shroom_D-003",
+      "/Game/Audio/Props/Detector/Shroom_D-004",
+      "/Game/Audio/Props/Detector/Shroom_D-004.Shroom_D-004",
+      "/Game/Audio/Props/Detector/Shroom_D-005",
+      "/Game/Audio/Props/Detector/Shroom_D-005.Shroom_D-005",
+      "/Game/Audio/Props/Detector/Shroom_D-006",
+      "/Game/Audio/Props/Detector/Shroom_D-006.Shroom_D-006",
+      "/Game/Audio/Props/Detector/Shroom_D-007",
+      "/Game/Audio/Props/Detector/Shroom_D-007.Shroom_D-007",
+      "/Game/Audio/Props/Detector/Shroom_D-008",
+      "/Game/Audio/Props/Detector/Shroom_D-008.Shroom_D-008",
+      "/Game/Audio/Props/Detector/Shroom_D-009",
+      "/Game/Audio/Props/Detector/Shroom_D-009.Shroom_D-009",
+      "/Game/Audio/Props/Detector/Shroom_D-010",
+      "/Game/Audio/Props/Detector/Shroom_D-010.Shroom_D-010",
+      "/Game/Audio/Props/Detector/Shroom_D-011",
+      "/Game/Audio/Props/Detector/Shroom_D-011.Shroom_D-011",
+      "/Game/Audio/Props/Detector/Shroom_D-012",
+      "/Game/Audio/Props/Detector/Shroom_D-012.Shroom_D-012",
+      "/Game/Audio/Props/Detector/Shroom_D-013",
+      "/Game/Audio/Props/Detector/Shroom_D-013.Shroom_D-013",
+      "/Game/Audio/Props/Detector/Shroom_D-014",
+      "/Game/Audio/Props/Detector/Shroom_D-014.Shroom_D-014",
+      "/Game/Audio/Props/Detector/Shroom_D-015",
+      "/Game/Audio/Props/Detector/Shroom_D-015.Shroom_D-015",
+      "/Game/Audio/Props/Detector/Shroom_D-016",
+      "/Game/Audio/Props/Detector/Shroom_D-016.Shroom_D-016",
+      "/Game/Audio/Props/Detector/Shroom_D-017",
+      "/Game/Audio/Props/Detector/Shroom_D-017.Shroom_D-017",
+      "/Game/Audio/Props/Detector/Shroom_D-018",
+      "/Game/Audio/Props/Detector/Shroom_D-018.Shroom_D-018",
+      "/Game/Audio/Props/Detector/Shroom_D-019",
+      "/Game/Audio/Props/Detector/Shroom_D-019.Shroom_D-019",
+      "/Game/Audio/Props/Detector/Shroom_D-020",
+      "/Game/Audio/Props/Detector/Shroom_D-020.Shroom_D-020",
+      "/Game/Audio/_Effects/Reverb_Submix"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "submix",
+    "name": "Reverb_Submix",
+    "references": [
+      "/Game/Audio/_Effects/Reverb_01"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "submix",
+    "name": "SourceBus_CaveFireAnalysis",
+    "references": [
+      "/Game/Audio/_Effects/Submix_CaveFire"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "submix",
+    "name": "Submix_Butterflies",
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "submix",
+    "name": "Submix_CaveFire",
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "submix",
+    "name": "Submix_MagicReverb",
+    "references": [
+      "/Game/Audio/_Effects/SubmixFx_Reverb"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "submix",
+    "name": "Woodpecker_Submix",
+    "references": [
+      "/Game/Audio/_Effects/Woodpecker_Reverb"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "source_bus",
+    "name": "NewSoundSourceBus",
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "reverb_preset",
+    "name": "Alley",
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "reverb_preset",
+    "name": "Mine",
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "reverb_preset",
+    "name": "Test_Reverb_Effect",
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "reverb_preset",
+    "name": "Tunnel_Opened",
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "reverb_preset",
+    "name": "cave02",
+    "references": [],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "AL_Meadow_With_Wind",
+    "references": [
+      "/Game/Audio/Ambience/Area_Loops/as_ab_al_meadow_01",
+      "/Game/Audio/Ambience/Area_Loops/as_ab_al_meadow_01.as_ab_al_meadow_01",
+      "/Game/Audio/Ambience/Area_Loops/as_ab_al_meadow_wind",
+      "/Game/Audio/Ambience/Area_Loops/as_ab_al_meadow_wind.as_ab_al_meadow_wind",
+      "/Game/Audio/Ambience/as_ab_al_Grasses_005",
+      "/Game/Audio/Ambience/as_ab_al_Grasses_005.as_ab_al_Grasses_005"
+    ],
+    "audio_classes": [
+      "SoundCue",
+      "SoundWave"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "as_ab_so_meadow_bees_01",
+    "references": [
+      "/Game/Audio/Ambience/Bees/Bee-001",
+      "/Game/Audio/Ambience/Bees/Bee-001.Bee-001",
+      "/Game/Audio/Ambience/Bees/Bee-003",
+      "/Game/Audio/Ambience/Bees/Bee-003.Bee-003",
+      "/Game/Audio/Ambience/Bees/Bee-004",
+      "/Game/Audio/Ambience/Bees/Bee-004.Bee-004",
+      "/Game/Audio/Ambience/Bees/Bee-005",
+      "/Game/Audio/Ambience/Bees/Bee-005.Bee-005",
+      "/Game/Audio/Ambience/Bees/Bee-006",
+      "/Game/Audio/Ambience/Bees/Bee-006.Bee-006",
+      "/Game/Audio/_SoundClassesAndMixes/One_Shots"
+    ],
+    "audio_classes": [
+      "SoundClass",
+      "SoundCue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "Bird_Fly_Away",
+    "references": [
+      "/Game/Audio/Ambience/Birds/Bird_Flap/ANIMAL_bird_flap",
+      "/Game/Audio/Ambience/Birds/Bird_Flap/ANIMAL_bird_flap_01",
+      "/Game/Audio/Ambience/Birds/Bird_Flap/ANIMAL_bird_flap_01.ANIMAL_bird_flap_01",
+      "/Game/Audio/Ambience/Birds/Bird_Flap/ANIMAL_bird_flap_02",
+      "/Game/Audio/Ambience/Birds/Bird_Flap/ANIMAL_bird_flap_02.ANIMAL_bird_flap_02",
+      "/Game/Audio/Ambience/Birds/Bird_Flap/ANIMAL_bird_flap_03",
+      "/Game/Audio/Ambience/Birds/Bird_Flap/ANIMAL_bird_flap_03.ANIMAL_bird_flap_03",
+      "/Game/Audio/Ambience/Birds/Bird_Flap/ANIMAL_bird_flap_04",
+      "/Game/Audio/Ambience/Birds/Bird_Flap/ANIMAL_bird_flap_04.ANIMAL_bird_flap_04",
+      "/Game/Audio/Ambience/Birds/Bird_Flap/ANIMAL_bird_flap_10.ANIMAL_bird_flap",
+      "/Game/Audio/_SoundClassesAndMixes/Source_Loops"
+    ],
+    "audio_classes": [
+      "SoundClass",
+      "SoundCue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "as_ab_ao_U_bird_flap_01",
+    "references": [
+      "/Game/Audio/Ambience/Birds/Bird_Flap/ANIMAL_bird_flap",
+      "/Game/Audio/Ambience/Birds/Bird_Flap/ANIMAL_bird_flap_01",
+      "/Game/Audio/Ambience/Birds/Bird_Flap/ANIMAL_bird_flap_01.ANIMAL_bird_flap_01",
+      "/Game/Audio/Ambience/Birds/Bird_Flap/ANIMAL_bird_flap_02",
+      "/Game/Audio/Ambience/Birds/Bird_Flap/ANIMAL_bird_flap_02.ANIMAL_bird_flap_02",
+      "/Game/Audio/Ambience/Birds/Bird_Flap/ANIMAL_bird_flap_03",
+      "/Game/Audio/Ambience/Birds/Bird_Flap/ANIMAL_bird_flap_03.ANIMAL_bird_flap_03",
+      "/Game/Audio/Ambience/Birds/Bird_Flap/ANIMAL_bird_flap_04",
+      "/Game/Audio/Ambience/Birds/Bird_Flap/ANIMAL_bird_flap_04.ANIMAL_bird_flap_04",
+      "/Game/Audio/Ambience/Birds/Bird_Flap/ANIMAL_bird_flap_10.ANIMAL_bird_flap",
+      "/Game/Audio/_SoundClassesAndMixes/Source_Loops"
+    ],
+    "audio_classes": [
+      "SoundClass",
+      "SoundCue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "as_ab_ao_village_Blue_Tit",
+    "references": [
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T01-001",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T01-001.Bluetit_T01-001",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T01-002",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T01-002.Bluetit_T01-002",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T01-003",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T01-003.Bluetit_T01-003",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T01-004",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T01-004.Bluetit_T01-004",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T01-005",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T01-005.Bluetit_T01-005",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T02-001",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T02-001.Bluetit_T02-001",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T02-002",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T02-002.Bluetit_T02-002",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T02-003",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T02-003.Bluetit_T02-003",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T02-004",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T02-004.Bluetit_T02-004",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-001",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-001.Bluetit_T03-001",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-002",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-002.Bluetit_T03-002",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-003",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-003.Bluetit_T03-003",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-004",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-004.Bluetit_T03-004",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-005",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-005.Bluetit_T03-005",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-006",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-006.Bluetit_T03-006",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-007",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-007.Bluetit_T03-007",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-008",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-008.Bluetit_T03-008",
+      "/Game/Audio/_SoundClassesAndMixes/One_Shots"
+    ],
+    "audio_classes": [
+      "SoundClass",
+      "SoundCue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "_Day_Test",
+    "references": [
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-001",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-001.BlackBird-001",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-002",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-002.BlackBird-002",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-003",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-003.BlackBird-003",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-004",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-004.BlackBird-004",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-005",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-005.BlackBird-005",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-006",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-006.BlackBird-006",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-007",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-007.BlackBird-007",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-008",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-008.BlackBird-008",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-009",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-009.BlackBird-009",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-010",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-010.BlackBird-010",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-011",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-011.BlackBird-011",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-012",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-012.BlackBird-012",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-013",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-013.BlackBird-013",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-014",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-014.BlackBird-014",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-015",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-015.BlackBird-015",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-016",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-016.BlackBird-016",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-017",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-017.BlackBird-017",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-018",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-018.BlackBird-018",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-019",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-019.BlackBird-019",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-020",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-020.BlackBird-020",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-021",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-021.BlackBird-021",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-022",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-022.BlackBird-022",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-023",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-023.BlackBird-023",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-024",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-024.BlackBird-024",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-025",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-025.BlackBird-025",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-026",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-026.BlackBird-026",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-027",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-027.BlackBird-027",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-028",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-028.BlackBird-028",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-029",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-029.BlackBird-029",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-030",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-030.BlackBird-030",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T01-001",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T01-001.Bluetit_T01-001",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T01-002",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T01-002.Bluetit_T01-002",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T01-003",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T01-003.Bluetit_T01-003",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T01-004",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T01-004.Bluetit_T01-004",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T01-005",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T01-005.Bluetit_T01-005",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T02-001",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T02-001.Bluetit_T02-001",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T02-002",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T02-002.Bluetit_T02-002",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T02-003",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T02-003.Bluetit_T02-003",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T02-004",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T02-004.Bluetit_T02-004",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-001",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-001.Bluetit_T03-001",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-002",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-002.Bluetit_T03-002",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-003",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-003.Bluetit_T03-003",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-004",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-004.Bluetit_T03-004",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-005",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-005.Bluetit_T03-005",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-006",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-006.Bluetit_T03-006",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-007",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-007.Bluetit_T03-007",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-008",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-008.Bluetit_T03-008",
+      "/Game/Audio/_SoundClassesAndMixes/Night_Day"
+    ],
+    "audio_classes": [
+      "SoundClass",
+      "SoundCue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "as_ab_ao_Pigeon",
+    "references": [
+      "/Game/Audio/Ambience/Birds/Pigeon-001",
+      "/Game/Audio/Ambience/Birds/Pigeon-001.Pigeon-001",
+      "/Game/Audio/Ambience/Birds/Pigeon-002",
+      "/Game/Audio/Ambience/Birds/Pigeon-002.Pigeon-002",
+      "/Game/Audio/Ambience/Birds/Pigeon-003",
+      "/Game/Audio/Ambience/Birds/Pigeon-003.Pigeon-003",
+      "/Game/Audio/Ambience/Birds/Pigeon-004",
+      "/Game/Audio/Ambience/Birds/Pigeon-004.Pigeon-004",
+      "/Game/Audio/Ambience/Birds/Pigeon-005",
+      "/Game/Audio/Ambience/Birds/Pigeon-005.Pigeon-005",
+      "/Game/Audio/Ambience/Birds/Pigeon-006",
+      "/Game/Audio/Ambience/Birds/Pigeon-006.Pigeon-006",
+      "/Game/Audio/_SoundClassesAndMixes/One_Shots"
+    ],
+    "audio_classes": [
+      "SoundClass",
+      "SoundCue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "as_ab_ao_Sedge_Warbler",
+    "references": [
+      "/Game/Audio/Ambience/Birds/Sedge_Warbler_Pt01-001",
+      "/Game/Audio/Ambience/Birds/Sedge_Warbler_Pt01-001.Sedge_Warbler_Pt01-001",
+      "/Game/Audio/Ambience/Birds/Sedge_Warbler_Pt01-002",
+      "/Game/Audio/Ambience/Birds/Sedge_Warbler_Pt01-002.Sedge_Warbler_Pt01-002",
+      "/Game/Audio/Ambience/Birds/Sedge_Warbler_Pt01-003",
+      "/Game/Audio/Ambience/Birds/Sedge_Warbler_Pt01-003.Sedge_Warbler_Pt01-003",
+      "/Game/Audio/Ambience/Birds/Sedge_Warbler_Pt01-004",
+      "/Game/Audio/Ambience/Birds/Sedge_Warbler_Pt01-004.Sedge_Warbler_Pt01-004",
+      "/Game/Audio/Ambience/Birds/Sedge_Warbler_Pt01-005",
+      "/Game/Audio/Ambience/Birds/Sedge_Warbler_Pt01-005.Sedge_Warbler_Pt01-005",
+      "/Game/Audio/Ambience/Birds/Sedge_Warbler_Pt01-006",
+      "/Game/Audio/Ambience/Birds/Sedge_Warbler_Pt01-006.Sedge_Warbler_Pt01-006",
+      "/Game/Audio/Ambience/Birds/Sedge_Warbler_Pt01-007",
+      "/Game/Audio/Ambience/Birds/Sedge_Warbler_Pt01-007.Sedge_Warbler_Pt01-007",
+      "/Game/Audio/Ambience/Birds/Sedge_Warbler_Pt01-008",
+      "/Game/Audio/Ambience/Birds/Sedge_Warbler_Pt01-008.Sedge_Warbler_Pt01-008",
+      "/Game/Audio/Ambience/Birds/Sedge_Warbler_Pt01-009",
+      "/Game/Audio/Ambience/Birds/Sedge_Warbler_Pt01-009.Sedge_Warbler_Pt01-009",
+      "/Game/Audio/Ambience/Birds/Sedge_Warbler_Pt02-001",
+      "/Game/Audio/Ambience/Birds/Sedge_Warbler_Pt02-001.Sedge_Warbler_Pt02-001",
+      "/Game/Audio/Ambience/Birds/Sedge_Warbler_Pt02-002",
+      "/Game/Audio/Ambience/Birds/Sedge_Warbler_Pt02-002.Sedge_Warbler_Pt02-002",
+      "/Game/Audio/Ambience/Birds/Sedge_Warbler_Pt02-003",
+      "/Game/Audio/Ambience/Birds/Sedge_Warbler_Pt02-003.Sedge_Warbler_Pt02-003",
+      "/Game/Audio/Ambience/Birds/Sedge_Warbler_Pt02-004",
+      "/Game/Audio/Ambience/Birds/Sedge_Warbler_Pt02-004.Sedge_Warbler_Pt02-004",
+      "/Game/Audio/Ambience/Birds/Sedge_Warbler_Pt02-005",
+      "/Game/Audio/Ambience/Birds/Sedge_Warbler_Pt02-005.Sedge_Warbler_Pt02-005",
+      "/Game/Audio/Ambience/Birds/Sedge_Warbler_Pt02-006",
+      "/Game/Audio/Ambience/Birds/Sedge_Warbler_Pt02-006.Sedge_Warbler_Pt02-006",
+      "/Game/Audio/Ambience/Birds/Sedge_Warbler_Pt02-007",
+      "/Game/Audio/Ambience/Birds/Sedge_Warbler_Pt02-007.Sedge_Warbler_Pt02-007",
+      "/Game/Audio/_SoundClassesAndMixes/One_Shots"
+    ],
+    "audio_classes": [
+      "SoundClass",
+      "SoundCue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "as_ab_ao_birds_combined",
+    "references": [
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-001",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-001.BlackBird-001",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-002",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-002.BlackBird-002",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-003",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-003.BlackBird-003",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-004",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-004.BlackBird-004",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-005",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-005.BlackBird-005",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-006",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-006.BlackBird-006",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-007",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-007.BlackBird-007",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-008",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-008.BlackBird-008",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-009",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-009.BlackBird-009",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-010",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-010.BlackBird-010",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-011",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-011.BlackBird-011",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-012",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-012.BlackBird-012",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-013",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-013.BlackBird-013",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-014",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-014.BlackBird-014",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-015",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-015.BlackBird-015",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-016",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-016.BlackBird-016",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-017",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-017.BlackBird-017",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-018",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-018.BlackBird-018",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-019",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-019.BlackBird-019",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-020",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-020.BlackBird-020",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-021",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-021.BlackBird-021",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-022",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-022.BlackBird-022",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-023",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-023.BlackBird-023",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-024",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-024.BlackBird-024",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-025",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-025.BlackBird-025",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-026",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-026.BlackBird-026",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-027",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-027.BlackBird-027",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-028",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-028.BlackBird-028",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-029",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-029.BlackBird-029",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-030",
+      "/Game/Audio/Ambience/Birds/BlackBird/Blackbird_02/BlackBird-030.BlackBird-030",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T01-001",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T01-001.Bluetit_T01-001",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T01-002",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T01-002.Bluetit_T01-002",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T01-003",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T01-003.Bluetit_T01-003",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T01-004",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T01-004.Bluetit_T01-004",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T01-005",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T01-005.Bluetit_T01-005",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T02-001",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T02-001.Bluetit_T02-001",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T02-002",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T02-002.Bluetit_T02-002",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T02-003",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T02-003.Bluetit_T02-003",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T02-004",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T02-004.Bluetit_T02-004",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-001",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-001.Bluetit_T03-001",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-002",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-002.Bluetit_T03-002",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-003",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-003.Bluetit_T03-003",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-004",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-004.Bluetit_T03-004",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-005",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-005.Bluetit_T03-005",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-006",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-006.Bluetit_T03-006",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-007",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-007.Bluetit_T03-007",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-008",
+      "/Game/Audio/Ambience/Birds/BlueTit/Bluetit_T03-008.Bluetit_T03-008",
+      "/Game/Audio/_SoundClassesAndMixes/One_Shots"
+    ],
+    "audio_classes": [
+      "SoundClass",
+      "SoundCue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "as_ab_so_village_blackSmith",
+    "references": [
+      "/Game/Audio/Ambience/BlackSmith/Blacksmith_Drop-001",
+      "/Game/Audio/Ambience/BlackSmith/Blacksmith_Drop-001.Blacksmith_Drop-001",
+      "/Game/Audio/Ambience/BlackSmith/Blacksmith_Drop-002",
+      "/Game/Audio/Ambience/BlackSmith/Blacksmith_Drop-002.Blacksmith_Drop-002",
+      "/Game/Audio/Ambience/BlackSmith/Blacksmith_Drop-003",
+      "/Game/Audio/Ambience/BlackSmith/Blacksmith_Drop-003.Blacksmith_Drop-003",
+      "/Game/Audio/Ambience/BlackSmith/Blacksmith_Drop-004",
+      "/Game/Audio/Ambience/BlackSmith/Blacksmith_Drop-004.Blacksmith_Drop-004",
+      "/Game/Audio/Ambience/BlackSmith/Blacksmith_Drop-005",
+      "/Game/Audio/Ambience/BlackSmith/Blacksmith_Drop-005.Blacksmith_Drop-005",
+      "/Game/Audio/Ambience/BlackSmith/Blacksmith_Drop-006",
+      "/Game/Audio/Ambience/BlackSmith/Blacksmith_Drop-006.Blacksmith_Drop-006",
+      "/Game/Audio/Ambience/BlackSmith/Blacksmith_Hit-001",
+      "/Game/Audio/Ambience/BlackSmith/Blacksmith_Hit-001.Blacksmith_Hit-001",
+      "/Game/Audio/Ambience/BlackSmith/Blacksmith_Hit-002",
+      "/Game/Audio/Ambience/BlackSmith/Blacksmith_Hit-002.Blacksmith_Hit-002",
+      "/Game/Audio/Ambience/BlackSmith/Blacksmith_Hit-003",
+      "/Game/Audio/Ambience/BlackSmith/Blacksmith_Hit-003.Blacksmith_Hit-003",
+      "/Game/Audio/Ambience/BlackSmith/Blacksmith_Hit-004",
+      "/Game/Audio/Ambience/BlackSmith/Blacksmith_Hit-004.Blacksmith_Hit-004",
+      "/Game/Audio/Ambience/BlackSmith/Blacksmith_Hit-005",
+      "/Game/Audio/Ambience/BlackSmith/Blacksmith_Hit-005.Blacksmith_Hit-005",
+      "/Game/Audio/Ambience/BlackSmith/Blacksmith_Hit-006",
+      "/Game/Audio/Ambience/BlackSmith/Blacksmith_Hit-006.Blacksmith_Hit-006",
+      "/Game/Audio/_SoundClassesAndMixes/Area_Loops"
+    ],
+    "audio_classes": [
+      "SoundClass",
+      "SoundCue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "as_ab_so_village_chickens",
+    "references": [
+      "/Game/Audio/Ambience/Chickens/Chickens_Calm-010",
+      "/Game/Audio/Ambience/Chickens/Chickens_Calm-010.Chickens_Calm-010",
+      "/Game/Audio/Ambience/Chickens/Chickens_Calm-011",
+      "/Game/Audio/Ambience/Chickens/Chickens_Calm-011.Chickens_Calm-011",
+      "/Game/Audio/Ambience/Chickens/Chickens_Calm-012",
+      "/Game/Audio/Ambience/Chickens/Chickens_Calm-012.Chickens_Calm-012",
+      "/Game/Audio/Ambience/Chickens/Chickens_Calm-013",
+      "/Game/Audio/Ambience/Chickens/Chickens_Calm-013.Chickens_Calm-013",
+      "/Game/Audio/Ambience/Chickens/Chickens_Calm-014",
+      "/Game/Audio/Ambience/Chickens/Chickens_Calm-014.Chickens_Calm-014",
+      "/Game/Audio/Ambience/Chickens/Chickens_Calm-015",
+      "/Game/Audio/Ambience/Chickens/Chickens_Calm-015.Chickens_Calm-015",
+      "/Game/Audio/Ambience/Chickens/Chickens_Calm-016",
+      "/Game/Audio/Ambience/Chickens/Chickens_Calm-016.Chickens_Calm-016",
+      "/Game/Audio/Ambience/Chickens/Chickens_Calm-017",
+      "/Game/Audio/Ambience/Chickens/Chickens_Calm-017.Chickens_Calm-017",
+      "/Game/Audio/Ambience/Chickens/Chickens_Calm-018",
+      "/Game/Audio/Ambience/Chickens/Chickens_Calm-018.Chickens_Calm-018",
+      "/Game/Audio/Ambience/Chickens/Chickens_Calm-019",
+      "/Game/Audio/Ambience/Chickens/Chickens_Calm-019.Chickens_Calm-019",
+      "/Game/Audio/Ambience/Chickens/Chickens_Excited-007",
+      "/Game/Audio/Ambience/Chickens/Chickens_Excited-007.Chickens_Excited-007",
+      "/Game/Audio/Ambience/Chickens/Chickens_Excited-008",
+      "/Game/Audio/Ambience/Chickens/Chickens_Excited-008.Chickens_Excited-008",
+      "/Game/Audio/Ambience/Chickens/Chickens_Excited-009",
+      "/Game/Audio/Ambience/Chickens/Chickens_Excited-009.Chickens_Excited-009",
+      "/Game/Audio/Ambience/Chickens/Chickens_Excited-010",
+      "/Game/Audio/Ambience/Chickens/Chickens_Excited-010.Chickens_Excited-010",
+      "/Game/Audio/Ambience/Chickens/Chickens_Excited-011",
+      "/Game/Audio/Ambience/Chickens/Chickens_Excited-011.Chickens_Excited-011",
+      "/Game/Audio/Ambience/Chickens/Chickens_Excited-012",
+      "/Game/Audio/Ambience/Chickens/Chickens_Excited-012.Chickens_Excited-012",
+      "/Game/Audio/_SoundClassesAndMixes/One_Shots"
+    ],
+    "audio_classes": [
+      "SoundClass",
+      "SoundCue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "as_ab_so_fire_fish",
+    "references": [
+      "/Game/Audio/Ambience/Fire/Fire_Loop",
+      "/Game/Audio/Ambience/Fire/Fire_Loop.Fire_Loop",
+      "/Game/Audio/Ambience/Fire/Fish_Sizzle-001",
+      "/Game/Audio/Ambience/Fire/Fish_Sizzle-001.Fish_Sizzle-001",
+      "/Game/Audio/Ambience/Fire/Fish_Sizzle-002",
+      "/Game/Audio/Ambience/Fire/Fish_Sizzle-002.Fish_Sizzle-002",
+      "/Game/Audio/Ambience/Fire/Fish_Sizzle-003",
+      "/Game/Audio/Ambience/Fire/Fish_Sizzle-003.Fish_Sizzle-003",
+      "/Game/Audio/Ambience/Fire/Fish_Sizzle-004",
+      "/Game/Audio/Ambience/Fire/Fish_Sizzle-004.Fish_Sizzle-004",
+      "/Game/Audio/Ambience/Fire/Fish_Sizzle-005",
+      "/Game/Audio/Ambience/Fire/Fish_Sizzle-005.Fish_Sizzle-005",
+      "/Game/Audio/Ambience/Fire/Fish_Sizzle-006",
+      "/Game/Audio/Ambience/Fire/Fish_Sizzle-006.Fish_Sizzle-006",
+      "/Game/Audio/Ambience/Fire/Fish_Sizzle-007",
+      "/Game/Audio/Ambience/Fire/Fish_Sizzle-007.Fish_Sizzle-007",
+      "/Game/Audio/Ambience/Fire/Fish_Sizzle-008",
+      "/Game/Audio/Ambience/Fire/Fish_Sizzle-008.Fish_Sizzle-008",
+      "/Game/Audio/_SoundClassesAndMixes/One_Shots"
+    ],
+    "audio_classes": [
+      "SoundClass",
+      "SoundCue",
+      "SoundWave"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "Fish_Splash_DEMO",
+    "references": [
+      "/Game/Audio/Ambience/Lake/Water_Splash-001",
+      "/Game/Audio/Ambience/Lake/Water_Splash-001.Water_Splash-001",
+      "/Game/Audio/Ambience/Lake/Water_Splash-002",
+      "/Game/Audio/Ambience/Lake/Water_Splash-002.Water_Splash-002",
+      "/Game/Audio/Ambience/Lake/Water_Splash-003",
+      "/Game/Audio/Ambience/Lake/Water_Splash-003.Water_Splash-003",
+      "/Game/Audio/Ambience/Lake/Water_Splash-004",
+      "/Game/Audio/Ambience/Lake/Water_Splash-004.Water_Splash-004",
+      "/Game/Audio/Ambience/Lake/Water_Splash-005",
+      "/Game/Audio/Ambience/Lake/Water_Splash-005.Water_Splash-005",
+      "/Game/Audio/Ambience/Lake/Water_Splash-006",
+      "/Game/Audio/Ambience/Lake/Water_Splash-006.Water_Splash-006",
+      "/Game/Audio/Ambience/Lake/Water_Splash-007",
+      "/Game/Audio/Ambience/Lake/Water_Splash-007.Water_Splash-007",
+      "/Game/Audio/Ambience/Lake/Water_Splash-008",
+      "/Game/Audio/Ambience/Lake/Water_Splash-008.Water_Splash-008",
+      "/Game/Audio/Ambience/Lake/Water_Splash-009",
+      "/Game/Audio/Ambience/Lake/Water_Splash-009.Water_Splash-009",
+      "/Game/Audio/Ambience/Lake/Water_Splash-010",
+      "/Game/Audio/Ambience/Lake/Water_Splash-010.Water_Splash-010",
+      "/Game/Audio/Ambience/Lake_Test/Water_Splash/Splash_Type_01/Water_Splash-006",
+      "/Game/Audio/Ambience/Lake_Test/Water_Splash/Splash_Type_01/Water_Splash-006.Water_Splash-006",
+      "/Game/Audio/Ambience/Lake_Test/Water_Splash/Splash_Type_01/Water_Splash-007",
+      "/Game/Audio/Ambience/Lake_Test/Water_Splash/Splash_Type_01/Water_Splash-007.Water_Splash-007",
+      "/Game/Audio/Ambience/Lake_Test/Water_Splash/Splash_Type_01/Water_Splash-008",
+      "/Game/Audio/Ambience/Lake_Test/Water_Splash/Splash_Type_01/Water_Splash-008.Water_Splash-008",
+      "/Game/Audio/Ambience/Lake_Test/Water_Splash/Splash_Type_01/Water_Splash-009",
+      "/Game/Audio/Ambience/Lake_Test/Water_Splash/Splash_Type_01/Water_Splash-009.Water_Splash-009",
+      "/Game/Audio/Ambience/Lake_Test/Water_Splash/Splash_Type_01/Water_Splash-010",
+      "/Game/Audio/Ambience/Lake_Test/Water_Splash/Splash_Type_01/Water_Splash-010.Water_Splash-010",
+      "/Game/Audio/Ambience/Lake_Test/Water_Splash/Splash_Type_02/Water_Splash-001",
+      "/Game/Audio/Ambience/Lake_Test/Water_Splash/Splash_Type_02/Water_Splash-001.Water_Splash-001",
+      "/Game/Audio/Ambience/Lake_Test/Water_Splash/Splash_Type_02/Water_Splash-002",
+      "/Game/Audio/Ambience/Lake_Test/Water_Splash/Splash_Type_02/Water_Splash-002.Water_Splash-002",
+      "/Game/Audio/Ambience/Lake_Test/Water_Splash/Splash_Type_02/Water_Splash-003",
+      "/Game/Audio/Ambience/Lake_Test/Water_Splash/Splash_Type_02/Water_Splash-003.Water_Splash-003",
+      "/Game/Audio/Ambience/Lake_Test/Water_Splash/Splash_Type_02/Water_Splash-004",
+      "/Game/Audio/Ambience/Lake_Test/Water_Splash/Splash_Type_02/Water_Splash-004.Water_Splash-004",
+      "/Game/Audio/Ambience/Lake_Test/Water_Splash/Splash_Type_02/Water_Splash-005",
+      "/Game/Audio/Ambience/Lake_Test/Water_Splash/Splash_Type_02/Water_Splash-005.Water_Splash-005"
+    ],
+    "audio_classes": [
+      "SoundCue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "as_ab_sl_flies_looping",
+    "references": [
+      "/Game/Audio/Ambience/Flies/Flies_-001",
+      "/Game/Audio/Ambience/Flies/Flies_-001.Flies_-001",
+      "/Game/Audio/Ambience/Flies/Flies_-002",
+      "/Game/Audio/Ambience/Flies/Flies_-002.Flies_-002",
+      "/Game/Audio/Ambience/Flies/Flies_-003",
+      "/Game/Audio/Ambience/Flies/Flies_-003.Flies_-003",
+      "/Game/Audio/Ambience/Flies/Flies_-004",
+      "/Game/Audio/Ambience/Flies/Flies_-004.Flies_-004",
+      "/Game/Audio/Ambience/Flies/Flies_-005",
+      "/Game/Audio/Ambience/Flies/Flies_-005.Flies_-005"
+    ],
+    "audio_classes": [
+      "SoundCue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "as_ab_ao_Frog_01_Cue",
+    "references": [
+      "/Game/Audio/Ambience/Frog/Frog_01-001",
+      "/Game/Audio/Ambience/Frog/Frog_01-001.Frog_01-001",
+      "/Game/Audio/Ambience/Frog/Frog_01-002",
+      "/Game/Audio/Ambience/Frog/Frog_01-002.Frog_01-002",
+      "/Game/Audio/Ambience/Frog/Frog_01-003",
+      "/Game/Audio/Ambience/Frog/Frog_01-003.Frog_01-003",
+      "/Game/Audio/Ambience/Frog/Frog_01-004",
+      "/Game/Audio/Ambience/Frog/Frog_01-004.Frog_01-004",
+      "/Game/Audio/Ambience/Frog/Frog_01-005",
+      "/Game/Audio/Ambience/Frog/Frog_01-005.Frog_01-005",
+      "/Game/Audio/Ambience/Frog/Frog_01-006",
+      "/Game/Audio/Ambience/Frog/Frog_01-006.Frog_01-006",
+      "/Game/Audio/Ambience/Frog/Frog_01-007",
+      "/Game/Audio/Ambience/Frog/Frog_01-007.Frog_01-007",
+      "/Game/Audio/Ambience/Frog/Frog_01-008",
+      "/Game/Audio/Ambience/Frog/Frog_01-008.Frog_01-008",
+      "/Game/Audio/Ambience/Frog/Frog_01-009",
+      "/Game/Audio/Ambience/Frog/Frog_01-009.Frog_01-009",
+      "/Game/Audio/Ambience/Frog/Frog_01-010",
+      "/Game/Audio/Ambience/Frog/Frog_01-010.Frog_01-010",
+      "/Game/Audio/Ambience/Frog/Frog_01-011",
+      "/Game/Audio/Ambience/Frog/Frog_01-011.Frog_01-011",
+      "/Game/Audio/Ambience/Frog/Frog_01-012",
+      "/Game/Audio/Ambience/Frog/Frog_01-012.Frog_01-012",
+      "/Game/Audio/_SoundClassesAndMixes/One_Shots"
+    ],
+    "audio_classes": [
+      "SoundClass",
+      "SoundCue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "as_ab_ao_Frog_02_Cue",
+    "references": [
+      "/Game/Audio/Ambience/Frog/Frog_02",
+      "/Game/Audio/Ambience/Frog/Frog_02.Frog_02",
+      "/Game/Audio/_SoundClassesAndMixes/One_Shots"
+    ],
+    "audio_classes": [
+      "SoundClass",
+      "SoundCue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "as_ab_ao_Frog_02_forBP",
+    "references": [
+      "/Game/Audio/Ambience/Frog/Frog_02",
+      "/Game/Audio/Ambience/Frog/Frog_02.Frog_02"
+    ],
+    "audio_classes": [
+      "SoundCue",
+      "SoundWave"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "Frog_01_DEMO",
+    "references": [
+      "/Game/Audio/Ambience/Frog/Frog_01-001",
+      "/Game/Audio/Ambience/Frog/Frog_01-001.Frog_01-001",
+      "/Game/Audio/Ambience/Frog/Frog_01-002",
+      "/Game/Audio/Ambience/Frog/Frog_01-002.Frog_01-002",
+      "/Game/Audio/Ambience/Frog/Frog_01-003",
+      "/Game/Audio/Ambience/Frog/Frog_01-003.Frog_01-003",
+      "/Game/Audio/Ambience/Frog/Frog_01-004",
+      "/Game/Audio/Ambience/Frog/Frog_01-004.Frog_01-004",
+      "/Game/Audio/Ambience/Frog/Frog_01-005",
+      "/Game/Audio/Ambience/Frog/Frog_01-005.Frog_01-005",
+      "/Game/Audio/Ambience/Frog/Frog_01-006",
+      "/Game/Audio/Ambience/Frog/Frog_01-006.Frog_01-006",
+      "/Game/Audio/Ambience/Frog/Frog_01-007",
+      "/Game/Audio/Ambience/Frog/Frog_01-007.Frog_01-007",
+      "/Game/Audio/Ambience/Frog/Frog_01-008",
+      "/Game/Audio/Ambience/Frog/Frog_01-008.Frog_01-008",
+      "/Game/Audio/Ambience/Frog/Frog_01-009",
+      "/Game/Audio/Ambience/Frog/Frog_01-009.Frog_01-009",
+      "/Game/Audio/Ambience/Frog/Frog_01-010",
+      "/Game/Audio/Ambience/Frog/Frog_01-010.Frog_01-010",
+      "/Game/Audio/Ambience/Frog/Frog_01-011",
+      "/Game/Audio/Ambience/Frog/Frog_01-011.Frog_01-011",
+      "/Game/Audio/Ambience/Frog/Frog_01-012",
+      "/Game/Audio/Ambience/Frog/Frog_01-012.Frog_01-012"
+    ],
+    "audio_classes": [
+      "SoundCue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "as_ab_ao_Water_Splash",
+    "references": [
+      "/Game/Audio/Ambience/Lake/Water_Splash-001",
+      "/Game/Audio/Ambience/Lake/Water_Splash-001.Water_Splash-001",
+      "/Game/Audio/Ambience/Lake/Water_Splash-002",
+      "/Game/Audio/Ambience/Lake/Water_Splash-002.Water_Splash-002",
+      "/Game/Audio/Ambience/Lake/Water_Splash-003",
+      "/Game/Audio/Ambience/Lake/Water_Splash-003.Water_Splash-003",
+      "/Game/Audio/Ambience/Lake/Water_Splash-004",
+      "/Game/Audio/Ambience/Lake/Water_Splash-004.Water_Splash-004",
+      "/Game/Audio/Ambience/Lake/Water_Splash-005",
+      "/Game/Audio/Ambience/Lake/Water_Splash-005.Water_Splash-005",
+      "/Game/Audio/Ambience/Lake/Water_Splash-006",
+      "/Game/Audio/Ambience/Lake/Water_Splash-006.Water_Splash-006",
+      "/Game/Audio/Ambience/Lake/Water_Splash-007",
+      "/Game/Audio/Ambience/Lake/Water_Splash-007.Water_Splash-007",
+      "/Game/Audio/Ambience/Lake/Water_Splash-008",
+      "/Game/Audio/Ambience/Lake/Water_Splash-008.Water_Splash-008",
+      "/Game/Audio/Ambience/Lake/Water_Splash-009",
+      "/Game/Audio/Ambience/Lake/Water_Splash-009.Water_Splash-009",
+      "/Game/Audio/Ambience/Lake/Water_Splash-010",
+      "/Game/Audio/Ambience/Lake/Water_Splash-010.Water_Splash-010",
+      "/Game/Audio/_SoundClassesAndMixes/One_Shots"
+    ],
+    "audio_classes": [
+      "SoundClass",
+      "SoundCue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "as_ab_so_Lap_Boat_Knock",
+    "references": [
+      "/Game/Audio/Ambience/Boat/Boat_Knock-001",
+      "/Game/Audio/Ambience/Boat/Boat_Knock-001.Boat_Knock-001",
+      "/Game/Audio/Ambience/Boat/Boat_Knock-002",
+      "/Game/Audio/Ambience/Boat/Boat_Knock-002.Boat_Knock-002",
+      "/Game/Audio/Ambience/Boat/Boat_Knock-003",
+      "/Game/Audio/Ambience/Boat/Boat_Knock-003.Boat_Knock-003",
+      "/Game/Audio/Ambience/Boat/Boat_Knock-004",
+      "/Game/Audio/Ambience/Boat/Boat_Knock-004.Boat_Knock-004",
+      "/Game/Audio/Ambience/Boat/Boat_Knock-005",
+      "/Game/Audio/Ambience/Boat/Boat_Knock-005.Boat_Knock-005",
+      "/Game/Audio/Ambience/Boat/Boat_Knock-006",
+      "/Game/Audio/Ambience/Boat/Boat_Knock-006.Boat_Knock-006",
+      "/Game/Audio/Ambience/Boat/Boat_Knock-007",
+      "/Game/Audio/Ambience/Boat/Boat_Knock-007.Boat_Knock-007",
+      "/Game/Audio/Ambience/Lake/Lake_Water_Lapping-001",
+      "/Game/Audio/Ambience/Lake/Lake_Water_Lapping-001.Lake_Water_Lapping-001",
+      "/Game/Audio/Ambience/Lake/Lake_Water_Lapping-002",
+      "/Game/Audio/Ambience/Lake/Lake_Water_Lapping-002.Lake_Water_Lapping-002",
+      "/Game/Audio/Ambience/Lake/Lake_Water_Lapping-003",
+      "/Game/Audio/Ambience/Lake/Lake_Water_Lapping-003.Lake_Water_Lapping-003",
+      "/Game/Audio/Ambience/Lake/Lake_Water_Lapping-004",
+      "/Game/Audio/Ambience/Lake/Lake_Water_Lapping-004.Lake_Water_Lapping-004",
+      "/Game/Audio/Ambience/Lake/Lake_Water_Lapping-005",
+      "/Game/Audio/Ambience/Lake/Lake_Water_Lapping-005.Lake_Water_Lapping-005",
+      "/Game/Audio/Ambience/Lake/Lake_Water_Lapping-006",
+      "/Game/Audio/Ambience/Lake/Lake_Water_Lapping-006.Lake_Water_Lapping-006",
+      "/Game/Audio/_SoundClassesAndMixes/One_Shots"
+    ],
+    "audio_classes": [
+      "SoundClass",
+      "SoundCue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "as_ab_ao_MF_Creature_01",
+    "references": [
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_02-001",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_02-001.MFCreature_02-001",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_02-002",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_02-002.MFCreature_02-002",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_02-003",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_02-003.MFCreature_02-003",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_02-004",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_02-004.MFCreature_02-004",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_02-015",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_02-015.MFCreature_02-015",
+      "/Game/Audio/_SoundClassesAndMixes/Source_Loops"
+    ],
+    "audio_classes": [
+      "SoundClass",
+      "SoundCue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "as_ab_ao_MF_Creature_02",
+    "references": [
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_01-001",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_01-001.MFCreature_01-001",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_01-003",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_01-003.MFCreature_01-003",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_01-007",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_01-007.MFCreature_01-007",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_01-009",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_01-009.MFCreature_01-009",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_01-011",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_01-011.MFCreature_01-011",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_01-013",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_01-013.MFCreature_01-013",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_01-016",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_01-016.MFCreature_01-016",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_01-018",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_01-018.MFCreature_01-018",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_01-020",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_01-020.MFCreature_01-020",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_01-021",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_01-021.MFCreature_01-021",
+      "/Game/Audio/_SoundClassesAndMixes/Source_Loops"
+    ],
+    "audio_classes": [
+      "SoundClass",
+      "SoundCue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "as_ab_ao_MF_Creature_03",
+    "references": [
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_01-001",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_01-001.MFCreature_Night_01-001",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_01-002",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_01-002.MFCreature_Night_01-002",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_01-004",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_01-004.MFCreature_Night_01-004",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_01-005",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_01-005.MFCreature_Night_01-005",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_02-001",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_02-001.MFCreature_Night_02-001",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_02-002",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_02-002.MFCreature_Night_02-002",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_02-003",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_02-003.MFCreature_Night_02-003",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_02-004",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_02-004.MFCreature_Night_02-004",
+      "/Game/Audio/_SoundClassesAndMixes/Source_Loops"
+    ],
+    "audio_classes": [
+      "SoundClass",
+      "SoundCue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "as_ab_ao_Owls_01",
+    "references": [
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twit-001",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twit-001.Owl_01_Twit-001",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twit-002",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twit-002.Owl_01_Twit-002",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twit-003",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twit-003.Owl_01_Twit-003",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twit-004",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twit-004.Owl_01_Twit-004",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twit-005",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twit-005.Owl_01_Twit-005",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twit-006",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twit-006.Owl_01_Twit-006",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twit-007",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twit-007.Owl_01_Twit-007",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-001",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-001.Owl_01_Twoo-001",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-003",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-003.Owl_01_Twoo-003",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-005",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-005.Owl_01_Twoo-005",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-006",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-006.Owl_01_Twoo-006",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-011",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-011.Owl_01_Twoo-011",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-012",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-012.Owl_01_Twoo-012",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-013",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-013.Owl_01_Twoo-013",
+      "/Game/Audio/_SoundClassesAndMixes/Source_Loops"
+    ],
+    "audio_classes": [
+      "SoundClass",
+      "SoundCue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "_Night_Amb",
+    "references": [
+      "/Game/Audio/Ambience/Weather/Trees_Wind_01-002",
+      "/Game/Audio/Ambience/Weather/Trees_Wind_01-002.Trees_Wind_01-002",
+      "/Game/Audio/Ambience/Weather/Trees_Wind_LP",
+      "/Game/Audio/Ambience/Weather/Trees_Wind_LP.Trees_Wind_LP",
+      "/Game/Audio/_SoundClassesAndMixes/Night_Day"
+    ],
+    "audio_classes": [
+      "SoundClass",
+      "SoundCue",
+      "SoundWave"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "_Night_Test",
+    "references": [
+      "/Game/Audio/Ambience/Fox/Fox-001",
+      "/Game/Audio/Ambience/Fox/Fox-001.Fox-001",
+      "/Game/Audio/Ambience/Fox/Fox-002",
+      "/Game/Audio/Ambience/Fox/Fox-002.Fox-002",
+      "/Game/Audio/Ambience/Fox/Fox-003",
+      "/Game/Audio/Ambience/Fox/Fox-003.Fox-003",
+      "/Game/Audio/Ambience/Fox/Fox-004",
+      "/Game/Audio/Ambience/Fox/Fox-004.Fox-004",
+      "/Game/Audio/Ambience/Fox/Fox-005",
+      "/Game/Audio/Ambience/Fox/Fox-005.Fox-005",
+      "/Game/Audio/Ambience/Fox/Fox-006",
+      "/Game/Audio/Ambience/Fox/Fox-006.Fox-006",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_01-001",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_01-001.MFCreature_Night_01-001",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_01-002",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_01-002.MFCreature_Night_01-002",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_01-003",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_01-003.MFCreature_Night_01-003",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_01-004",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_01-004.MFCreature_Night_01-004",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_01-005",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_01-005.MFCreature_Night_01-005",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_02-001",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_02-001.MFCreature_Night_02-001",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_02-002",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_02-002.MFCreature_Night_02-002",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_02-003",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_02-003.MFCreature_Night_02-003",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_02-004",
+      "/Game/Audio/Ambience/MFCreatures/MFCreature_Night_02-004.MFCreature_Night_02-004",
+      "/Game/Audio/Ambience/Night/Hedgehogs-001",
+      "/Game/Audio/Ambience/Night/Hedgehogs-001.Hedgehogs-001",
+      "/Game/Audio/Ambience/Night/Hedgehogs-002",
+      "/Game/Audio/Ambience/Night/Hedgehogs-002.Hedgehogs-002",
+      "/Game/Audio/Ambience/Night/Hedgehogs-003",
+      "/Game/Audio/Ambience/Night/Hedgehogs-003.Hedgehogs-003",
+      "/Game/Audio/Ambience/Night/Hedgehogs-004",
+      "/Game/Audio/Ambience/Night/Hedgehogs-004.Hedgehogs-004",
+      "/Game/Audio/Ambience/Night/Hedgehogs-005",
+      "/Game/Audio/Ambience/Night/Hedgehogs-005.Hedgehogs-005",
+      "/Game/Audio/Ambience/Night/Hedgehogs-006",
+      "/Game/Audio/Ambience/Night/Hedgehogs-006.Hedgehogs-006",
+      "/Game/Audio/Ambience/Night/Hedgehogs-007",
+      "/Game/Audio/Ambience/Night/Hedgehogs-007.Hedgehogs-007",
+      "/Game/Audio/Ambience/Night/Hedgehogs-008",
+      "/Game/Audio/Ambience/Night/Hedgehogs-008.Hedgehogs-008",
+      "/Game/Audio/Ambience/Night/Hedgehogs-009",
+      "/Game/Audio/Ambience/Night/Hedgehogs-009.Hedgehogs-009",
+      "/Game/Audio/Ambience/Night/Hedgehogs-010",
+      "/Game/Audio/Ambience/Night/Hedgehogs-010.Hedgehogs-010",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twit-001",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twit-001.Owl_01_Twit-001",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twit-002",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twit-002.Owl_01_Twit-002",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twit-003",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twit-003.Owl_01_Twit-003",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twit-004",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twit-004.Owl_01_Twit-004",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twit-005",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twit-005.Owl_01_Twit-005",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twit-006",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twit-006.Owl_01_Twit-006",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twit-007",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twit-007.Owl_01_Twit-007",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-001",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-001.Owl_01_Twoo-001",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-002",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-002.Owl_01_Twoo-002",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-003",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-003.Owl_01_Twoo-003",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-004",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-004.Owl_01_Twoo-004",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-005",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-005.Owl_01_Twoo-005",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-006",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-006.Owl_01_Twoo-006",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-007",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-007.Owl_01_Twoo-007",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-008",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-008.Owl_01_Twoo-008",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-009",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-009.Owl_01_Twoo-009",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-010",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-010.Owl_01_Twoo-010",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-011",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-011.Owl_01_Twoo-011",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-012",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-012.Owl_01_Twoo-012",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-013",
+      "/Game/Audio/Ambience/Night/Owl/Owl_01_Twoo-013.Owl_01_Twoo-013",
+      "/Game/Audio/Ambience/Weather/Thunder_PR_-001_PR_SR08_Nrm",
+      "/Game/Audio/Ambience/Weather/Thunder_PR_-001_PR_SR08_Nrm.Thunder_PR_-001_PR_SR08_Nrm",
+      "/Game/Audio/Ambience/Weather/Thunder_PR_-002_PR_SR08_Nrm",
+      "/Game/Audio/Ambience/Weather/Thunder_PR_-002_PR_SR08_Nrm.Thunder_PR_-002_PR_SR08_Nrm",
+      "/Game/Audio/Ambience/Weather/Thunder_PR_-004_PR_SR08_Nrm",
+      "/Game/Audio/Ambience/Weather/Thunder_PR_-004_PR_SR08_Nrm.Thunder_PR_-004_PR_SR08_Nrm",
+      "/Game/Audio/Ambience/Weather/Thunder_PR_-005_PR_SR08_Nrm",
+      "/Game/Audio/Ambience/Weather/Thunder_PR_-005_PR_SR08_Nrm.Thunder_PR_-005_PR_SR08_Nrm",
+      "/Game/Audio/_SoundClassesAndMixes/Night_Day"
+    ],
+    "audio_classes": [
+      "SoundClass",
+      "SoundCue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "as_ab_ao_Magpie",
+    "references": [
+      "/Game/Audio/Ambience/Night/Magpie-001",
+      "/Game/Audio/Ambience/Night/Magpie-001.Magpie-001",
+      "/Game/Audio/Ambience/Night/Magpie-002",
+      "/Game/Audio/Ambience/Night/Magpie-002.Magpie-002",
+      "/Game/Audio/Ambience/Night/Magpie-003",
+      "/Game/Audio/Ambience/Night/Magpie-003.Magpie-003",
+      "/Game/Audio/Ambience/Night/Magpie-004",
+      "/Game/Audio/Ambience/Night/Magpie-004.Magpie-004",
+      "/Game/Audio/Ambience/Night/Magpie-005",
+      "/Game/Audio/Ambience/Night/Magpie-005.Magpie-005",
+      "/Game/Audio/Ambience/Night/Magpie-006",
+      "/Game/Audio/Ambience/Night/Magpie-006.Magpie-006",
+      "/Game/Audio/Ambience/Night/Magpie-007",
+      "/Game/Audio/Ambience/Night/Magpie-007.Magpie-007",
+      "/Game/Audio/Ambience/Night/Magpie-008",
+      "/Game/Audio/Ambience/Night/Magpie-008.Magpie-008"
+    ],
+    "audio_classes": [
+      "SoundCue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "as_ab_so_Pigs",
+    "references": [
+      "/Game/Audio/Ambience/Pigs/Pig-001",
+      "/Game/Audio/Ambience/Pigs/Pig-001.Pig-001",
+      "/Game/Audio/Ambience/Pigs/Pig-002",
+      "/Game/Audio/Ambience/Pigs/Pig-002.Pig-002",
+      "/Game/Audio/Ambience/Pigs/Pig-003",
+      "/Game/Audio/Ambience/Pigs/Pig-003.Pig-003",
+      "/Game/Audio/Ambience/Pigs/Pig-004",
+      "/Game/Audio/Ambience/Pigs/Pig-004.Pig-004",
+      "/Game/Audio/Ambience/Pigs/Pig-005",
+      "/Game/Audio/Ambience/Pigs/Pig-005.Pig-005",
+      "/Game/Audio/Ambience/Pigs/Pig-006",
+      "/Game/Audio/Ambience/Pigs/Pig-006.Pig-006",
+      "/Game/Audio/Ambience/Pigs/Pig-007",
+      "/Game/Audio/Ambience/Pigs/Pig-007.Pig-007",
+      "/Game/Audio/Ambience/Pigs/Pig-008",
+      "/Game/Audio/Ambience/Pigs/Pig-008.Pig-008",
+      "/Game/Audio/Ambience/Pigs/Pig-009",
+      "/Game/Audio/Ambience/Pigs/Pig-009.Pig-009",
+      "/Game/Audio/Ambience/Pigs/Pig-010",
+      "/Game/Audio/Ambience/Pigs/Pig-010.Pig-010",
+      "/Game/Audio/Ambience/Pigs/Pig-011",
+      "/Game/Audio/Ambience/Pigs/Pig-011.Pig-011",
+      "/Game/Audio/Ambience/Pigs/Pig_lp",
+      "/Game/Audio/Ambience/Pigs/Pig_lp.Pig_lp",
+      "/Game/Audio/_SoundClassesAndMixes/One_Shots"
+    ],
+    "audio_classes": [
+      "SoundClass",
+      "SoundCue",
+      "SoundWave"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "as_ab_sl_Waterfall",
+    "references": [
+      "/Game/Audio/Ambience/River_A_Water/LIQUID_water_waterfall_01",
+      "/Game/Audio/Ambience/River_A_Water/LIQUID_water_waterfall_01.LIQUID_water_waterfall_01",
+      "/Game/Audio/Ambience/Waterfall_Detail",
+      "/Game/Audio/Ambience/Waterfall_Detail.Waterfall_Detail",
+      "/Game/Audio/_SoundClassesAndMixes/Source_Loops"
+    ],
+    "audio_classes": [
+      "SoundClass",
+      "SoundCue",
+      "SoundWave"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "as_ab_ao_Tree_Creaks",
+    "references": [
+      "/Game/Audio/Ambience/Trees/Creak-015",
+      "/Game/Audio/Ambience/Trees/Creak-015.Creak-015",
+      "/Game/Audio/Ambience/Trees/Creak-016",
+      "/Game/Audio/Ambience/Trees/Creak-016.Creak-016",
+      "/Game/Audio/Ambience/Trees/Creak-017",
+      "/Game/Audio/Ambience/Trees/Creak-017.Creak-017",
+      "/Game/Audio/Ambience/Trees/Creak-018",
+      "/Game/Audio/Ambience/Trees/Creak-018.Creak-018",
+      "/Game/Audio/Ambience/Trees/Creak-019",
+      "/Game/Audio/Ambience/Trees/Creak-019.Creak-019",
+      "/Game/Audio/Ambience/Trees/Creak-020",
+      "/Game/Audio/Ambience/Trees/Creak-020.Creak-020",
+      "/Game/Audio/Ambience/Trees/Creak-022",
+      "/Game/Audio/Ambience/Trees/Creak-022.Creak-022",
+      "/Game/Audio/Ambience/Trees/Creak-023",
+      "/Game/Audio/Ambience/Trees/Creak-023.Creak-023",
+      "/Game/Audio/Ambience/Trees/Creak-024",
+      "/Game/Audio/Ambience/Trees/Creak-024.Creak-024",
+      "/Game/Audio/Ambience/Trees/Creak-025",
+      "/Game/Audio/Ambience/Trees/Creak-025.Creak-025",
+      "/Game/Audio/Ambience/Trees/Creak-026",
+      "/Game/Audio/Ambience/Trees/Creak-026.Creak-026",
+      "/Game/Audio/Ambience/Trees/Creak-027",
+      "/Game/Audio/Ambience/Trees/Creak-027.Creak-027",
+      "/Game/Audio/Ambience/Trees/Creak-028",
+      "/Game/Audio/Ambience/Trees/Creak-028.Creak-028"
+    ],
+    "audio_classes": [
+      "SoundCue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "as_ab_ao_Trees_Wind_01",
+    "references": [
+      "/Game/Audio/Ambience/Weather/Trees_Wind_01-001",
+      "/Game/Audio/Ambience/Weather/Trees_Wind_01-001.Trees_Wind_01-001",
+      "/Game/Audio/_SoundClassesAndMixes/One_Shots"
+    ],
+    "audio_classes": [
+      "SoundClass",
+      "SoundCue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "as_ab_ao_Trees_Wind_02",
+    "references": [
+      "/Game/Audio/Ambience/Weather/Trees_Wind_01-002",
+      "/Game/Audio/Ambience/Weather/Trees_Wind_01-002.Trees_Wind_01-002",
+      "/Game/Audio/_SoundClassesAndMixes/Source_Loops"
+    ],
+    "audio_classes": [
+      "SoundClass",
+      "SoundCue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "as_ab_ao_Trees_Wind_03",
+    "references": [
+      "/Game/Audio/Ambience/Weather/Trees_Wind_01-002",
+      "/Game/Audio/Ambience/Weather/Trees_Wind_01-002.Trees_Wind_01-002",
+      "/Game/Audio/Ambience/Weather/Wind_Trees_005",
+      "/Game/Audio/Ambience/Weather/Wind_Trees_005.Wind_Trees_005",
+      "/Game/Audio/Ambience/Weather/Wind_Trees_03-004",
+      "/Game/Audio/Ambience/Weather/Wind_Trees_03-004.Wind_Trees_03-004",
+      "/Game/Audio/Ambience/Weather/Wind_Trees_03-006",
+      "/Game/Audio/Ambience/Weather/Wind_Trees_03-006.Wind_Trees_03-006",
+      "/Game/Audio/_SoundClassesAndMixes/One_Shots"
+    ],
+    "audio_classes": [
+      "SoundClass",
+      "SoundCue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "as_ab_ao_Trees_Wind_Night",
+    "references": [
+      "/Game/Audio/Ambience/Weather/Trees_Wind_01-002",
+      "/Game/Audio/Ambience/Weather/Trees_Wind_01-002.Trees_Wind_01-002",
+      "/Game/Audio/_SoundClassesAndMixes/Source_Loops"
+    ],
+    "audio_classes": [
+      "SoundClass",
+      "SoundCue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "as_ab_ao_Trees_Wind_Trig",
+    "references": [
+      "/Game/Audio/Ambience/Weather/Wind_Trees_005",
+      "/Game/Audio/Ambience/Weather/Wind_Trees_005.Wind_Trees_005",
+      "/Game/Audio/Ambience/Weather/Wind_Trees_03-004",
+      "/Game/Audio/Ambience/Weather/Wind_Trees_03-004.Wind_Trees_03-004",
+      "/Game/Audio/Ambience/Weather/Wind_Trees_03-005",
+      "/Game/Audio/Ambience/Weather/Wind_Trees_03-005.Wind_Trees_03-005",
+      "/Game/Audio/Ambience/Weather/Wind_Trees_03-006",
+      "/Game/Audio/Ambience/Weather/Wind_Trees_03-006.Wind_Trees_03-006",
+      "/Game/Audio/_SoundClassesAndMixes/One_Shots"
+    ],
+    "audio_classes": [
+      "SoundClass",
+      "SoundCue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "as_ab_sl_Well",
+    "references": [
+      "/Game/Audio/Ambience/Well/Well_Drip-001",
+      "/Game/Audio/Ambience/Well/Well_Drip-001.Well_Drip-001",
+      "/Game/Audio/Ambience/Well/Well_Drip-003",
+      "/Game/Audio/Ambience/Well/Well_Drip-003.Well_Drip-003",
+      "/Game/Audio/Ambience/Well/Well_Drip-004",
+      "/Game/Audio/Ambience/Well/Well_Drip-004.Well_Drip-004",
+      "/Game/Audio/Ambience/Well/Well_Drip-005",
+      "/Game/Audio/Ambience/Well/Well_Drip-005.Well_Drip-005",
+      "/Game/Audio/Ambience/Well/Well_Drip-006",
+      "/Game/Audio/Ambience/Well/Well_Drip-006.Well_Drip-006",
+      "/Game/Audio/Ambience/Well/Well_Drip-007",
+      "/Game/Audio/Ambience/Well/Well_Drip-007.Well_Drip-007",
+      "/Game/Audio/Ambience/Well/Well_Drip-008",
+      "/Game/Audio/Ambience/Well/Well_Drip-008.Well_Drip-008",
+      "/Game/Audio/Ambience/Well/Well_Loop",
+      "/Game/Audio/Ambience/Well/Well_Loop.Well_Loop",
+      "/Game/Audio/_SoundClassesAndMixes/One_Shots"
+    ],
+    "audio_classes": [
+      "SoundClass",
+      "SoundCue",
+      "SoundWave"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "Windmill_Loop_Cue",
+    "references": [
+      "/Game/Audio/Ambience/Windmill_Loop",
+      "/Game/Audio/Ambience/Windmill_Loop.Windmill_Loop",
+      "/Game/Audio/Collision/barrel_roll",
+      "/Game/Audio/Collision/barrel_roll.barrel_roll",
+      "/Game/Audio/Collision/barrel_slide",
+      "/Game/Audio/Collision/barrel_slide.barrel_slide",
+      "/Game/Audio/_SoundClassesAndMixes/Source_Loops"
+    ],
+    "audio_classes": [
+      "SoundClass",
+      "SoundCue",
+      "SoundWave"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "as_ab_al_cave_wind_01",
+    "references": [
+      "/Game/Audio/Ambience/Cave_Wind_Lp-004",
+      "/Game/Audio/Ambience/Cave_Wind_Lp-004.Cave_Wind_Lp-004",
+      "/Game/Audio/_SoundClassesAndMixes/Area_Loops"
+    ],
+    "audio_classes": [
+      "SoundClass",
+      "SoundCue",
+      "SoundWave"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "Wooden_Crate_Impact",
+    "references": [
+      "/Game/Audio/Collision/BarrelImpacts/Crate_impact-001",
+      "/Game/Audio/Collision/BarrelImpacts/Crate_impact-001.Crate_impact-001",
+      "/Game/Audio/Collision/BarrelImpacts/Crate_impact-002",
+      "/Game/Audio/Collision/BarrelImpacts/Crate_impact-002.Crate_impact-002",
+      "/Game/Audio/Collision/BarrelImpacts/Crate_impact-003",
+      "/Game/Audio/Collision/BarrelImpacts/Crate_impact-003.Crate_impact-003",
+      "/Game/Audio/Collision/BarrelImpacts/Crate_impact-004",
+      "/Game/Audio/Collision/BarrelImpacts/Crate_impact-004.Crate_impact-004",
+      "/Game/Audio/Collision/BarrelImpacts/Crate_impact-005",
+      "/Game/Audio/Collision/BarrelImpacts/Crate_impact-005.Crate_impact-005",
+      "/Game/Audio/_SoundClassesAndMixes/Collision"
+    ],
+    "audio_classes": [
+      "SoundClass",
+      "SoundCue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "Magic_Bolt_Cont_Mod",
+    "references": [
+      "/Game/Audio/Magic/Magic_Bolt_synth_layer",
+      "/Game/Audio/Magic/Magic_Bolt_synth_layer.Magic_Bolt_synth_layer",
+      "/Game/Audio/Magic/Magic_Bolt_woosh_layer",
+      "/Game/Audio/Magic/Magic_Bolt_woosh_layer.Magic_Bolt_woosh_layer"
+    ],
+    "audio_classes": [
+      "SoundCue",
+      "SoundWave"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "Magic_Bolt_Layer_01",
+    "references": [
+      "/Game/Audio/Magic/Magic_Bolt_synth_layer",
+      "/Game/Audio/Magic/Magic_Bolt_synth_layer.Magic_Bolt_synth_layer"
+    ],
+    "audio_classes": [
+      "SoundCue",
+      "SoundWave"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "Magic_Bolt_Layer_02",
+    "references": [
+      "/Game/Audio/Magic/Magic_Bolt_woosh_layer",
+      "/Game/Audio/Magic/Magic_Bolt_woosh_layer.Magic_Bolt_woosh_layer"
+    ],
+    "audio_classes": [
+      "SoundCue",
+      "SoundWave"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "Magic_Bolt_Simple",
+    "references": [
+      "/Game/Audio/Magic/Magic_Bolt_synth_layer",
+      "/Game/Audio/Magic/Magic_Bolt_synth_layer.Magic_Bolt_synth_layer",
+      "/Game/Audio/Magic/Magic_Bolt_woosh_layer",
+      "/Game/Audio/Magic/Magic_Bolt_woosh_layer.Magic_Bolt_woosh_layer"
+    ],
+    "audio_classes": [
+      "SoundCue",
+      "SoundWave"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "Magic_bolt_spell_fire",
+    "references": [
+      "/Game/Audio/Magic/Magic_Bolt_Fire-001",
+      "/Game/Audio/Magic/Magic_Bolt_Fire-001.Magic_Bolt_Fire-001",
+      "/Game/Audio/Magic/Magic_Bolt_Fire-002",
+      "/Game/Audio/Magic/Magic_Bolt_Fire-002.Magic_Bolt_Fire-002",
+      "/Game/Audio/Magic/Magic_Bolt_Fire-003",
+      "/Game/Audio/Magic/Magic_Bolt_Fire-003.Magic_Bolt_Fire-003",
+      "/Game/Audio/Magic/Magic_Bolt_Fire-004",
+      "/Game/Audio/Magic/Magic_Bolt_Fire-004.Magic_Bolt_Fire-004"
+    ],
+    "audio_classes": [
+      "SoundCue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "Magic_bolt_spell_impact",
+    "references": [
+      "/Game/Audio/Magic/Magic_Bolt_Impact-001",
+      "/Game/Audio/Magic/Magic_Bolt_Impact-001.Magic_Bolt_Impact-001",
+      "/Game/Audio/Magic/Magic_Bolt_Impact-002",
+      "/Game/Audio/Magic/Magic_Bolt_Impact-002.Magic_Bolt_Impact-002",
+      "/Game/Audio/Magic/Magic_Bolt_Impact-003",
+      "/Game/Audio/Magic/Magic_Bolt_Impact-003.Magic_Bolt_Impact-003",
+      "/Game/Audio/Magic/Magic_Bolt_Impact-004",
+      "/Game/Audio/Magic/Magic_Bolt_Impact-004.Magic_Bolt_Impact-004"
+    ],
+    "audio_classes": [
+      "SoundCue"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "Pickup",
+    "references": [
+      "/Game/Audio/Magic/Cave_particle_Spawn_L3-002",
+      "/Game/Audio/Magic/Cave_particle_Spawn_L3-002.Cave_particle_Spawn_L3-002"
+    ],
+    "audio_classes": [
+      "SoundCue",
+      "SoundWave"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "Stone_Circle_02_Spell_ContMod",
+    "references": [
+      "/Game/Audio/Magic/Stone_Circle_02_Magic_Spell_Layer_01",
+      "/Game/Audio/Magic/Stone_Circle_02_Magic_Spell_Layer_01.Stone_Circle_02_Magic_Spell_Layer_01",
+      "/Game/Audio/Magic/Stone_Circle_02_Magic_Spell_Layer_02",
+      "/Game/Audio/Magic/Stone_Circle_02_Magic_Spell_Layer_02.Stone_Circle_02_Magic_Spell_Layer_02"
+    ],
+    "audio_classes": [
+      "SoundCue",
+      "SoundWave"
+    ],
+    "source": "uasset_extraction"
+  },
+  {
+    "category": "sound_cue",
+    "name": "as_pr_Magic_Bolt_Cue",
+    "references": [
+      "/Game/Audio/Magic/Magic_Bolt_synth_layer",
+      "/Game/Audio/Magic/Magic_Bolt_synth_layer.Magic_Bolt_synth_layer",
+      "/Game/Audio/Magic/Magic_Bolt_woosh_layer",
+      "/Game/Audio/Magic/Magic_Bolt_woosh_layer.Magic_Bolt_woosh_layer"
+    ],
+    "audio_classes": [
+      "SoundCue",
+      "SoundWave"
+    ],
+    "source": "uasset_extraction"
+  }
+]

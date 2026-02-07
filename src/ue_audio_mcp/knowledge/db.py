@@ -144,6 +144,31 @@ CREATE TABLE IF NOT EXISTS attenuation_subsystems (
     params      TEXT NOT NULL DEFAULT '[]',
     details     TEXT NOT NULL DEFAULT '{}'
 );
+
+CREATE TABLE IF NOT EXISTS project_audio_assets (
+    name        TEXT NOT NULL,
+    project     TEXT NOT NULL,
+    asset_type  TEXT NOT NULL,
+    path        TEXT NOT NULL DEFAULT '',
+    refs        TEXT NOT NULL DEFAULT '[]',
+    properties  TEXT NOT NULL DEFAULT '[]',
+    details     TEXT NOT NULL DEFAULT '{}',
+    PRIMARY KEY (name, project)
+);
+CREATE INDEX IF NOT EXISTS idx_paa_type ON project_audio_assets(asset_type);
+CREATE INDEX IF NOT EXISTS idx_paa_project ON project_audio_assets(project);
+
+CREATE TABLE IF NOT EXISTS project_blueprints (
+    name        TEXT NOT NULL,
+    project     TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    functions   TEXT NOT NULL DEFAULT '[]',
+    variables   TEXT NOT NULL DEFAULT '[]',
+    components  TEXT NOT NULL DEFAULT '[]',
+    events      TEXT NOT NULL DEFAULT '[]',
+    refs        TEXT NOT NULL DEFAULT '[]',
+    PRIMARY KEY (name, project)
+);
 """
 
 
@@ -659,6 +684,105 @@ class KnowledgeDB:
         )
         self._conn.commit()
 
+    # -- Project audio assets (from uasset extraction) ----------------------
+
+    def insert_project_asset(self, asset: dict, project: str) -> None:
+        self._conn.execute(
+            "INSERT OR REPLACE INTO project_audio_assets "
+            "(name, project, asset_type, path, refs, properties, details) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (
+                asset["name"],
+                project,
+                asset["category"],
+                asset.get("path", ""),
+                json.dumps(asset.get("references", [])),
+                json.dumps(asset.get("properties", [])),
+                json.dumps({
+                    k: v for k, v in asset.items()
+                    if k not in ("name", "category", "path", "references",
+                                 "properties", "source")
+                }),
+            ),
+        )
+
+    def insert_project_blueprint(self, bp: dict, project: str) -> None:
+        self._conn.execute(
+            "INSERT OR REPLACE INTO project_blueprints "
+            "(name, project, description, functions, variables, "
+            "components, events, refs) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                bp["name"],
+                project,
+                bp.get("description", ""),
+                json.dumps(bp.get("functions", [])),
+                json.dumps(bp.get("variables", [])),
+                json.dumps(bp.get("components", [])),
+                json.dumps(bp.get("events", [])),
+                json.dumps(bp.get("references", [])),
+            ),
+        )
+
+    def import_uasset_entries(self, entries: list[dict], project: str) -> int:
+        """Bulk-import entries from uasset extraction. Returns count."""
+        count = 0
+        for entry in entries:
+            if entry["category"] == "blueprint_audio_pattern":
+                self.insert_project_blueprint(entry, project)
+            else:
+                self.insert_project_asset(entry, project)
+            count += 1
+        self._conn.commit()
+        return count
+
+    def query_project_assets(
+        self,
+        project: str | None = None,
+        asset_type: str | None = None,
+        name: str | None = None,
+    ) -> list[dict]:
+        if name:
+            return self._fetch(
+                "SELECT * FROM project_audio_assets WHERE name = ?",
+                (name,),
+            )
+        if project and asset_type:
+            return self._fetch(
+                "SELECT * FROM project_audio_assets "
+                "WHERE project = ? AND asset_type = ? ORDER BY name",
+                (project, asset_type),
+            )
+        if project:
+            return self._fetch(
+                "SELECT * FROM project_audio_assets "
+                "WHERE project = ? ORDER BY asset_type, name",
+                (project,),
+            )
+        if asset_type:
+            return self._fetch(
+                "SELECT * FROM project_audio_assets "
+                "WHERE asset_type = ? ORDER BY name",
+                (asset_type,),
+            )
+        return self._fetch(
+            "SELECT * FROM project_audio_assets ORDER BY project, asset_type, name"
+        )
+
+    def query_project_blueprints(
+        self, project: str | None = None, name: str | None = None
+    ) -> list[dict]:
+        if name:
+            return self._fetch(
+                "SELECT * FROM project_blueprints WHERE name = ?", (name,)
+            )
+        if project:
+            return self._fetch(
+                "SELECT * FROM project_blueprints WHERE project = ? ORDER BY name",
+                (project,),
+            )
+        return self._fetch("SELECT * FROM project_blueprints ORDER BY project, name")
+
     # -- Utility -----------------------------------------------------------
 
     def table_counts(self) -> dict[str, int]:
@@ -705,6 +829,12 @@ class KnowledgeDB:
             ).fetchone()["cnt"],
             "attenuation_subsystems": self._conn.execute(
                 "SELECT COUNT(*) as cnt FROM attenuation_subsystems"
+            ).fetchone()["cnt"],
+            "project_audio_assets": self._conn.execute(
+                "SELECT COUNT(*) as cnt FROM project_audio_assets"
+            ).fetchone()["cnt"],
+            "project_blueprints": self._conn.execute(
+                "SELECT COUNT(*) as cnt FROM project_blueprints"
             ).fetchone()["cnt"],
         }
 
