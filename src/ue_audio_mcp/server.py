@@ -55,6 +55,7 @@ import ue_audio_mcp.tools.ms_graph  # noqa: E402, F401
 import ue_audio_mcp.tools.ue5_core  # noqa: E402, F401
 import ue_audio_mcp.tools.ms_builder  # noqa: E402, F401
 import ue_audio_mcp.tools.blueprints  # noqa: E402, F401
+import ue_audio_mcp.tools.systems  # noqa: E402, F401
 
 
 def main():
