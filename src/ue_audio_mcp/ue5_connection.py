@@ -60,8 +60,21 @@ class UE5PluginConnection:
             log.info("Disconnected from UE5 plugin")
 
     def is_connected(self) -> bool:
-        """Check if connected to the UE5 plugin."""
-        return self._sock is not None
+        """Check if connected to the UE5 plugin.
+
+        Verifies the socket is still alive via getpeername() when
+        a real socket is present.
+        """
+        if self._sock is None:
+            return False
+        if not isinstance(self._sock, socket.socket):
+            return True  # mock / test stub
+        try:
+            self._sock.getpeername()
+            return True
+        except OSError:
+            self._sock = None
+            return False
 
     def send_command(self, command: dict[str, Any]) -> dict[str, Any]:
         """Send a JSON command and return the response dict.

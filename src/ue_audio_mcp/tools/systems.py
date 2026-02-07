@@ -286,7 +286,7 @@ def _map_wwise_params(template_name: str, params: dict, asset_name: str) -> dict
             "bus_path": params.get("bus_path", ""),
         }
     if template_name == "weather_states":
-        states = params.get("weather_states", ["Clear", "Cloudy", "LightRain"])
+        states = params.get("weather_states", ["Clear", "Cloudy", "LightRain", "HeavyRain", "Storm", "Snow"])
         return {
             "weather_states": json.dumps(states) if isinstance(states, list) else states,
         }
