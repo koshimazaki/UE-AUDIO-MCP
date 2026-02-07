@@ -14,11 +14,17 @@ DEFINE_LOG_CATEGORY_STATIC(LogAudioMCPDispatcher, Log, All);
 
 FAudioMCPCommandDispatcher::FAudioMCPCommandDispatcher(FAudioMCPBuilderManager* InBuilderManager)
 	: BuilderManager(InBuilderManager)
+	, bShuttingDown(false)
 {
 }
 
 FAudioMCPCommandDispatcher::~FAudioMCPCommandDispatcher()
 {
+}
+
+void FAudioMCPCommandDispatcher::SignalShutdown()
+{
+	bShuttingDown = true;
 }
 
 void FAudioMCPCommandDispatcher::RegisterCommand(const FString& Action, TSharedPtr<IAudioMCPCommand> Handler)
@@ -54,7 +60,14 @@ FString FAudioMCPCommandDispatcher::Dispatch(const FString& JsonString)
 
 	UE_LOG(LogAudioMCPDispatcher, Log, TEXT("Dispatching: %s"), *Action);
 
-	// 4. Execute on game thread with sync event.
+	// 4. Check for shutdown — return error without posting AsyncTask to avoid deadlock
+	if (bShuttingDown)
+	{
+		return AudioMCP::JsonToString(
+			AudioMCP::MakeErrorResponse(TEXT("Server is shutting down")));
+	}
+
+	// 5. Execute on game thread with sync event.
 	// All captured state is heap-allocated via TSharedPtr so the lambda
 	// remains valid even if the caller times out and returns first.
 	struct FDispatchState

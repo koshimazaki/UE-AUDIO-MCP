@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "HAL/Runnable.h"
+#include "HAL/ThreadSafeBool.h"
 #include "Sockets.h"
 
 class FAudioMCPCommandDispatcher;
@@ -44,8 +45,14 @@ private:
 	/** Read exactly Size bytes from socket. Returns false on error/disconnect. */
 	bool RecvExact(FSocket* Socket, uint8* Buffer, int32 Size);
 
+	/** Send exactly Size bytes to socket, looping on partial sends. */
+	bool SendExact(FSocket* Socket, const uint8* Data, int32 Size);
+
 	/** Send a JSON response with length-prefix header. */
 	bool SendResponse(FSocket* Socket, const FString& JsonString);
+
+	/** Check if socket has data ready within timeout. Returns false on timeout/error. */
+	bool WaitForData(FSocket* Socket, float TimeoutSeconds);
 
 	FAudioMCPCommandDispatcher* Dispatcher;
 	FSocket* ListenSocket;

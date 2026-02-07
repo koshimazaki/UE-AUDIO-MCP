@@ -42,6 +42,13 @@ void FUEAudioMCPModule::ShutdownModule()
 {
 	UE_LOG(LogAudioMCPModule, Log, TEXT("UE Audio MCP plugin shutting down..."));
 
+	// Signal dispatcher first so in-flight commands return immediately
+	// instead of posting AsyncTasks that can never run (deadlock prevention)
+	if (Dispatcher)
+	{
+		Dispatcher->SignalShutdown();
+	}
+
 	if (TcpServer)
 	{
 		TcpServer->StopListening();

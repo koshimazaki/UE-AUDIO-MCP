@@ -12,6 +12,37 @@
 
 DEFINE_LOG_CATEGORY_STATIC(LogAudioMCPBlueprint, Log, All);
 
+// Allowlist of safe audio-related functions that can be called via reflection.
+// Prevents arbitrary function execution (e.g. QuitGame, DestroyActor).
+static const TSet<FString>& GetAllowedFunctions()
+{
+	static const TSet<FString> AllowedFunctions = {
+		// Audio playback
+		TEXT("PlaySound2D"),
+		TEXT("PlaySoundAtLocation"),
+		TEXT("SpawnSoundAtLocation"),
+		TEXT("SpawnSound2D"),
+		// Sound mix
+		TEXT("SetSoundMixClassOverride"),
+		TEXT("ClearSoundMixClassOverride"),
+		TEXT("PushSoundMixModifier"),
+		TEXT("PopSoundMixModifier"),
+		// Global audio
+		TEXT("SetGlobalPitchModulation"),
+		TEXT("SetGlobalListenerFocusParameters"),
+		// Dialogue
+		TEXT("PlayDialogue2D"),
+		TEXT("PlayDialogueAtLocation"),
+		TEXT("SpawnDialogue2D"),
+		TEXT("SpawnDialogueAtLocation"),
+		// Read-only accessors
+		TEXT("GetPlayerCameraManager"),
+		TEXT("GetPlayerController"),
+		TEXT("GetPlayerPawn"),
+	};
+	return AllowedFunctions;
+}
+
 TSharedPtr<FJsonObject> FCallFunctionCommand::Execute(
 	const TSharedPtr<FJsonObject>& Params,
 	FAudioMCPBuilderManager& BuilderManager)
@@ -20,6 +51,15 @@ TSharedPtr<FJsonObject> FCallFunctionCommand::Execute(
 	if (!Params->TryGetStringField(TEXT("function"), FunctionName))
 	{
 		return AudioMCP::MakeErrorResponse(TEXT("Missing required param 'function'"));
+	}
+
+	// Security: only allow known safe audio functions
+	if (!GetAllowedFunctions().Contains(FunctionName))
+	{
+		return AudioMCP::MakeErrorResponse(
+			FString::Printf(TEXT("Function '%s' is not in the audio allowlist. "
+				"Only audio-related functions (PlaySound2D, SpawnSoundAtLocation, etc.) are permitted."),
+				*FunctionName));
 	}
 
 	// Get the args object (optional, defaults to empty)
@@ -109,6 +149,23 @@ TSharedPtr<FJsonObject> FCallFunctionCommand::Execute(
 
 	FParamBufferGuard ParamGuard(Function);
 	uint8* ParamBuffer = ParamGuard.Buffer;
+
+	// Auto-fill WorldContextObject for UGameplayStatics static functions.
+	// ProcessEvent doesn't resolve meta=(WorldContext) automatically — we must do it.
+	if (ParamBuffer)
+	{
+		for (TFieldIterator<FProperty> It(Function); It && It->HasAnyPropertyFlags(CPF_Parm); ++It)
+		{
+			if (It->GetName() == TEXT("WorldContextObject"))
+			{
+				if (FObjectProperty* ObjProp = CastField<FObjectProperty>(*It))
+				{
+					ObjProp->SetObjectPropertyValue_InContainer(ParamBuffer, World);
+				}
+				break;
+			}
+		}
+	}
 
 	// Fill parameters from JSON args
 	if (ParamBuffer && ArgsObj && (*ArgsObj).IsValid())

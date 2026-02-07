@@ -26,10 +26,10 @@ TSharedPtr<FJsonObject> FCreateBuilderCommand::Execute(
 		return AudioMCP::MakeErrorResponse(TEXT("Missing required param 'name'"));
 	}
 
-	// Validate asset_type
-	if (AssetType != TEXT("Source") && AssetType != TEXT("source")
-		&& AssetType != TEXT("Patch") && AssetType != TEXT("patch")
-		&& AssetType != TEXT("Preset") && AssetType != TEXT("preset"))
+	// Validate asset_type (case-insensitive)
+	if (!AssetType.Equals(TEXT("Source"), ESearchCase::IgnoreCase)
+		&& !AssetType.Equals(TEXT("Patch"), ESearchCase::IgnoreCase)
+		&& !AssetType.Equals(TEXT("Preset"), ESearchCase::IgnoreCase))
 	{
 		return AudioMCP::MakeErrorResponse(
 			FString::Printf(TEXT("Invalid asset_type '%s'. Must be Source, Patch, or Preset"), *AssetType));

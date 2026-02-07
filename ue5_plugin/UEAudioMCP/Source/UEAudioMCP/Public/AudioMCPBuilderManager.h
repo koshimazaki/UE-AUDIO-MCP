@@ -3,12 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "UObject/StrongObjectPtr.h"
 #include "MetasoundFrontendDocument.h"
+#include "MetasoundBuilderBase.h"
 
-// Forward declarations — actual includes only in .cpp
+// Forward declaration — full include in .cpp
 class UMetaSoundBuilderBase;
-struct FMetaSoundBuilderNodeOutputHandle;
-struct FMetaSoundBuilderNodeInputHandle;
 
 /**
  * Manages the active MetaSounds builder session.
@@ -56,7 +56,7 @@ public:
 	bool Audition(FString& OutError);
 
 	/** Check if a builder is currently active. */
-	bool HasActiveBuilder() const { return ActiveBuilder != nullptr; }
+	bool HasActiveBuilder() const { return ActiveBuilder.IsValid(); }
 
 private:
 	/** Try to resolve a display name to a MetaSound node class. */
@@ -65,8 +65,8 @@ private:
 	/** Reset all state (called before creating a new builder). */
 	void ResetState();
 
-	// Current builder session
-	UMetaSoundBuilderBase* ActiveBuilder;
+	// Current builder session (TStrongObjectPtr prevents GC collection)
+	TStrongObjectPtr<UMetaSoundBuilderBase> ActiveBuilder;
 	FString ActiveBuilderName;
 
 	// Node handle registry: Python string ID -> UE node handle

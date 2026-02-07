@@ -1,6 +1,7 @@
 // Copyright UE Audio MCP Project. All Rights Reserved.
 
 #include "AudioMCPBuilderManager.h"
+#include "AudioMCPNodeRegistry.h"
 #include "AudioMCPTypes.h"
 #include "MetasoundBuilderSubsystem.h"
 #include "MetasoundSource.h"
@@ -12,8 +13,7 @@
 DEFINE_LOG_CATEGORY_STATIC(LogAudioMCPBuilder, Log, All);
 
 FAudioMCPBuilderManager::FAudioMCPBuilderManager()
-	: ActiveBuilder(nullptr)
-	, bNodeTypeMapBuilt(false)
+	: bNodeTypeMapBuilt(false)
 {
 }
 
@@ -24,7 +24,7 @@ FAudioMCPBuilderManager::~FAudioMCPBuilderManager()
 
 void FAudioMCPBuilderManager::ResetState()
 {
-	ActiveBuilder = nullptr;
+	ActiveBuilder.Reset();
 	ActiveBuilderName.Empty();
 	NodeHandles.Empty();
 	GraphInputOutputHandles.Empty();
@@ -58,17 +58,19 @@ bool FAudioMCPBuilderManager::CreateBuilder(const FString& AssetType, const FStr
 	FMetaSoundBuilderOptions Options;
 	Options.Name = FName(*Name);
 
-	if (AssetType == TEXT("Source") || AssetType == TEXT("source"))
+	UMetaSoundBuilderBase* Builder = nullptr;
+
+	if (AssetType.Equals(TEXT("Source"), ESearchCase::IgnoreCase))
 	{
-		ActiveBuilder = BuilderSubsystem->CreateSourceBuilder(Options, Result);
+		Builder = BuilderSubsystem->CreateSourceBuilder(Options, Result);
 	}
-	else if (AssetType == TEXT("Patch") || AssetType == TEXT("patch"))
+	else if (AssetType.Equals(TEXT("Patch"), ESearchCase::IgnoreCase))
 	{
-		ActiveBuilder = BuilderSubsystem->CreatePatchBuilder(Options, Result);
+		Builder = BuilderSubsystem->CreatePatchBuilder(Options, Result);
 	}
-	else if (AssetType == TEXT("Preset") || AssetType == TEXT("preset"))
+	else if (AssetType.Equals(TEXT("Preset"), ESearchCase::IgnoreCase))
 	{
-		ActiveBuilder = BuilderSubsystem->CreatePresetBuilder(Options, Result);
+		Builder = BuilderSubsystem->CreatePresetBuilder(Options, Result);
 	}
 	else
 	{
@@ -76,13 +78,13 @@ bool FAudioMCPBuilderManager::CreateBuilder(const FString& AssetType, const FStr
 		return false;
 	}
 
-	if (Result != EMetaSoundBuilderResult::Succeeded || !ActiveBuilder)
+	if (Result != EMetaSoundBuilderResult::Succeeded || !Builder)
 	{
 		OutError = FString::Printf(TEXT("Failed to create %s builder for '%s'"), *AssetType, *Name);
-		ActiveBuilder = nullptr;
 		return false;
 	}
 
+	ActiveBuilder.Reset(Builder);
 	ActiveBuilderName = Name;
 
 	// Build node type map on first use
@@ -97,14 +99,14 @@ bool FAudioMCPBuilderManager::CreateBuilder(const FString& AssetType, const FStr
 
 bool FAudioMCPBuilderManager::AddInterface(const FString& InterfaceName, FString& OutError)
 {
-	if (!ActiveBuilder)
+	if (!ActiveBuilder.IsValid())
 	{
 		OutError = TEXT("No active builder. Call create_builder first.");
 		return false;
 	}
 
 	EMetaSoundBuilderResult Result;
-	ActiveBuilder->AddInterface(FName(*InterfaceName), Result);
+	ActiveBuilder.Get()->AddInterface(FName(*InterfaceName), Result);
 
 	if (Result != EMetaSoundBuilderResult::Succeeded)
 	{
@@ -118,14 +120,14 @@ bool FAudioMCPBuilderManager::AddInterface(const FString& InterfaceName, FString
 
 bool FAudioMCPBuilderManager::AddGraphInput(const FString& Name, const FString& TypeName, const FString& DefaultValue, FString& OutError)
 {
-	if (!ActiveBuilder)
+	if (!ActiveBuilder.IsValid())
 	{
 		OutError = TEXT("No active builder. Call create_builder first.");
 		return false;
 	}
 
 	EMetaSoundBuilderResult Result;
-	FMetaSoundBuilderNodeOutputHandle OutputHandle = ActiveBuilder->AddGraphInputNode(
+	FMetaSoundBuilderNodeOutputHandle OutputHandle = ActiveBuilder.Get()->AddGraphInputNode(
 		FName(*Name), FName(*TypeName), FMetasoundFrontendLiteral(), Result);
 
 	if (Result != EMetaSoundBuilderResult::Succeeded)
@@ -137,20 +139,58 @@ bool FAudioMCPBuilderManager::AddGraphInput(const FString& Name, const FString& 
 	// Store the output handle (graph inputs have outputs that feed into the graph)
 	GraphInputOutputHandles.Add(Name, OutputHandle);
 
+	// Apply default value if provided
+	if (!DefaultValue.IsEmpty())
+	{
+		FMetasoundFrontendLiteral Literal;
+
+		// Try numeric first, then bool, then string
+		if (DefaultValue.IsNumeric())
+		{
+			Literal.Set(FCString::Atof(*DefaultValue));
+		}
+		else if (DefaultValue.Equals(TEXT("true"), ESearchCase::IgnoreCase))
+		{
+			Literal.Set(true);
+		}
+		else if (DefaultValue.Equals(TEXT("false"), ESearchCase::IgnoreCase))
+		{
+			Literal.Set(false);
+		}
+		else
+		{
+			Literal.Set(DefaultValue);
+		}
+
+		// Find the input handle for this graph input node to set its default
+		FMetaSoundBuilderNodeInputHandle DefaultInputHandle = ActiveBuilder.Get()->FindNodeInputByName(
+			FMetaSoundNodeHandle(), FName(*Name), Result);
+		if (Result == EMetaSoundBuilderResult::Succeeded)
+		{
+			ActiveBuilder.Get()->SetNodeInputDefault(DefaultInputHandle, Literal, Result);
+		}
+		// Non-fatal if default setting fails — the node was still created
+		if (Result != EMetaSoundBuilderResult::Succeeded)
+		{
+			UE_LOG(LogAudioMCPBuilder, Warning, TEXT("Graph input '%s' created but default value '%s' could not be set"),
+				*Name, *DefaultValue);
+		}
+	}
+
 	UE_LOG(LogAudioMCPBuilder, Log, TEXT("Added graph input: %s (%s)"), *Name, *TypeName);
 	return true;
 }
 
 bool FAudioMCPBuilderManager::AddGraphOutput(const FString& Name, const FString& TypeName, FString& OutError)
 {
-	if (!ActiveBuilder)
+	if (!ActiveBuilder.IsValid())
 	{
 		OutError = TEXT("No active builder. Call create_builder first.");
 		return false;
 	}
 
 	EMetaSoundBuilderResult Result;
-	FMetaSoundBuilderNodeInputHandle InputHandle = ActiveBuilder->AddGraphOutputNode(
+	FMetaSoundBuilderNodeInputHandle InputHandle = ActiveBuilder.Get()->AddGraphOutputNode(
 		FName(*Name), FName(*TypeName), FMetasoundFrontendLiteral(), Result);
 
 	if (Result != EMetaSoundBuilderResult::Succeeded)
@@ -172,7 +212,7 @@ bool FAudioMCPBuilderManager::AddGraphOutput(const FString& Name, const FString&
 
 bool FAudioMCPBuilderManager::AddNode(const FString& NodeId, const FString& NodeType, int32 PosX, int32 PosY, FString& OutError)
 {
-	if (!ActiveBuilder)
+	if (!ActiveBuilder.IsValid())
 	{
 		OutError = TEXT("No active builder. Call create_builder first.");
 		return false;
@@ -198,7 +238,7 @@ bool FAudioMCPBuilderManager::AddNode(const FString& NodeId, const FString& Node
 	}
 
 	EMetaSoundBuilderResult Result;
-	FMetaSoundNodeHandle NodeHandle = ActiveBuilder->AddNode(FName(*ClassName), Result);
+	FMetaSoundNodeHandle NodeHandle = ActiveBuilder.Get()->AddNode(FName(*ClassName), Result);
 
 	if (Result != EMetaSoundBuilderResult::Succeeded)
 	{
@@ -208,7 +248,7 @@ bool FAudioMCPBuilderManager::AddNode(const FString& NodeId, const FString& Node
 	}
 
 	// Set editor position for visibility
-	ActiveBuilder->SetNodeLocation(NodeHandle, FVector2D(PosX, PosY), Result);
+	ActiveBuilder.Get()->SetNodeLocation(NodeHandle, FVector2D(PosX, PosY), Result);
 
 	// Store the actual node handle for pin lookups in SetNodeDefault/ConnectNodes
 	NodeHandles.Add(NodeId, NodeHandle);
@@ -220,7 +260,7 @@ bool FAudioMCPBuilderManager::AddNode(const FString& NodeId, const FString& Node
 
 bool FAudioMCPBuilderManager::SetNodeDefault(const FString& NodeId, const FString& InputName, const TSharedPtr<FJsonValue>& Value, FString& OutError)
 {
-	if (!ActiveBuilder)
+	if (!ActiveBuilder.IsValid())
 	{
 		OutError = TEXT("No active builder. Call create_builder first.");
 		return false;
@@ -235,7 +275,7 @@ bool FAudioMCPBuilderManager::SetNodeDefault(const FString& NodeId, const FStrin
 
 	// Find the node's input by name using the actual node handle
 	EMetaSoundBuilderResult Result;
-	FMetaSoundBuilderNodeInputHandle InputHandle = ActiveBuilder->FindNodeInputByName(
+	FMetaSoundBuilderNodeInputHandle InputHandle = ActiveBuilder.Get()->FindNodeInputByName(
 		*NodeHandlePtr, FName(*InputName), Result);
 
 	if (Result != EMetaSoundBuilderResult::Succeeded)
@@ -266,7 +306,7 @@ bool FAudioMCPBuilderManager::SetNodeDefault(const FString& NodeId, const FStrin
 		return false;
 	}
 
-	ActiveBuilder->SetNodeInputDefault(InputHandle, Literal, Result);
+	ActiveBuilder.Get()->SetNodeInputDefault(InputHandle, Literal, Result);
 
 	if (Result != EMetaSoundBuilderResult::Succeeded)
 	{
@@ -281,7 +321,7 @@ bool FAudioMCPBuilderManager::SetNodeDefault(const FString& NodeId, const FStrin
 bool FAudioMCPBuilderManager::ConnectNodes(const FString& FromNode, const FString& FromPin,
                                             const FString& ToNode, const FString& ToPin, FString& OutError)
 {
-	if (!ActiveBuilder)
+	if (!ActiveBuilder.IsValid())
 	{
 		OutError = TEXT("No active builder. Call create_builder first.");
 		return false;
@@ -310,7 +350,7 @@ bool FAudioMCPBuilderManager::ConnectNodes(const FString& FromNode, const FStrin
 			return false;
 		}
 		// Find the specific output pin by name using the actual node handle
-		OutputHandle = ActiveBuilder->FindNodeOutputByName(
+		OutputHandle = ActiveBuilder.Get()->FindNodeOutputByName(
 			*NodeHandlePtr, FName(*FromPin), Result);
 		if (Result != EMetaSoundBuilderResult::Succeeded)
 		{
@@ -340,7 +380,7 @@ bool FAudioMCPBuilderManager::ConnectNodes(const FString& FromNode, const FStrin
 			return false;
 		}
 		// Find the specific input pin by name using the actual node handle
-		InputHandle = ActiveBuilder->FindNodeInputByName(
+		InputHandle = ActiveBuilder.Get()->FindNodeInputByName(
 			*NodeHandlePtr, FName(*ToPin), Result);
 		if (Result != EMetaSoundBuilderResult::Succeeded)
 		{
@@ -350,7 +390,7 @@ bool FAudioMCPBuilderManager::ConnectNodes(const FString& FromNode, const FStrin
 	}
 
 	// Make the connection
-	ActiveBuilder->ConnectNodes(OutputHandle, InputHandle, Result);
+	ActiveBuilder.Get()->ConnectNodes(OutputHandle, InputHandle, Result);
 
 	if (Result != EMetaSoundBuilderResult::Succeeded)
 	{
@@ -370,7 +410,7 @@ bool FAudioMCPBuilderManager::ConnectNodes(const FString& FromNode, const FStrin
 
 bool FAudioMCPBuilderManager::BuildToAsset(const FString& Name, const FString& Path, FString& OutError)
 {
-	if (!ActiveBuilder)
+	if (!ActiveBuilder.IsValid())
 	{
 		OutError = TEXT("No active builder. Call create_builder first.");
 		return false;
@@ -390,7 +430,7 @@ bool FAudioMCPBuilderManager::BuildToAsset(const FString& Name, const FString& P
 	FullPath += Name;
 
 	EMetaSoundBuilderResult Result;
-	ActiveBuilder->BuildToAsset(FName(*FullPath), Result);
+	ActiveBuilder.Get()->BuildToAsset(FName(*FullPath), Result);
 
 	if (Result != EMetaSoundBuilderResult::Succeeded)
 	{
@@ -405,14 +445,21 @@ bool FAudioMCPBuilderManager::BuildToAsset(const FString& Name, const FString& P
 bool FAudioMCPBuilderManager::Audition(FString& OutError)
 {
 #if WITH_EDITOR
-	if (!ActiveBuilder)
+	if (!ActiveBuilder.IsValid())
 	{
 		OutError = TEXT("No active builder. Call create_builder first.");
 		return false;
 	}
 
+	UWorld* World = GEditor ? GEditor->GetEditorWorldContext().World() : nullptr;
+	if (!World)
+	{
+		OutError = TEXT("No editor world available for audition");
+		return false;
+	}
+
 	EMetaSoundBuilderResult Result;
-	ActiveBuilder->Audition(nullptr, Result);
+	ActiveBuilder.Get()->Audition(World, Result);
 
 	if (Result != EMetaSoundBuilderResult::Succeeded)
 	{
@@ -434,80 +481,7 @@ bool FAudioMCPBuilderManager::Audition(FString& OutError)
 
 void FAudioMCPBuilderManager::BuildNodeTypeMap()
 {
-	// Hardcoded map of common display names to MetaSound class names.
-	// This covers the ~100 most common nodes used in game audio.
-	// A dynamic registry scan can supplement this at runtime.
-	NodeTypeMap.Add(TEXT("Sine"), TEXT("UE::MathOps::Sine"));
-	NodeTypeMap.Add(TEXT("Noise"), TEXT("UE::Generators::Noise"));
-	NodeTypeMap.Add(TEXT("White Noise"), TEXT("UE::Generators::WhiteNoise"));
-	NodeTypeMap.Add(TEXT("Wave Player (Mono)"), TEXT("UE::WavePlayer::Mono"));
-	NodeTypeMap.Add(TEXT("Wave Player (Stereo)"), TEXT("UE::WavePlayer::Stereo"));
-	NodeTypeMap.Add(TEXT("AD Envelope"), TEXT("UE::Generators::ADEnvelope"));
-	NodeTypeMap.Add(TEXT("ADSR Envelope"), TEXT("UE::Generators::ADSREnvelope"));
-	NodeTypeMap.Add(TEXT("Biquad Filter"), TEXT("UE::Filters::BiquadFilter"));
-	NodeTypeMap.Add(TEXT("State Variable Filter"), TEXT("UE::State Variable Filter::Audio"));
-	NodeTypeMap.Add(TEXT("Lowpass Filter"), TEXT("UE::Filters::LowpassFilter"));
-	NodeTypeMap.Add(TEXT("Highpass Filter"), TEXT("UE::Filters::HighpassFilter"));
-	NodeTypeMap.Add(TEXT("Bandpass Filter"), TEXT("UE::Filters::BandpassFilter"));
-	NodeTypeMap.Add(TEXT("Ladder Filter"), TEXT("UE::Filters::LadderFilter"));
-	NodeTypeMap.Add(TEXT("One-Pole Lowpass"), TEXT("UE::Filters::OnePoleLowpass"));
-	NodeTypeMap.Add(TEXT("One-Pole Highpass"), TEXT("UE::Filters::OnePoleHighpass"));
-	NodeTypeMap.Add(TEXT("Gain"), TEXT("UE::MathOps::Gain"));
-	NodeTypeMap.Add(TEXT("Multiply"), TEXT("UE::MathOps::Multiply"));
-	NodeTypeMap.Add(TEXT("Multiply (Audio)"), TEXT("UE::MathOps::Multiply::Audio"));
-	NodeTypeMap.Add(TEXT("Add"), TEXT("UE::MathOps::Add"));
-	NodeTypeMap.Add(TEXT("Add (Audio)"), TEXT("UE::MathOps::Add::Audio"));
-	NodeTypeMap.Add(TEXT("Subtract"), TEXT("UE::MathOps::Subtract"));
-	NodeTypeMap.Add(TEXT("Divide"), TEXT("UE::MathOps::Divide"));
-	NodeTypeMap.Add(TEXT("Clamp"), TEXT("UE::MathOps::Clamp"));
-	NodeTypeMap.Add(TEXT("Map Range"), TEXT("UE::MathOps::MapRange"));
-	NodeTypeMap.Add(TEXT("Random (Float)"), TEXT("UE::Random::Float"));
-	NodeTypeMap.Add(TEXT("Random Get (Float)"), TEXT("UE::Random::GetFloat"));
-	NodeTypeMap.Add(TEXT("Stereo Mixer"), TEXT("UE::Mixing::StereoMixer"));
-	NodeTypeMap.Add(TEXT("Mono Mixer"), TEXT("UE::Mixing::MonoMixer"));
-	NodeTypeMap.Add(TEXT("Mix"), TEXT("UE::Mixing::Mix"));
-	NodeTypeMap.Add(TEXT("LFO"), TEXT("UE::Generators::LFO"));
-	NodeTypeMap.Add(TEXT("Oscillator"), TEXT("UE::Generators::Oscillator"));
-	NodeTypeMap.Add(TEXT("Saw"), TEXT("UE::Generators::Saw"));
-	NodeTypeMap.Add(TEXT("Square"), TEXT("UE::Generators::Square"));
-	NodeTypeMap.Add(TEXT("Triangle"), TEXT("UE::Generators::Triangle"));
-	NodeTypeMap.Add(TEXT("Pulse"), TEXT("UE::Generators::Pulse"));
-	NodeTypeMap.Add(TEXT("Delay"), TEXT("UE::Effects::Delay"));
-	NodeTypeMap.Add(TEXT("Stereo Delay"), TEXT("UE::Effects::StereoDelay"));
-	NodeTypeMap.Add(TEXT("Reverb"), TEXT("UE::Effects::Reverb"));
-	NodeTypeMap.Add(TEXT("Chorus"), TEXT("UE::Effects::Chorus"));
-	NodeTypeMap.Add(TEXT("Phaser"), TEXT("UE::Effects::Phaser"));
-	NodeTypeMap.Add(TEXT("Flanger"), TEXT("UE::Effects::Flanger"));
-	NodeTypeMap.Add(TEXT("Compressor"), TEXT("UE::Dynamics::Compressor"));
-	NodeTypeMap.Add(TEXT("Limiter"), TEXT("UE::Dynamics::Limiter"));
-	NodeTypeMap.Add(TEXT("Gate"), TEXT("UE::Dynamics::Gate"));
-	NodeTypeMap.Add(TEXT("Trigger Repeat"), TEXT("UE::Triggers::TriggerRepeat"));
-	NodeTypeMap.Add(TEXT("Trigger Counter"), TEXT("UE::Triggers::TriggerCounter"));
-	NodeTypeMap.Add(TEXT("Trigger Control"), TEXT("UE::Triggers::TriggerControl"));
-	NodeTypeMap.Add(TEXT("Trigger On Threshold"), TEXT("UE::Triggers::TriggerOnThreshold"));
-	NodeTypeMap.Add(TEXT("BPM To Seconds"), TEXT("UE::Timing::BPMToSeconds"));
-	NodeTypeMap.Add(TEXT("Freq To MIDI"), TEXT("UE::Conversions::FreqToMIDI"));
-	NodeTypeMap.Add(TEXT("MIDI To Freq"), TEXT("UE::Conversions::MIDIToFreq"));
-	NodeTypeMap.Add(TEXT("Semitones To Freq Multiplier"), TEXT("UE::Conversions::SemitonesToFreqMultiplier"));
-	NodeTypeMap.Add(TEXT("dB To Linear"), TEXT("UE::Conversions::dBToLinear"));
-	NodeTypeMap.Add(TEXT("Linear To dB"), TEXT("UE::Conversions::LineardB"));
-	NodeTypeMap.Add(TEXT("Mono To Stereo"), TEXT("UE::Routing::MonoToStereo"));
-	NodeTypeMap.Add(TEXT("Stereo To Mono"), TEXT("UE::Routing::StereoToMono"));
-	NodeTypeMap.Add(TEXT("ITD Panner"), TEXT("UE::Spatialization::ITDPanner"));
-	NodeTypeMap.Add(TEXT("Stereo Panner"), TEXT("UE::Spatialization::StereoPanner"));
-	NodeTypeMap.Add(TEXT("Send"), TEXT("UE::Routing::Send"));
-	NodeTypeMap.Add(TEXT("Receive"), TEXT("UE::Routing::Receive"));
-	NodeTypeMap.Add(TEXT("Float To Audio"), TEXT("UE::Conversions::FloatToAudio"));
-	NodeTypeMap.Add(TEXT("Audio To Float"), TEXT("UE::Conversions::AudioToFloat"));
-	NodeTypeMap.Add(TEXT("Get"), TEXT("UE::Variables::Get"));
-	NodeTypeMap.Add(TEXT("Set"), TEXT("UE::Variables::Set"));
-	NodeTypeMap.Add(TEXT("Interpolate"), TEXT("UE::MathOps::Interpolate"));
-	NodeTypeMap.Add(TEXT("Trigger Delay"), TEXT("UE::Triggers::TriggerDelay"));
-	NodeTypeMap.Add(TEXT("Trigger Route"), TEXT("UE::Triggers::TriggerRoute"));
-	NodeTypeMap.Add(TEXT("WaveTable"), TEXT("UE::Generators::WaveTable"));
-	NodeTypeMap.Add(TEXT("Granulator"), TEXT("UE::Generators::Granulator"));
-	NodeTypeMap.Add(TEXT("Sample And Hold"), TEXT("UE::MathOps::SampleAndHold"));
-
+	AudioMCPNodeRegistry::InitNodeTypeMap(NodeTypeMap);
 	bNodeTypeMapBuilt = true;
 	UE_LOG(LogAudioMCPBuilder, Log, TEXT("Built node type map: %d entries"), NodeTypeMap.Num());
 }

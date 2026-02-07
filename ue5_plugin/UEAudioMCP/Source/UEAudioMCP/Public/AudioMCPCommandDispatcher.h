@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "HAL/ThreadSafeBool.h"
 #include "Dom/JsonObject.h"
 
 class IAudioMCPCommand;
@@ -29,7 +30,14 @@ public:
 	 */
 	FString Dispatch(const FString& JsonString);
 
+	/**
+	 * Signal that the module is shutting down.
+	 * Causes Dispatch() to return errors immediately without posting AsyncTasks.
+	 */
+	void SignalShutdown();
+
 private:
 	TMap<FString, TSharedPtr<IAudioMCPCommand>> CommandMap;
 	FAudioMCPBuilderManager* BuilderManager;
+	FThreadSafeBool bShuttingDown;
 };

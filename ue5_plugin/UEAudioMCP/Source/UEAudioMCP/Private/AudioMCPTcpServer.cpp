@@ -138,8 +138,22 @@ void FAudioMCPTcpServer::Exit()
 
 void FAudioMCPTcpServer::HandleClient(FSocket* Client)
 {
+	// Set socket buffer sizes for predictable behavior
+	int32 ActualSize = 0;
+	Client->SetSendBufferSize(65536, ActualSize);
+	Client->SetRecvBufferSize(65536, ActualSize);
+
+	constexpr float ClientIdleTimeoutSeconds = 60.0f;
+
 	while (!bStopping)
 	{
+		// Wait for data with idle timeout to prevent zombie connections
+		if (!WaitForData(Client, ClientIdleTimeoutSeconds))
+		{
+			UE_LOG(LogAudioMCPServer, Log, TEXT("Client idle timeout (%.0fs), disconnecting"), ClientIdleTimeoutSeconds);
+			break;
+		}
+
 		// 1. Read 4-byte big-endian length header
 		uint8 HeaderBuf[AudioMCP::HEADER_SIZE];
 		if (!RecvExact(Client, HeaderBuf, AudioMCP::HEADER_SIZE))
@@ -167,9 +181,12 @@ void FAudioMCPTcpServer::HandleClient(FSocket* Client)
 			break;
 		}
 
-		// 2. Read payload
-		TArray<uint8> PayloadBuf;
-		PayloadBuf.SetNumUninitialized(PayloadLength);
+		// 2. Read payload (reuse buffer across messages to reduce allocations)
+		static thread_local TArray<uint8> PayloadBuf;
+		if (PayloadBuf.Num() < static_cast<int32>(PayloadLength))
+		{
+			PayloadBuf.SetNumUninitialized(PayloadLength);
+		}
 		if (!RecvExact(Client, PayloadBuf.GetData(), PayloadLength))
 		{
 			break;
@@ -216,36 +233,14 @@ bool FAudioMCPTcpServer::RecvExact(FSocket* Socket, uint8* Buffer, int32 Size)
 	return BytesRead == Size;
 }
 
-bool FAudioMCPTcpServer::SendResponse(FSocket* Socket, const FString& JsonString)
+bool FAudioMCPTcpServer::SendExact(FSocket* Socket, const uint8* Data, int32 Size)
 {
-	// Convert to UTF-8
-	FTCHARToUTF8 Converter(*JsonString);
-	int32 PayloadSize = Converter.Length();
-
-	// Build 4-byte big-endian header
-	uint8 Header[AudioMCP::HEADER_SIZE];
-	Header[0] = static_cast<uint8>((PayloadSize >> 24) & 0xFF);
-	Header[1] = static_cast<uint8>((PayloadSize >> 16) & 0xFF);
-	Header[2] = static_cast<uint8>((PayloadSize >> 8) & 0xFF);
-	Header[3] = static_cast<uint8>(PayloadSize & 0xFF);
-
-	// Send header
-	int32 BytesSent = 0;
-	if (!Socket->Send(Header, AudioMCP::HEADER_SIZE, BytesSent) || BytesSent != AudioMCP::HEADER_SIZE)
-	{
-		UE_LOG(LogAudioMCPServer, Error, TEXT("Failed to send response header"));
-		return false;
-	}
-
-	// Send payload
-	const uint8* PayloadData = reinterpret_cast<const uint8*>(Converter.Get());
 	int32 TotalSent = 0;
-	while (TotalSent < PayloadSize)
+	while (TotalSent < Size && !bStopping)
 	{
 		int32 Sent = 0;
-		if (!Socket->Send(PayloadData + TotalSent, PayloadSize - TotalSent, Sent))
+		if (!Socket->Send(Data + TotalSent, Size - TotalSent, Sent))
 		{
-			UE_LOG(LogAudioMCPServer, Error, TEXT("Failed to send response payload"));
 			return false;
 		}
 		if (Sent == 0)
@@ -254,6 +249,85 @@ bool FAudioMCPTcpServer::SendResponse(FSocket* Socket, const FString& JsonString
 		}
 		TotalSent += Sent;
 	}
+	return TotalSent == Size;
+}
+
+bool FAudioMCPTcpServer::SendResponse(FSocket* Socket, const FString& JsonString)
+{
+	// Convert to UTF-8
+	FTCHARToUTF8 Converter(*JsonString);
+	int32 PayloadSize = Converter.Length();
+
+	// Response size guard
+	if (PayloadSize > AudioMCP::MAX_MESSAGE_SIZE)
+	{
+		UE_LOG(LogAudioMCPServer, Error,
+			TEXT("Response too large: %d bytes (max %d)"), PayloadSize, AudioMCP::MAX_MESSAGE_SIZE);
+
+		// Send a truncated error response instead
+		FString ErrorJson = AudioMCP::JsonToString(
+			AudioMCP::MakeErrorResponse(
+				FString::Printf(TEXT("Response size %d exceeds maximum %d"),
+					PayloadSize, AudioMCP::MAX_MESSAGE_SIZE)));
+		FTCHARToUTF8 ErrorConverter(*ErrorJson);
+		PayloadSize = ErrorConverter.Length();
+
+		uint8 Header[AudioMCP::HEADER_SIZE];
+		Header[0] = static_cast<uint8>((PayloadSize >> 24) & 0xFF);
+		Header[1] = static_cast<uint8>((PayloadSize >> 16) & 0xFF);
+		Header[2] = static_cast<uint8>((PayloadSize >> 8) & 0xFF);
+		Header[3] = static_cast<uint8>(PayloadSize & 0xFF);
+
+		if (!SendExact(Socket, Header, AudioMCP::HEADER_SIZE))
+		{
+			return false;
+		}
+		return SendExact(Socket, reinterpret_cast<const uint8*>(ErrorConverter.Get()), PayloadSize);
+	}
+
+	// Build 4-byte big-endian header
+	uint8 Header[AudioMCP::HEADER_SIZE];
+	Header[0] = static_cast<uint8>((PayloadSize >> 24) & 0xFF);
+	Header[1] = static_cast<uint8>((PayloadSize >> 16) & 0xFF);
+	Header[2] = static_cast<uint8>((PayloadSize >> 8) & 0xFF);
+	Header[3] = static_cast<uint8>(PayloadSize & 0xFF);
+
+	// Send header using SendExact (handles partial sends)
+	if (!SendExact(Socket, Header, AudioMCP::HEADER_SIZE))
+	{
+		UE_LOG(LogAudioMCPServer, Error, TEXT("Failed to send response header"));
+		return false;
+	}
+
+	// Send payload using SendExact
+	if (!SendExact(Socket, reinterpret_cast<const uint8*>(Converter.Get()), PayloadSize))
+	{
+		UE_LOG(LogAudioMCPServer, Error, TEXT("Failed to send response payload"));
+		return false;
+	}
 
 	return true;
+}
+
+bool FAudioMCPTcpServer::WaitForData(FSocket* Socket, float TimeoutSeconds)
+{
+	// Use native socket Wait() for minimal latency — no polling loop.
+	// Check bStopping in 1-second windows to stay responsive to shutdown.
+	double Deadline = FPlatformTime::Seconds() + TimeoutSeconds;
+	while (!bStopping)
+	{
+		double Remaining = Deadline - FPlatformTime::Seconds();
+		if (Remaining <= 0.0)
+		{
+			return false;
+		}
+
+		// Wait up to 1s at a time so we can check bStopping between waits
+		float WaitTime = FMath::Min(static_cast<float>(Remaining), 1.0f);
+		if (Socket->Wait(ESocketWaitConditions::WaitForRead, FTimespan::FromSeconds(WaitTime)))
+		{
+			return true;
+		}
+	}
+	return false;
 }

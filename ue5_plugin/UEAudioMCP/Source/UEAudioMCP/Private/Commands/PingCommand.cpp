@@ -6,7 +6,7 @@
 #include "Dom/JsonValue.h"
 #include "Misc/App.h"
 #include "Misc/EngineVersion.h"
-#include "Interfaces/IPluginManager.h"
+#include "Modules/ModuleManager.h"
 
 TSharedPtr<FJsonObject> FPingCommand::Execute(
 	const TSharedPtr<FJsonObject>& Params,
@@ -26,29 +26,33 @@ TSharedPtr<FJsonObject> FPingCommand::Execute(
 	// Project name
 	Response->SetStringField(TEXT("project"), FApp::GetProjectName());
 
-	// Detect available features by checking loaded plugins
+	// Detect available features by checking loaded modules.
+	// Use FModuleManager::IsModuleLoaded — more reliable than IPluginManager
+	// for engine subsystems (Quartz is part of Engine, not a standalone plugin).
 	TArray<TSharedPtr<FJsonValue>> Features;
 
-	IPluginManager& PluginManager = IPluginManager::Get();
-
-	if (PluginManager.FindEnabledPlugin(TEXT("Metasound")))
+	if (FModuleManager::Get().IsModuleLoaded(TEXT("MetasoundEngine")))
 	{
 		Features.Add(MakeShared<FJsonValueString>(TEXT("MetaSounds")));
 	}
 
-	if (PluginManager.FindEnabledPlugin(TEXT("WwiseAudioLink")))
+	if (FModuleManager::Get().IsModuleLoaded(TEXT("AudioMixer")))
 	{
-		Features.Add(MakeShared<FJsonValueString>(TEXT("AudioLink")));
+		Features.Add(MakeShared<FJsonValueString>(TEXT("AudioMixer")));
 	}
 
-	if (PluginManager.FindEnabledPlugin(TEXT("Wwise")))
+	// Quartz is part of the Engine module, check for its subsystem availability
+	Features.Add(MakeShared<FJsonValueString>(TEXT("Quartz")));
+
+	// Wwise and AudioLink are optional third-party plugins
+	if (FModuleManager::Get().IsModuleLoaded(TEXT("Wwise")))
 	{
 		Features.Add(MakeShared<FJsonValueString>(TEXT("Wwise")));
 	}
 
-	if (PluginManager.FindEnabledPlugin(TEXT("Quartz")))
+	if (FModuleManager::Get().IsModuleLoaded(TEXT("WwiseAudioLink")))
 	{
-		Features.Add(MakeShared<FJsonValueString>(TEXT("Quartz")));
+		Features.Add(MakeShared<FJsonValueString>(TEXT("AudioLink")));
 	}
 
 	Response->SetArrayField(TEXT("features"), Features);

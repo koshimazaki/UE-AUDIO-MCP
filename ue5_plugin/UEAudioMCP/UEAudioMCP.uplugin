@@ -22,7 +22,7 @@
 	],
 	"Plugins": [
 		{
-			"Name": "Metasound",
+			"Name": "MetaSound",
 			"Enabled": true
 		}
 	]
