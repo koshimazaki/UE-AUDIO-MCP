@@ -1,0 +1,94 @@
+// Copyright UE Audio MCP Project. All Rights Reserved.
+
+#include "UEAudioMCPModule.h"
+#include "AudioMCPTcpServer.h"
+#include "AudioMCPCommandDispatcher.h"
+#include "AudioMCPBuilderManager.h"
+#include "AudioMCPTypes.h"
+#include "Commands/PingCommand.h"
+#include "Commands/BuilderCommands.h"
+#include "Commands/NodeCommands.h"
+#include "Commands/BlueprintCommands.h"
+#include "Modules/ModuleManager.h"
+
+DEFINE_LOG_CATEGORY_STATIC(LogAudioMCPModule, Log, All);
+
+void FUEAudioMCPModule::StartupModule()
+{
+	UE_LOG(LogAudioMCPModule, Log, TEXT("UE Audio MCP plugin starting up..."));
+
+	// Create subsystems in dependency order
+	BuilderManager = MakeUnique<FAudioMCPBuilderManager>();
+	Dispatcher = MakeUnique<FAudioMCPCommandDispatcher>(BuilderManager.Get());
+
+	RegisterCommands();
+
+	TcpServer = MakeUnique<FAudioMCPTcpServer>(Dispatcher.Get());
+	if (TcpServer->StartListening(AudioMCP::DEFAULT_PORT))
+	{
+		UE_LOG(LogAudioMCPModule, Log,
+			TEXT("UE Audio MCP ready — listening on port %d (11 commands registered)"),
+			AudioMCP::DEFAULT_PORT);
+	}
+	else
+	{
+		UE_LOG(LogAudioMCPModule, Error,
+			TEXT("Failed to start Audio MCP TCP server on port %d"),
+			AudioMCP::DEFAULT_PORT);
+	}
+}
+
+void FUEAudioMCPModule::ShutdownModule()
+{
+	UE_LOG(LogAudioMCPModule, Log, TEXT("UE Audio MCP plugin shutting down..."));
+
+	if (TcpServer)
+	{
+		TcpServer->StopListening();
+		TcpServer.Reset();
+	}
+
+	Dispatcher.Reset();
+	BuilderManager.Reset();
+
+	UE_LOG(LogAudioMCPModule, Log, TEXT("UE Audio MCP plugin shut down"));
+}
+
+void FUEAudioMCPModule::RegisterCommands()
+{
+	// 1. Ping
+	Dispatcher->RegisterCommand(TEXT("ping"),
+		MakeShared<FPingCommand>());
+
+	// 2-3. Builder lifecycle
+	Dispatcher->RegisterCommand(TEXT("create_builder"),
+		MakeShared<FCreateBuilderCommand>());
+	Dispatcher->RegisterCommand(TEXT("add_interface"),
+		MakeShared<FAddInterfaceCommand>());
+
+	// 4-5. Graph I/O
+	Dispatcher->RegisterCommand(TEXT("add_graph_input"),
+		MakeShared<FAddGraphInputCommand>());
+	Dispatcher->RegisterCommand(TEXT("add_graph_output"),
+		MakeShared<FAddGraphOutputCommand>());
+
+	// 6-8. Node operations
+	Dispatcher->RegisterCommand(TEXT("add_node"),
+		MakeShared<FAddNodeCommand>());
+	Dispatcher->RegisterCommand(TEXT("set_default"),
+		MakeShared<FSetDefaultCommand>());
+	Dispatcher->RegisterCommand(TEXT("connect"),
+		MakeShared<FConnectCommand>());
+
+	// 9-10. Build & audition
+	Dispatcher->RegisterCommand(TEXT("build_to_asset"),
+		MakeShared<FBuildToAssetCommand>());
+	Dispatcher->RegisterCommand(TEXT("audition"),
+		MakeShared<FAuditionCommand>());
+
+	// 11. Blueprint reflection
+	Dispatcher->RegisterCommand(TEXT("call_function"),
+		MakeShared<FCallFunctionCommand>());
+}
+
+IMPLEMENT_MODULE(FUEAudioMCPModule, UEAudioMCP)
