@@ -258,6 +258,28 @@ PATTERNS: dict[str, dict[str, Any]] = {
             ],
         },
     },
+    "sid_synth": {
+        "ms_template": "sid_chip_tune",
+        "wwise_template": None,
+        "wwise_json": None,
+        "bp_template": None,
+        "default_params": {
+            "wwise": {},
+            "metasounds": {"Lead Freq": 440.0, "Bass Freq": 110.0, "Filter Cutoff": 0.45},
+            "blueprint": {},
+        },
+        "connections": {
+            "wwise_event": None,
+            "metasound_asset": "MS_{name}_SIDSynth",
+            "wiring": [
+                {"from": "blueprint.PlayMetaSound", "to": "metasound.OnPlay", "type": "trigger"},
+                {"from": "blueprint.SetFloatParameter('Lead Freq')", "to": "metasound.Lead Freq", "type": "param"},
+                {"from": "blueprint.SetFloatParameter('Bass Freq')", "to": "metasound.Bass Freq", "type": "param"},
+                {"from": "blueprint.SetFloatParameter('Filter Cutoff')", "to": "metasound.Filter Cutoff", "type": "param"},
+                {"from": "blueprint.SetFloatParameter('Volume')", "to": "metasound.Volume", "type": "param"},
+            ],
+        },
+    },
 }
 
 # Map wwise_template names to template functions (imported lazily)
@@ -733,30 +755,40 @@ AAA_AUDIO_CATEGORIES: dict[str, dict[str, Any]] = {
 }
 
 
-def _route_to_bus(conn, object_path: str, bus_path: str) -> dict[str, Any]:
-    """Set OutputBus reference on a Wwise container to route to an AAA bus."""
+def _route_to_bus(conn, object_ref: str, bus_path: str) -> dict[str, Any]:
+    """Set OutputBus reference on a Wwise container to route to an AAA bus.
+
+    Args:
+        object_ref: GUID or Wwise path of the object to route.
+        bus_path: Wwise path of the target bus.
+    """
     try:
         conn.call("ak.wwise.core.object.setReference", {
-            "object": object_path,
+            "object": object_ref,
             "reference": "OutputBus",
             "value": bus_path,
         })
-        return {"status": "ok", "object": object_path, "bus": bus_path}
+        return {"status": "ok", "object": object_ref, "bus": bus_path}
     except Exception as e:
-        return {"status": "error", "object": object_path, "bus": bus_path, "error": str(e)}
+        return {"status": "error", "object": object_ref, "bus": bus_path, "error": str(e)}
 
 
-def _move_to_work_unit(conn, object_path: str, work_unit_path: str) -> dict[str, Any]:
-    """Move a Wwise object from Default WU to a named Work Unit."""
+def _move_to_work_unit(conn, object_ref: str, work_unit_path: str) -> dict[str, Any]:
+    """Move a Wwise object from Default WU to a named Work Unit.
+
+    Args:
+        object_ref: GUID or Wwise path of the object to move.
+        work_unit_path: Wwise path of the destination Work Unit.
+    """
     try:
         conn.call("ak.wwise.core.object.move", {
-            "object": object_path,
+            "object": object_ref,
             "parent": work_unit_path,
             "onNameConflict": "merge",
         })
-        return {"status": "ok", "object": object_path, "destination": work_unit_path}
+        return {"status": "ok", "object": object_ref, "destination": work_unit_path}
     except Exception as e:
-        return {"status": "error", "object": object_path, "destination": work_unit_path, "error": str(e)}
+        return {"status": "error", "object": object_ref, "destination": work_unit_path, "error": str(e)}
 
 
 @mcp.tool()
