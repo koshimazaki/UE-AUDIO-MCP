@@ -209,6 +209,27 @@ PATTERNS: dict[str, dict[str, Any]] = {
             ],
         },
     },
+    "sfx_generator": {
+        "ms_template": "sfx_generator",
+        "wwise_template": None,
+        "wwise_json": None,
+        "bp_template": None,
+        "default_params": {
+            "wwise": {},
+            "metasounds": {"BaseFrequency": 440.0, "AmpDuration": 1.0},
+            "blueprint": {},
+        },
+        "connections": {
+            "wwise_event": None,
+            "metasound_asset": "MS_{name}_SFXGenerator",
+            "wiring": [
+                {"from": "blueprint.PlayMetaSound", "to": "metasound.OnPlay", "type": "trigger"},
+                {"from": "blueprint.SetFloatParameter('BaseFrequency')", "to": "metasound.BaseFrequency", "type": "param"},
+                {"from": "blueprint.SetFloatParameter('FilterCutoff')", "to": "metasound.FilterCutoff", "type": "param"},
+                {"from": "blueprint.SetFloatParameter('FilterType')", "to": "metasound.FilterType", "type": "param"},
+            ],
+        },
+    },
     "vehicle_engine": {
         "ms_template": "vehicle_engine",
         "wwise_template": None,

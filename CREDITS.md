@@ -158,6 +158,19 @@ Templates derived from official UE5 audio tutorials and documentation:
 
 ---
 
+### Mariia Sakun — Sound Designer
+**Technical Sound Design** | Darkflow (UE5 + MetaSounds), Mortal Void (UE5 + Wwise)
+
+- [Portfolio & Projects](https://www.mariia-sakun-sound.com/projects)
+- Darkflow: Hoverboard system (speed/height/terrain-reactive engine layers + turbo), modular weapon systems (randomized layers + dynamic attenuation)
+- Mortal Void: Weapon design + environmental sound (UE5 + Wwise)
+
+**Templates informed by this work:**
+- `metasounds/vehicle_engine.json` — Multi-layer engine with Trigger Sequence → Random Get → Wave Player + Compressor (based on Darkflow hoverboard architecture)
+- `blueprints/weapon_burst_control.json` — Modular weapon fire patterns
+
+---
+
 ### Other Notable References
 
 - **Dan Reynolds** (Epic Games, Senior Technical Audio Designer) — Rivian motor simulation, MetaSounds architecture guidance

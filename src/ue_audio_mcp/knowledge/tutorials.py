@@ -516,6 +516,15 @@ TUTORIAL_WORKFLOWS = [
         "tags": ["synthesis", "subtractive", "noise", "lfo", "filter", "bandpass", "procedural"],
     },
     {
+        "name": "SFX Synth Generator",
+        "tutorial": "MetaSoundSource SFX Generator (open source UE5.7 plugin)",
+        "url": "https://github.com/metasoundsource/sfx-generator",
+        "layers": ["metasounds", "blueprint"],
+        "metasound_template": "metasounds/sfx_synth.json",
+        "description": "Complete modular SFX synthesizer: 5-oscillator Generator (Pulse/Triangle/Saw/Sine/Noise) → Spectral Effects (WaveShaper/BitCrusher/RingMod) → Crossfade Filter (LP/BP/HP with AD envelope) → Amplifier (Envelope + AM LFO) → Temporal Effects (Delay/Plate Reverb/4x Flanger send bus). Normalized 0-1 inputs mapped via Linear To Log Frequency. Multistage pitch jumps for laser/sci-fi. Wave Writer for recording output. Preset system: one Source, many parameter snapshots = many sounds. Blueprint Editor Widget with knobs, randomize, lock, record toggle.",
+        "tags": ["synthesis", "sfx", "generator", "procedural", "preset", "modular", "oscillator", "filter", "effects", "waveshaper", "bitcrusher", "reverb", "flanger", "delay"],
+    },
+    {
         "name": "Mono Synth (Minimoog-style)",
         "tutorial": "Minimoog-style mono synthesizer with MetaSounds",
         "url": "https://dev.epicgames.com/community/learning/tutorials/metasound-mono-synth",
@@ -524,5 +533,145 @@ TUTORIAL_WORKFLOWS = [
         "metasound_template": "metasounds/mono_synth.json",
         "description": "Minimoog-inspired mono synth: Saw + Pink Noise + Square → Mono Mixer (4) → Biquad Filter (Low Pass). Looping AD Envelope sweeps filter cutoff via Map Range (base Cutoff → Filter env amount). MSP_Sequencer steps MIDI notes with Glide portamento. MSP_ADControl splits Period by attack/decay ratio. Blueprint uses Event Tick → Set Float Parameter for real-time knob updates.",
         "tags": ["synthesis", "mono", "minimoog", "sequencer", "envelope", "filter", "oscillator", "procedural"],
+    },
+]
+
+
+# ===================================================================
+# UE4 Sound Cue → UE5 MetaSounds Conversion Map
+# ===================================================================
+# Source: 207 uasset entries from "Ambient and Procedural Sound Design"
+# (Stevens & Raybould, UE 4.23-4.24, Epic official learning path).
+# Sound Cues are legacy but still work in UE5. MetaSounds replaces them
+# for procedural audio. Blueprint patterns transfer directly.
+
+UE4_TO_UE5_CONVERSION: list[dict] = [
+    # --- Sound Cue Nodes → MetaSounds Equivalents ---
+    {
+        "ue4_node": "Random",
+        "ue4_system": "Sound Cue",
+        "ue4_description": "Picks random input from N connected Sound Waves. Weight per input.",
+        "ue5_equivalent": "Random Get (WaveAssetArray)",
+        "ue5_system": "MetaSounds",
+        "ue5_notes": "Use WaveAsset[] input + No Repeats. Weights via Float[] input.",
+        "example_from": "as_ab_ao_birds_combined, as_ab_ao_Frog_01_Cue",
+    },
+    {
+        "ue4_node": "Delay",
+        "ue4_system": "Sound Cue",
+        "ue4_description": "Adds random delay (min/max) before playing the connected sound.",
+        "ue5_equivalent": "Trigger Delay / Random Float + Trigger Delay",
+        "ue5_system": "MetaSounds",
+        "ue5_notes": "Random Float(Min,Max) → Trigger Delay(Duration) → Wave Player(Play).",
+        "example_from": "as_ab_ao_village_Blue_Tit, as_ab_ao_Pigeon",
+    },
+    {
+        "ue4_node": "Looping",
+        "ue4_system": "Sound Cue",
+        "ue4_description": "Loops the connected sound continuously.",
+        "ue5_equivalent": "Wave Player (Loop=true)",
+        "ue5_system": "MetaSounds",
+        "ue5_notes": "Set Loop bool input to true. Loop Start/Duration for partial loops.",
+        "example_from": "AL_Meadow_With_Wind, as_ab_sl_flies_looping",
+    },
+    {
+        "ue4_node": "Modulator (Pitch)",
+        "ue4_system": "Sound Cue",
+        "ue4_description": "Randomizes pitch within min/max range on each play.",
+        "ue5_equivalent": "Random Float → Wave Player (Pitch Shift)",
+        "ue5_system": "MetaSounds",
+        "ue5_notes": "Random Float(Min,Max) output → Pitch Shift input on Wave Player.",
+        "example_from": "Procedural Sound Design: Modulation Approaches tutorial",
+    },
+    {
+        "ue4_node": "Modulator (Volume)",
+        "ue4_system": "Sound Cue",
+        "ue4_description": "Randomizes volume within min/max range on each play.",
+        "ue5_equivalent": "Random Float → Multiply (Audio by Float)",
+        "ue5_system": "MetaSounds",
+        "ue5_notes": "Random Float → Multiply gain on audio signal.",
+        "example_from": "Procedural Sound Design: Modulation Approaches tutorial",
+    },
+    {
+        "ue4_node": "Concatenator",
+        "ue4_system": "Sound Cue",
+        "ue4_description": "Plays connected sounds in sequence (one after another).",
+        "ue5_equivalent": "Wave Player (On Finished) → next Wave Player (Play)",
+        "ue5_system": "MetaSounds",
+        "ue5_notes": "Chain On Finished triggers. Or use Trigger Sequence for round-robin.",
+        "example_from": "Sequential ambient events",
+    },
+    {
+        "ue4_node": "Switch (by parameter)",
+        "ue4_system": "Sound Cue",
+        "ue4_description": "Selects input based on integer/bool parameter at runtime.",
+        "ue5_equivalent": "Trigger Route / MSP_Switch_3Inputs",
+        "ue5_system": "MetaSounds",
+        "ue5_notes": "Trigger Route for N outputs by index. Or build custom Patch for switching.",
+        "example_from": "Switching Sounds for Fake Occlusion tutorial",
+    },
+    {
+        "ue4_node": "Crossfade by Param",
+        "ue4_system": "Sound Cue",
+        "ue4_description": "Crossfades between inputs based on a float parameter.",
+        "ue5_equivalent": "MSP_CrossFadeByParam_3Inputs / Crossfade (Audio, 2)",
+        "ue5_system": "MetaSounds",
+        "ue5_notes": "For 2 inputs: Crossfade (Audio, 2). For 3+: build custom Patch with Map Range → gains.",
+        "example_from": "Distance-based weapon tails (Craig Owen)",
+    },
+    {
+        "ue4_node": "Mixer",
+        "ue4_system": "Sound Cue",
+        "ue4_description": "Mixes multiple sound inputs with individual volume controls.",
+        "ue5_equivalent": "Mono Mixer / Stereo Mixer",
+        "ue5_system": "MetaSounds",
+        "ue5_notes": "Mono Mixer(N) for mono, Stereo Mixer(N) for stereo. Per-input Gain.",
+        "example_from": "Layered ambient beds, vehicle engine layers",
+    },
+    {
+        "ue4_node": "Attenuation",
+        "ue4_system": "Sound Cue",
+        "ue4_description": "Distance-based volume falloff settings.",
+        "ue5_equivalent": "Sound Attenuation asset (unchanged)",
+        "ue5_system": "UE5 (same system)",
+        "ue5_notes": "Sound Attenuation assets work identically in UE5. No conversion needed.",
+        "example_from": "93 attenuation presets from Ambient Procedural Sound project",
+    },
+    # --- Blueprint Audio Functions (UE4→UE5, mostly unchanged) ---
+    {
+        "ue4_node": "SpawnSoundAtLocation",
+        "ue4_system": "Blueprint",
+        "ue4_description": "Spawns a 3D sound at a world location. Fire-and-forget.",
+        "ue5_equivalent": "SpawnSoundAtLocation (unchanged)",
+        "ue5_system": "Blueprint (same API)",
+        "ue5_notes": "Works identically. Can now reference MetaSounds Source instead of Sound Cue.",
+        "example_from": "Audio_Fairy_01_Public, Fish_Splash_DEMO",
+    },
+    {
+        "ue4_node": "SpawnSoundAttached",
+        "ue4_system": "Blueprint",
+        "ue4_description": "Spawns a sound attached to a component (follows it).",
+        "ue5_equivalent": "SpawnSoundAttached (unchanged)",
+        "ue5_system": "Blueprint (same API)",
+        "ue5_notes": "Works identically. Add SetFloatParameter for MetaSounds graph inputs.",
+        "example_from": "Audio_Cave_Door_bp_01, Player Oriented Sound Blueprint",
+    },
+    {
+        "ue4_node": "Audio Volume (Ambient Zone)",
+        "ue4_system": "Level Design",
+        "ue4_description": "Volume actor with interior/exterior audio settings for occlusion.",
+        "ue5_equivalent": "Audio Gameplay Volume",
+        "ue5_system": "UE5 (upgraded)",
+        "ue5_notes": "UE5 Audio Gameplay Volumes extend Audio Volumes with submix routing and effect profiles.",
+        "example_from": "Ambient Zones for Occlusion, Dynamic Occlusion tutorials",
+    },
+    {
+        "ue4_node": "Sound Cue (general)",
+        "ue4_system": "Sound Cue",
+        "ue4_description": "Node-based audio graph for randomization, modulation, layering.",
+        "ue5_equivalent": "MetaSounds Source",
+        "ue5_system": "MetaSounds",
+        "ue5_notes": "MetaSounds replaces Sound Cues for all procedural audio. Sound Cues still work for simple playback but cannot do DSP synthesis, filters, or real-time parameter modulation.",
+        "example_from": "All 48 Sound Cues from Ambient Procedural Sound project",
     },
 ]

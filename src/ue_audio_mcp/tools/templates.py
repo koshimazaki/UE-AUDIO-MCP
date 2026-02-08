@@ -67,6 +67,238 @@ def _create_event(conn, name: str, target_id: str, action: str = "Play") -> dict
     })
 
 
+# ---------------------------------------------------------------------------
+# AAA project structure definition
+# ---------------------------------------------------------------------------
+
+AAA_BUS_STRUCTURE: dict = {
+    "AmbientMaster": {
+        "type": "Bus",
+        "children": {
+            "2DAmbience": {"type": "Bus"},
+            "3DAmbience": {"type": "Bus"},
+            "AmbientBeds": {
+                "type": "Bus",
+                "children": {
+                    "2DAmbientBeds": {"type": "Bus"},
+                },
+            },
+        },
+    },
+    "NPCMaster": {
+        "type": "Bus",
+        "children": {
+            "NPCFootsteps": {"type": "Bus"},
+            "NPCVoice": {"type": "Bus"},
+        },
+    },
+    "PlayerMaster": {
+        "type": "Bus",
+        "children": {
+            "PlayerLocomotion": {
+                "type": "Bus",
+                "children": {
+                    "PlayerFootsteps": {"type": "Bus"},
+                },
+            },
+            "PlayerWeapons": {"type": "Bus"},
+        },
+    },
+    "UIMaster": {
+        "type": "Bus",
+    },
+    "MusicMaster": {
+        "type": "Bus",
+    },
+    "Reverbs": {
+        "type": "AuxBus",
+        "children": {
+            "LargeRoom": {"type": "AuxBus"},
+            "SmallRoom": {"type": "AuxBus"},
+            "Cave": {"type": "AuxBus"},
+            "Outdoor": {"type": "AuxBus"},
+        },
+    },
+}
+
+AAA_ACTOR_WORK_UNITS: list[str] = [
+    "Player_Locomotion",
+    "Player_Weapons",
+    "NPC_Locomotion",
+    "NPC_Voice",
+    "Ambience",
+    "UI",
+    "Music",
+]
+
+AAA_EVENT_WORK_UNITS: list[str] = [
+    "Player",
+    "NPC",
+    "Locomotion",
+    "Ambience",
+    "UI",
+    "Music",
+]
+
+AAA_SWITCH_GROUPS: dict[str, list[str]] = {
+    "Surface_Type": ["Concrete", "Wood", "Grass", "Metal", "Gravel", "Water", "Sand", "Snow"],
+    "Footstep_Type": ["Walk", "Run", "Sprint", "Land", "Jump"],
+}
+
+AAA_STATE_GROUPS: dict[str, list[str]] = {
+    "Weather": ["Clear", "Cloudy", "LightRain", "HeavyRain", "Storm", "Snow"],
+    "PlayerState": ["Alive", "Dead", "Paused", "InMenu"],
+    "Zone": ["Interior", "Exterior", "Underwater", "Cave"],
+}
+
+
+def _create_bus_tree(conn, parent_path: str, tree: dict, created: dict) -> None:
+    """Recursively create a bus hierarchy from a nested dict."""
+    for name, spec in tree.items():
+        obj_type = spec.get("type", "Bus")
+        bus = _create(conn, parent_path, obj_type, name)
+        bus_id = bus["id"]
+        created[name] = {"id": bus_id, "type": obj_type}
+        children = spec.get("children")
+        if children:
+            _create_bus_tree(conn, bus_id, children, created)
+
+
+@mcp.tool()
+def template_aaa_setup(
+    bus_structure: str = "",
+    actor_work_units: str = "",
+    event_work_units: str = "",
+    switch_groups: str = "",
+    state_groups: str = "",
+    include_reverbs: bool = True,
+) -> str:
+    """Create a complete AAA Wwise project structure (Bjorn Jacobson method).
+
+    Creates separate Work Units for merge-safe version control, structured bus
+    hierarchy for clear signal routing, and switch/state groups for runtime control.
+
+    Naming convention: Type_Owner_Category_Action_Material_Variation
+    Example: sfx_plyr_loc_walking_dirt_01
+
+    Everything goes into dedicated Work Units — nothing in Default Work Unit.
+
+    Args:
+        bus_structure: JSON override for bus tree (default: AAA standard with
+            AmbientMaster, NPCMaster, PlayerMaster, UIMaster, MusicMaster, Reverbs)
+        actor_work_units: JSON array of Actor-Mixer Work Unit names
+            (default: Player_Locomotion, Player_Weapons, NPC_Locomotion, NPC_Voice,
+            Ambience, UI, Music)
+        event_work_units: JSON array of Event Work Unit names
+            (default: Player, NPC, Locomotion, Ambience, UI, Music)
+        switch_groups: JSON dict of SwitchGroup name -> values array
+            (default: Surface_Type, Footstep_Type)
+        state_groups: JSON dict of StateGroup name -> values array
+            (default: Weather, PlayerState, Zone)
+        include_reverbs: Create Reverb AuxBuses (LargeRoom, SmallRoom, Cave, Outdoor)
+    """
+    # Parse overrides or use defaults
+    try:
+        buses = json.loads(bus_structure) if bus_structure else AAA_BUS_STRUCTURE
+    except json.JSONDecodeError:
+        return _error(f"Invalid bus_structure JSON: {bus_structure}")
+
+    try:
+        actor_wus = json.loads(actor_work_units) if actor_work_units else AAA_ACTOR_WORK_UNITS
+    except json.JSONDecodeError:
+        return _error(f"Invalid actor_work_units JSON: {actor_work_units}")
+
+    try:
+        event_wus = json.loads(event_work_units) if event_work_units else AAA_EVENT_WORK_UNITS
+    except json.JSONDecodeError:
+        return _error(f"Invalid event_work_units JSON: {event_work_units}")
+
+    try:
+        sw_groups = json.loads(switch_groups) if switch_groups else AAA_SWITCH_GROUPS
+    except json.JSONDecodeError:
+        return _error(f"Invalid switch_groups JSON: {switch_groups}")
+
+    try:
+        st_groups = json.loads(state_groups) if state_groups else AAA_STATE_GROUPS
+    except json.JSONDecodeError:
+        return _error(f"Invalid state_groups JSON: {state_groups}")
+
+    if not include_reverbs:
+        buses = {k: v for k, v in buses.items() if k != "Reverbs"}
+
+    conn = get_wwise_connection()
+
+    try:
+        _begin_undo(conn, "AAA Project Setup")
+
+        result: dict = {
+            "template": "aaa_setup",
+            "buses": {},
+            "actor_work_units": {},
+            "event_work_units": {},
+            "switch_groups": {},
+            "state_groups": {},
+        }
+
+        # --- 1. Master Mixer bus hierarchy ---
+        master_bus = DEFAULT_PATHS["master_bus"]
+        _create_bus_tree(conn, master_bus, buses, result["buses"])
+
+        # --- 2. Actor-Mixer Work Units (separate .wwu files) ---
+        actor_root = "\\Actor-Mixer Hierarchy"
+        for wu_name in actor_wus:
+            wu = _create(conn, actor_root, "WorkUnit", wu_name)
+            result["actor_work_units"][wu_name] = wu["id"]
+
+        # --- 3. Event Work Units (separate .wwu files) ---
+        event_root = "\\Events"
+        for wu_name in event_wus:
+            wu = _create(conn, event_root, "WorkUnit", wu_name)
+            result["event_work_units"][wu_name] = wu["id"]
+
+        # --- 4. Switch Groups ---
+        for sg_name, values in sw_groups.items():
+            sg = _create(conn, DEFAULT_PATHS["switches"], "SwitchGroup", sg_name)
+            sg_id = sg["id"]
+            switch_ids = {}
+            for val in values:
+                sw = _create(conn, sg_id, "Switch", val)
+                switch_ids[val] = sw["id"]
+            result["switch_groups"][sg_name] = {
+                "id": sg_id,
+                "values": switch_ids,
+            }
+
+        # --- 5. State Groups ---
+        for sg_name, values in st_groups.items():
+            sg = _create(conn, DEFAULT_PATHS["states"], "StateGroup", sg_name)
+            sg_id = sg["id"]
+            state_ids = {}
+            for val in values:
+                st = _create(conn, sg_id, "State", val)
+                state_ids[val] = st["id"]
+            result["state_groups"][sg_name] = {
+                "id": sg_id,
+                "values": state_ids,
+            }
+
+        _end_undo(conn)
+
+        # Summary counts
+        result["summary"] = {
+            "buses_created": len(result["buses"]),
+            "actor_work_units_created": len(result["actor_work_units"]),
+            "event_work_units_created": len(result["event_work_units"]),
+            "switch_groups_created": len(result["switch_groups"]),
+            "state_groups_created": len(result["state_groups"]),
+        }
+
+        return _ok(result)
+    except Exception as e:
+        _cancel_undo(conn)
+        return _error(str(e))
+
+
 @mcp.tool()
 def template_gunshot(
     weapon_name: str = "Rifle",

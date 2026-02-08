@@ -197,6 +197,14 @@
       "name": "AmpLFO",
       "type": "Float",
       "description": "Block-rate LFO output for widget visualization"
+    },
+    {
+      "name": "Out Stereo L",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo R",
+      "type": "Audio"
     }
   ],
   "nodes": [
@@ -278,7 +286,7 @@
     },
     {
       "id": "ringmod_env",
-      "node_type": "AD Envelope",
+      "node_type": "AD Envelope (Float)",
       "position": [
         700,
         200
@@ -314,7 +322,7 @@
     },
     {
       "id": "filter_env",
-      "node_type": "AD Envelope",
+      "node_type": "AD Envelope (Float)",
       "position": [
         900,
         200
@@ -369,6 +377,9 @@
         1800,
         200
       ],
+      "defaults": {
+        "A": 1.0
+      },
       "comment": "1.0 - LFODepth + (LFO \u00d7 LFODepth) = amplitude modulation with depth control"
     },
     {
@@ -538,19 +549,19 @@
       "from_node": "__graph__",
       "from_pin": "OnPlay",
       "to_node": "ringmod_env",
-      "to_pin": "On Trigger"
+      "to_pin": "Trigger"
     },
     {
       "from_node": "__graph__",
       "from_pin": "RingModEnvAttack",
       "to_node": "ringmod_env",
-      "to_pin": "Attack Time"
+      "to_pin": "Attack"
     },
     {
       "from_node": "__graph__",
       "from_pin": "RingModEnvDecay",
       "to_node": "ringmod_env",
-      "to_pin": "Decay Time"
+      "to_pin": "Decay"
     },
     {
       "from_node": "__graph__",
@@ -562,23 +573,23 @@
       "from_node": "__graph__",
       "from_pin": "OnPlay",
       "to_node": "filter_env",
-      "to_pin": "On Trigger"
+      "to_pin": "Trigger"
     },
     {
       "from_node": "__graph__",
       "from_pin": "FilterEnvAttack",
       "to_node": "filter_env",
-      "to_pin": "Attack Time"
+      "to_pin": "Attack"
     },
     {
       "from_node": "__graph__",
       "from_pin": "FilterEnvDecay",
       "to_node": "filter_env",
-      "to_pin": "Decay Time"
+      "to_pin": "Decay"
     },
     {
       "from_node": "filter_env",
-      "from_pin": "Out Envelope",
+      "from_pin": "Envelope",
       "to_node": "filter_env_scale",
       "to_pin": "A"
     },
@@ -797,6 +808,18 @@
       "from_pin": "OnDone",
       "to_node": "__graph__",
       "to_pin": "OnFinished"
+    },
+    {
+      "from_node": "effects_mixer",
+      "from_pin": "Out",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo L"
+    },
+    {
+      "from_node": "effects_mixer",
+      "from_pin": "Out",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo R"
     }
   ],
   "notes": "Key architecture patterns from TechAudioTools SFX Generator: (1) Single workhorse synth topology: Generator\u2192Spectral\u2192Filter\u2192Amp\u2192Effects. (2) Spectral effects in series (WaveShaper\u2192BitCrusher\u2192RingMod) for harmonic richness. (3) SVF crossfade filter acts like DJ filter \u2014 smooth LP\u2194BP\u2194HP transition. (4) Temporal effects processed in PARALLEL and mixed back (not series). (5) Envelope Follower on output detects when sound+tails have fully decayed. (6) Wave Writer captures output to wav for iteration. (7) All parameters designed for Preset Widget randomization \u2014 each has meaningful default and range. (8) Audio Buses can feed mid-graph data to analyzer widgets for real-time visualization."

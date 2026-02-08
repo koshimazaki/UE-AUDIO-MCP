@@ -1550,6 +1550,146 @@ _register(_node(
 ))
 
 
+# -------------------------------------------------------------------
+# Effects — Spectral  (4 nodes, from SFX Generator screenshots)
+# -------------------------------------------------------------------
+
+_register(_node(
+    "WaveShaper", "Effects",
+    "Waveshaping distortion with configurable curve type. Amount controls drive, "
+    "Bias shifts DC offset, OutputGain compensates volume. Type: Sine, HardClip, SoftClip, Tanh. "
+    "From SFX Generator — first in spectral effects chain.",
+    [_in("In", "Audio"),
+     _in("Amount", "Float", default=0.0),
+     _in("Bias", "Float", required=False, default=0.0),
+     _in("OutputGain", "Float", required=False, default=1.0),
+     _in("Type", "Enum", required=False, default="Sine")],
+    [_out("Out", "Audio")],
+    ["waveshaper", "distortion", "saturation", "overdrive", "shaping", "sine",
+     "sfx", "spectral"],
+    complexity=2,
+))
+
+_register(_node(
+    "BitCrusher", "Effects",
+    "Reduces sample rate and bit depth for lo-fi / aliased spectral effects. "
+    "Low Sample Rate creates aliasing. Low Bit Depth creates quantization noise. "
+    "From SFX Generator — used for harsh spectral output.",
+    [_in("Audio", "Audio"),
+     _in("Sample Rate", "Float", default=48000.0),
+     _in("Bit Depth", "Float", required=False, default=8.0)],
+    [_out("Audio", "Audio")],
+    ["bitcrusher", "lofi", "alias", "retro", "downsample", "quantize",
+     "sfx", "spectral"],
+    complexity=2,
+))
+
+_register(_node(
+    "Ring Modulator", "Effects",
+    "Ring modulation — multiplies input signal by a modulator oscillator. "
+    "Built-in AD envelope controls modulator depth. Creates metallic, inharmonic tones. "
+    "From SFX Generator — last in spectral effects chain.",
+    [_in("Audio", "Audio"),
+     _in("Modulator Frequency", "Float", default=440.0),
+     _in("Depth", "Float", required=False, default=1.0),
+     _in("Attack Time", "Time", required=False, default=0.01),
+     _in("Decay Time", "Time", required=False, default=0.1)],
+    [_out("Audio", "Audio")],
+    ["ringmod", "ring", "modulator", "metallic", "inharmonic", "am",
+     "sfx", "spectral"],
+    complexity=3,
+))
+
+_register(_node(
+    "Crossfade (Audio, 2)", "Effects",
+    "Crossfades between two audio inputs based on a float value (0.0 = In 0, 1.0 = In 1). "
+    "Used for wet/dry mixing on effects chains. From SFX Generator.",
+    [_in("Crossfade Value", "Float", default=0.0),
+     _in("In 0", "Audio"),
+     _in("In 1", "Audio")],
+    [_out("Out", "Audio")],
+    ["crossfade", "blend", "mix", "wetdry", "interpolate"],
+    complexity=1,
+))
+
+
+# -------------------------------------------------------------------
+# Effects — Temporal  (3 nodes, from SFX Generator screenshots)
+# -------------------------------------------------------------------
+
+_register(_node(
+    "Delay (Time)", "Effects",
+    "Audio delay effect with feedback. Delay Time in seconds, "
+    "Dry Level controls direct signal, Feedback controls repeats. "
+    "From SFX Generator temporal effects section.",
+    [_in("In", "Audio"),
+     _in("Delay Time", "Time", default=0.3),
+     _in("Dry Level", "Float", required=False, default=0.0),
+     _in("Feedback", "Float", required=False, default=0.5),
+     _in("Reset", "Trigger", required=False)],
+    [_out("Out", "Audio")],
+    ["delay", "echo", "repeat", "feedback", "temporal", "sfx"],
+    complexity=2,
+))
+
+_register(_node(
+    "Plate Reverb (Stereo)", "Effects",
+    "Stereo plate reverb with bypass, separate dry/wet level controls. "
+    "From SFX Generator temporal effects section.",
+    [_in("Bypass", "Bool", required=False, default=False),
+     _in("In Left", "Audio"),
+     _in("In Right", "Audio"),
+     _in("Dry Level", "Float", required=False, default=0.0),
+     _in("Wet Level", "Float", required=False, default=1.0)],
+    [_out("Out Left", "Audio"),
+     _out("Out Right", "Audio")],
+    ["reverb", "plate", "stereo", "space", "room", "temporal", "sfx"],
+    complexity=3,
+))
+
+## Flanger already registered under General with pins Audio/Audio
+
+
+# -------------------------------------------------------------------
+# Utility — Frequency / Analysis  (4 nodes, from SFX Generator)
+# -------------------------------------------------------------------
+
+_register(_node(
+    "Linear To Log Frequency", "Utility",
+    "Maps a normalized 0-1 value to a logarithmic frequency range (Hz). "
+    "Min/Max Domain define input range, Min/Max Range define output Hz range. "
+    "Essential for frequency knobs: linear knob → perceptually even pitch. "
+    "From SFX Generator base frequency section.",
+    [_in("Value", "Float", default=0.5),
+     _in("Min Domain", "Float", required=False, default=0.0),
+     _in("Max Domain", "Float", required=False, default=1.0),
+     _in("Min Range", "Float", required=False, default=20.0),
+     _in("Max Range", "Float", required=False, default=20000.0)],
+    [_out("Frequency", "Float")],
+    ["frequency", "log", "linear", "mapping", "hz", "pitch", "knob",
+     "normalize", "sfx"],
+    complexity=2,
+))
+
+## Envelope Follower already registered under Envelopes with pins Audio/Envelope
+
+_register(_node(
+    "Trigger On Threshold (Audio)", "Utility",
+    "Fires a trigger when audio signal crosses a threshold. "
+    "Type: Rising Edge or Falling Edge. Used with Envelope Follower "
+    "to detect when a sound finishes (signal drops below threshold). "
+    "From SFX Generator output section.",
+    [_in("In", "Audio"),
+     _in("Threshold", "Float", default=0.01),
+     _in("Type", "Enum", required=False, default="Falling Edge")],
+    [_out("Out", "Trigger")],
+    ["trigger", "threshold", "gate", "detection", "onset", "offset", "sfx"],
+    complexity=2,
+))
+
+## Wave Writer already registered under External IO with pins Audio/Filename/Start
+
+
 # ===================================================================
 # Query / search helpers
 # ===================================================================
