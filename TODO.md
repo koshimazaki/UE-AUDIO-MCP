@@ -30,6 +30,7 @@ Lifecycle        None            None                GAP
 - [x] README — updated with full inventory
 - [x] CREDITS — all tutorial authors attributed
 - [x] 241 tests passing
+- [ ] add get node position to see the range and position graphs properly
 
 ## Phase: Get It Running
 

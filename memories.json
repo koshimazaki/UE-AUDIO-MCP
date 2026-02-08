@@ -964,7 +964,43 @@
       "lastAccessed": "2026-02-08T10:33:52.345Z",
       "lastVerified": "2026-02-08T10:33:52.345Z",
       "status": "fresh"
+    },
+    {
+      "id": "mem_1770552701052_ac7tebkr1",
+      "content": "MILESTONE: MetaSounds Save & Open in Editor VERIFIED WORKING (2026-02-08)\n- Full pipeline: Python script → TCP → C++ plugin → EditorSubsystem::BuildToAsset → .uasset on disk → OpenEditorForAsset → graph visible in MetaSounds editor\n- UE project location: /Users/radek/Documents/Unreal Projects/UEIntroProject/\n- Plugin must be copied to UEIntroProject/Plugins/UEAudioMCP/ (not symlinked from git repo)\n- Must delete Binaries/ and Intermediate/ when updating plugin source to force recompile\n- Launcher rebuild works, Live Coding does NOT work for new module dependencies\n- 21 C++ commands, 51 Python tools, 262 tests passing",
+      "type": "general",
+      "tags": [
+        "general",
+        "python",
+        "milestone",
+        "ue5",
+        "metasounds",
+        "verified",
+        "deployment"
+      ],
+      "timestamp": "2026-02-08T12:11:41.052Z",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-08T12:11:41.052Z",
+      "lastVerified": "2026-02-08T12:11:41.052Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770552878936_sctfyv34g",
+      "content": "Real UE5 MetaSounds pin names (verified via live plugin 2026-02-08):\n- Biquad Filter: inputs \"In\", \"Cutoff Frequency\", \"Bandwidth\"; outputs \"Out\"\n- AD Envelope (Float): inputs \"Trigger\", \"Attack Time\", \"Decay Time\"; outputs \"Out Envelope\"\n- Noise: outputs \"Audio\"\n- Sine: outputs \"Audio\"; inputs \"Frequency\"\n- Multiply (Audio by Float): inputs \"PrimaryOperand\" (audio), \"AdditionalOperands\" (float); outputs \"Out\"\n- Source graph: OnPlay output handle, Audio:0 input handle",
+      "type": "general",
+      "tags": [
+        "general",
+        "ue5",
+        "metasounds",
+        "pin-names",
+        "verified"
+      ],
+      "timestamp": "2026-02-08T12:14:38.935Z",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-08T12:14:38.935Z",
+      "lastVerified": "2026-02-08T12:14:38.935Z",
+      "status": "fresh"
     }
   ],
-  "lastUpdated": "2026-02-08T10:33:52.345Z"
+  "lastUpdated": "2026-02-08T12:14:38.935Z"
 }
