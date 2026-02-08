@@ -86,6 +86,9 @@ public:
 	/** Stop any currently playing audition. */
 	void StopAudition();
 
+	/** Open the last built asset in the MetaSounds editor. */
+	bool OpenInEditor(FString& OutError);
+
 	/** Check if a builder is currently active. */
 	bool HasActiveBuilder() const { return ActiveBuilder.IsValid(); }
 
@@ -119,6 +122,9 @@ private:
 
 	// Keep AudioComponent alive during audition (prevents GC)
 	TStrongObjectPtr<UAudioComponent> AuditionAudioComponent;
+
+	// Last asset built by BuildToAsset (for OpenInEditor)
+	TWeakObjectPtr<UObject> LastBuiltAsset;
 
 	/** Build the node type lookup map from the MetaSound registry. */
 	void BuildNodeTypeMap();

@@ -27,6 +27,7 @@ public class UEAudioMCP : ModuleRules
 			"Projects",
 			"UnrealEd",
 			"AudioMixer",
+			"MetasoundEditor",   // UMetaSoundEditorSubsystem: BuildToAsset, SetNodeLocation
 		});
 	}
 }

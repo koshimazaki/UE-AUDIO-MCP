@@ -66,3 +66,12 @@ public:
 		const TSharedPtr<FJsonObject>& Params,
 		FAudioMCPBuilderManager& BuilderManager) override;
 };
+
+/** open_in_editor: Open the last built MetaSound asset in the editor. */
+class FOpenInEditorCommand : public IAudioMCPCommand
+{
+public:
+	virtual TSharedPtr<FJsonObject> Execute(
+		const TSharedPtr<FJsonObject>& Params,
+		FAudioMCPBuilderManager& BuilderManager) override;
+};

@@ -30,7 +30,7 @@ void FUEAudioMCPModule::StartupModule()
 	if (TcpServer->StartListening(AudioMCP::DEFAULT_PORT))
 	{
 		UE_LOG(LogAudioMCPModule, Log,
-			TEXT("UE Audio MCP ready — listening on port %d (19 commands registered)"),
+			TEXT("UE Audio MCP ready — listening on port %d (21 commands registered)"),
 			AudioMCP::DEFAULT_PORT);
 	}
 	else
@@ -90,13 +90,15 @@ void FUEAudioMCPModule::RegisterCommands()
 	Dispatcher->RegisterCommand(TEXT("connect"),
 		MakeShared<FConnectCommand>());
 
-	// 9-11. Build & audition
+	// 9-12. Build, audition & editor
 	Dispatcher->RegisterCommand(TEXT("build_to_asset"),
 		MakeShared<FBuildToAssetCommand>());
 	Dispatcher->RegisterCommand(TEXT("audition"),
 		MakeShared<FAuditionCommand>());
 	Dispatcher->RegisterCommand(TEXT("stop_audition"),
 		MakeShared<FStopAuditionCommand>());
+	Dispatcher->RegisterCommand(TEXT("open_in_editor"),
+		MakeShared<FOpenInEditorCommand>());
 
 	// 11. Blueprint reflection
 	Dispatcher->RegisterCommand(TEXT("call_function"),

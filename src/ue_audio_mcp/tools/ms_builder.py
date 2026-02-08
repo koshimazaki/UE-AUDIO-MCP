@@ -1,6 +1,6 @@
 """MetaSounds Builder API tools — send commands to UE5 plugin via TCP.
 
-7 tools that wrap the Builder API command protocol from graph_schema.py.
+8 tools that wrap the Builder API command protocol from graph_schema.py.
 Requires an active UE5 plugin connection (ue5_connect).
 """
 
@@ -204,6 +204,24 @@ def ms_save_asset(name: str, path: str = "/Game/Audio/Generated/") -> str:
         })
         return _ok({
             "message": "Saved asset '{}' to {}".format(name, path),
+            "result": result,
+        })
+    except Exception as e:
+        return _error(str(e))
+
+
+@mcp.tool()
+def ms_open_in_editor() -> str:
+    """Open the last built MetaSound asset in the UE5 MetaSounds editor.
+
+    Must call ms_save_asset first to create a .uasset on disk.
+    Opens the graph editor showing all nodes and connections visually.
+    """
+    conn = get_ue5_connection()
+    try:
+        result = conn.send_command({"action": "open_in_editor"})
+        return _ok({
+            "message": "Opened MetaSound asset in editor",
             "result": result,
         })
     except Exception as e:

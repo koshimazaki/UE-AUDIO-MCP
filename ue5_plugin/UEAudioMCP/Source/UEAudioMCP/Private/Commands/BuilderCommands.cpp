@@ -220,3 +220,20 @@ TSharedPtr<FJsonObject> FStopAuditionCommand::Execute(
 	BuilderManager.StopAudition();
 	return AudioMCP::MakeOkResponse(TEXT("Audition stopped"));
 }
+
+// ---------------------------------------------------------------------------
+// open_in_editor
+// ---------------------------------------------------------------------------
+
+TSharedPtr<FJsonObject> FOpenInEditorCommand::Execute(
+	const TSharedPtr<FJsonObject>& Params,
+	FAudioMCPBuilderManager& BuilderManager)
+{
+	FString Error;
+	if (!BuilderManager.OpenInEditor(Error))
+	{
+		return AudioMCP::MakeErrorResponse(Error);
+	}
+
+	return AudioMCP::MakeOkResponse(TEXT("Opened MetaSound asset in editor"));
+}

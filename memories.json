@@ -219,8 +219,8 @@
       ],
       "timestamp": "2026-02-06T15:09:24.940Z",
       "context": "Phase 2 comprehensive analysis for UE5-WWISE MCP project",
-      "accessCount": 2,
-      "lastAccessed": "2026-02-07T11:54:06.223Z",
+      "accessCount": 3,
+      "lastAccessed": "2026-02-08T10:11:41.677Z",
       "lastVerified": "2026-02-06T15:09:24.940Z",
       "status": "fresh"
     },
@@ -257,8 +257,8 @@
       ],
       "timestamp": "2026-02-06T16:21:53.628Z",
       "context": "Builder API research from official UE5 docs for Phase 3 C++ plugin implementation",
-      "accessCount": 1,
-      "lastAccessed": "2026-02-07T11:54:06.223Z",
+      "accessCount": 2,
+      "lastAccessed": "2026-02-08T10:11:41.677Z",
       "lastVerified": "2026-02-06T16:21:53.628Z",
       "status": "fresh"
     },
@@ -379,8 +379,8 @@
       ],
       "timestamp": "2026-02-07T00:32:53.888Z",
       "context": "Blueprint+MetaSounds workflow sources for agent training data",
-      "accessCount": 1,
-      "lastAccessed": "2026-02-07T11:54:06.223Z",
+      "accessCount": 2,
+      "lastAccessed": "2026-02-08T10:11:41.677Z",
       "lastVerified": "2026-02-07T00:32:53.888Z",
       "status": "fresh"
     },
@@ -596,8 +596,8 @@
       ],
       "timestamp": "2026-02-07T11:50:54.026Z",
       "context": "From Craig Owen video tutorial on crossfade-by-parameter MetaSounds patches, analyzed via multiple UE5 editor screenshots",
-      "accessCount": 1,
-      "lastAccessed": "2026-02-07T11:54:06.223Z",
+      "accessCount": 2,
+      "lastAccessed": "2026-02-08T10:11:41.677Z",
       "lastVerified": "2026-02-07T11:50:54.026Z",
       "status": "fresh"
     },
@@ -615,8 +615,8 @@
         "synthesis"
       ],
       "timestamp": "2026-02-07T13:17:31.417Z",
-      "accessCount": 0,
-      "lastAccessed": "2026-02-07T13:17:31.417Z",
+      "accessCount": 1,
+      "lastAccessed": "2026-02-08T10:11:41.677Z",
       "lastVerified": "2026-02-07T13:17:31.417Z",
       "status": "fresh"
     },
@@ -635,8 +635,8 @@
       ],
       "timestamp": "2026-02-07T13:28:14.915Z",
       "context": "Research for UE5-WWISE MCP project - audio-driven gameplay patterns that could be implemented as MCP tools",
-      "accessCount": 0,
-      "lastAccessed": "2026-02-07T13:28:14.915Z",
+      "accessCount": 1,
+      "lastAccessed": "2026-02-08T10:11:41.677Z",
       "lastVerified": "2026-02-07T13:28:14.915Z",
       "status": "fresh"
     },
@@ -725,24 +725,246 @@
       "status": "fresh"
     },
     {
-      "id": "mem_1770506732556_bzfia470n",
-      "content": "## Wwise MCP Architecture - Complete Exploration Results\n\n### Connection Layer (connection.py)\n- **WwiseConnection singleton class**: manages WebSocket connection to WAAPI\n- Uses official `waapi-client` library (WaapiClient wrapper)\n- Default URL: `ws://127.0.0.1:8080/waapi`\n- Core methods: connect(), disconnect(), is_connected(), call(uri, args, options)\n- Single global instance via get_wwise_connection() singleton function\n- Error handling: RuntimeError if not connected before calling call()\n\n### Helper Utilities (tools/utils.py)\n- `_ok(data)`: Returns JSON string with status=\"ok\", strips any 'status' key from data to prevent overwrites\n- `_error(message)`: Returns JSON string with status=\"error\" + message\n- All tools return JSON strings, not dicts\n- Pattern: parse result with json.loads() in tests/clients\n\n### Template Tools Architecture (tools/templates.py)\n**5 Complete Template Functions:**\n\n1. **template_gunshot(weapon_name, num_variations, pitch_randomization)**\n   - Creates RandomSequenceContainer + N Sound children\n   - Sets PitchModMin/PitchModMax on each Sound\n   - Creates Play Event targeting container\n   - Returns: container_id, sound_ids[], event_id\n\n2. **template_footsteps(surface_types JSON, with_switch_group bool)**\n   - Optional SwitchGroup creation with Switch values per surface\n   - Creates SwitchContainer with reference to SwitchGroup\n   - Per-surface RandomSequenceContainers with assignments\n   - Play Event targeting container\n\n3. **template_ambient(layer_names JSON, rtpc_parameter_name)**\n   - Creates GameParameter (RTPC)\n   - Creates BlendContainer with looped Sound children\n   - Each Sound has IsLoopingEnabled=True, IsLoopingInfinite=True\n   - Play Event\n\n4. **template_ui_sound(sound_name, bus_path)**\n   - Creates UI ActorMixer container\n   - Single Sound child\n   - Bus routing via setReference (OutputBus)\n   - Play Event\n\n5. **template_weather_states(weather_states JSON)**\n   - Creates StateGroup with State values\n   - SwitchContainer with StateGroup reference\n   - Per-state Sound children with looping\n   - Assignments via addAssignment\n   - Play Event\n\n**Common Undo Pattern:**\n- All templates wrap operations: _begin_undo() → operations → _end_undo()\n- On exception: _cancel_undo() called\n- Undo label set from conn._undo_label = label\n- WAAPI calls: ak.wwise.core.undo.beginGroup, endGroup, cancelGroup\n\n**Helper Functions:**\n- _create(conn, parent, obj_type, name): Creates object with onNameConflict=\"merge\"\n- _set_prop(conn, obj_id, prop, value): Sets single property\n- _create_event(conn, name, target_id, action): Creates Event with Action child using EVENT_ACTION_TYPES lookup\n\n### Core Tools (tools/core.py)\n1. **wwise_connect(url)**: Connect to WAAPI, returns version info\n2. **wwise_get_info()**: Get active project info\n3. **wwise_query(waql, return_fields JSON)**: Execute WAQL queries\n4. **wwise_save()**: Save project\n5. **execute_waapi(uri, args_json, options_json)**: Raw escape hatch for any WAAPI call\n\n### Object CRUD Tools (tools/objects.py)\n1. **wwise_create_object(parent_path, object_type, name, on_conflict)**: \n   - Validates type against OBJECT_TYPES set\n   - Validates on_conflict against NAME_CONFLICT_MODES\n   - Parent paths use backslashes: `\\\\Actor-Mixer Hierarchy\\\\Default Work Unit`\n\n2. **wwise_set_property(object_path, property_name, value)**:\n   - Parses value as JSON, falls back to string\n   - Logs warning for unknown properties (but passes through)\n\n3. **wwise_set_reference(object_path, reference, value)**:\n   - References: OutputBus, Attenuation, SwitchGroupOrStateGroup, Conversion, Effect0-3\n\n4. **wwise_import_audio(audio_files JSON, import_operation, language)**:\n   - Batch limit: 100 items max\n   - Each entry: {\"audioFile\": path, \"objectPath\": hierarchy_path}\n   - Operations: createNew, useExisting, replaceExisting\n\n### Event & Mixing Tools (tools/events.py)\n1. **wwise_create_event(name, target_path, action_type, event_parent)**:\n   - Action types: Play(1), Stop(2), StopAll(3), Pause(4), Resume(5), etc.\n   - Creates Event with Action child using @ActionType integer mapping\n\n2. **wwise_create_game_parameter(name, min_value, max_value, default_value)**:\n   - Creates GameParameter then setProperty for RangeMin, RangeMax, InitialValue\n\n3. **wwise_assign_switch(switch_container_path, child_path, switch_value)**:\n   - Calls ak.wwise.core.switchContainer.addAssignment\n\n4. **wwise_set_attenuation(name, curve_type, curve_points JSON)**:\n   - Creates Attenuation ShareSet\n   - Calls setAttenuationCurve with points array\n   - Curve types: VolumeDryUsage, LowPassFilterUsage, HighPassFilterUsage, etc.\n   - Points: {x, y, shape}\n\n### Preview Tools (tools/preview.py)\n1. **wwise_preview(object_path, action=\"play\")**:\n   - Actions: play, stop, pause\n   - Stop: gets transport list, filters by object_path, destroys each transport\n   - Play/Pause: creates transport, executes action\n\n2. **wwise_generate_banks(bank_names JSON)**:\n   - Calls ak.wwise.core.soundbank.generate with bank list\n\n### Knowledge Base (knowledge/wwise_types.py)\n**Static dictionaries:**\n- OBJECT_TYPES: 19 types (Sound, RandomSequenceContainer, SwitchContainer, etc.)\n- WWISE_TYPE_DESCRIPTIONS: Human descriptions\n- COMMON_PROPERTIES: 25+ property names (Volume, Pitch, Lowpass, IsLoopingEnabled, etc.)\n- COMMON_REFERENCES: 8 reference types\n- DEFAULT_PATHS: Hierarchy paths (actor_mixer, events, switches, states, game_parameters, triggers, soundbanks, master_bus, attenuations)\n- EVENT_ACTION_TYPES: 18 integer mappings\n- NAME_CONFLICT_MODES: merge, rename, replace, fail\n- IMPORT_OPERATIONS: createNew, useExisting, replaceExisting\n- CURVE_TYPES: 7 attenuation curve types\n- CURVE_SHAPES: 8 point shapes (Linear, Log1-3, SCurve, Exp1-3, Constant)\n- TRANSPORT_ACTIONS: play, stop, pause\n\n### MCP Server Registration (server.py)\n- FastMCP instance created with name=\"ue-audio-mcp\"\n- Tools registered via @mcp.tool() decorators on functions\n- Tools imported AFTER mcp object defined (order matters)\n- Lifespan context manager tries connecting to Wwise/UE5 on startup, warns if unavailable\n- Tool modules: core, objects, events, preview, templates, metasounds, ms_graph, ue5_core, ms_builder, blueprints, variables, presets, systems\n\n### Test Fixtures & Mocking (conftest.py)\n- **MockWaapiClient**: Records calls, returns pre-programmed responses\n- **wwise_conn fixture**: Injects MockWaapiClient into WwiseConnection singleton\n- **MockUE5Plugin**: Mimics UE5 C++ TCP server\n- **Test Pattern**: _setup_mock() helpers for template tests, call counting, _parse(json_str) helpers\n\n### Call Pattern Examples\n```python\n# Create object with undo\n_begin_undo(conn, \"Template: Gunshot\")\ncontainer = _create(conn, parent, \"RandomSequenceContainer\", f\"Gunshot_{weapon_name}\")\ncid = container[\"id\"]\n_set_prop(conn, cid, \"RandomOrSequence\", 0)\n_end_undo(conn)\n\n# WAAPI calls: 3-part structure\nconn.call(\"ak.wwise.core.object.create\", args={...}, options=None)\nconn.call(\"ak.wwise.core.object.setProperty\", args={...}, options=None)\nconn.call(\"ak.wwise.core.switchContainer.addAssignment\", args={...}, options=None)\n```\n\n### Error Handling Pattern\n- Input validation first (JSON parse, type checks, range checks)\n- Return _error() early on validation failures\n- Connect check (is_connected()) for graceful degradation\n- Exception handling in try-except, return _error(str(e))\n- Status key never returned from WAAPI data (stripped in _ok())\n",
+      "id": "mem_1770514574931_imkwfjgug",
+      "content": "## UMetaSoundBuilderSubsystem in UE 5.7 - Key Findings\n\n### 1. Base Class: UEngineSubsystem (NOT UWorldSubsystem)\n- Full hierarchy: UObject -> USubsystem -> UDynamicSubsystem -> UEngineSubsystem -> UMetaSoundBuilderSubsystem\n- Header: `MetasoundBuilderSubsystem.h` in `Engine/Plugins/Runtime/Metasound/Source/MetasoundEngine/Public/`\n- This was UEngineSubsystem since at least UE 5.3 (confirmed via Python API docs)\n\n### 2. How to Access\n- **Correct**: `GEngine->GetEngineSubsystem<UMetaSoundBuilderSubsystem>()`\n- **Also available** (UE 5.7): Static methods `UMetaSoundBuilderSubsystem::Get()`, `::GetChecked()`, `::GetConst()`, `::GetConstChecked()`\n- **WRONG**: `World->GetSubsystem<UMetaSoundBuilderSubsystem>()` — causes static_assert because it's NOT a UWorldSubsystem\n\n### 3. API Changes in UE 5.4+ / 5.7\n- **CreateSourceBuilder** signature changed from taking FMetaSoundBuilderOptions (5.3) to individual params:\n  - UE 5.4+: `CreateSourceBuilder(FName BuilderName, EMetaSoundOutputAudioFormat OutputFormat = Mono, bool bIsOneShot = true)` returns `(UMetaSoundSourceBuilder*, OnPlayOutput, OnFinishedInput, AudioOutInputs, OutResult)`\n  - Returns UMetaSoundSourceBuilder (not UMetaSoundBuilderBase)\n- **CreatePatchBuilder**: `CreatePatchBuilder(FName BuilderName)` returns `(UMetaSoundPatchBuilder*, OutResult)`\n- **CreateSourcePresetBuilder** and **CreatePatchPresetBuilder**: new in 5.4+\n- **Build() soft deprecated** in 5.7 — use BuildNewMetaSound() or BuildAndOverwriteMetaSound() instead\n- **SetNodeLocation** renamed to **InitNodeLocations** in 5.7\n- Builder classes split: UMetaSoundSourceBuilder and UMetaSoundPatchBuilder (both extend UMetaSoundBuilderBase)\n\n### 4. Our Plugin Status\n- `AudioMCPBuilderManager.cpp` line 49 already uses `GEngine->GetEngineSubsystem<UMetaSoundBuilderSubsystem>()`\n- BUT CreateBuilder on line 64 uses old signature: `BuilderSubsystem->CreateSourceBuilder(Options, Result)` with FMetaSoundBuilderOptions — THIS NEEDS UPDATING for 5.4+/5.7",
+      "type": "general",
+      "tags": [
+        "general",
+        "python",
+        "api",
+        "ue5",
+        "metasounds",
+        "builder-api",
+        "subsystem",
+        "ue5.7",
+        "bug-fix"
+      ],
+      "timestamp": "2026-02-08T01:36:14.931Z",
+      "context": "Research for fixing static_assert error when accessing UMetaSoundBuilderSubsystem",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-08T01:36:14.931Z",
+      "lastVerified": "2026-02-08T01:36:14.931Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770517047604_rvdpwr937",
+      "content": "UEAudioMCP C++ plugin successfully compiled on UE 5.7 (2026-02-08).\n\nKey UE 5.7 API fixes applied:\n1. SetRecvBufferSize → SetReceiveBufferSize (FSocket rename)\n2. UMetaSoundBuilderSubsystem::Get() instead of GEngine->GetEngineSubsystem<>()\n3. CreateSourceBuilder: 7-param signature (FName, OnPlayOutput, OnFinishedInput, AudioOutInputs, Result, OutputFormat, bIsOneShot)\n4. CreatePatchBuilder: (FName, Result) only — no more FMetaSoundBuilderOptions\n5. AddNode → AddNodeByClassName(FMetasoundFrontendClassName) — parse \"Namespace::Name::Variant\" \n6. ConvertToPreset: TScriptInterface<IMetaSoundDocumentInterface> instead of UObject*\n7. SetLiveUpdatesEnabled removed — stored as flag, applied at Audition() time\n8. BuildToAsset removed — use Build(FMetaSoundBuilderOptions) + RegisterBuilder\n9. Audition moved to UMetaSoundSourceBuilder (cast from base, 4-param: Parent, AudioComponent, Delegate, bLiveUpdates)\n\nBuild.cs: MetasoundEngine, MetasoundFrontend, MetasoundGraphCore must be PUBLIC dependencies (MinimalAPI symbol visibility).\n\nLyra on external drive: linker hangs due to I/O bottleneck with 344MB of UE dylibs. Use local SSD project instead.\nUEIntroProject at /Users/radek/Documents/Unreal Projects/UEIntroProject/ used for testing.",
+      "type": "general",
+      "tags": [
+        "general",
+        "api",
+        "testing",
+        "ue5",
+        "cpp-plugin",
+        "metasounds",
+        "ue57-api",
+        "compilation"
+      ],
+      "timestamp": "2026-02-08T02:17:27.604Z",
+      "context": "UEAudioMCP plugin compilation for UE 5.7",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-08T02:17:27.604Z",
+      "lastVerified": "2026-02-08T02:17:27.604Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770517781856_j9mrgl8kh",
+      "content": "UE 5.7 MetaSound Node Class Name Format Discovery\n\nKEY FINDING: FNodeClassName Structure has THREE components:\n1. Namespace (usually \"UE\" from StandardNodes::Namespace)\n2. OperatorName (the node operation name)\n3. Variant (usually \"Audio\" from StandardNodes::AudioVariant, or data type name, or empty)\n\nNAMESPACE & VARIANT CONSTANTS (from MetasoundStandardNodesNames.cpp):\n- StandardNodes::Namespace = \"UE\"\n- StandardNodes::AudioVariant = \"Audio\"\n\nMETASOUND_REGISTER_NODE Macro Usage:\nWraps the C++ class name for runtime registration.\n\nComplete Node Names Found in UE 5.7 Engine Source:\n\nOSCILLATORS:\n- UE::Sine::Audio\n- UE::Saw::Audio  \n- UE::Square::Audio\n- UE::Triangle::Audio\n- UE::LFO::Audio (also \"LFO Frequency Noise\" exists)\n\nMATH NODES (via DEFINE_METASOUND_MATHOP macro):\n- UE::Add::[DataType] (Audio, Float, Int32, Time)\n- UE::Subtract::[DataType]\n- UE::Multiply::[DataType]\n- UE::Multiply::Audio by Float\n- UE::Multiply::Time by Float\n- UE::Divide::[DataType]\n- UE::Divide::Time by Float\n- UE::Power::Float\n- UE::Logarithm::Float\n- UE::Modulo::Int32\n\nFILTERS:\n- UE::Ladder Filter::Audio\n- UE::State Variable Filter::Audio\n- UE::One-Pole Low Pass Filter::Audio\n- UE::One-Pole High Pass Filter::Audio\n- UE::Biquad Filter::Audio\n- UE::DynamicFilter::Audio (dynamic cutoff)\n\nEFFECTS:\n- UE::Compressor::Audio\n- UE::Limiter::Audio\n- UE::Delay::[Time/Audio variant] (Delay::Time::Audio or Delay::Delay::AudioBufferDelayTime)\n- UE::Plate Reverb::Stereo\n- UE::Flanger::  (empty variant)\n- UE::Bitcrusher::Audio\n- UE::RingMod::Audio\n\nENVELOPE GENERATORS:\n- AD Envelope::[OperatorName]::[DataType] (AD Envelope, Audio/Float/Int32)\n- ADSR Envelope::[OperatorName]::[DataType]\n\nCONTROL/UTILITY:\n- UE::InterpTo::Audio\n- MapRange::[OperatorName]::[DataType]\n- Clamp::[OperatorName]::[DataType]\n- UE::Convert Filter Q To Bandwidth::\n- UE::Stereo Panner::Audio\n- UE::ITD Panner::Audio\n- UE::Mid-Side Encode::Audio\n- UE::Mid-Side Decode::Audio\n\nNOISE GENERATORS:\n- UE::Lfo Frequency Noise::Audio\n- Perlin Noise (audio)\n- Perlin Noise (float)\n\nTRIGGERS & CONTROL:\n- TriggerRepeat\n- TriggerCounter\n- TriggerDelay\n- TriggerFilter\n- TriggerToggle\n- TriggerOnThreshold\n\nMISC:\n- UE::Envelope Follower::Audio\n- WaveShaper\n- SuperOscillatorMono\n- SuperOscillatorStereo\n- MIDI Note Quantizer\n- Musical Scale To Note Array\n- Audio Mixer\n\nCRITICAL PATTERN:\n- Class constructor: FNodeClassName { Namespace, OperatorName, Variant }\n- Most standard nodes use: { StandardNodes::Namespace, TEXT(\"NodeName\"), StandardNodes::AudioVariant }\n- Some use custom variants based on data type (Float, Int32, etc.)\n- Some leave variant empty (\"\")\n\nSource files examined:\n- MetasoundOscillatorNodes.cpp (Sine, Saw, Square, Triangle, LFO registration at lines 410, 545, 775, 909, 1144)\n- MetasoundMathNodes.cpp (macro at line 27-51 defines pattern)\n- MetasoundBasicFilters.cpp (filters)\n- MetasoundDelayNode.cpp (delay variants at lines 47-73)\n- MetasoundCompressorNode.cpp (line 134)\n- MetasoundADEnvelopeNode.cpp (line 268)\n- MetasoundClampNode.cpp (line 30)\n- MetasoundMapRangeNode.cpp (line 297)\n- MetasoundFlangerNode.cpp (line 44)\n- And 20+ other files\n\nIMPORTANT: The macro METASOUND_REGISTER_NODE(ClassName) at the end of node class definition registers it. The actual class name strings come from FNodeClassName struct, NOT the C++ class names.",
+      "type": "code",
+      "tags": [
+        "code",
+        "metasound",
+        "ue5.7",
+        "node-registry",
+        "class-names",
+        "discovery"
+      ],
+      "timestamp": "2026-02-08T02:29:41.856Z",
+      "context": "Search of UE 5.7 engine source for exact MetaSound node class name formats and registration patterns. This is critical data for the sfx_generator and other template systems.",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-08T02:29:41.856Z",
+      "lastVerified": "2026-02-08T02:29:41.856Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770518093900_yru8le02x",
+      "content": "## UE 5.7 MetaSound Node Enumeration APIs - Complete Reference\n\n### PRIMARY API: INodeClassRegistry::IterateRegistry()\n**Location:** `Engine/Plugins/Runtime/Metasound/Source/MetasoundFrontend/Public/MetasoundFrontendNodeClassRegistry.h`\n**Include:** `#include \"MetasoundFrontendNodeClassRegistry.h\"`\n\n**Function Signature:**\n```cpp\nvirtual void IterateRegistry(\n    FIterateMetasoundFrontendClassFunction InIterFunc, \n    EMetasoundFrontendClassType InClassType = EMetasoundFrontendClassType::Invalid\n) const = 0;\n```\n\n**Callback Type:**\n```cpp\nusing FIterateMetasoundFrontendClassFunction = TFunctionRef<void(const FMetasoundFrontendClass&)>;\n```\n\n**Usage Example:**\n```cpp\nauto& Registry = Metasound::Frontend::INodeClassRegistry::GetChecked();\nRegistry.IterateRegistry([](const FMetasoundFrontendClass& Class) {\n    const FMetasoundFrontendClassMetadata& Metadata = Class.Metadata;\n    FString ClassName = Metadata.ClassName.Name.ToString();\n    FMetasoundFrontendVersionNumber Version = Metadata.Version;\n    // Process Class...\n});\n```\n\n**With Class Type Filter:**\n```cpp\nRegistry.IterateRegistry(\n    [](const FMetasoundFrontendClass& Class) {\n        // Only classes matching EMetasoundFrontendClassType type will be passed\n    },\n    EMetasoundFrontendClassType::Node  // Filter by type\n);\n```\n\n**Key Details:**\n- Returns `INodeClassRegistry` instance via `INodeClassRegistry::Get()` or `INodeClassRegistry::GetChecked()`\n- **Threading Warning:** The log in implementation warns that IterateRegistry is NOT thread-safe\n- **Recommended Alternative:** Use `Metasound::Frontend::ISearchEngine` for thread-safe queries (see below)\n- Implementation location: `MetasoundFrontend/Private/MetasoundFrontendNodeClassRegistry.cpp:1391`\n\n### RECOMMENDED ALTERNATIVE: ISearchEngine\n**Location:** `Engine/Plugins/Runtime/Metasound/Source/MetasoundFrontend/Public/MetasoundFrontendSearchEngine.h`\n**Include:** `#include \"MetasoundFrontendSearchEngine.h\"`\n\n**Primary Method for Runtime Discovery:**\n```cpp\nvirtual TArray<FMetasoundFrontendClass> FindAllClasses(bool bInIncludeAllVersions) = 0;\n```\n\n**Usage:**\n```cpp\nauto& SearchEngine = Metasound::Frontend::ISearchEngine::Get();\nSearchEngine.Prime();  // Cache queries for speed\n\nTArray<FMetasoundFrontendClass> AllClasses = SearchEngine.FindAllClasses(\n    false  // Only highest versions\n);\n\nfor (const FMetasoundFrontendClass& Class : AllClasses) {\n    const FMetasoundFrontendClassMetadata& Metadata = Class.Metadata;\n    FString ClassName = Metadata.ClassName.Name.ToString();\n    // Process...\n}\n```\n\n**Additional ISearchEngine Methods:**\n- `FindClassesWithName(const FMetasoundFrontendClassName& InName, bool bInSortByVersion)`\n- `FindClassWithHighestVersion(const FMetasoundFrontendClassName& InName)`\n- `FindAllInterfaces(bool bInIncludeAllVersions)`\n\n### REGISTRY KEY STRUCTURE\n**Type:** `FNodeClassRegistryKey` (defined in MetasoundFrontendRegistryKey.h)\n**Contains:**\n- `FMetasoundFrontendClassName ClassName` - Name + domain/namespace\n- `FMetasoundFrontendVersionNumber Version` - Major/Minor version\n\n### FRONTEND CLASS STRUCTURE\n**Type:** `FMetasoundFrontendClass` (defined in MetasoundFrontendDocument.h)\n**Key Fields:**\n```cpp\nstruct FMetasoundFrontendClass {\n    FMetasoundFrontendClassMetadata Metadata;  // ClassName, Version, Type\n    FMetasoundFrontendInterface Interface;     // Inputs/Outputs pins\n    // ... other fields\n};\n```\n\n### CLASS TYPE ENUM\n**Enum:** `EMetasoundFrontendClassType`\n**Location:** MetasoundFrontendDocument.h\n**Values:** Node, Interface, Graph, Variable, Input, Output, etc.\n\n### C++ PLUGIN API PATH\nFor UE5 C++ plugin use:\n```cpp\n#include \"MetasoundFrontendNodeClassRegistry.h\"\n#include \"MetasoundFrontendSearchEngine.h\"\n\n// Get singleton\nauto& Registry = Metasound::Frontend::INodeClassRegistry::GetChecked();\nauto& SearchEngine = Metasound::Frontend::ISearchEngine::Get();\n```\n\n### KEY INCLUDES NEEDED\n```cpp\n#include \"MetasoundFrontendNodeClassRegistry.h\"     // INodeClassRegistry\n#include \"MetasoundFrontendSearchEngine.h\"          // ISearchEngine (recommended)\n#include \"MetasoundFrontendDocument.h\"              // FMetasoundFrontendClass, etc.\n#include \"MetasoundFrontendRegistryKey.h\"           // FNodeClassRegistryKey\n```\n\n### BUILDER SUBSYSTEM ALTERNATIVE\n**Location:** `MetasoundEngine/Public/MetasoundBuilderSubsystem.h`\n**Type:** `UMetaSoundBuilderSubsystem`\n- More limited - used for blueprint/runtime building, not enumeration\n- Has methods: CreateSourceBuilder, CreatePatchBuilder\n- Not recommended for node enumeration\n\n### MASTER REGISTRY LOCATION\n**Private Implementation:** `MetasoundFrontend/Private/MetasoundFrontendNodeClassRegistryPrivate.h`\n**Registry Storage:**\n```cpp\nTMultiMap<FNodeClassRegistryKey, TSharedRef<INodeClassRegistryEntry, ESPMode::ThreadSafe>> RegisteredNodes;\n```\n\n### THREADING NOTES\n- INodeClassRegistry::IterateRegistry() is NOT thread-safe (has explicit warning)\n- ISearchEngine is thread-safe alternative with caching capability\n- Use `ISearchEngine::Prime()` to pre-cache queries\n",
+      "type": "warning",
+      "tags": [
+        "warning",
+        "api",
+        "ue5",
+        "metasounds",
+        "node-enumeration",
+        "c++",
+        "registry"
+      ],
+      "timestamp": "2026-02-08T02:34:53.900Z",
+      "context": "Complete UE 5.7 MetaSound node enumeration API reference for C++ plugin development",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-08T02:34:53.900Z",
+      "lastVerified": "2026-02-08T02:34:53.900Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770518881240_unoasunmf",
+      "content": "UE 5.7 MetaSound Math Node Pin Names (from MetasoundMathNodes.cpp)\n\nCRITICAL PIN NAME MAPPINGS FOR MULTIPLY AND ALL MATH NODES:\n\nFrom lines 57-61 of MetasoundMathNodes.cpp:\n- Input 1: \"PrimaryOperand\" (METASOUND_PARAM(PrimaryOperand, \"PrimaryOperand\", \"Initial operand\"))\n- Input 2: \"AdditionalOperands\" (METASOUND_PARAM(AdditionalOperands, \"AdditionalOperands\", \"Additional operand(s)\"))\n- Output: \"Out\" (METASOUND_PARAM(OutMath, \"Out\", \"Math operation result.\") OR METASOUND_PARAM(OutAudio, \"Out\", \"Resulting buffer.\"))\n\nAPPLIES TO ALL MATH OPS:\n- Add (Float, Int32, Audio, Time)\n- Subtract (Float, Int32, Audio, Time)\n- Multiply (Float, Int32, Audio)\n- Divide (Float, Int32)\n- Modulo (Int32)\n- Power (Float)\n- Logarithm (Float)\n\nMULTIPLY (Audio by Float) SPECIFIC (template specialization):\n- Line 1217: Input PrimaryOperand = FAudioBuffer (description: \"Audio multiplicand.\")\n- Line 1218: Input AdditionalOperands = float (description: \"Float multiplicand to apply sample-by-sample to audio. Interpolates over buffer size on value change.\")\n- Line 1221: Output OutAudio = FAudioBuffer (description: \"Resulting buffer.\")\n\nACTUAL STRING VALUES:\n- PrimaryOperand pin name: \"PrimaryOperand\"\n- AdditionalOperands pin name: \"AdditionalOperands\"\n- Output pin name: \"Out\" (for all math nodes)\n\nMETASOUND_PARAM MACRO EXPANSION (from MetasoundParamHelper.h lines 71-77):\nThe macro expands to: static const FLazyName NAME##Name = TEXT(NAME_TEXT)\nSo METASOUND_PARAM(PrimaryOperand, \"PrimaryOperand\", ...) becomes:\nstatic const FLazyName PrimaryOperandName = TEXT(\"PrimaryOperand\")\n\nOSCILLATOR NAMING CONVENTION (verified in MetasoundOscillatorNodes.cpp):\n- \"Frequency\" (line 33: OscBaseFrequencyPin)\n- \"Modulation\" (line 32: FrequencyModPin) \n- \"Audio\" (line 37: AudioOutPin)\nPattern: Display-friendly names, not variable names\n",
+      "type": "code",
+      "tags": [
+        "code",
+        "UE5.7",
+        "MetaSound",
+        "pin-names",
+        "math-nodes",
+        "multiply",
+        "API"
+      ],
+      "timestamp": "2026-02-08T02:48:01.240Z",
+      "context": "Found by reading UE 5.7 source code from /Volumes/Koshi_T7/UN5.3/UE_5.7/Engine/Plugins/Runtime/Metasound/Source/",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-08T02:48:01.240Z",
+      "lastVerified": "2026-02-08T02:48:01.240Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770522233182_bd11scrl7",
+      "content": "MetaSoundBuilderSubsystem Audition Implementation Details\n\nLocation: /Volumes/Koshi_T7/UN5.3/UE_5.7/Engine/Plugins/Runtime/Metasound/Source/MetasoundEngine/\n\nKey Classes:\n- UMetaSoundSourceBuilder: Has Audition() method (line 77 of header)\n- UMetaSoundBuilderSubsystem: Manages builders, subsystem entry point\n\nAudition Function Signature:\nvoid UMetaSoundSourceBuilder::Audition(\n  UObject* Parent,\n  UAudioComponent* AudioComponent,\n  FOnCreateAuditionGeneratorHandleDelegate OnCreateGenerator,\n  bool bLiveUpdatesEnabled = false);\n\nAudition Implementation (MetasoundBuilderSubsystem.cpp, lines 194-232):\n1. Takes UAudioComponent pointer passed in\n2. Registers graph with frontend: FGraphBuilder::RegisterGraphWithFrontend()\n3. Sets dynamic generator enabled: MetaSoundSource.SetDynamicGeneratorEnabled(bLiveUpdatesEnabled)\n4. Conforms object: MetaSoundSource.ConformObjectToDocument()\n5. Sets sound on component: AudioComponent->SetSound(&MetaSoundSource)\n6. Creates generator handle if delegate bound: UMetasoundGeneratorHandle::CreateMetaSoundGeneratorHandle()\n7. Tracks live components if enabled: LiveComponentIDs.Add(AudioComponent->GetAudioComponentID())\n8. Calls: AudioComponent->Play()\n\nAlternative: GEditor->PlayPreviewSound() Pattern\n- Used in MetaSoundEditor.cpp Play() function\n- Located in /Engine/Source/Editor/UnrealEd/Private/EditorEngine.cpp\n- ResetPreviewAudioComponent() creates/resets the component\n- Component is then passed to builder->Audition()\n\nMetaSoundEditor Play Flow:\n1. Calls GEditor->ResetPreviewAudioComponent() - gets existing or creates new\n2. Passes component to CastChecked<UMetaSoundSourceBuilder>(Builder)->Audition()\n3. Builder handles registering graph and setting sound on component\n4. Component->Play() triggers audio playback\n5. Can wire analyzer rack via SetAudioBusSendPostEffect()\n\nUEIntroProject MetaSounds Location:\n/Users/radek/Documents/Unreal Projects/UEIntroProject/Content/DemoTemplate/Metasounds/\n- MS_Opera.uasset (MetaSound source)\n- MS_TuningFork.uasset (MetaSound source)\n- M_Singer.uasset (MetaSound patch)\n- M_Fork.uasset (MetaSound patch)\n- M_Distort.uasset (MetaSound patch)\n- BP_Metasound.uasset (Blueprint using MetaSounds)\n- BP_Worms.uasset (Blueprint using MetaSounds)\n- NS_Radial.uasset, NS_Sound.uasset (Niagara with sound)",
+      "type": "config",
+      "tags": [
+        "config",
+        "metasounds",
+        "builder-api",
+        "audition",
+        "audiocomponent",
+        "ue5"
+      ],
+      "timestamp": "2026-02-08T03:43:53.182Z",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-08T03:43:53.182Z",
+      "lastVerified": "2026-02-08T03:43:53.182Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770542619001_2uq5ok6hf",
+      "content": "MetaSounds Builder API Research (2026-02-08):\n\nKEY FINDINGS FROM OTHER IMPLEMENTATIONS:\n\n1. ChiR24/Unreal_mcp - Only known MCP project with MetaSounds audio authoring handlers\n   - Uses FMetaSoundFrontendDocumentBuilder (direct document manipulation) NOT BuilderSubsystem\n   - Maps display names to class names: \"oscillator\"→\"Metasound.Sine\", \"gain\"→node class\n   - Uses FNamedEdge + AddNamedEdges() for connections (GUID-based)\n   - Requires Builder.FinishBuilding() on UE 5.4+\n   - Conditional compilation: #if __has_include(\"MetasoundSource.h\")\n\n2. Amir-BK/unDAW - Most advanced Builder API usage at runtime\n   - Stores UMetaSoundSourceBuilder* BuilderContext + UMetaSoundBuilderSubsystem* MSBuilderSystem\n   - Uses BuilderContext->ConnectNodes(OutputHandle, InputHandle, Result)\n   - AuditionBuilder() method accepts UAudioComponent* parameter\n   - OnMetaSoundGeneratorHandleCreated() for generator handle callbacks\n   - Delegates: OnVertexNeedsBuilderUpdates, OnVertexNeedsBuilderConnectionUpdates\n\n3. Epic Engine Source (MetasoundBuilderSubsystem.cpp):\n   - UMetaSoundBuilderSubsystem is ENGINE SUBSYSTEM (not world subsystem)\n   - Access: GEngine->GetEngineSubsystem<UMetaSoundBuilderSubsystem>()\n   - Also: UMetaSoundBuilderSubsystem::GetChecked() static method\n   - CreateTransientBuilder uses NewObject with RF_Public|RF_Transient in GetTransientPackage()\n   - Source builder connects FDocumentModifyDelegates for live updates\n   \n4. kvick-games/UnrealMCP - MetaSound listed but NOT IMPLEMENTED yet\n\n5. chongdashu/unreal-mcp - NO audio/MetaSounds support at all\n\nCRITICAL PITFALLS FOUND:\n- Print Log nodes in MetaSounds crash shipping builds\n- \"OnBeginActiveBuilder() call while prior builder is still active\" - concurrent builder conflicts\n- DuplicateObject<UMetaSoundSource> broke in UE 5.5 (was working in 5.4)\n- Builder API: WITH_EDITORONLY_DATA required = no shipping build support\n- Node registry conflicts from duplicate Animation Notifies\n- MetaSounds namespace changed between UE 5.0 and 5.1+ (types moved to Metasound:: namespace)\n- FMetasoundFrontendClassName format: Namespace.Name.Variant (NOT Namespace::Name::Variant)\n- UE 5.7: SetLiveUpdatesEnabled removed from BuilderBase, now param in Audition()\n- AudioComponent MUST be registered before Audition (RegisterComponent())\n- SpawnSound2D vs PlaySound2D: spawned components get stuck with multiple concurrent sounds\n\nOUR IMPLEMENTATION COMPARISON:\n- We use UMetaSoundBuilderSubsystem::Get() - correct for UE 5.7\n- We parse \"::\" separator but Epic uses \".\" separator in FMetasoundFrontendClassName\n- We use TStrongObjectPtr for builder (prevents GC) - good pattern\n- We store AudioComponent but declare it but don't populate AuditionAudioComponent member\n- We use bAutoDestroy=true on AudioComponent - may cause issues with live updates\n- ChiR24 uses FrontendDocumentBuilder directly, we use BuilderSubsystem - both valid",
+      "type": "warning",
+      "tags": [
+        "warning",
+        "api",
+        "metasounds",
+        "builder-api",
+        "research",
+        "ue5",
+        "comparison"
+      ],
+      "timestamp": "2026-02-08T09:23:39.001Z",
+      "context": "Research comparing our UE5-WWISE MetaSounds Builder API implementation against other projects on GitHub",
+      "accessCount": 1,
+      "lastAccessed": "2026-02-08T10:11:41.677Z",
+      "lastVerified": "2026-02-08T09:23:39.001Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770543057562_katwfwzqh",
+      "content": "UE 5.7 MetaSounds Builder API Research (2026-02-08):\n\n1. UMetaSoundBuilderSubsystem inherits from UEngineSubsystem. Standard access: GEngine->GetEngineSubsystem<UMetaSoundBuilderSubsystem>(). Our code uses ::Get() which may or may not exist as a static helper.\n\n2. CreateSourceBuilder signature: (FName, OutOnPlay, OutOnFinished, OutAudioOuts, OutResult, Format=Mono, bOneShot=true) -> UMetaSoundSourceBuilder*\n\n3. Audition signature: (UObject* Parent, UAudioComponent*, FOnCreateAuditionGeneratorHandleDelegate, bool bLiveUpdatesEnabled=false) -> void. Delegate defined in MetasoundSourceBuilder.h likely. Empty delegate is valid.\n\n4. AddNodeByClassName has 2 overloads: (ClassName, MajorVersion, Result) and (ClassName, Result, MajorVersion=1). Our code passes (ClassName, Result) which matches overload 2.\n\n5. BuildNewMetaSound(FName NameBase) -> TScriptInterface<IMetaSoundDocumentInterface>. Creates transient registered copy.\n\n6. Key headers: MetasoundBuilderSubsystem.h, MetasoundBuilderBase.h (handles), MetasoundFrontendDocument.h (ClassName, Literal), MetasoundDocumentInterface.h, MetasoundSource.h\n\n7. Handle types (FMetaSoundNodeHandle, FMetaSoundBuilderNodeInputHandle, FMetaSoundBuilderNodeOutputHandle) all in MetasoundBuilderBase.h\n\n8. MetasoundFrontendSearchEngine.h - unconfirmed for 5.7, likely internal/removed. Don't depend on it.\n\n9. BUG: Our Audition() creates AudioComponent but doesn't store in AuditionAudioComponent TStrongObjectPtr - GC risk.\n\n10. Live Updates requires BOTH au.MetaSound.LiveUpdatesEnabled cvar AND bLiveUpdatesEnabled=true in Audition call.",
+      "type": "warning",
+      "tags": [
+        "warning",
+        "api",
+        "ue5",
+        "metasounds",
+        "builder-api",
+        "ue57",
+        "research",
+        "compilation"
+      ],
+      "timestamp": "2026-02-08T09:30:57.562Z",
+      "context": "Research for UE5-WWISE project C++ plugin that uses MetaSounds Builder API",
+      "accessCount": 1,
+      "lastAccessed": "2026-02-08T10:11:41.677Z",
+      "lastVerified": "2026-02-08T09:30:57.562Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770543205573_cw4leipce",
+      "content": "UE 5.7 MetaSounds Header Information:\n\n1. **FMetasoundGenerator & UMetasoundGeneratorHandle**:\n   - Header: `MetasoundGeneratorHandle.h`\n   - Include: `#include \"MetasoundGeneratorHandle.h\"`\n   - Location: `Engine/Plugins/Runtime/Metasound/Source/MetasoundEngine/Public/MetasoundGeneratorHandle.h`\n   - Class: UCLASS with MinimalAPI, BlueprintType, Category=\"MetaSound\"\n   - Purpose: Blueprint-facing interface to FMetasoundGenerator on UAudioComponent, shields from threading issues\n\n2. **FOnCreateAuditionGeneratorHandleDelegate**:\n   - NOT found in public documentation - likely internal or engine-specific\n   - May need direct source code inspection in UnrealEngine repo\n\n3. **BindWeakLambda vs BindLambda**:\n   - BindWeakLambda: Maintains weak reference to UObject, prevents crashes on object destruction\n   - BindLambda: No safety checks, can cause crashes if object deleted before lambda executes\n   - RECOMMENDATION: Use BindWeakLambda(this, [this]() {...}) for component callbacks\n   - BindWeakLambda is safe for UAudioComponent destruction scenarios\n\nNOTE: UMetasoundGeneratorHandle shields from threading issues - this is likely where the audition delegate comes from.",
+      "type": "general",
+      "tags": [
+        "general",
+        "ue5",
+        "metasounds",
+        "headers",
+        "delegates",
+        "cpp"
+      ],
+      "timestamp": "2026-02-08T09:33:25.573Z",
+      "context": "Research for UE5-WWISE project C++ plugin MetaSounds integration",
+      "accessCount": 1,
+      "lastAccessed": "2026-02-08T10:11:41.677Z",
+      "lastVerified": "2026-02-08T09:33:25.573Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770543318118_xpxo9sp2u",
+      "content": "UE5 Audition audio not playing — root causes found and fixed (2026-02-08):\n\n1. **GC kills AudioComponent**: `Audition()` created AudioComp as a local variable but never stored it in the `AuditionAudioComponent` TStrongObjectPtr member. GC collected it immediately after function return. Fix: `AuditionAudioComponent.Reset(AudioComp);`\n\n2. **bAutoDestroy = true**: AudioComponent self-destructed during playback. Fix: set `bAutoDestroy = false` since we manage lifetime via TStrongObjectPtr.\n\n3. **No cleanup on reset**: `ResetState()` didn't stop playing auditions before clearing builder state. Fix: call `StopAudition()` first in `ResetState()`.\n\n4. **Added `stop_audition` command**: New command registered in module, allows Python side to stop playback.\n\n5. **Diagnostic logging**: Added post-Audition check for IsPlaying/IsActive/Sound to detect silent failures in UE Output Log.\n\nKey insight: MetaSounds Audition() internally builds a transient UMetaSoundSource, calls SetSound() on the AudioComponent, then Play(). If the component gets GC'd between SetSound and actual audio rendering, you get silence with no error.",
       "type": "warning",
       "tags": [
         "warning",
         "python",
-        "wwise",
-        "waapi",
-        "architecture",
-        "implementation",
-        "mcp-server"
+        "ue5",
+        "metasounds",
+        "audition",
+        "bug-fix",
+        "audio"
       ],
-      "timestamp": "2026-02-07T23:25:32.556Z",
+      "timestamp": "2026-02-08T09:35:18.118Z",
+      "accessCount": 1,
+      "lastAccessed": "2026-02-08T10:11:41.677Z",
+      "lastVerified": "2026-02-08T09:35:18.118Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770545844606_bplwggxcd",
+      "content": "MetaSounds Save-to-Disk & Editor Research (2026-02-08):\n\nCRITICAL FINDING: Our C++ plugin's BuildToAsset() uses BuildNewMetaSound() which only creates TRANSIENT objects (memory only, NOT saved to disk).\n\nTHE FIX: Use UMetaSoundEditorSubsystem::BuildToAsset() instead.\n\nAPI Signatures:\n1. UMetaSoundEditorSubsystem::BuildToAsset(Builder, Author, AssetName, PackagePath, OutResult, TemplateSoundWave=nullptr) -> IMetaSoundDocumentInterface\n   - Creates real .uasset file on disk\n   - Editor-only (MetasoundEditor module)\n   - Access: GEditor->GetEditorSubsystem<UMetaSoundEditorSubsystem>()\n\n2. UMetaSoundEditorSubsystem::FindOrBeginBuilding(MetaSound, OutResult) -> UMetaSoundBuilderBase*\n   - Gets builder for an existing SAVED asset (not transients)\n\n3. UAssetEditorSubsystem::OpenEditorForAsset(UObject* Asset) -> bool\n   - Opens MetaSounds graph editor for the saved asset\n   - If already open, brings to front\n   - Access: GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()\n\n4. UMetaSoundEditorSubsystem::SetNodeLocation(Builder, NodeHandle, Location, OutResult)\n   - Sets visual node position in editor graph\n   - In UE 5.7, this is on EditorSubsystem NOT on BuilderBase\n\n5. UMetaSoundEditorSubsystem::RegisterGraphWithFrontend(MetaSound, bForceViewSync)\n   - Forces editor graph to re-sync with document model\n\nThree Build Methods on UMetaSoundBuilderBase (NONE save to disk):\n- BuildNewMetaSound(NameBase) -> transient only\n- BuildAndOverwriteMetaSound(ExistingTransient) -> overwrites transient only, \"Not permissible to overwrite MetaSound asset\"\n- Build(Parent, Options) -> SOFT DEPRECATED in UE 5.7\n\nModule dependency needed: MetasoundEditor (in .Build.cs, editor-only)\nHeader: #include \"MetaSoundEditorSubsystem.h\"\n\nResearch file: research/research_metasound_save_and_editor.md",
+      "type": "troubleshooting",
+      "tags": [
+        "troubleshooting",
+        "api",
+        "critical",
+        "ue5",
+        "metasounds",
+        "builder-api",
+        "save-asset",
+        "editor",
+        "ue57",
+        "research"
+      ],
+      "timestamp": "2026-02-08T10:17:24.606Z",
+      "context": "Research for UE5-WWISE project - how to save MetaSounds to disk as .uasset and open in editor",
       "accessCount": 0,
-      "lastAccessed": "2026-02-07T23:25:32.556Z",
-      "lastVerified": "2026-02-07T23:25:32.556Z",
+      "lastAccessed": "2026-02-08T10:17:24.606Z",
+      "lastVerified": "2026-02-08T10:17:24.606Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770546832345_jrw91alcw",
+      "content": "MetaSounds Save & Open in Editor — COMPLETE (2026-02-08)\n- Fixed BuildToAsset: UMetaSoundEditorSubsystem::BuildToAsset() replaces BuildNewMetaSound() — saves real .uasset to disk\n- Added open_in_editor command (C++ + Python): UAssetEditorSubsystem::OpenEditorForAsset() opens graph in MetaSounds editor\n- Migrated SetNodeLocation to EditorSubsystem (UE 5.7 canonical path)\n- Added MetasoundEditor module dependency in Build.cs\n- LastBuiltAsset (TWeakObjectPtr<UObject>) stores reference between build_to_asset and open_in_editor\n- 21 C++ commands total (was 19), 51 Python tools (was 50)\n- test_live_ue5.py build_and_open mode: creates sine tone, saves, opens editor\n- 262 Python tests passing",
+      "type": "solution",
+      "tags": [
+        "solution",
+        "python",
+        "ue5",
+        "metasounds",
+        "save-to-disk",
+        "editor",
+        "milestone"
+      ],
+      "timestamp": "2026-02-08T10:33:52.345Z",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-08T10:33:52.345Z",
+      "lastVerified": "2026-02-08T10:33:52.345Z",
       "status": "fresh"
     }
   ],
-  "lastUpdated": "2026-02-07T23:25:32.556Z"
+  "lastUpdated": "2026-02-08T10:33:52.345Z"
 }

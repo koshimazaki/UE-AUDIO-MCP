@@ -14,6 +14,8 @@
 #include "Engine/Engine.h"
 #include "Engine/World.h"
 #include "Editor.h"
+#include "MetaSoundEditorSubsystem.h"
+#include "Subsystems/AssetEditorSubsystem.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogAudioMCPBuilder, Log, All);
 
@@ -36,6 +38,7 @@ void FAudioMCPBuilderManager::ResetState()
 	GraphInputOutputHandles.Empty();
 	GraphOutputInputHandles.Empty();
 	bLiveUpdatesRequested = false;
+	LastBuiltAsset.Reset();
 }
 
 void FAudioMCPBuilderManager::StopAudition()
@@ -316,9 +319,13 @@ bool FAudioMCPBuilderManager::AddNode(const FString& NodeId, const FString& Node
 		return false;
 	}
 
-	// Set editor position for visibility (editor-only in UE 5.7)
+	// Set editor position for visibility (UE 5.7: via EditorSubsystem)
 #if WITH_EDITOR
-	ActiveBuilder.Get()->SetNodeLocation(NodeHandle, FVector2D(PosX, PosY), Result);
+	UMetaSoundEditorSubsystem* EditorSS = GEditor->GetEditorSubsystem<UMetaSoundEditorSubsystem>();
+	if (EditorSS)
+	{
+		EditorSS->SetNodeLocation(ActiveBuilder.Get(), NodeHandle, FVector2D(PosX, PosY), Result);
+	}
 #endif
 
 	// Store the actual node handle for pin lookups in SetNodeDefault/ConnectNodes
@@ -709,17 +716,74 @@ bool FAudioMCPBuilderManager::BuildToAsset(const FString& Name, const FString& P
 		return false;
 	}
 
-	// UE 5.7: Use BuildNewMetaSound to create a registered transient MetaSound.
-	// This is the safest path — avoids the crash-prone Build(FMetaSoundBuilderOptions).
-	TScriptInterface<IMetaSoundDocumentInterface> BuiltMetaSound = ActiveBuilder.Get()->BuildNewMetaSound(FName(*Name));
-	if (!BuiltMetaSound.GetObject())
+#if WITH_EDITOR
+	// UE 5.7: Use UMetaSoundEditorSubsystem::BuildToAsset to save a real .uasset to disk.
+	UMetaSoundEditorSubsystem* EditorSubsystem = GEditor->GetEditorSubsystem<UMetaSoundEditorSubsystem>();
+	if (!EditorSubsystem)
 	{
-		OutError = FString::Printf(TEXT("Failed to build MetaSound '%s'"), *Name);
+		OutError = TEXT("MetaSoundEditorSubsystem not available (editor-only)");
 		return false;
 	}
 
-	UE_LOG(LogAudioMCPBuilder, Log, TEXT("Built and registered MetaSound: %s"), *Name);
+	EMetaSoundBuilderResult Result;
+	TScriptInterface<IMetaSoundDocumentInterface> SavedAsset = EditorSubsystem->BuildToAsset(
+		ActiveBuilder.Get(),
+		TEXT("UEAudioMCP"),  // Author
+		Name,                // AssetName
+		Path,                // PackagePath
+		Result,
+		nullptr              // TemplateSoundWave
+	);
+
+	if (Result != EMetaSoundBuilderResult::Succeeded || !SavedAsset.GetObject())
+	{
+		OutError = FString::Printf(TEXT("Failed to save MetaSound '%s' to '%s'"), *Name, *Path);
+		return false;
+	}
+
+	// Store reference for OpenInEditor command
+	LastBuiltAsset = SavedAsset.GetObject();
+
+	UE_LOG(LogAudioMCPBuilder, Log, TEXT("Saved MetaSound asset: %s at %s"),
+		*Name, *SavedAsset.GetObject()->GetPathName());
 	return true;
+#else
+	OutError = TEXT("BuildToAsset is only available in editor builds");
+	return false;
+#endif
+}
+
+bool FAudioMCPBuilderManager::OpenInEditor(FString& OutError)
+{
+#if WITH_EDITOR
+	if (!LastBuiltAsset.IsValid())
+	{
+		OutError = TEXT("No built asset available. Call build_to_asset first.");
+		return false;
+	}
+
+	UAssetEditorSubsystem* AssetEditorSubsystem = GEditor->GetEditorSubsystem<UAssetEditorSubsystem>();
+	if (!AssetEditorSubsystem)
+	{
+		OutError = TEXT("AssetEditorSubsystem not available");
+		return false;
+	}
+
+	bool bOpened = AssetEditorSubsystem->OpenEditorForAsset(LastBuiltAsset.Get());
+	if (!bOpened)
+	{
+		OutError = FString::Printf(TEXT("Failed to open editor for asset '%s'"),
+			*LastBuiltAsset.Get()->GetPathName());
+		return false;
+	}
+
+	UE_LOG(LogAudioMCPBuilder, Log, TEXT("Opened MetaSounds editor for: %s"),
+		*LastBuiltAsset.Get()->GetPathName());
+	return true;
+#else
+	OutError = TEXT("OpenInEditor is only available in editor builds");
+	return false;
+#endif
 }
 
 bool FAudioMCPBuilderManager::Audition(FString& OutError)

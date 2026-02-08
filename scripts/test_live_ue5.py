@@ -6,6 +6,7 @@ Usage:
     python scripts/test_live_ue5.py list_nodes          # List available node classes
     python scripts/test_live_ue5.py list_nodes Sine     # Search for Sine nodes
     python scripts/test_live_ue5.py sine_tone           # Build a sine tone patch
+    python scripts/test_live_ue5.py build_and_open      # Build, save .uasset, open in editor
 """
 
 import json
@@ -110,6 +111,42 @@ def test_sine_tone(sock):
     return True
 
 
+def test_build_and_open(sock):
+    """Build a sine tone, save as .uasset, and open in MetaSounds editor."""
+    print("\n--- BUILD, SAVE & OPEN IN EDITOR ---")
+
+    commands = [
+        {"action": "create_builder", "asset_type": "Source", "name": "MCP_SineTone"},
+        {"action": "add_node", "id": "sine1", "node_type": "Sine", "pos_x": 0, "pos_y": 0},
+        {"action": "set_default", "node_id": "sine1", "input": "Frequency", "value": 440.0},
+        {"action": "add_node", "id": "gain1", "node_type": "Multiply (Audio by Float)", "pos_x": 300, "pos_y": 0},
+        {"action": "set_default", "node_id": "gain1", "input": "AdditionalOperands", "value": 0.5},
+        {"action": "connect", "from_node": "sine1", "from_pin": "Audio",
+         "to_node": "gain1", "to_pin": "PrimaryOperand"},
+        {"action": "connect", "from_node": "gain1", "from_pin": "Out",
+         "to_node": "__graph__", "to_pin": "Audio:0"},
+        {"action": "build_to_asset", "name": "MCP_SineTone", "path": "/Game/Audio/MCP"},
+        {"action": "open_in_editor"},
+    ]
+
+    for i, cmd in enumerate(commands):
+        action = cmd["action"]
+        resp = send_command(sock, cmd)
+        status = resp.get("status", "unknown")
+        msg = resp.get("message", "")
+
+        if status == "ok":
+            print(f"  [{i+1}/{len(commands)}] OK: {action} -- {msg}")
+        else:
+            print(f"  [{i+1}/{len(commands)}] FAIL: {action} -- {msg}")
+            return False
+
+    print("\n  SUCCESS! Check UE5 Editor:")
+    print("  - Content Browser: /Game/Audio/MCP/MCP_SineTone should appear")
+    print("  - MetaSounds editor should be open showing Sine -> Gain -> Output")
+    return True
+
+
 def test_full_pipeline(sock):
     results = {}
     results["ping"] = test_ping(sock)
@@ -152,6 +189,9 @@ def main():
             test_list_nodes(sock, filter_str)
         elif mode == "sine_tone":
             test_sine_tone(sock)
+        elif mode == "build_and_open":
+            success = test_build_and_open(sock)
+            sys.exit(0 if success else 1)
         elif mode == "ping":
             test_ping(sock)
         elif mode == "full":
