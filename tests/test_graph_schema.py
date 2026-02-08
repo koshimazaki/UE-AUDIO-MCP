@@ -78,7 +78,7 @@ def test_type_mismatch():
         {"id": "clamp1", "node_type": "Clamp", "defaults": {}, "position": [200, 0]},
     ]
     spec["connections"] = [
-        {"from_node": "sine1", "from_pin": "Audio", "to_node": "clamp1", "to_pin": "Value"},
+        {"from_node": "sine1", "from_pin": "Audio", "to_node": "clamp1", "to_pin": "In"},
     ]
     errors = validate_graph(spec)
     assert any("Type mismatch" in e for e in errors)

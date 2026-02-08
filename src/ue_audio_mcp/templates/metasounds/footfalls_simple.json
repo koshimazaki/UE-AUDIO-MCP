@@ -89,7 +89,7 @@
     },
     {
       "from_node": "trigger_repeat",
-      "from_pin": "Trigger",
+      "from_pin": "RepeatOut",
       "to_node": "random_get",
       "to_pin": "On Next"
     },

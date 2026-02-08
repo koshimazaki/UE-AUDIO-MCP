@@ -155,8 +155,8 @@
         0
       ],
       "defaults": {
-        "OutMin": 1.0,
-        "OutMax": 0.0,
+        "Out Range A": 1.0,
+        "Out Range B": 0.0,
         "Clamped": true
       },
       "comment": "Layer A: gain 1\u21920 as InputParam goes StartFadeOut\u2192EndFadeOut"
@@ -258,8 +258,8 @@
         400
       ],
       "defaults": {
-        "OutMin": 0.0,
-        "OutMax": 1.0,
+        "Out Range A": 0.0,
+        "Out Range B": 1.0,
         "Clamped": true
       },
       "comment": "Layer B fade-in: gain 0\u21921 as InputParam goes StartFadeIn\u2192EndFadeIn"
@@ -272,8 +272,8 @@
         500
       ],
       "defaults": {
-        "OutMin": 1.0,
-        "OutMax": 0.0,
+        "Out Range A": 1.0,
+        "Out Range B": 0.0,
         "Clamped": true
       },
       "comment": "Layer B fade-out: gain 1\u21920 as InputParam goes StartFadeOut\u2192EndFadeOut"
@@ -351,8 +351,8 @@
         800
       ],
       "defaults": {
-        "OutMin": 0.0,
-        "OutMax": 1.0,
+        "Out Range A": 0.0,
+        "Out Range B": 1.0,
         "Clamped": true
       },
       "comment": "Layer C: gain 0\u21921 as InputParam goes StartFadeIn\u2192EndFadeIn"
@@ -430,17 +430,17 @@
       "from_node": "gate_a",
       "from_pin": "Result",
       "to_node": "trigger_filter_a",
-      "to_pin": "Gate"
+      "to_pin": "Trigger"
     },
     {
       "from_node": "__graph__",
       "from_pin": "TriggerStart",
       "to_node": "trigger_filter_a",
-      "to_pin": "Trigger"
+      "to_pin": "Heads"
     },
     {
       "from_node": "trigger_filter_a",
-      "from_pin": "Trigger",
+      "from_pin": "Heads",
       "to_node": "shuffle_a",
       "to_pin": "Trigger"
     },
@@ -466,19 +466,19 @@
       "from_node": "__graph__",
       "from_pin": "InputParameter",
       "to_node": "gain_a",
-      "to_pin": "Value"
+      "to_pin": "In"
     },
     {
       "from_node": "__graph__",
       "from_pin": "WaveAsset_A_StartFadeOut",
       "to_node": "gain_a",
-      "to_pin": "InMin"
+      "to_pin": "In Range A"
     },
     {
       "from_node": "__graph__",
       "from_pin": "WaveAsset_A_EndFadeOut",
       "to_node": "gain_a",
-      "to_pin": "InMax"
+      "to_pin": "In Range B"
     },
     {
       "from_node": "__graph__",
@@ -520,29 +520,29 @@
       "from_node": "gate_b_low",
       "from_pin": "Result",
       "to_node": "trigger_filter_b_low",
-      "to_pin": "Gate"
+      "to_pin": "Trigger"
     },
     {
       "from_node": "__graph__",
       "from_pin": "TriggerStart",
       "to_node": "trigger_filter_b_low",
-      "to_pin": "Trigger"
+      "to_pin": "Heads"
     },
     {
       "from_node": "gate_b_high",
       "from_pin": "Result",
       "to_node": "trigger_filter_b_high",
-      "to_pin": "Gate"
-    },
-    {
-      "from_node": "trigger_filter_b_low",
-      "from_pin": "Trigger",
-      "to_node": "trigger_filter_b_high",
       "to_pin": "Trigger"
     },
     {
+      "from_node": "trigger_filter_b_low",
+      "from_pin": "Heads",
+      "to_node": "trigger_filter_b_high",
+      "to_pin": "Heads"
+    },
+    {
       "from_node": "trigger_filter_b_high",
-      "from_pin": "Trigger",
+      "from_pin": "Heads",
       "to_node": "shuffle_b",
       "to_pin": "Trigger"
     },
@@ -568,47 +568,47 @@
       "from_node": "__graph__",
       "from_pin": "InputParameter",
       "to_node": "gain_b_fadein",
-      "to_pin": "Value"
+      "to_pin": "In"
     },
     {
       "from_node": "__graph__",
       "from_pin": "WaveAsset_B_StartFadeIn",
       "to_node": "gain_b_fadein",
-      "to_pin": "InMin"
+      "to_pin": "In Range A"
     },
     {
       "from_node": "__graph__",
       "from_pin": "WaveAsset_B_EndFadeIn",
       "to_node": "gain_b_fadein",
-      "to_pin": "InMax"
+      "to_pin": "In Range B"
     },
     {
       "from_node": "__graph__",
       "from_pin": "InputParameter",
       "to_node": "gain_b_fadeout",
-      "to_pin": "Value"
+      "to_pin": "In"
     },
     {
       "from_node": "__graph__",
       "from_pin": "WaveAsset_B_StartFadeOut",
       "to_node": "gain_b_fadeout",
-      "to_pin": "InMin"
+      "to_pin": "In Range A"
     },
     {
       "from_node": "__graph__",
       "from_pin": "WaveAsset_B_EndFadeOut",
       "to_node": "gain_b_fadeout",
-      "to_pin": "InMax"
+      "to_pin": "In Range B"
     },
     {
       "from_node": "gain_b_fadein",
-      "from_pin": "Result",
+      "from_pin": "Out Value",
       "to_node": "gain_b_bell",
       "to_pin": "A"
     },
     {
       "from_node": "gain_b_fadeout",
-      "from_pin": "Result",
+      "from_pin": "Out Value",
       "to_node": "gain_b_bell",
       "to_pin": "B"
     },
@@ -634,17 +634,17 @@
       "from_node": "gate_c",
       "from_pin": "Result",
       "to_node": "trigger_filter_c",
-      "to_pin": "Gate"
+      "to_pin": "Trigger"
     },
     {
       "from_node": "__graph__",
       "from_pin": "TriggerStart",
       "to_node": "trigger_filter_c",
-      "to_pin": "Trigger"
+      "to_pin": "Heads"
     },
     {
       "from_node": "trigger_filter_c",
-      "from_pin": "Trigger",
+      "from_pin": "Heads",
       "to_node": "shuffle_c",
       "to_pin": "Trigger"
     },
@@ -670,19 +670,19 @@
       "from_node": "__graph__",
       "from_pin": "InputParameter",
       "to_node": "gain_c",
-      "to_pin": "Value"
+      "to_pin": "In"
     },
     {
       "from_node": "__graph__",
       "from_pin": "WaveAsset_C_StartFadeIn",
       "to_node": "gain_c",
-      "to_pin": "InMin"
+      "to_pin": "In Range A"
     },
     {
       "from_node": "__graph__",
       "from_pin": "WaveAsset_C_EndFadeIn",
       "to_node": "gain_c",
-      "to_pin": "InMax"
+      "to_pin": "In Range B"
     },
     {
       "from_node": "wp_a",
@@ -698,7 +698,7 @@
     },
     {
       "from_node": "gain_a",
-      "from_pin": "Result",
+      "from_pin": "Out Value",
       "to_node": "stereo_mixer",
       "to_pin": "Gain 0"
     },
@@ -734,7 +734,7 @@
     },
     {
       "from_node": "gain_c",
-      "from_pin": "Result",
+      "from_pin": "Out Value",
       "to_node": "stereo_mixer",
       "to_pin": "Gain 2"
     },

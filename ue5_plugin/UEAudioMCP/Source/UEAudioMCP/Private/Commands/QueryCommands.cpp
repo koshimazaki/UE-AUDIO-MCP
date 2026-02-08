@@ -5,6 +5,7 @@
 #include "AudioMCPTypes.h"
 #include "MetasoundFrontendSearchEngine.h"
 #include "MetasoundFrontendDocument.h"
+#include "MetasoundDocumentInterface.h"
 #include "Dom/JsonObject.h"
 #include "Dom/JsonValue.h"
 
@@ -135,5 +136,131 @@ TSharedPtr<FJsonObject> FListNodeClassesCommand::Execute(
 	Response->SetArrayField(TEXT("nodes"), NodeArray);
 	Response->SetNumberField(TEXT("total"), TotalMatched);
 	Response->SetNumberField(TEXT("shown"), NodeArray.Num());
+	return Response;
+}
+
+// ---------------------------------------------------------------------------
+// get_node_locations — read node positions from a saved MetaSound asset
+// ---------------------------------------------------------------------------
+
+TSharedPtr<FJsonObject> FGetNodeLocationsCommand::Execute(
+	const TSharedPtr<FJsonObject>& Params,
+	FAudioMCPBuilderManager& BuilderManager)
+{
+	FString AssetPath;
+	if (!Params->TryGetStringField(TEXT("asset_path"), AssetPath))
+	{
+		return AudioMCP::MakeErrorResponse(TEXT("Missing required param 'asset_path'"));
+	}
+
+	// Load the MetaSound asset
+	UObject* Asset = StaticLoadObject(UObject::StaticClass(), nullptr, *AssetPath);
+	if (!Asset)
+	{
+		return AudioMCP::MakeErrorResponse(
+			FString::Printf(TEXT("Could not load asset '%s'"), *AssetPath));
+	}
+
+	// Get the MetaSound document interface
+	TScriptInterface<IMetaSoundDocumentInterface> DocInterface(Asset);
+	if (!DocInterface.GetInterface())
+	{
+		return AudioMCP::MakeErrorResponse(
+			FString::Printf(TEXT("Asset '%s' is not a MetaSound"), *AssetPath));
+	}
+
+	// Access the frontend document (read-only)
+	const FMetasoundFrontendDocument& Document = DocInterface->GetConstDocument();
+	const FMetasoundFrontendGraph& Graph = Document.RootGraph;
+
+	TArray<TSharedPtr<FJsonValue>> NodeArray;
+	TArray<TSharedPtr<FJsonValue>> EdgeArray;
+
+	for (const FMetasoundFrontendNode& Node : Graph.Nodes)
+	{
+		TSharedPtr<FJsonObject> NodeObj = MakeShared<FJsonObject>();
+
+		// Node identity
+		NodeObj->SetStringField(TEXT("node_id"), Node.GetID().ToString());
+
+		// Class name: Namespace::Name::Variant
+		const FMetasoundFrontendClassName& ClassName = Node.ClassMetadata.GetClassName();
+		FString Namespace = ClassName.Namespace.ToString();
+		FString Name = ClassName.Name.ToString();
+		FString Variant = ClassName.Variant.ToString();
+
+		FString FullName;
+		if (Namespace.IsEmpty())
+		{
+			FullName = Variant.IsEmpty() ? Name : FString::Printf(TEXT("%s::%s"), *Name, *Variant);
+		}
+		else
+		{
+			FullName = Variant.IsEmpty()
+				? FString::Printf(TEXT("%s::%s"), *Namespace, *Name)
+				: FString::Printf(TEXT("%s::%s::%s"), *Namespace, *Name, *Variant);
+		}
+		NodeObj->SetStringField(TEXT("class_name"), FullName);
+		NodeObj->SetStringField(TEXT("name"), Node.Name.ToString());
+
+		// Position from Style.Display.Locations map
+		// Key is a GUID (editor instance), value is FVector2D
+		double PosX = 0.0;
+		double PosY = 0.0;
+		bool bHasPosition = false;
+
+		const TMap<FGuid, FVector2D>& Locations = Node.Style.Display.Locations;
+		if (Locations.Num() > 0)
+		{
+			// Take the first location entry (typically only one per node)
+			for (const auto& Pair : Locations)
+			{
+				PosX = Pair.Value.X;
+				PosY = Pair.Value.Y;
+				bHasPosition = true;
+				break;
+			}
+		}
+
+		NodeObj->SetNumberField(TEXT("x"), PosX);
+		NodeObj->SetNumberField(TEXT("y"), PosY);
+		NodeObj->SetBoolField(TEXT("has_position"), bHasPosition);
+
+		// List input pin names
+		TArray<TSharedPtr<FJsonValue>> InputPins;
+		for (const FMetasoundFrontendVertex& Input : Node.Interface.Inputs)
+		{
+			InputPins.Add(MakeShared<FJsonValueString>(Input.Name.ToString()));
+		}
+		NodeObj->SetArrayField(TEXT("inputs"), InputPins);
+
+		// List output pin names
+		TArray<TSharedPtr<FJsonValue>> OutputPins;
+		for (const FMetasoundFrontendVertex& Output : Node.Interface.Outputs)
+		{
+			OutputPins.Add(MakeShared<FJsonValueString>(Output.Name.ToString()));
+		}
+		NodeObj->SetArrayField(TEXT("outputs"), OutputPins);
+
+		NodeArray.Add(MakeShared<FJsonValueObject>(NodeObj));
+	}
+
+	// Read edges (connections)
+	for (const FMetasoundFrontendEdge& Edge : Graph.Edges)
+	{
+		TSharedPtr<FJsonObject> EdgeObj = MakeShared<FJsonObject>();
+		EdgeObj->SetStringField(TEXT("from_node"), Edge.FromNodeID.ToString());
+		EdgeObj->SetStringField(TEXT("from_pin"), Edge.FromVertexID.ToString());
+		EdgeObj->SetStringField(TEXT("to_node"), Edge.ToNodeID.ToString());
+		EdgeObj->SetStringField(TEXT("to_pin"), Edge.ToVertexID.ToString());
+		EdgeArray.Add(MakeShared<FJsonValueObject>(EdgeObj));
+	}
+
+	TSharedPtr<FJsonObject> Response = AudioMCP::MakeOkResponse(
+		FString::Printf(TEXT("Read %d nodes, %d edges from '%s'"),
+			NodeArray.Num(), EdgeArray.Num(), *AssetPath));
+	Response->SetArrayField(TEXT("nodes"), NodeArray);
+	Response->SetArrayField(TEXT("edges"), EdgeArray);
+	Response->SetStringField(TEXT("asset_path"), AssetPath);
 	return Response;
 }

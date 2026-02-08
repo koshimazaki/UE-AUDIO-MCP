@@ -162,23 +162,23 @@
       "from_node": "amp_multiply",
       "from_pin": "Result",
       "to_node": "lowpass",
-      "to_pin": "Audio"
+      "to_pin": "In"
     },
     {
       "from_node": "lowpass",
-      "from_pin": "Audio",
+      "from_pin": "Out",
       "to_node": "__graph__",
       "to_pin": "Out Mono"
     },
     {
       "from_node": "lowpass",
-      "from_pin": "Audio",
+      "from_pin": "Out",
       "to_node": "__graph__",
       "to_pin": "Out Stereo L"
     },
     {
       "from_node": "lowpass",
-      "from_pin": "Audio",
+      "from_pin": "Out",
       "to_node": "__graph__",
       "to_pin": "Out Stereo R"
     },

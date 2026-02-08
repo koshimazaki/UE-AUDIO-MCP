@@ -1,0 +1,3138 @@
+{
+  "BPM To Seconds": {
+    "name": "BPM To Seconds",
+    "category": "General",
+    "description": "The BPM To Seconds node calculates a beat time in seconds from the given beats per minute (BPM), beat multiplier, and divisions of a whole note.",
+    "inputs": [
+      {
+        "name": "BPM",
+        "type": "Float",
+        "description": "The input target BPM."
+      },
+      {
+        "name": "Beat Multiplier",
+        "type": "Float",
+        "description": "The multiplier value to apply to the BPM."
+      },
+      {
+        "name": "Division of Whole Note",
+        "type": "Enum",
+        "description": "The divisions of a whole note."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Seconds",
+        "type": "Float",
+        "description": "The output beat time in seconds."
+      }
+    ]
+  },
+  "Envelope Follower": {
+    "name": "Envelope Follower",
+    "category": "General",
+    "description": "The Envelope Follower node outputs an envelope from an input audio signal.",
+    "inputs": [
+      {
+        "name": "In",
+        "type": "Audio",
+        "description": "The input audio signal."
+      },
+      {
+        "name": "Attack Time",
+        "type": "Time",
+        "description": "The attack time (in seconds)."
+      },
+      {
+        "name": "Release Time",
+        "type": "Time",
+        "description": "The release time (in seconds)."
+      },
+      {
+        "name": "Peak Mode",
+        "type": "Bool",
+        "description": "The following-method of the envelope follower:\n\n  MS: Envelope follows a running Mean Squared of the audio signal.\n  RMS: Envelope follows a running Root Meat Squared of the audio signal.\n  Peak: Envelope follows the peaks in the audio signal."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Envelope",
+        "type": "Float",
+        "description": "The output envelope value (block rate)."
+      },
+      {
+        "name": "Audio Envelope",
+        "type": "Audio",
+        "description": "The output envelope value (audio rate)."
+      }
+    ]
+  },
+  "Flanger": {
+    "name": "Flanger",
+    "category": "General",
+    "description": "The Flanger node applies a flanger effect to the input audio.",
+    "inputs": [
+      {
+        "name": "In Audio",
+        "type": "Audio",
+        "description": "The input audio signal to apply the flanger effect to."
+      },
+      {
+        "name": "Modulation Rate",
+        "type": "Float",
+        "description": "The Low-Frequency Oscillator (LFO) rate that varies the delay time (in Hz). This value is clamped at block rate."
+      },
+      {
+        "name": "Modulation Depth",
+        "type": "Float",
+        "description": "The LFO amplitude (strength) that scales the delay time."
+      },
+      {
+        "name": "Center Delay",
+        "type": "Time",
+        "description": "The center delay amount (in milliseconds)."
+      },
+      {
+        "name": "Mix Level",
+        "type": "Float",
+        "description": "The balance between original and delayed signal. The value should be between 0 and 1.0. For example, a value of 0.5 uses equal amounts of each signal and a value greater than  0.5 uses more delayed signal than non-delayed signal."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Out Audio",
+        "type": "Audio",
+        "description": "The output audio signal with the flanger effect applied."
+      }
+    ]
+  },
+  "Get WaveTable From Bank": {
+    "name": "Get WaveTable From Bank",
+    "category": "General",
+    "description": "The Get WaveTable From Bank node retrieves (or generates an interpolated) WaveTable from a given WaveTable Bank asset.",
+    "inputs": [
+      {
+        "name": "WaveTableBank",
+        "type": "WaveAsset",
+        "description": "The WaveTable Bank asset to retrieve or generate an interpolated WaveTable from."
+      },
+      {
+        "name": "TableIndex",
+        "type": "Int32",
+        "description": "The index of the WaveTable to retrieve. If set between two whole values, the WaveTables located at the two closest indices are mixed together. The value will be adjusted to loop if it is set beyond the range of the WaveTable Bank. For example, if the WaveTable Bank has 3 indices, a value of 3.0 will retrieve the WaveTable at index 0."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Out",
+        "type": "Audio",
+        "description": "The retrieved WaveTable."
+      }
+    ]
+  },
+  "InterpTo": {
+    "name": "InterpTo",
+    "category": "General",
+    "description": "The InterpTo node interpolates between the current value and a target value over a specified time.",
+    "inputs": [
+      {
+        "name": "Interp Time",
+        "type": "Time",
+        "description": "The time to interpolate from the current value to the target value."
+      },
+      {
+        "name": "Target",
+        "type": "Float",
+        "description": "The value to interpolate to."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Value",
+        "type": "Float",
+        "description": "The current value."
+      }
+    ]
+  },
+  "RingMod": {
+    "name": "RingMod",
+    "category": "General",
+    "description": "The RingMod node performs ring modulation with a carrier signal and a modulator signal.",
+    "inputs": [
+      {
+        "name": "In Carrier",
+        "type": "Audio",
+        "description": "The carrier audio signal."
+      },
+      {
+        "name": "In Modulator",
+        "type": "Audio",
+        "description": "The modulator audio signal."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Out Audio",
+        "type": "Audio",
+        "description": "The modulated audio signal."
+      }
+    ]
+  },
+  "Wave Player": {
+    "name": "Wave Player",
+    "category": "General",
+    "description": "The Wave Player node is used to play a Sound Wave asset. There are multiple versions of this node in order to support several different channel configurations, such as Mono, Stereo, Quad (4.0), 5.1, and 7.1.",
+    "inputs": [
+      {
+        "name": "Play / Stop",
+        "type": "Trigger",
+        "description": "The Play and Stop triggers start and stop the Wave Player playback at a sample-accurate moment in time."
+      },
+      {
+        "name": "Wave Asset",
+        "type": "WaveAsset",
+        "description": "The Sound Wave asset played by the Wave Player during playback. This asset uses the same real-time decoders as all other sound sources in Unreal Engine."
+      },
+      {
+        "name": "Start Time",
+        "type": "Time",
+        "description": "The time within the Sound Wave asset to begin playing the audio file. This is also referred to as seek time."
+      },
+      {
+        "name": "Pitch Shift",
+        "type": "Float",
+        "description": "The Pitch Shift to use for the Wave Player. This is defined in units of semitones to account for the non-linear nature of frequency scaling."
+      },
+      {
+        "name": "Loop",
+        "type": "Bool",
+        "description": "Whether the Wave Player will loop the audio file or stop when it's finished. This can be toggled at any time during playback from the graph."
+      },
+      {
+        "name": "Loop Start",
+        "type": "Time",
+        "description": "The Loop Start indicates at which point in time the Wave Player will loop the audio file."
+      },
+      {
+        "name": "Loop Duration",
+        "type": "Time",
+        "description": "The Loop Duration represents the total time the loop will play. Any value other than -1 sets the end point of the loop to the sum of the Loop Start and Loop Duration values, while a value of -1 loops the entire audio file."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "On Play",
+        "type": "Trigger",
+        "description": "Triggers when the Wave Player's Input Play pin is triggered."
+      },
+      {
+        "name": "On Finished",
+        "type": "Trigger",
+        "description": "Triggers when the Wave Player finishes playing the audio file. This pin will trigger on the same sample point where the audio file finishes playing."
+      },
+      {
+        "name": "On Nearly Finished",
+        "type": "Trigger",
+        "description": "Triggers on the audio rendering block before the audio file is expected to finish playback. This is commonly used to loop back and pick a new audio file variation for the Wave Player."
+      },
+      {
+        "name": "On Looped",
+        "type": "Trigger",
+        "description": "Triggers on the sample where a sound looped based on the looping settings."
+      },
+      {
+        "name": "On Cue Point",
+        "type": "Trigger",
+        "description": "Triggers when a cue point has been parsed in the Wave Player. Cue points are metadata embedded in audio wave files on import.\n\nCue points are often used by sound designers to trigger events or loop points in their audio at exact points in time. With this feature, sound designers can procedurally trigger MetaSound behavior based on embedded data in the imported audio wave file.\n\nThis pin is executed with sample accuracy, but the integer and label associated with the cue point is read at the block rate. Cue points in the audio wave file that are closer together than the block rate of the MetaSound will only trigger on the last cue point in that block."
+      },
+      {
+        "name": "Cue Point ID",
+        "type": "Int32",
+        "description": "The ID of the cue point as parsed from the imported audio wave file."
+      },
+      {
+        "name": "Cue Point Label",
+        "type": "String",
+        "description": "The label of the cue point as parsed from the imported audio wave file."
+      },
+      {
+        "name": "Loop Percent",
+        "type": "Float",
+        "description": "The current location in the audio wave file within the given loop region."
+      },
+      {
+        "name": "Playback Location",
+        "type": "Float",
+        "description": "The current location in the audio wave file as a fraction of the total length of the audio wave file."
+      },
+      {
+        "name": "Out X",
+        "type": "Audio",
+        "description": "The X channel output of the input Sound Wave asset."
+      }
+    ]
+  },
+  "WaveShaper": {
+    "name": "WaveShaper",
+    "category": "General",
+    "description": "The WaveShaper node applies a non-linear shaping to the input audio signal.",
+    "inputs": [
+      {
+        "name": "In",
+        "type": "Audio",
+        "description": "The input audio signal to apply the non-linear shaping to."
+      },
+      {
+        "name": "Amount",
+        "type": "Float",
+        "description": "The amount of the non-linear wave shaping to apply."
+      },
+      {
+        "name": "Bias",
+        "type": "Float",
+        "description": "The DC offset to apply before wave shaping."
+      },
+      {
+        "name": "OutputGain",
+        "type": "Float",
+        "description": "The amount of gain to apply after processing."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Out",
+        "type": "Audio",
+        "description": "The output audio signal with the non-linear shaping applied."
+      }
+    ]
+  },
+  "Concatenate": {
+    "name": "Concatenate",
+    "category": "Array",
+    "description": "The Concatenate node concatenates two arrays on a given trigger.",
+    "inputs": [
+      {
+        "name": "Trigger",
+        "type": "Trigger",
+        "description": "The trigger on which to concatenate the input arrays."
+      },
+      {
+        "name": "Left / Right Array",
+        "type": "Array",
+        "description": "The input arrays."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Array",
+        "type": "Array",
+        "description": "The concatenated array."
+      }
+    ]
+  },
+  "Get": {
+    "name": "Get",
+    "category": "Array",
+    "description": "The Get node retrieves an element from an array at the given index.",
+    "inputs": [
+      {
+        "name": "Trigger",
+        "type": "Trigger",
+        "description": "The trigger on which to retrieve the specified array element."
+      },
+      {
+        "name": "Array",
+        "type": "Array",
+        "description": "The array from which to retrieve an element."
+      },
+      {
+        "name": "Index",
+        "type": "Int32",
+        "description": "The index of the element to retrieve."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Element",
+        "type": "Float",
+        "description": "The value of the retrieved element."
+      }
+    ]
+  },
+  "Num": {
+    "name": "Num",
+    "category": "Array",
+    "description": "The Num node returns the number of elements in the given array.",
+    "inputs": [
+      {
+        "name": "Array",
+        "type": "Array",
+        "description": "The array whose elements will be counted."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Num",
+        "type": "Int32",
+        "description": "The number of elements in the given array."
+      }
+    ]
+  },
+  "Random Get": {
+    "name": "Random Get",
+    "category": "Array",
+    "description": "The Random Get node randomly retrieves elements from an input array. Optionally, an array of weights can be supplied to adjust the randomness.",
+    "inputs": [
+      {
+        "name": "Next",
+        "type": "Trigger",
+        "description": "The trigger on which to get the next random value in the array."
+      },
+      {
+        "name": "Reset",
+        "type": "Trigger",
+        "description": "The trigger on which to reset the randomization seed for the array."
+      },
+      {
+        "name": "In Array",
+        "type": "Array",
+        "description": "The input array from which to randomly retrieve elements."
+      },
+      {
+        "name": "Weights",
+        "type": "Array",
+        "description": "(Optional) An input array of weights used to define the probability of each entry retrieved. If not provided, an even probability for all elements is assumed. If this array is shorter than the input array, it is repeated to match the size."
+      },
+      {
+        "name": "Seed",
+        "type": "Int32",
+        "description": "The seed used for the random shuffle. The default value of -1 will use the current time."
+      },
+      {
+        "name": "No Repeats",
+        "type": "Int32",
+        "description": "The number of elements to track to avoid repeating in a row. For example, a value of 2 prevents this node from repeating the last two selected elements."
+      },
+      {
+        "name": "Enabled Shared State",
+        "type": "Bool",
+        "description": "If enabled, this node's state is shared across instances of this MetaSound to avoid playing the same exact variations at the same time."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "On Next",
+        "type": "Trigger",
+        "description": "Triggers when the Next input is triggered."
+      },
+      {
+        "name": "On Reset",
+        "type": "Trigger",
+        "description": "Triggers when the Shuffle input is triggered or if the array is auto-shuffled."
+      },
+      {
+        "name": "Value",
+        "type": "Float",
+        "description": "The randomly-selected value from the input array."
+      }
+    ]
+  },
+  "Set": {
+    "name": "Set",
+    "category": "Array",
+    "description": "The Set node sets the value of a specified index in a given array.",
+    "inputs": [
+      {
+        "name": "Trigger",
+        "type": "Trigger",
+        "description": "The trigger on which to set value in the array."
+      },
+      {
+        "name": "Array",
+        "type": "Array",
+        "description": "The array in which a value will be set."
+      },
+      {
+        "name": "Index",
+        "type": "Int32",
+        "description": "The index to set in the target array."
+      },
+      {
+        "name": "Value",
+        "type": "Float",
+        "description": "The value to which the selected index is set."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Array",
+        "type": "Array",
+        "description": "The array after the setting operation is completed."
+      }
+    ]
+  },
+  "Shuffle": {
+    "name": "Shuffle",
+    "category": "Array",
+    "description": "The Shuffle node outputs elements from a shuffled array.",
+    "inputs": [
+      {
+        "name": "Next",
+        "type": "Trigger",
+        "description": "The trigger on which to get the next value in the shuffled array."
+      },
+      {
+        "name": "Shuffle",
+        "type": "Array",
+        "description": "The trigger on which to shuffle the array manually."
+      },
+      {
+        "name": "Reset Seed",
+        "type": "Trigger",
+        "description": "The trigger on which to reset the random seed stream."
+      },
+      {
+        "name": "In Array",
+        "type": "Array",
+        "description": "The array from which to shuffle and output elements."
+      },
+      {
+        "name": "Seed",
+        "type": "Int32",
+        "description": "The seed used for the random shuffle. The default value of -1 uses the current time."
+      },
+      {
+        "name": "Auto Shuffle",
+        "type": "Bool",
+        "description": "If enabled, automatically shuffles when the array has been read completely."
+      },
+      {
+        "name": "Enabled Shared State",
+        "type": "Bool",
+        "description": "If enabled, the state is shared across instances of this MetaSound."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "On Next",
+        "type": "Trigger",
+        "description": "Triggers when the Next input is triggered."
+      },
+      {
+        "name": "On Shuffle",
+        "type": "Trigger",
+        "description": "Triggers when the Shuffle input is triggered or if the array is auto-shuffled."
+      },
+      {
+        "name": "On Reset Seed",
+        "type": "Trigger",
+        "description": "Triggers when the Reset Seed input is triggered."
+      },
+      {
+        "name": "Value",
+        "type": "Float",
+        "description": "The value of the currently-selected element."
+      }
+    ]
+  },
+  "Subset": {
+    "name": "Subset",
+    "category": "Array",
+    "description": "The Subset node returns a subset of an input array.",
+    "inputs": [
+      {
+        "name": "Trigger",
+        "type": "Trigger",
+        "description": "The trigger on which to generate a subset."
+      },
+      {
+        "name": "Array",
+        "type": "Array",
+        "description": "The input array from which to get a subset."
+      },
+      {
+        "name": "Start / End Index",
+        "type": "Float",
+        "description": "The first and last indices to include in the subset."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Array",
+        "type": "Array",
+        "description": "The subset of the input array."
+      }
+    ]
+  },
+  "Get Wave Info": {
+    "name": "Get Wave Info",
+    "category": "Debug",
+    "description": "The Get Wave Info node returns the info from the Wave Asset.",
+    "inputs": [
+      {
+        "name": "Wave",
+        "type": "Float",
+        "description": "The input Wave Asset."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Duration",
+        "type": "Time",
+        "description": "The duration of the Wave Asset (in seconds)."
+      },
+      {
+        "name": "Path",
+        "type": "String",
+        "description": "The full path of the Wave Asset."
+      }
+    ]
+  },
+  "Print Log": {
+    "name": "Print Log",
+    "category": "Debug",
+    "description": "The Print Log node is used to record values to the Output Log on a given trigger for debugging purposes. There are multiple versions of this node in order to support several common data types, including: Bool, Float, Int32, and String.",
+    "inputs": [
+      {
+        "name": "Trigger",
+        "type": "Trigger",
+        "description": "The trigger on which to write the set value to the log."
+      },
+      {
+        "name": "Label",
+        "type": "String",
+        "description": "The label to attach to the value logged."
+      },
+      {
+        "name": "Value To Log",
+        "type": "Trigger",
+        "description": "The value to record to the log when triggered."
+      }
+    ],
+    "outputs": []
+  },
+  "Delay": {
+    "name": "Delay",
+    "category": "Delays",
+    "description": "The Delay node provides a mono buffer delay that supports dry level, wet level, and feedback. For multi-channel buffer delay, use the Stereo Delay node.",
+    "inputs": [
+      {
+        "name": "In",
+        "type": "Audio",
+        "description": "The audio signal to apply delay to."
+      },
+      {
+        "name": "Delay Time",
+        "type": "Time",
+        "description": "The amount of time to delay the audio (in seconds)."
+      },
+      {
+        "name": "Dry Level",
+        "type": "Float",
+        "description": "The level for the unprocessed (dry) signal"
+      },
+      {
+        "name": "Wet Level",
+        "type": "Float",
+        "description": "The level for the processed (wet) signal."
+      },
+      {
+        "name": "Feedback",
+        "type": "Float",
+        "description": "The amount of feedback to use."
+      },
+      {
+        "name": "Max Delay Time",
+        "type": "Time",
+        "description": "The amount of feedback to use."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Out",
+        "type": "Audio",
+        "description": "The delayed audio signal."
+      }
+    ]
+  },
+  "Delay Pitch Shift": {
+    "name": "Delay Pitch Shift",
+    "category": "Delays",
+    "description": "The Delay Pitch Shift node pitch shifts the audio buffer using a delay-based doppler-shift method. This allows for pitch shifting without changing the length of the audio file by using an internal delay buffer. The pitch will shift but the sound will not speed up or slow down.",
+    "inputs": [
+      {
+        "name": "In",
+        "type": "Audio",
+        "description": "The audio buffer to process."
+      },
+      {
+        "name": "Pitch Shift",
+        "type": "Float",
+        "description": "The amount of pitch shift (in semitones) to apply."
+      },
+      {
+        "name": "Delay Length",
+        "type": "Time",
+        "description": "The amount of delay (between 10 and 100 milliseconds) to apply. Changing this value can reduce artifacts in certain pitch shift regions."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Out",
+        "type": "Audio",
+        "description": "The processed audio buffer."
+      }
+    ]
+  },
+  "Diffuser": {
+    "name": "Diffuser",
+    "category": "Delays",
+    "description": "The Diffuser node applies diffusion to the incoming audio.",
+    "inputs": [
+      {
+        "name": "Input Audio",
+        "type": "Audio",
+        "description": "The audio to apply diffusion to."
+      },
+      {
+        "name": "Depth",
+        "type": "Float",
+        "description": "The number of filters to use to diffuse the audio (between 1 and 5). This will not update while running."
+      },
+      {
+        "name": "Feedback",
+        "type": "Float",
+        "description": "The amount of feedback to use on each diffuser (between 0 and 1)."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Output Audio",
+        "type": "Audio",
+        "description": "The diffused audio."
+      }
+    ]
+  },
+  "Grain Delay": {
+    "name": "Grain Delay",
+    "category": "Delays",
+    "description": "The Grain Delay node performs delayed audio granulation on a given audio buffer by sampling it into \"grains\" and playing them after a set delay.",
+    "inputs": [
+      {
+        "name": "In Audio",
+        "type": "Audio",
+        "description": "The audio buffer to be grain delayed."
+      },
+      {
+        "name": "Grain Spawn",
+        "type": "Trigger",
+        "description": "The trigger on which to spawn a new grain of audio."
+      },
+      {
+        "name": "Grain Delay",
+        "type": "Time",
+        "description": "The delay (in milliseconds, between 0 and 2000) of the next spawned grain."
+      },
+      {
+        "name": "Grain Delay Range",
+        "type": "Time",
+        "description": "The range delta (in milliseconds) used to randomize the delay in relation to the central Grain Delay value."
+      },
+      {
+        "name": "Grain Duration",
+        "type": "Time",
+        "description": "The duration (in milliseconds) of the next spawned grain."
+      },
+      {
+        "name": "Grain Duration Range",
+        "type": "Time",
+        "description": "The range delta (in milliseconds) used to randomize the duration in relation to the central Grain Duration value."
+      },
+      {
+        "name": "Pitch Shift",
+        "type": "Float",
+        "description": "The pitch value (in semitones) to change the grain pitch of all rendering grains."
+      },
+      {
+        "name": "Pitch Shift Range",
+        "type": "Float",
+        "description": "The pitch shift delta (in semitones) used to randomize the pitch shift in relation to the central Pitch Shift value."
+      },
+      {
+        "name": "Grain Envelope",
+        "type": "Enum",
+        "description": "The type of envelope to use for the grains: Gaussian, Triangle, Downward Triangle, Upward Triangle, Exponential Decay, or Exponential Attack"
+      },
+      {
+        "name": "Max Grain Count",
+        "type": "Int32",
+        "description": "The maximum number of grains to render at a time (between 1 and 100)."
+      },
+      {
+        "name": "Feedback Amount",
+        "type": "Float",
+        "description": "The amount of feedback of each grain. If feedback is applied, the grain delay will feed its audio output back into itself."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Out Audio",
+        "type": "Audio",
+        "description": "The grain-delayed audio buffer."
+      }
+    ]
+  },
+  "Stereo Delay": {
+    "name": "Stereo Delay",
+    "category": "Delays",
+    "description": "The Stereo Delay node provides multi-channel buffer delay. Like the Delay node, which provides mono buffer delay, this node supports dry level, wet level, and feedback, but also supports additional delay modes.",
+    "inputs": [
+      {
+        "name": "In Left / Right",
+        "type": "Audio",
+        "description": "The input audio signals (left / right channels) to apply delay to."
+      },
+      {
+        "name": "Delay Mode",
+        "type": "Enum",
+        "description": "The delay method to use:\n\n  Normal: The left input mixes with the left delay output and feeds to the left output.\n  Cross: The left input mixes with the right delay output and feeds to the right output.\n  Ping Pong: The left input mixes with the left delay output and feeds to the right output."
+      },
+      {
+        "name": "Delay Time",
+        "type": "Time",
+        "description": "The amount of time to delay the audio (in seconds)."
+      },
+      {
+        "name": "Delay Ratio",
+        "type": "Float",
+        "description": "The ratio of delay to apply to the left and right channels. This means channels can have different delay amounts. For example, a value of -1 applies no delay to the left channel while fully delaying the right channel, which can be useful for stereo channel decorrelation."
+      },
+      {
+        "name": "Dry Level",
+        "type": "Float",
+        "description": "The level for the unprocessed (dry) signal"
+      },
+      {
+        "name": "Wet Level",
+        "type": "Float",
+        "description": "The level for the processed (wet) signal."
+      },
+      {
+        "name": "Feedback",
+        "type": "Float",
+        "description": "The amount of feedback to use."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Out Left / Right",
+        "type": "Audio",
+        "description": "The output audio signal (left / right channels)."
+      }
+    ]
+  },
+  "Compressor": {
+    "name": "Compressor",
+    "category": "Dynamics",
+    "description": "The Compressor node lowers the dynamic range of an input audio signal.",
+    "inputs": [
+      {
+        "name": "Audio",
+        "type": "Audio",
+        "description": "The audio signal to compress."
+      },
+      {
+        "name": "Ratio",
+        "type": "Float",
+        "description": "The ratio of gain reduction to apply. For example, a value of 1 produces no gain reduction and a value greater than 1 produces gain reduction."
+      },
+      {
+        "name": "Threshold dB",
+        "type": "Float",
+        "description": "The amplitude threshold (in decibels) above which gain will be reduced."
+      },
+      {
+        "name": "Attack Time",
+        "type": "Time",
+        "description": "The amount of time it takes for audio above the Threshold (dB) to reach its compressed volume level."
+      },
+      {
+        "name": "Release Time",
+        "type": "Time",
+        "description": "The amount of time it takes for audio below the Threshold (dB) to return to its original volume level."
+      },
+      {
+        "name": "Lookahead Time",
+        "type": "Time",
+        "description": "The amount of time it takes to delay the compressed signal behind the analyzed input signal."
+      },
+      {
+        "name": "Knee",
+        "type": "Float",
+        "description": "A decibel value that determines how hard or soft the gain reduction blends. A value of 0 dB provides no blending."
+      },
+      {
+        "name": "Sidechain",
+        "type": "Audio",
+        "description": "(Optional) An external audio signal to control the compressor with. If unset, the input audio signal is used."
+      },
+      {
+        "name": "Envelope Mode",
+        "type": "Enum",
+        "description": "The envelope-following method the compressor will use for gain detection:\n\n  MS: Envelope follows a running Mean Squared of the audio signal.\n  RMS: Envelope follows a running Root Meat Squared of the audio signal.\n  Peak: Envelope follows the peaks in the audio signal."
+      },
+      {
+        "name": "Analog Mode",
+        "type": "Bool",
+        "description": "If enabled, use Analog Mode for the compressor's envelope follower."
+      },
+      {
+        "name": "Upwards Mode",
+        "type": "Bool",
+        "description": "If enabled, an upwards compressor is used instead of the standard downwards compressor."
+      },
+      {
+        "name": "Wet/Dry",
+        "type": "Float",
+        "description": "The ratio between the processed (wet) and the unprocessed (dry) signal. For example, a value of 0 is fully dry and a value of 1 is fully wet."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Audio",
+        "type": "Audio",
+        "description": "The output audio signal with the compressor effect applied."
+      },
+      {
+        "name": "Gain Envelope",
+        "type": "Audio",
+        "description": "The amount of gain applied to the signal."
+      }
+    ]
+  },
+  "Decibels to Linear Gain": {
+    "name": "Decibels to Linear Gain",
+    "category": "Dynamics",
+    "description": "The Decibels to Linear Gain node converts a logarithmic (dB) gain value to a linear gain value.",
+    "inputs": [
+      {
+        "name": "Decibels",
+        "type": "Float",
+        "description": "The input logarithmic (dB) gain value."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Linear Gain",
+        "type": "Float",
+        "description": "The output linear gain value."
+      }
+    ]
+  },
+  "Limiter": {
+    "name": "Limiter",
+    "category": "Dynamics",
+    "description": "The Limiter node prevents a signal from going above a given threshold.",
+    "inputs": [
+      {
+        "name": "Audio",
+        "type": "Audio",
+        "description": "The input audio signal to be limited."
+      },
+      {
+        "name": "Input Gain dB",
+        "type": "Float",
+        "description": "The amount of gain (in decibels) to apply to the input before limiting."
+      },
+      {
+        "name": "Threshold dB",
+        "type": "Float",
+        "description": "The amplitude threshold (in decibels) above which gain will be reduced."
+      },
+      {
+        "name": "Release Time",
+        "type": "Time",
+        "description": "The time it takes for audio below the threshold to return to its original volume level."
+      },
+      {
+        "name": "Knee",
+        "type": "Float",
+        "description": "The knee mode determines if the gain reduction blends are Hard or Soft."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Audio",
+        "type": "Audio",
+        "description": "The limited audio signal."
+      }
+    ]
+  },
+  "Linear Gain to Decibels": {
+    "name": "Linear Gain to Decibels",
+    "category": "Dynamics",
+    "description": "The Linear Gain to Decibels node converts a linear gain value to a logarithmic (dB) gain value.",
+    "inputs": [
+      {
+        "name": "Linear Gain",
+        "type": "Float",
+        "description": "The input linear gain value."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Decibels",
+        "type": "Float",
+        "description": "The output logarithmic (dB) gain value."
+      }
+    ]
+  },
+  "AD Envelope": {
+    "name": "AD Envelope",
+    "category": "Envelopes",
+    "description": "The AD Envelope node generates an attack-decay envelope value output when triggered.",
+    "inputs": [
+      {
+        "name": "Trigger",
+        "type": "Trigger",
+        "description": "The trigger on which to start the attack phase of the envelope generator."
+      },
+      {
+        "name": "Attack Time",
+        "type": "Time",
+        "description": "The amount of time (in seconds) to reach the maximum envelope value (1.0)."
+      },
+      {
+        "name": "Delay Time",
+        "type": "Time",
+        "description": "The amount of time (in seconds) to reach the minimum envelope value (0.0)."
+      },
+      {
+        "name": "Attack Curve",
+        "type": "Float",
+        "description": "The exponential curve factor of the attack phase. For example, a value of 1.0 produces linear growth, a value less than 1.0 produces logarithmic growth, and a value greater than 1.0 produces exponential growth."
+      },
+      {
+        "name": "Decay Curve",
+        "type": "Float",
+        "description": "The exponential curve factor of the decay phase. For example, a value of 1.0 produces linear decay, a value greater than 1.0 produces logarithmic decay, and a value less than 1.0 produces exponential decay."
+      },
+      {
+        "name": "Looping",
+        "type": "Bool",
+        "description": "If enabled, the envelope will loop."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "On Trigger",
+        "type": "Trigger",
+        "description": "Triggers when the envelope is triggered."
+      },
+      {
+        "name": "On Done",
+        "type": "Trigger",
+        "description": "Triggers when the envelope finishes or loops back if looping is enabled."
+      },
+      {
+        "name": "Out Envelope",
+        "type": "Audio",
+        "description": "The output value of the envelope."
+      }
+    ]
+  },
+  "ADSR Envelope": {
+    "name": "ADSR Envelope",
+    "category": "Envelopes",
+    "description": "The ADSR Envelope node generates an attack-decay-sustain-release envelope value output when triggered. This node is similar to the AD Envelope node, but it requires a separate release trigger for the release phase of the envelope to begin.",
+    "inputs": [
+      {
+        "name": "Trigger Attack",
+        "type": "Trigger",
+        "description": "The trigger on which to start the attack phase of the envelope generator."
+      },
+      {
+        "name": "Trigger Release",
+        "type": "Trigger",
+        "description": "The trigger on which to start the release phase of the envelope generator."
+      },
+      {
+        "name": "Attack Time",
+        "type": "Time",
+        "description": "The amount of time (in seconds) to reach the maximum envelope value (1.0)."
+      },
+      {
+        "name": "Delay Time",
+        "type": "Time",
+        "description": "The amount of time (in seconds) to reach the minimum envelope value (0.0)."
+      },
+      {
+        "name": "Sustain Level",
+        "type": "Float",
+        "description": "The sustain level of the envelope."
+      },
+      {
+        "name": "Release Time",
+        "type": "Time",
+        "description": "The release time of the envelope."
+      },
+      {
+        "name": "Attack Curve",
+        "type": "Float",
+        "description": "The exponential curve factor of the attack phase. For example, a value of 1.0 produces linear growth, a value less than 1.0 produces logarithmic growth, and a value greater than 1.0 produces exponential growth."
+      },
+      {
+        "name": "Decay Curve",
+        "type": "Float",
+        "description": "The exponential curve factor of the decay phase. For example, a value of 1.0 produces linear decay, a value greater than 1.0 produces logarithmic decay, and a value less than 1.0 produces exponential decay."
+      },
+      {
+        "name": "Release Curve",
+        "type": "Float",
+        "description": "The exponential curve factor of the release phase. For example, a value of 1.0 produces linear release, a value greater than 1.0 produces logarithmic release, and a value less than 1.0 produces exponential release."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "On Attack Triggered",
+        "type": "Trigger",
+        "description": "Triggers when the envelope attack phase is triggered."
+      },
+      {
+        "name": "On Decay Triggered",
+        "type": "Trigger",
+        "description": "Triggers when the envelope decay phase is triggered."
+      },
+      {
+        "name": "On Sustain Triggered",
+        "type": "Trigger",
+        "description": "Triggers when the envelope sustain phase is triggered."
+      },
+      {
+        "name": "On Release Triggered",
+        "type": "Trigger",
+        "description": "Triggers when the envelope release phase is triggered."
+      },
+      {
+        "name": "On Done",
+        "type": "Trigger",
+        "description": "Triggers when the envelope is finished."
+      },
+      {
+        "name": "Out Envelope",
+        "type": "Audio",
+        "description": "The output value of the envelope."
+      }
+    ]
+  },
+  "Crossfade": {
+    "name": "Crossfade",
+    "category": "Envelopes",
+    "description": "The Crossfade node blends between inputs linearly using a provided block-rate float parameter. There are multiple versions of this node to support different input counts (between 2 and 8).",
+    "inputs": [
+      {
+        "name": "Crossfade Value",
+        "type": "Float",
+        "description": "The value which represents the current blend between the provided inputs. For example, a value of 0.5 for input values of 2 and 4 will result in an output of 3."
+      },
+      {
+        "name": "In X",
+        "type": "Float",
+        "description": "The input corresponding with position X."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Out",
+        "type": "Audio",
+        "description": "The value produced from the crossfade."
+      }
+    ]
+  },
+  "Evaluate WaveTable": {
+    "name": "Evaluate WaveTable",
+    "category": "Envelopes",
+    "description": "The Evaluate WaveTable node outputs the value of a WaveTable at a given input phase, allowing you to use the WaveTable as a curve in the graph.",
+    "inputs": [
+      {
+        "name": "WaveTable",
+        "type": "WaveAsset",
+        "description": "The WaveTable to evaluate."
+      },
+      {
+        "name": "Interpolation",
+        "type": "Enum",
+        "description": "The method to use to interpolate between WaveTable values: None (Step), Linear, or Cubic"
+      }
+    ],
+    "outputs": []
+  },
+  "WaveTable Envelope": {
+    "name": "WaveTable Envelope",
+    "category": "Envelopes",
+    "description": "The WaveTable Envelope node reads through the given WaveTable over the given duration.",
+    "inputs": [
+      {
+        "name": "WaveTable",
+        "type": "WaveAsset",
+        "description": "The WaveTable to read."
+      },
+      {
+        "name": "Play",
+        "type": "Trigger",
+        "description": "The trigger on which to play the envelope."
+      },
+      {
+        "name": "Stop",
+        "type": "Trigger",
+        "description": "The trigger on which to stop the envelope."
+      },
+      {
+        "name": "Pause",
+        "type": "Trigger",
+        "description": "The trigger on which to pause the envelope."
+      },
+      {
+        "name": "Duration",
+        "type": "Time",
+        "description": "The duration (in seconds)."
+      },
+      {
+        "name": "Mode",
+        "type": "Enum",
+        "description": "Determines what value the envelope completes on and if it loops:\n\n  Loop: Interpolates the last and first values in the WaveTable and restarts interpolation of the envelope on completion.\n  Hold: Holds the last value in the table if playback elapses beyond the WaveTable's length.\n  Unit: Interpolates the last value in the table with 1.0 if playback elapses beyond the WaveTable's length.\n  Zero: Interpolates the last value in the table with 0.0 if playback elapses beyond the WaveTable's length."
+      },
+      {
+        "name": "Interpolation",
+        "type": "Enum",
+        "description": "Determines how the envelope interpolates between WaveTable values:\n\n  None (Step): No interpolation between values. The lowest value is used.\n  Linear: Linearly interpolates between values.\n  Cubic: Cubically interpolates between values."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "OnFinished",
+        "type": "Trigger",
+        "description": "Triggers when the envelope is finished."
+      },
+      {
+        "name": "Out",
+        "type": "Audio",
+        "description": "The output value."
+      }
+    ]
+  },
+  "Audio Bus Reader": {
+    "name": "Audio Bus Reader",
+    "category": "External IO",
+    "description": "The Audio Bus Reader node outputs audio data from an Audio Bus asset. There are two versions of this node to support different channel amounts (either 1 or 2).",
+    "inputs": [
+      {
+        "name": "Audio Bus",
+        "type": "WaveAsset",
+        "description": "The Audio Bus asset to read data from."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Out X",
+        "type": "Audio",
+        "description": "The audio output for channel X."
+      }
+    ]
+  },
+  "Wave Writer": {
+    "name": "Wave Writer",
+    "category": "External IO",
+    "description": "The Wave Writer node writes audio signals to disk. There are multiple versions of this node to support different channel amounts (between 1 and 8).",
+    "inputs": [
+      {
+        "name": "Filename Prefix",
+        "type": "String",
+        "description": "The filename prefix used for the output file."
+      },
+      {
+        "name": "Enabled",
+        "type": "Bool",
+        "description": "If enabled, this node will write audio signals to disk."
+      },
+      {
+        "name": "In X",
+        "type": "Audio",
+        "description": "The audio input corresponding with channel X."
+      }
+    ],
+    "outputs": []
+  },
+  "Biquad Filter": {
+    "name": "Biquad Filter",
+    "category": "Filters",
+    "description": "The Biquad Filter node provides a simple two-pole biquad filter that supports a variety of configurations.",
+    "inputs": [
+      {
+        "name": "In",
+        "type": "Audio",
+        "description": "The audio to be biquad filtered."
+      },
+      {
+        "name": "Cutoff Frequency",
+        "type": "Float",
+        "description": "The value of the cutoff frequency."
+      },
+      {
+        "name": "Bandwidth",
+        "type": "Float",
+        "description": "When applicable, controls the bandwidth value of the current filter type."
+      },
+      {
+        "name": "Gain (dB)",
+        "type": "Float",
+        "description": "The gain (in decibels) applied to the band when in Parametric mode."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Out",
+        "type": "Audio",
+        "description": "The biquad-filtered audio."
+      }
+    ]
+  },
+  "Bitcrusher": {
+    "name": "Bitcrusher",
+    "category": "Filters",
+    "description": "The Bitcrusher node downsamples and lowers the bit-depth of an incoming audio signal.",
+    "inputs": [
+      {
+        "name": "Audio",
+        "type": "Audio",
+        "description": "The audio signal to bitcrush."
+      },
+      {
+        "name": "Sample Rate",
+        "type": "Float",
+        "description": "The sampling frequency to downsample the audio to."
+      },
+      {
+        "name": "Bit Depth",
+        "type": "Float",
+        "description": "The bit resolution to reduce the audio to."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Audio",
+        "type": "Audio",
+        "description": "The bitcrushed audio signal."
+      }
+    ]
+  },
+  "Dynamic Filter": {
+    "name": "Dynamic Filter",
+    "category": "Filters",
+    "description": "The Dynamic Filter node filters a band of audio based on the strength of the input signal.",
+    "inputs": [
+      {
+        "name": "Audio",
+        "type": "Audio",
+        "description": "The audio signal to filter."
+      },
+      {
+        "name": "Sidechain",
+        "type": "Audio",
+        "description": "(Optional) An external audio signal to control the filter with. If not set, the input audio signal is used."
+      },
+      {
+        "name": "FilterType",
+        "type": "Enum",
+        "description": "The filter shape to use: Bell, Low Shelf, or High Shelf"
+      },
+      {
+        "name": "Frequency",
+        "type": "Float",
+        "description": "The center frequency of the filter."
+      },
+      {
+        "name": "Q",
+        "type": "Float",
+        "description": "The filter's Q, or resonance, which controls the steepness of the filter."
+      },
+      {
+        "name": "Threshold dB",
+        "type": "Float",
+        "description": "The amplitude threshold (dB) above which gain is reduced."
+      },
+      {
+        "name": "Ratio",
+        "type": "Float",
+        "description": "The amount of gain reduction to apply. A value of 1 applies no reduction and a higher value provides more reduction."
+      },
+      {
+        "name": "Knee",
+        "type": "Float",
+        "description": "A decibel value that determines how hard or soft the gain reduction blends. A value of 0 dB provides no blending."
+      },
+      {
+        "name": "Range",
+        "type": "Float",
+        "description": "The maximum gain reduction allowed (in decibels). A negative value applies compression and a positive value flips it into an expander."
+      },
+      {
+        "name": "Gain (dB)",
+        "type": "Float",
+        "description": "The amount of make-up gain (in decibels) to apply."
+      },
+      {
+        "name": "AttackTime",
+        "type": "Time",
+        "description": "The amount of time (in seconds) it takes the audio above the threshold to reach its compressed volume level."
+      },
+      {
+        "name": "ReleaseTime",
+        "type": "Time",
+        "description": "The amount of time (in seconds) it takes for the audio below the threshold to return to its original volume level."
+      },
+      {
+        "name": "EnvelopeMode",
+        "type": "Enum",
+        "description": "The envelope-following method the compressor uses for gain detection."
+      },
+      {
+        "name": "AnalogMode",
+        "type": "Enum",
+        "description": "If enabled, analog mode is used for the compressor's envelope follower."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Audio",
+        "type": "Audio",
+        "description": "The filtered audio signal."
+      }
+    ]
+  },
+  "Ladder Filter": {
+    "name": "Ladder Filter",
+    "category": "Filters",
+    "description": "The Ladder Filter node provides a virtual analog filter that has a pleasing and classic rolloff and resonance.",
+    "inputs": [
+      {
+        "name": "In",
+        "type": "Audio",
+        "description": "The audio to be processed by the ladder filter."
+      },
+      {
+        "name": "Cutoff Frequency",
+        "type": "Float",
+        "description": "The value of the cutoff frequency."
+      },
+      {
+        "name": "Resonance",
+        "type": "Float",
+        "description": "The value of the filter resonance."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Out",
+        "type": "Audio",
+        "description": "The ladder filtered audio."
+      }
+    ]
+  },
+  "Mono Band Splitter": {
+    "name": "Mono Band Splitter",
+    "category": "Filters",
+    "description": "The Mono Band Splitter node splits incoming audio into separate frequency bands. There are multiple versions of this node to support different input and output counts (between 2 and 5).",
+    "inputs": [
+      {
+        "name": "In",
+        "type": "Audio",
+        "description": "The base audio input channel."
+      },
+      {
+        "name": "Filter Order",
+        "type": "Int32",
+        "description": "The steepness of the crossover filters: Two Pole, Four Pole, Six Pole, or Eight Pole"
+      },
+      {
+        "name": "Phase Compensate",
+        "type": "Bool",
+        "description": "If enabled, each band is phase-compensated so they can be summed back together correctly."
+      },
+      {
+        "name": "Crossover X",
+        "type": "Float",
+        "description": "The frequency of the crossover filters from Band X to the next."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Band X Out",
+        "type": "Audio",
+        "description": "The audio output corresponding to channel X."
+      }
+    ]
+  },
+  "One-Pole High Pass Filter": {
+    "name": "One-Pole High Pass Filter",
+    "category": "Filters",
+    "description": "The One-Pole High Pass Filter node is a computationally cheap filter useful for a number of simple applications, such as simulating occlusion.",
+    "inputs": [
+      {
+        "name": "In",
+        "type": "Audio",
+        "description": "The audio signal to be filtered."
+      },
+      {
+        "name": "Cutoff Frequency",
+        "type": "Float",
+        "description": "The value of the cutoff frequency."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Out",
+        "type": "Audio",
+        "description": "The filtered audio signal."
+      }
+    ]
+  },
+  "One-Pole Low Pass Filter": {
+    "name": "One-Pole Low Pass Filter",
+    "category": "Filters",
+    "description": "The One-Pole Low Pass Filter node is a computationally cheap filter useful for a number of simple applications, such as simulating air absorption",
+    "inputs": [
+      {
+        "name": "In",
+        "type": "Audio",
+        "description": "The audio signal to be filtered."
+      },
+      {
+        "name": "Cutoff Frequency",
+        "type": "Float",
+        "description": "The value of the cutoff frequency."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Out",
+        "type": "Audio",
+        "description": "The filtered audio signal."
+      }
+    ]
+  },
+  "Sample And Hold": {
+    "name": "Sample And Hold",
+    "category": "Filters",
+    "description": "The Sample And Hold node outputs a single value of the input audio signal when triggered.",
+    "inputs": [
+      {
+        "name": "Sample And Hold",
+        "type": "Trigger",
+        "description": "The trigger on which to sample and hold the input audio."
+      },
+      {
+        "name": "In",
+        "type": "Audio",
+        "description": "The audio signal to sample."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "On Sample And Hold",
+        "type": "Trigger",
+        "description": "Triggers when the Sample and Hold input is triggered."
+      },
+      {
+        "name": "Out",
+        "type": "Audio",
+        "description": "The sampled audio signal."
+      }
+    ]
+  },
+  "State Variable Filter": {
+    "name": "State Variable Filter",
+    "category": "Filters",
+    "description": "The State Variable Filter node provides a virtual analog filter used in many synthesis applications.",
+    "inputs": [
+      {
+        "name": "In",
+        "type": "Audio",
+        "description": "The audio to be processed by the filter."
+      },
+      {
+        "name": "Cutoff Frequency",
+        "type": "Float",
+        "description": "The value of the cutoff frequency."
+      },
+      {
+        "name": "Resonance",
+        "type": "Float",
+        "description": "The value of the filter resonance."
+      },
+      {
+        "name": "Band Stop Control",
+        "type": "Float",
+        "description": "The control value applied to the band stop output."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Low Pass Filter",
+        "type": "Audio",
+        "description": "The low pass filter output."
+      },
+      {
+        "name": "High Pass Filter",
+        "type": "Audio",
+        "description": "The high pass filter output."
+      },
+      {
+        "name": "Band Pass",
+        "type": "Audio",
+        "description": "The band pass filter output."
+      },
+      {
+        "name": "Band Stop",
+        "type": "Audio",
+        "description": "The band stop filter output."
+      }
+    ]
+  },
+  "Stereo Band Splitter": {
+    "name": "Stereo Band Splitter",
+    "category": "Filters",
+    "description": "The Stereo Band Splitter node splits incoming audio into separate frequency bands. There are multiple versions of this node to support different input and output counts (between 2 and 5).",
+    "inputs": [
+      {
+        "name": "In L / R",
+        "type": "Audio",
+        "description": "The base audio input channels."
+      },
+      {
+        "name": "Filter Order",
+        "type": "Int32",
+        "description": "The steepness of the crossover filters: Two Pole, Four Pole, Six Pole, Eight Pole"
+      },
+      {
+        "name": "Phase Compensate",
+        "type": "Bool",
+        "description": "If enabled, each band is phase-compensated so that they can be summed back together correctly."
+      },
+      {
+        "name": "Crossover X",
+        "type": "Float",
+        "description": "The frequency of the crossover filters from Band X to the next."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Band X L / R",
+        "type": "Audio",
+        "description": "The audio output corresponding to channel X (in the left / right channel)."
+      }
+    ]
+  },
+  "Additive Synth": {
+    "name": "Additive Synth",
+    "category": "Generators",
+    "description": "The Additive Synth node synthesizes audio by adding given sinusoids together.",
+    "inputs": [
+      {
+        "name": "Base Frequency",
+        "type": "Float",
+        "description": "The sinusoid frequency the harmonics are based on. The value is clamped from 0.0 to the Nyquist frequency."
+      },
+      {
+        "name": "HarmonicMultipliers",
+        "type": "Array",
+        "description": "An array of harmonic multipliers applied to the base frequency. The number of sinusoids used depends on the size of this array. The values are clamped from 0.0 to a maximum so the resulting frequency won't go above the Nyquist frequency."
+      },
+      {
+        "name": "Amplitudes",
+        "type": "Array",
+        "description": "The array of sinusoid amplitudes. The values are clamped to a range of 0.0 to 1.0"
+      },
+      {
+        "name": "Phases",
+        "type": "Array",
+        "description": "The array of sinusoid phases (in degrees). The values are clamped to a range of 0.0 to 360."
+      },
+      {
+        "name": "Pan Amounts",
+        "type": "Array",
+        "description": "The array of pan amounts (using equal power law). For example, a value of -1.0 is fully left and a value of 1.0 is fully right."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Out Left / Right Audio",
+        "type": "Audio",
+        "description": "The synthesized audio output (left / right channels)."
+      }
+    ]
+  },
+  "Low Frequency Noise": {
+    "name": "Low Frequency Noise",
+    "category": "Generators",
+    "description": "The Low Frequency Noise node produces random values at a set frequency and smoothly interpolates between them to add periodic variation to a signal.",
+    "inputs": [
+      {
+        "name": "Rate",
+        "type": "Float",
+        "description": "The rate (Hz) of each new value. This is clamped to block rate."
+      },
+      {
+        "name": "Seed",
+        "type": "Int32",
+        "description": "The seed used for the random shuffle. The default value of -1 uses the current time."
+      },
+      {
+        "name": "Reset Seed",
+        "type": "Trigger",
+        "description": "The trigger on which to reset the seed."
+      },
+      {
+        "name": "Sync",
+        "type": "Trigger",
+        "description": "The trigger on which to reset the phase of the generator."
+      },
+      {
+        "name": "Interpolation",
+        "type": "Enum",
+        "description": "The method to use to interpolate between values: None, Linear, or Cubic"
+      },
+      {
+        "name": "Rate Jitter",
+        "type": "Float",
+        "description": "A percentage to randomly modify (+/-) the Rate by. This value is clamped between 0.0 and 1.0."
+      },
+      {
+        "name": "Step Limit",
+        "type": "Float",
+        "description": "A percentage to limit the next random number in sequence to. This value is clamped between 0.0 and 1.0."
+      },
+      {
+        "name": "Min Value",
+        "type": "Float",
+        "description": "The minimum output value."
+      },
+      {
+        "name": "Max Value",
+        "type": "Float",
+        "description": "The maximum output value."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Out",
+        "type": "Audio",
+        "description": "The scaled output based on the Min Value and Max Value."
+      },
+      {
+        "name": "Normalized",
+        "type": "Float",
+        "description": "The normalized output."
+      }
+    ]
+  },
+  "Low-Frequency Oscillator (LFO)": {
+    "name": "Low-Frequency Oscillator (LFO)",
+    "category": "Generators",
+    "description": "The LFO node provides a low-frequency oscillator which you can use to create a variety of audio effects, such as phasing, vibrato, and tremolo.",
+    "inputs": [
+      {
+        "name": "Frequency",
+        "type": "Float",
+        "description": "The frequency (Hz) of the LFO (clamped at block rate)."
+      },
+      {
+        "name": "Shape",
+        "type": "Enum",
+        "description": "The wave shape of the LFO: Sine, Saw, Triangle, or Square"
+      },
+      {
+        "name": "Min / Max Value",
+        "type": "Float",
+        "description": "The minimum / maximum output values."
+      },
+      {
+        "name": "Sync",
+        "type": "Trigger",
+        "description": "Resets the phase of the generator. You can use this in conjunction with other nodes to get audio-rate phase synced generators."
+      },
+      {
+        "name": "Phase Offset",
+        "type": "Float",
+        "description": "The phase offset (in degrees, between 0 and 360)."
+      },
+      {
+        "name": "Pulse Width",
+        "type": "Float",
+        "description": "The pulse width (between 0 and 1)."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Out",
+        "type": "Audio",
+        "description": "The output value of the LFO (clamped at block rate)."
+      }
+    ]
+  },
+  "Noise": {
+    "name": "Noise",
+    "category": "Generators",
+    "description": "The Noise node generates either pink or white noise.",
+    "inputs": [
+      {
+        "name": "Seed",
+        "type": "Int32",
+        "description": "The seed for the random number generator. The default value of -1 uses the current time."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Audio",
+        "type": "Audio",
+        "description": "The generated noise output."
+      }
+    ]
+  },
+  "Perlin Noise": {
+    "name": "Perlin Noise",
+    "category": "Generators",
+    "description": "The Perlin Noise node evaluates one-dimensional Perlin value noise to add natural roughness to a signal. This node has two versions to support different data types (Audio or Float).",
+    "inputs": [
+      {
+        "name": "X",
+        "type": "Float",
+        "description": "The input value to the Perlin function. By default, the internal clock (in seconds) will be used."
+      },
+      {
+        "name": "Layers",
+        "type": "Int32",
+        "description": "The number of octaves of noise to sum."
+      },
+      {
+        "name": "Seed",
+        "type": "Int32",
+        "description": "The seed used for the random shuffle. The default value of -1 uses the current time."
+      },
+      {
+        "name": "Min Value",
+        "type": "Float",
+        "description": "The minimum output value."
+      },
+      {
+        "name": "Max Value",
+        "type": "Float",
+        "description": "The maximum output value."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Normalized",
+        "type": "Float",
+        "description": "The normalized output."
+      }
+    ]
+  },
+  "Saw": {
+    "name": "Saw",
+    "category": "Generators",
+    "description": "The Saw node emits an audio signal of a saw wave with the given properties.",
+    "inputs": [
+      {
+        "name": "Enabled",
+        "type": "Bool",
+        "description": "If enabled, the oscillator produces a signal."
+      },
+      {
+        "name": "Bi Polar",
+        "type": "Bool",
+        "description": "If enabled, the output is bi-polar (-1, 1). Otherwise, the output is uni-polar (0, 1)."
+      },
+      {
+        "name": "Frequency",
+        "type": "Float",
+        "description": "The base frequency of the oscillator (in Hz)."
+      },
+      {
+        "name": "Modulation",
+        "type": "Audio",
+        "description": "An audio-rate input to modulate the base frequency."
+      },
+      {
+        "name": "Sync",
+        "type": "Trigger",
+        "description": "Resets the phase of the generator. You can use this in conjunction with other nodes to get audio-rate phase synced generators."
+      },
+      {
+        "name": "Phase Offset",
+        "type": "Float",
+        "description": "The phase offset (in degrees, between 0 and 360)."
+      },
+      {
+        "name": "Glide",
+        "type": "Float",
+        "description": "The amount of glide (smooth interpolation over time) used when changing frequencies. For example, a value of 0.0 will produce no glide and a value of 1.0 produces lots of glide."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Audio",
+        "type": "Audio",
+        "description": "The saw wave audio signal."
+      }
+    ]
+  },
+  "Sine": {
+    "name": "Sine",
+    "category": "Generators",
+    "description": "The Sine node emits an audio signal of a sinusoid with the given properties.",
+    "inputs": [
+      {
+        "name": "Enabled",
+        "type": "Bool",
+        "description": "If enabled, the oscillator produces a signal."
+      },
+      {
+        "name": "Bi Polar",
+        "type": "Bool",
+        "description": "If enabled, the output is bi-polar (-1, 1). Otherwise, the output is uni-polar (0, 1)."
+      },
+      {
+        "name": "Frequency",
+        "type": "Float",
+        "description": "The base frequency of the oscillator (in Hz)."
+      },
+      {
+        "name": "Modulation",
+        "type": "Audio",
+        "description": "An audio-rate input to modulate the base frequency."
+      },
+      {
+        "name": "Sync",
+        "type": "Trigger",
+        "description": "Resets the phase of the generator. You can use this in conjunction with other nodes to get audio-rate phase synced generators."
+      },
+      {
+        "name": "Phase Offset",
+        "type": "Float",
+        "description": "The phase offset (in degrees, between 0 and 360)."
+      },
+      {
+        "name": "Glide",
+        "type": "Float",
+        "description": "The amount of glide (smooth interpolation over time) used when changing frequencies. For example, a value of 0.0 will produce no glide and a value of 1.0 produces lots of glide."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Audio",
+        "type": "Audio",
+        "description": "The sinusoid audio signal."
+      }
+    ]
+  },
+  "Square": {
+    "name": "Square",
+    "category": "Generators",
+    "description": "The Square node emits an audio signal of a square wave with the given properties.",
+    "inputs": [
+      {
+        "name": "Enabled",
+        "type": "Bool",
+        "description": "If enabled, the oscillator produces a signal."
+      },
+      {
+        "name": "Bi Polar",
+        "type": "Bool",
+        "description": "If enabled, the output is bi-polar (-1, 1). Otherwise, the output is uni-polar (0, 1)."
+      },
+      {
+        "name": "Frequency",
+        "type": "Float",
+        "description": "The base frequency of the oscillator (in Hz)."
+      },
+      {
+        "name": "Modulation",
+        "type": "Audio",
+        "description": "An audio-rate input to modulate the base frequency."
+      },
+      {
+        "name": "Sync",
+        "type": "Trigger",
+        "description": "Resets the phase of the generator. You can use this in conjunction with other nodes to get audio-rate phase synced generators."
+      },
+      {
+        "name": "Phase Offset",
+        "type": "Float",
+        "description": "The phase offset (in degrees, between 0 and 360)."
+      },
+      {
+        "name": "Glide",
+        "type": "Float",
+        "description": "The amount of glide (smooth interpolation over time) used when changing frequencies. For example, a value of 0.0 will produce no glide and a value of 1.0 produces lots of glide."
+      },
+      {
+        "name": "Pulse Width",
+        "type": "Float",
+        "description": "The relative pulse width of the square wave."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Audio",
+        "type": "Audio",
+        "description": "The square wave audio signal."
+      }
+    ]
+  },
+  "SuperOscillator": {
+    "name": "SuperOscillator",
+    "category": "Generators",
+    "description": "The SuperOscillator node generates audio using multiple internal oscillators. You can detune each internal oscillator evenly or randomly using Detune and Entropy. It supports all of the features of basic oscillator nodes, with the addition of a built-in limiter to keep the amplitude in check when there are higher voice counts. This node has two versions to support different channel configurations (Stereo or Mono).",
+    "inputs": [
+      {
+        "name": "Enabled",
+        "type": "Bool",
+        "description": "If enabled, the oscillator produces a signal."
+      },
+      {
+        "name": "Limit Output",
+        "type": "Bool",
+        "description": "If enabled, the output volume will be limited."
+      },
+      {
+        "name": "Voices",
+        "type": "Int32",
+        "description": "The number of oscillators to use. This value is clamped between 1 and 16."
+      },
+      {
+        "name": "Frequency",
+        "type": "Float",
+        "description": "The base frequency (Hz) of the oscillator."
+      },
+      {
+        "name": "Modulation",
+        "type": "Audio",
+        "description": "The modulation frequency."
+      },
+      {
+        "name": "Detune",
+        "type": "Float",
+        "description": "The max pitch offset (in semitones). Only oscillators beyond the 2nd are detuned."
+      },
+      {
+        "name": "Entropy",
+        "type": "Float",
+        "description": "This value controls how evenly the voices are distributed in pitch. This value is clamped between 0.0 and 1.0."
+      },
+      {
+        "name": "Blend",
+        "type": "Float",
+        "description": "The volume (dB) of detuned voices relative to the primary voice."
+      },
+      {
+        "name": "Glide",
+        "type": "Float",
+        "description": "The amount of glide (smooth interpolation over time) used when changing frequencies. For example, a value of 0.0 will produce no glide and a value of 1.0 produces lots of glide."
+      },
+      {
+        "name": "Pulse Width",
+        "type": "Float",
+        "description": "The width of the square segment of the wave. This is only used for Square waves."
+      },
+      {
+        "name": "Width",
+        "type": "Float",
+        "description": "The stereo width of the oscillators. This value is clamped between 0.0 and 1.0."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Audio",
+        "type": "Audio",
+        "description": "The output audio signal."
+      }
+    ]
+  },
+  "Triangle": {
+    "name": "Triangle",
+    "category": "Generators",
+    "description": "The Triangle node emits an audio signal of a triangle wave with the given properties.",
+    "inputs": [
+      {
+        "name": "Enabled",
+        "type": "Bool",
+        "description": "If enabled, the oscillator produces a signal."
+      },
+      {
+        "name": "Bi Polar",
+        "type": "Bool",
+        "description": "If enabled, the output will be bi-polar (-1, 1). Otherwise, the output will be uni-polar (0, 1)."
+      },
+      {
+        "name": "Frequency",
+        "type": "Float",
+        "description": "The base frequency of the oscillator (in Hz)."
+      },
+      {
+        "name": "Modulation",
+        "type": "Audio",
+        "description": "An audio-rate input to modulate the base frequency."
+      },
+      {
+        "name": "Sync",
+        "type": "Trigger",
+        "description": "Resets the phase of the generator. You can use this in conjunction with other nodes to get audio-rate phase synced generators."
+      },
+      {
+        "name": "Phase Offset",
+        "type": "Float",
+        "description": "The phase offset (in degrees, between 0 and 360)."
+      },
+      {
+        "name": "Glide",
+        "type": "Float",
+        "description": "The amount of glide (smooth interpolation over time) used when changing frequencies. For example, a value of 0.0 will produce no glide and a value of 1.0 produces lots of glide."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Audio",
+        "type": "Audio",
+        "description": "The triangle wave audio signal."
+      }
+    ]
+  },
+  "WaveTable Oscillator": {
+    "name": "WaveTable Oscillator",
+    "category": "Generators",
+    "description": "The WaveTable Oscillator node reads through the given WaveTable at the provided frequency.",
+    "inputs": [
+      {
+        "name": "Play",
+        "type": "Trigger",
+        "description": "The trigger on which to play the oscillator (block rate)."
+      },
+      {
+        "name": "Stop",
+        "type": "Trigger",
+        "description": "The trigger on which to stop the oscillator (block rate)."
+      },
+      {
+        "name": "WaveTable",
+        "type": "WaveAsset",
+        "description": "The WaveTable to read."
+      },
+      {
+        "name": "Freq",
+        "type": "Int32",
+        "description": "The number of times to sample one period of the WaveTable per second. This frequency should be set between -20000 Hz and 20000 Hz."
+      },
+      {
+        "name": "Sync",
+        "type": "Trigger",
+        "description": "The trigger on which to restart playback of the WaveTable on the trigger boundary (sample rate)."
+      },
+      {
+        "name": "Phase Modulator",
+        "type": "Audio",
+        "description": "The audio source to be used for the modulating oscillation phase of the provided WaveTable. A value of 0 produces no phase modulation and a value of 1 produces a full table length (360 degrees) of phase shift."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Out",
+        "type": "Audio",
+        "description": "The output audio buffer."
+      }
+    ]
+  },
+  "WaveTable Player": {
+    "name": "WaveTable Player",
+    "category": "Generators",
+    "description": "The WaveTable Player node reads through a WaveTable Bank entry at a given index.",
+    "inputs": [
+      {
+        "name": "Play",
+        "type": "Trigger",
+        "description": "The trigger on which to play the oscillator (block rate)."
+      },
+      {
+        "name": "Stop",
+        "type": "Trigger",
+        "description": "The trigger on which to stop the oscillator (block rate)."
+      },
+      {
+        "name": "Sync",
+        "type": "Trigger",
+        "description": "The trigger on which to restart playback of the WaveTable on the trigger boundary (sample rate)."
+      },
+      {
+        "name": "Bank",
+        "type": "WaveAsset",
+        "description": "The WaveTable Bank to play from."
+      },
+      {
+        "name": "Index",
+        "type": "Int32",
+        "description": "The index of the WaveTable in the WaveTable Bank to play."
+      },
+      {
+        "name": "Pitch Shift",
+        "type": "Float",
+        "description": "How much to shift the pitch of the given WaveTable."
+      },
+      {
+        "name": "Loop",
+        "type": "Bool",
+        "description": "If enabled, the WaveTable will loop."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Mono Out",
+        "type": "Audio",
+        "description": "The output audio buffer (in mono)."
+      },
+      {
+        "name": "On Finished",
+        "type": "Trigger",
+        "description": "Triggers when the WaveTable Player finishes playing the WaveTable."
+      }
+    ]
+  },
+  "Abs": {
+    "name": "Abs",
+    "category": "Math",
+    "description": "The Abs node returns the absolute value of a given input. For example, an input value of -2.0 will output 2.0. This node has different versions which support several common data types, including: Audio, Float, Int32, and Time.",
+    "inputs": [],
+    "outputs": []
+  },
+  "Add": {
+    "name": "Add",
+    "category": "Math",
+    "description": "The Add node performs addition operations on provided inputs. This node has different versions which support several common data types, including: Audio, Float to Audio, Float, Int32, and Time.",
+    "inputs": [],
+    "outputs": []
+  },
+  "Clamp": {
+    "name": "Clamp",
+    "category": "Math",
+    "description": "The Clamp node returns the clamped value of the input within the given value range. This node has different versions which support several common data types, including: Audio, Float, and Int32.",
+    "inputs": [
+      {
+        "name": "In",
+        "type": "Audio",
+        "description": "The input value to clamp."
+      },
+      {
+        "name": "Min / Max",
+        "type": "Float",
+        "description": "The min / max value to clamp the input value to."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Value",
+        "type": "Float",
+        "description": "The clamped value."
+      }
+    ]
+  },
+  "Divide": {
+    "name": "Divide",
+    "category": "Math",
+    "description": "The Divide node performs division operations on provided inputs. This node has different versions which support several common data types, including: Float, Int32, and Time by Float.",
+    "inputs": [],
+    "outputs": []
+  },
+  "Filter Q To Bandwidth": {
+    "name": "Filter Q To Bandwidth",
+    "category": "Math",
+    "description": "The Filter Q To Bandwidth node converts a given Q (quality-factor) parameter for filter control to a bandwidth value.",
+    "inputs": [],
+    "outputs": []
+  },
+  "Linear To Log Frequency": {
+    "name": "Linear To Log Frequency",
+    "category": "Math",
+    "description": "The Linear To Log Frequency node converts a linear space input value to a log-frequency output.",
+    "inputs": [
+      {
+        "name": "Value",
+        "type": "Float",
+        "description": "The linear input value to map to a log frequency output."
+      },
+      {
+        "name": "Min / Max Domain",
+        "type": "Float",
+        "description": "The min / max domain for the input value. The input and output values are clamped to this domain."
+      },
+      {
+        "name": "Min / Max Range",
+        "type": "Float",
+        "description": "The min / max positive range for the output frequency (Hz) value. The input and output values are clamped to this range."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Frequency",
+        "type": "Float",
+        "description": "The output frequency (Hz) that is the log frequency of the input value."
+      }
+    ]
+  },
+  "Log": {
+    "name": "Log",
+    "category": "Math",
+    "description": "The Log node calculates the float-base logarithm of another float.",
+    "inputs": [],
+    "outputs": []
+  },
+  "Map Range": {
+    "name": "Map Range",
+    "category": "Math",
+    "description": "The Map Range node maps an input value in a given input range to a given output range. The results can also be clamped. This node has different versions which support several common data types, including: Audio, Float, and Int32. These nodes are analogous to the Blueprint Map Range nodes.",
+    "inputs": [
+      {
+        "name": "In",
+        "type": "Audio",
+        "description": "The input value to map."
+      },
+      {
+        "name": "In Range A / B",
+        "type": "Float",
+        "description": "The minimum and maximum input value range."
+      },
+      {
+        "name": "Out Range A / B",
+        "type": "Float",
+        "description": "The minimum and maximum output value range."
+      },
+      {
+        "name": "Clamped",
+        "type": "Bool",
+        "description": "If enabled, the input will be clamped to the specified input range."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Out Value",
+        "type": "Float",
+        "description": "The mapped output value."
+      }
+    ]
+  },
+  "Max": {
+    "name": "Max",
+    "category": "Math",
+    "description": "The Max node returns the higher value (max) of A and B. This node has different versions to support several common data types, including: Audio, Float, and Int32.",
+    "inputs": [
+      {
+        "name": "A / B",
+        "type": "Float",
+        "description": "The input values to compare."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Value",
+        "type": "Float",
+        "description": "The higher value (max) of A and B."
+      }
+    ]
+  },
+  "Min": {
+    "name": "Min",
+    "category": "Math",
+    "description": "The Min node returns the lower value (min) of A and B. This node has different versions which support several common data types, including: Audio, Float, and Int32.",
+    "inputs": [
+      {
+        "name": "A / B",
+        "type": "Float",
+        "description": "The input values to compare."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Value",
+        "type": "Float",
+        "description": "The lower value (min) of A and B."
+      }
+    ]
+  },
+  "Modulo": {
+    "name": "Modulo",
+    "category": "Math",
+    "description": "The Modulo node returns the remainder of a division operation of two given Int32 values.",
+    "inputs": [],
+    "outputs": []
+  },
+  "Multiply": {
+    "name": "Multiply",
+    "category": "Math",
+    "description": "The Multiply node performs multiplication operations on provided inputs. This node has different versions which support several common data types, including: Audio by Float, Audio, Float, Int32, and Time by Float.",
+    "inputs": [],
+    "outputs": []
+  },
+  "Power": {
+    "name": "Power",
+    "category": "Math",
+    "description": "The Power node raises a given Float to the power of another Float.",
+    "inputs": [],
+    "outputs": []
+  },
+  "Subtract": {
+    "name": "Subtract",
+    "category": "Math",
+    "description": "The Subtract node performs subtraction operations on provided inputs. This node has different versions which support several common data types, including: Audio, Float, Int32, and Time.",
+    "inputs": [],
+    "outputs": []
+  },
+  "Frequency To MIDI": {
+    "name": "Frequency To MIDI",
+    "category": "Music",
+    "description": "The Frequency To MIDI node converts a frequency value (in Hz) to a standard MIDI scale note value (where middle C is 60).",
+    "inputs": [
+      {
+        "name": "Frequency In",
+        "type": "Float",
+        "description": "The input frequency value (in Hz)."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Out MIDI",
+        "type": "Float",
+        "description": "The output MIDI note value."
+      }
+    ]
+  },
+  "MIDI Note Quantizer": {
+    "name": "MIDI Note Quantizer",
+    "category": "Music",
+    "description": "The MIDI Note Quantizer node quantizes a MIDI note to the nearest note that matches the provided criteria.",
+    "inputs": [
+      {
+        "name": "Note In",
+        "type": "Int32",
+        "description": "The MIDI note to quantize."
+      },
+      {
+        "name": "Root Note",
+        "type": "Int32",
+        "description": "The MIDI note to treat as the root. For example, a value of 0 equals C, a value of 1 equals C#/Db, and so on. The octave does not matter. Additionally, all values less than 0 clamp to 0."
+      },
+      {
+        "name": "Scale Degrees",
+        "type": "Array",
+        "description": "An array containing a set of notes (in ascending order) representing half steps. The array must start with 0.0 to represent the root note and the highest value in the array must represent the root note in a higher octave, such as 12.0 for a single octave range or 24.0 for a two octave range."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Note Out",
+        "type": "Int32",
+        "description": "The quantized note."
+      }
+    ]
+  },
+  "MIDI To Frequency": {
+    "name": "MIDI To Frequency",
+    "category": "Music",
+    "description": "The Frequency to MIDI node converts a standard MIDI scale note value (where middle C is 60) to a frequency value (in Hz). This node has two different versions which support Float and Int32 data types respectively.",
+    "inputs": [
+      {
+        "name": "MIDI In",
+        "type": "Float",
+        "description": "The input value which represents a MIDI note value."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Out Frequency",
+        "type": "Float",
+        "description": "The output frequency value (in Hz)."
+      }
+    ]
+  },
+  "Scale to Note Array": {
+    "name": "Scale to Note Array",
+    "category": "Music",
+    "description": "The Scale to Note Array node returns an array of floating-point numbers representing notes of the selected scale.",
+    "inputs": [
+      {
+        "name": "Scale Degrees",
+        "type": "Array",
+        "description": "The preset scale to get the notes for."
+      },
+      {
+        "name": "Chord Tones Only",
+        "type": "Bool",
+        "description": "If enabled, a subset of the scale representing chord tones is returned. For example, scale degrees of 1, 3, 5, and 7."
+      },
+      {
+        "name": "Next",
+        "type": "Trigger",
+        "description": "The trigger on which to generate the next random value."
+      },
+      {
+        "name": "Reset",
+        "type": "Trigger",
+        "description": "The trigger on which to reset the random sequence with the supplied seed."
+      },
+      {
+        "name": "Seed",
+        "type": "Int32",
+        "description": "The seed value to use for the randomization. The default value of -1 uses a random seed."
+      },
+      {
+        "name": "Min / Max",
+        "type": "Float",
+        "description": "The inclusive range of the random value."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Scale Array Out",
+        "type": "Array",
+        "description": "The array representation of the scale as half-steps above the root. The set is inclusive at both ends (starting at 0.0f and ending at 12.0f)."
+      },
+      {
+        "name": "On Next",
+        "type": "Trigger",
+        "description": "Triggers when the Next input is triggered."
+      },
+      {
+        "name": "On Reset",
+        "type": "Trigger",
+        "description": "Triggers when the Reset input is triggered."
+      },
+      {
+        "name": "Value",
+        "type": "Float",
+        "description": "The randomly generated value."
+      }
+    ]
+  },
+  "ITD Panner": {
+    "name": "ITD Panner",
+    "category": "Spatialization",
+    "description": "The ITD Panner node pans an input audio signal using an interaural time delay method.",
+    "inputs": [
+      {
+        "name": "In",
+        "type": "Audio",
+        "description": "The input audio to spatialize."
+      },
+      {
+        "name": "Angle",
+        "type": "Float",
+        "description": "The sound source angle (in degrees). A value of 90 degrees is front, 0 degrees is right, 270 degrees is behind, and 180 degrees is left."
+      },
+      {
+        "name": "Distance Factor",
+        "type": "Float",
+        "description": "The normalized distance factor (0.0 to 1.0) to use for Interaural Level Difference (ILD) calculations. A value of 0.0 is near and a value of 1.0 is far. The further away the input audio is, the less difference in levels (gain) between the ears."
+      },
+      {
+        "name": "Head Width",
+        "type": "Float",
+        "description": "The width (in centimeters) of the listener's head."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Out Left / Right",
+        "type": "Audio",
+        "description": "The audio output (left / right channel)."
+      }
+    ]
+  },
+  "Mid-Side Decode": {
+    "name": "Mid-Side Decode",
+    "category": "Spatialization",
+    "description": "The Mid-Side Decode node converts a stereo signal with mid and side channels to left and right channels.",
+    "inputs": [
+      {
+        "name": "In Mid / Side",
+        "type": "Float",
+        "description": "The audio channels to convert."
+      },
+      {
+        "name": "Spread Amount",
+        "type": "Float",
+        "description": "The amount of stereo spread. A value of 0.0 produces no spread, a value of 0.5 is the original signal, and a value of 1.0 is fully wide."
+      },
+      {
+        "name": "Equal Power",
+        "type": "Bool",
+        "description": "If enabled, an equal power relationship between the input audio channels will be maintained."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Out Left / Right",
+        "type": "Audio",
+        "description": "The output audio channels."
+      }
+    ]
+  },
+  "Mid-Side Encode": {
+    "name": "Mid-Side Encode",
+    "category": "Spatialization",
+    "description": "The Mid-Side Encode node converts a stereo signal with left and right channels to mid and side channels.",
+    "inputs": [
+      {
+        "name": "In Left / Right",
+        "type": "Float",
+        "description": "The audio channels to convert."
+      },
+      {
+        "name": "Spread Amount",
+        "type": "Float",
+        "description": "The amount of stereo spread. A value of 0.0 produces no spread, a value of 0.5 is the original signal, and a value of 1.0 is fully wide."
+      },
+      {
+        "name": "Equal Power",
+        "type": "Bool",
+        "description": "If enabled, an equal power relationship between the input audio channels is maintained."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Out Mid / Side",
+        "type": "Audio",
+        "description": "The output audio channels."
+      }
+    ]
+  },
+  "Stereo Panner": {
+    "name": "Stereo Panner",
+    "category": "Spatialization",
+    "description": "The Stereo Panner node pans an input audio signal to left and right outputs.",
+    "inputs": [
+      {
+        "name": "In",
+        "type": "Audio",
+        "description": "The input audio signal to pan."
+      },
+      {
+        "name": "Pan Amount",
+        "type": "Float",
+        "description": "The amount to pan the audio signal (-1.0 is fully left, 1.0 is fully right)."
+      },
+      {
+        "name": "Panning Law",
+        "type": "Enum",
+        "description": "The panning law to use:\n\n  Equal Power: The power of the audio signal is constant while panning.\n  Linear: The amplitude of the audio signal is constant while panning."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Out Left / Right",
+        "type": "Audio",
+        "description": "The output audio signal (left / right channels)."
+      }
+    ]
+  },
+  "Trigger Accumulate": {
+    "name": "Trigger Accumulate",
+    "category": "Triggers",
+    "description": "The Trigger Accumulate node triggers once all connected input triggers have been triggered at least once. There are multiple versions of this node in order to support different input counts (between 1 and 8).",
+    "inputs": [
+      {
+        "name": "In X",
+        "type": "Trigger",
+        "description": "The trigger input(s)."
+      },
+      {
+        "name": "Auto Reset",
+        "type": "Bool",
+        "description": "The trigger on which the accumulation on this node is reset."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Out",
+        "type": "Audio",
+        "description": "Triggers when all input triggers have been accumulated."
+      }
+    ]
+  },
+  "Trigger Any": {
+    "name": "Trigger Any",
+    "category": "Triggers",
+    "description": "The Trigger Any node triggers once any of the connected input triggers activate. This node has different versions which support different input counts (between 2 and 8).",
+    "inputs": [
+      {
+        "name": "In X",
+        "type": "Trigger",
+        "description": "The trigger input(s)."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Out",
+        "type": "Audio",
+        "description": "Triggers when any input trigger is triggered."
+      }
+    ]
+  },
+  "Trigger Compare": {
+    "name": "Trigger Compare",
+    "category": "Triggers",
+    "description": "The Trigger Compare node triggers either true or false based on comparing connected inputs. This node has different versions which support several common data types, including: Bool, Float, and Int32.",
+    "inputs": [
+      {
+        "name": "Compare",
+        "type": "Trigger",
+        "description": "The trigger on which to compare A and B."
+      },
+      {
+        "name": "A / B",
+        "type": "Float",
+        "description": "The values to compare."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "True / False",
+        "type": "Trigger",
+        "description": "Triggers with the resulting trigger after making the comparison."
+      }
+    ]
+  },
+  "Trigger Control": {
+    "name": "Trigger Control",
+    "category": "Triggers",
+    "description": "The Trigger Control node provides controls to allow or block trigger signals from passing through to the output.",
+    "inputs": [
+      {
+        "name": "Trigger In",
+        "type": "Trigger",
+        "description": "The input trigger to control."
+      },
+      {
+        "name": "Open",
+        "type": "Trigger",
+        "description": "The trigger on which to allow the input trigger to pass through."
+      },
+      {
+        "name": "Close",
+        "type": "Trigger",
+        "description": "The trigger on which to block the input trigger to pass through."
+      },
+      {
+        "name": "Toggle",
+        "type": "Trigger",
+        "description": "The trigger on which to toggle the open/closed state of this node."
+      },
+      {
+        "name": "Start Closed",
+        "type": "Bool",
+        "description": "If enabled, the node will start in a closed state."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Trigger Out",
+        "type": "Trigger",
+        "description": "The output trigger that passes through if the node is open."
+      }
+    ]
+  },
+  "Trigger Counter": {
+    "name": "Trigger Counter",
+    "category": "Triggers",
+    "description": "The Trigger Counter node counts the connected input trigger activations.",
+    "inputs": [
+      {
+        "name": "In",
+        "type": "Audio",
+        "description": "The input trigger for which to count activations."
+      },
+      {
+        "name": "Reset",
+        "type": "Trigger",
+        "description": "The trigger on which to reset the counter to zero and the value back to the start value."
+      },
+      {
+        "name": "Start Value",
+        "type": "Int32",
+        "description": "The value to start with on initialization and when reset."
+      },
+      {
+        "name": "Step Size",
+        "type": "Int32",
+        "description": "The value to add to the current value for each input trigger. This can be negative."
+      },
+      {
+        "name": "Reset Count",
+        "type": "Int32",
+        "description": "The number of input triggers to count before automatically resetting. If the value is set to 0, the node won't automatically reset."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "On Trigger",
+        "type": "Trigger",
+        "description": "Triggers when the input trigger is triggered and the count is updated."
+      },
+      {
+        "name": "On Reset",
+        "type": "Trigger",
+        "description": "Triggers when the input reset is triggered or if the counter automatically resets."
+      },
+      {
+        "name": "Count",
+        "type": "Int32",
+        "description": "The current trigger count."
+      },
+      {
+        "name": "Value",
+        "type": "Float",
+        "description": "The current value."
+      }
+    ]
+  },
+  "Trigger Delay": {
+    "name": "Trigger Delay",
+    "category": "Triggers",
+    "description": "The Trigger Delay node executes a trigger after a given delay time from the most recent execution of the input trigger.",
+    "inputs": [
+      {
+        "name": "In",
+        "type": "Audio",
+        "description": "The input trigger to delay."
+      },
+      {
+        "name": "Reset",
+        "type": "Trigger",
+        "description": "The trigger on which to reset the delay and clear the execution task, if it is pending."
+      },
+      {
+        "name": "Delay Time",
+        "type": "Time",
+        "description": "The amount of time to delay the trigger (in seconds)."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Out",
+        "type": "Audio",
+        "description": "The delayed output trigger."
+      }
+    ]
+  },
+  "Trigger Filter": {
+    "name": "Trigger Filter",
+    "category": "Triggers",
+    "description": "The Trigger Filter node responds to a trigger by randomly activating one of the two output triggers.",
+    "inputs": [
+      {
+        "name": "Trigger",
+        "type": "Trigger",
+        "description": "The trigger on which to randomly activate an output trigger."
+      },
+      {
+        "name": "Reset",
+        "type": "Trigger",
+        "description": "The trigger on which to reset the random sequence with the provided seed."
+      },
+      {
+        "name": "Seed",
+        "type": "Int32",
+        "description": "The seed value to use for the randomization. A value of -1 will use a random seed."
+      },
+      {
+        "name": "Probability",
+        "type": "Float",
+        "description": "The probability that a particular output trigger will get activated. For example, a value of 0.0 is always heads, a value of 1.0 is always tails, and 0.5 is equal odds."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Heads / Tails",
+        "type": "Trigger",
+        "description": "The possible output triggers."
+      }
+    ]
+  },
+  "Trigger On Threshold": {
+    "name": "Trigger On Threshold",
+    "category": "Triggers",
+    "description": "The Trigger On Threshold node operates as an edge detector and triggers when the input audio crosses a given threshold value while moving in the specified direction. This node has different versions which support several common data types, including: Audio, Float, and Int32.",
+    "inputs": [
+      {
+        "name": "In",
+        "type": "Audio",
+        "description": "The input audio signal."
+      },
+      {
+        "name": "Threshold",
+        "type": "Float",
+        "description": "The threshold at which to trigger output."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Out",
+        "type": "Audio",
+        "description": "The output threshold trigger."
+      }
+    ]
+  },
+  "Trigger On Value Change": {
+    "name": "Trigger On Value Change",
+    "category": "Triggers",
+    "description": "The Trigger On Value Change node triggers when a given value changes. This node has different versions which support several common data types, including: Bool, Float, and Int32.",
+    "inputs": [
+      {
+        "name": "Value",
+        "type": "Float",
+        "description": "The input value to watch."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Trigger",
+        "type": "Trigger",
+        "description": "The output trigger."
+      }
+    ]
+  },
+  "Trigger Once": {
+    "name": "Trigger Once",
+    "category": "Triggers",
+    "description": "The Trigger Once node triggers the first time an input trigger is activated and ignores all other occurrences, unless reset.",
+    "inputs": [
+      {
+        "name": "Trigger In",
+        "type": "Trigger",
+        "description": "The input trigger."
+      },
+      {
+        "name": "Reset",
+        "type": "Trigger",
+        "description": "The trigger on which to open the node and allow another trigger through."
+      },
+      {
+        "name": "Start Closed",
+        "type": "Bool",
+        "description": "If enabled, the node is closed when playback begins."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Trigger Out",
+        "type": "Trigger",
+        "description": "The output trigger."
+      }
+    ]
+  },
+  "Trigger Pipe": {
+    "name": "Trigger Pipe",
+    "category": "Triggers",
+    "description": "The Trigger Pipe node delays execution of all input trigger signals by the given delay.",
+    "inputs": [
+      {
+        "name": "In",
+        "type": "Audio",
+        "description": "The input trigger to delay."
+      },
+      {
+        "name": "Reset",
+        "type": "Trigger",
+        "description": "The trigger on which to reset the trigger delay and clear any pending execution tasks."
+      },
+      {
+        "name": "Delay Time",
+        "type": "Time",
+        "description": "The time to delay the input trigger (in seconds)."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Out",
+        "type": "Audio",
+        "description": "The delayed output trigger."
+      }
+    ]
+  },
+  "Trigger Repeat": {
+    "name": "Trigger Repeat",
+    "category": "Triggers",
+    "description": "The Trigger Repeat node emits a trigger periodically at a given sample-accurate and arbitrarily-precise rate.",
+    "inputs": [
+      {
+        "name": "Start / Stop",
+        "type": "Trigger",
+        "description": "The triggers on which to start or stop executing periodic output triggers."
+      },
+      {
+        "name": "Period",
+        "type": "Time",
+        "description": "The period to trigger (in seconds)."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "RepeatOut",
+        "type": "Trigger",
+        "description": "The periodically generated output trigger."
+      }
+    ]
+  },
+  "Trigger Route": {
+    "name": "Trigger Route",
+    "category": "Triggers",
+    "description": "The Trigger Route node routes different input values to a single output value. This node has multiple versions for different input counts (between 2 and 8) and for each supported data type, including: Audio, Bool, Float, Int32, and Time.",
+    "inputs": [
+      {
+        "name": "Set X",
+        "type": "Trigger",
+        "description": "The input triggers which initialize the routing. The default option is 0."
+      },
+      {
+        "name": "Value X",
+        "type": "Trigger",
+        "description": "The input value to route to the output when triggered by its corresponding trigger."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "On Set",
+        "type": "Trigger",
+        "description": "Triggers when any of the input triggers are set."
+      },
+      {
+        "name": "Value",
+        "type": "Float",
+        "description": "The output value set by an activated input trigger."
+      }
+    ]
+  },
+  "Trigger Select": {
+    "name": "Trigger Select",
+    "category": "Triggers",
+    "description": "The Trigger Select node passes triggers through to the currently selected output trigger. This node has multiple versions for different input counts (between 2 and 8).",
+    "inputs": [
+      {
+        "name": "In",
+        "type": "Audio",
+        "description": "The trigger to pass through."
+      },
+      {
+        "name": "Index",
+        "type": "Int32",
+        "description": "The output index to trigger. If the provided value is out of range, it will be ignored."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Out X",
+        "type": "Audio",
+        "description": "The output trigger at index X."
+      }
+    ]
+  },
+  "Trigger Sequence": {
+    "name": "Trigger Sequence",
+    "category": "Triggers",
+    "description": "The Trigger Sequence node responds to input triggers by sending the next output trigger in a sequence. This node has multiple versions which provide different numbers of output triggers (between 2 and 8).",
+    "inputs": [
+      {
+        "name": "In",
+        "type": "Audio",
+        "description": "The input trigger."
+      },
+      {
+        "name": "Reset",
+        "type": "Trigger",
+        "description": "The trigger on which to reset the sequence back to 0."
+      },
+      {
+        "name": "Loop",
+        "type": "Bool",
+        "description": "If enabled, the sequence automatically loops back to 0 once all triggers have been activated."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Out X",
+        "type": "Audio",
+        "description": "The trigger outputs in sequence."
+      }
+    ]
+  },
+  "Trigger Toggle": {
+    "name": "Trigger Toggle",
+    "category": "Triggers",
+    "description": "The Trigger Toggle node toggles a Bool value on or off.",
+    "inputs": [
+      {
+        "name": "On / Off",
+        "type": "Trigger",
+        "description": "The trigger on which to toggle the Bool output on or off."
+      },
+      {
+        "name": "Init",
+        "type": "Float",
+        "description": "The initial states of the Bool."
+      },
+      {
+        "name": "Set",
+        "type": "Trigger",
+        "description": "The trigger on which to write the set value to the output."
+      },
+      {
+        "name": "Reset",
+        "type": "Trigger",
+        "description": "The trigger on which to reset the value to the initial value."
+      },
+      {
+        "name": "Init Value",
+        "type": "Float",
+        "description": "The value to initialize the output value to."
+      },
+      {
+        "name": "Target Value",
+        "type": "Trigger",
+        "description": "The value to set the output to when triggered."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "Out",
+        "type": "Audio",
+        "description": "Triggers when the Bool is toggled."
+      },
+      {
+        "name": "Value",
+        "type": "Float",
+        "description": "The current Bool value."
+      },
+      {
+        "name": "On Set",
+        "type": "Trigger",
+        "description": "Triggers when the value is set."
+      },
+      {
+        "name": "On Reset",
+        "type": "Trigger",
+        "description": "Triggers when the value is reset."
+      },
+      {
+        "name": "Output Value",
+        "type": "Float",
+        "description": "The current output value."
+      }
+    ]
+  }
+}

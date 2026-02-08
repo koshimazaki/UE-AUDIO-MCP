@@ -271,7 +271,7 @@
         0
       ],
       "defaults": {
-        "BitDepth": 16
+        "Bit Depth": 16
       },
       "comment": "Spectral effect 2: sample rate reduction only \u2014 harsh aliased spectra"
     },
@@ -408,7 +408,7 @@
         -100
       ],
       "defaults": {
-        "DelayTime": 0.25,
+        "Delay Time": 0.25,
         "Feedback": 0.3
       },
       "comment": "Temporal effect 1: delay (parallel send)"
@@ -421,8 +421,8 @@
         100
       ],
       "defaults": {
-        "Rate": 0.5,
-        "Depth": 0.5,
+        "Modulation Rate": 0.5,
+        "Modulation Depth": 0.5,
         "Feedback": 0.3
       },
       "comment": "Temporal effect 2: multi-series flanger (parallel send)"
@@ -466,8 +466,8 @@
         400
       ],
       "defaults": {
-        "Attack": 0.001,
-        "Release": 0.05
+        "Attack Time": 0.001,
+        "Release Time": 0.05
       },
       "comment": "Tracks output amplitude \u2014 determines when sound has fully completed (including effect tails)"
     }
@@ -531,7 +531,7 @@
       "from_node": "__graph__",
       "from_pin": "CrushSampleRate",
       "to_node": "bitcrusher",
-      "to_pin": "SampleRateCrush"
+      "to_pin": "Sample Rate"
     },
     {
       "from_node": "bitcrusher",
@@ -609,7 +609,7 @@
       "from_node": "ringmod",
       "from_pin": "Audio",
       "to_node": "svf",
-      "to_pin": "Audio"
+      "to_pin": "In"
     },
     {
       "from_node": "cutoff_sum",
@@ -625,39 +625,39 @@
     },
     {
       "from_node": "svf",
-      "from_pin": "Low Pass",
+      "from_pin": "Low Pass Filter",
       "to_node": "filter_xfade_lp_bp",
-      "to_pin": "Audio A"
+      "to_pin": "In 0"
     },
     {
       "from_node": "svf",
       "from_pin": "Band Pass",
       "to_node": "filter_xfade_lp_bp",
-      "to_pin": "Audio B"
+      "to_pin": "In 1"
     },
     {
       "from_node": "__graph__",
       "from_pin": "FilterType",
       "to_node": "filter_xfade_lp_bp",
-      "to_pin": "Crossfade"
+      "to_pin": "Crossfade Value"
     },
     {
       "from_node": "filter_xfade_lp_bp",
-      "from_pin": "Audio",
+      "from_pin": "Out",
       "to_node": "filter_xfade_final",
-      "to_pin": "Audio A"
+      "to_pin": "In 0"
     },
     {
       "from_node": "svf",
-      "from_pin": "High Pass",
+      "from_pin": "High Pass Filter",
       "to_node": "filter_xfade_final",
-      "to_pin": "Audio B"
+      "to_pin": "In 1"
     },
     {
       "from_node": "__graph__",
       "from_pin": "FilterType",
       "to_node": "filter_xfade_final",
-      "to_pin": "Crossfade"
+      "to_pin": "Crossfade Value"
     },
     {
       "from_node": "__graph__",
@@ -691,7 +691,7 @@
     },
     {
       "from_node": "filter_xfade_final",
-      "from_pin": "Audio",
+      "from_pin": "Out",
       "to_node": "amp_multiply",
       "to_pin": "A"
     },
@@ -717,13 +717,13 @@
       "from_node": "amp_lfo_multiply",
       "from_pin": "Result",
       "to_node": "delay_send",
-      "to_pin": "Audio"
+      "to_pin": "In"
     },
     {
       "from_node": "amp_lfo_multiply",
       "from_pin": "Result",
       "to_node": "flanger_send",
-      "to_pin": "Audio"
+      "to_pin": "Out Audio"
     },
     {
       "from_node": "amp_lfo_multiply",
@@ -739,13 +739,13 @@
     },
     {
       "from_node": "delay_send",
-      "from_pin": "Audio",
+      "from_pin": "Out",
       "to_node": "effects_mixer",
       "to_pin": "In 1"
     },
     {
       "from_node": "flanger_send",
-      "from_pin": "Audio",
+      "from_pin": "Out Audio",
       "to_node": "effects_mixer",
       "to_pin": "In 2"
     },
@@ -783,25 +783,25 @@
       "from_node": "effects_mixer",
       "from_pin": "Out",
       "to_node": "wave_writer",
-      "to_pin": "Audio"
+      "to_pin": "In 0"
     },
     {
       "from_node": "effects_mixer",
       "from_pin": "Out",
       "to_node": "env_follower",
-      "to_pin": "Audio"
+      "to_pin": "In"
     },
     {
       "from_node": "__graph__",
       "from_pin": "FileName",
       "to_node": "wave_writer",
-      "to_pin": "Filename"
+      "to_pin": "Filename Prefix"
     },
     {
       "from_node": "__graph__",
       "from_pin": "OnPlay",
       "to_node": "wave_writer",
-      "to_pin": "Start"
+      "to_pin": "Enabled"
     },
     {
       "from_node": "amp_env",

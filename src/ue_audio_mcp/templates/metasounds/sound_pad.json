@@ -97,7 +97,7 @@
         "Entropy": 0.0,
         "Blend": 0.0,
         "Glide": 0.0,
-        "PulseWidth": 0.5,
+        "Pulse Width": 0.5,
         "Type": "Square"
       },
       "comment": "Multi-voice unison oscillator. 16 voices with slight detune for thick pad sound."
@@ -220,7 +220,7 @@
       "from_node": "__graph__",
       "from_pin": "TriggerSound",
       "to_node": "env",
-      "to_pin": "On Trigger"
+      "to_pin": "Trigger"
     },
     {
       "from_node": "synth",

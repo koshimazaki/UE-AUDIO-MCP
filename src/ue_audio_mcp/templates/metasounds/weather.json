@@ -66,7 +66,7 @@
         300
       ],
       "defaults": {
-        "Speed": 2.0,
+        "Interp Time": 2.0,
         "Current": 1000.0
       }
     },
@@ -78,10 +78,10 @@
         300
       ],
       "defaults": {
-        "InMin": 0.0,
-        "InMax": 1.0,
-        "OutMin": 500.0,
-        "OutMax": 16000.0,
+        "In Range A": 0.0,
+        "In Range B": 1.0,
+        "Out Range A": 500.0,
+        "Out Range B": 16000.0,
         "Clamped": true
       }
     },
@@ -137,19 +137,19 @@
     },
     {
       "from_node": "interp",
-      "from_pin": "Result",
+      "from_pin": "Value",
       "to_node": "cutoff_map",
-      "to_pin": "Value"
+      "to_pin": "In"
     },
     {
       "from_node": "cutoff_map",
-      "from_pin": "Result",
+      "from_pin": "Out Value",
       "to_node": "filter_l",
       "to_pin": "Cutoff Frequency"
     },
     {
       "from_node": "cutoff_map",
-      "from_pin": "Result",
+      "from_pin": "Out Value",
       "to_node": "filter_r",
       "to_pin": "Cutoff Frequency"
     },
@@ -157,29 +157,29 @@
       "from_node": "wave_player",
       "from_pin": "Out Left",
       "to_node": "filter_l",
-      "to_pin": "Audio"
+      "to_pin": "In"
     },
     {
       "from_node": "wave_player",
       "from_pin": "Out Right",
       "to_node": "filter_r",
-      "to_pin": "Audio"
+      "to_pin": "In"
     },
     {
       "from_node": "filter_l",
-      "from_pin": "Audio",
+      "from_pin": "Out",
       "to_node": "__graph__",
       "to_pin": "Out Stereo L"
     },
     {
       "from_node": "filter_r",
-      "from_pin": "Audio",
+      "from_pin": "Out",
       "to_node": "__graph__",
       "to_pin": "Out Stereo R"
     },
     {
       "from_node": "filter_l",
-      "from_pin": "Audio",
+      "from_pin": "Out",
       "to_node": "__graph__",
       "to_pin": "Out Mono"
     },

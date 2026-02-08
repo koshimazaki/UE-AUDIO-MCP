@@ -90,7 +90,7 @@
         200
       ],
       "defaults": {
-        "ResetCount": 0
+        "Reset Count": 0
       },
       "comment": "Counts each shot. Count output compared against BurstCount to stop the burst."
     },
@@ -190,15 +190,15 @@
     },
     {
       "from_node": "burst_repeat",
-      "from_pin": "Trigger",
+      "from_pin": "RepeatOut",
       "to_node": "trigger_seq",
       "to_pin": "In"
     },
     {
       "from_node": "burst_repeat",
-      "from_pin": "Trigger",
+      "from_pin": "RepeatOut",
       "to_node": "shot_counter",
-      "to_pin": "Trigger Up"
+      "to_pin": "In"
     },
     {
       "from_node": "shot_counter",
@@ -214,7 +214,7 @@
     },
     {
       "from_node": "burst_repeat",
-      "from_pin": "Trigger",
+      "from_pin": "RepeatOut",
       "to_node": "burst_compare",
       "to_pin": "Compare"
     },

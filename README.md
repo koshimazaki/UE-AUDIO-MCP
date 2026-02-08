@@ -84,7 +84,7 @@ Vehicle accelerates     →    Engine layer blend     →    Vehicle bus, compre
 | Wwise Events | 4 | Events, RTPC curves, switch assign, attenuation |
 | Wwise Preview | 2 | Transport control, SoundBank generation |
 | Wwise Templates | 5 | One-call gunshot/footsteps/ambient/UI/weather |
-| MetaSounds Knowledge | 4 | Search 116 nodes, categories, semantic TF-IDF |
+| MetaSounds Knowledge | 4 | Search 144 nodes, categories, semantic TF-IDF |
 | MetaSounds Graphs | 3 | Validate, to Builder API commands, from template |
 | MetaSounds Builder | 7 | Create source, add node, connect, set defaults, audition |
 | MetaSounds Advanced | 4 | Variables, presets, macros |
@@ -128,7 +128,7 @@ Game logic patterns from Epic tutorials and community:
 
 | Data | Entries | Source |
 |------|---------|--------|
-| MetaSounds nodes | 116 | Epic docs + Editor node browser + engine screenshots |
+| MetaSounds nodes | 144 (798 pins) | Epic MetaSounds Reference (Playwright scraper) + Editor + screenshots |
 | Blueprint API nodes (scraped) | 22,649 | Epic Blueprint API Reference (Playwright scraper) |
 | Blueprint categories | 2,524 | Recursive BFS scrape of Epic SPA |
 | Blueprint nodes (curated) | 946 | 11 hand-categorized sub-modules |
@@ -170,7 +170,7 @@ pip install -e ".[dev]"
 # Run MCP server
 ue-audio-mcp
 
-# Run tests (239 passing)
+# Run tests (262 passing)
 pytest tests/ -v
 ```
 
@@ -227,13 +227,13 @@ Same philosophy: **describe intent, system figures out the wiring.**
 
 ```
 Phase 1: Wwise MCP Server       ✅ 20 tools, WAAPI bridge
-Phase 2: Knowledge Base          ✅ 116 nodes, 22K+ scraped, semantic search
+Phase 2: Knowledge Base          ✅ 144 nodes (798 pins), 22K+ scraped, semantic search
 Phase 3: UE5 Plugin + Tools      ✅ C++ plugin, 14 tools, TCP protocol
 Phase 4: Orchestration            ✅ 10 patterns, 3-mode auto-detection
 Phase 5: A2HW Protocol Spec     ◐ Defined in SIDKIT, extended here
 ```
 
-**241 tests passing** across 11 test modules.
+**262 tests passing** across 11 test modules.
 
 ---
 

@@ -119,17 +119,17 @@
       "from_node": "noise",
       "from_pin": "Audio",
       "to_node": "lpf",
-      "to_pin": "Audio"
+      "to_pin": "In"
     },
     {
       "from_node": "lpf",
-      "from_pin": "Audio",
+      "from_pin": "Out",
       "to_node": "stereo_mixer",
       "to_pin": "In 0 L"
     },
     {
       "from_node": "lpf",
-      "from_pin": "Audio",
+      "from_pin": "Out",
       "to_node": "stereo_mixer",
       "to_pin": "In 0 R"
     },

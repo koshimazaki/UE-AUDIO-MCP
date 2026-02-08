@@ -66,10 +66,10 @@
         200
       ],
       "defaults": {
-        "InMin": 0.0,
-        "InMax": 1.0,
-        "OutMin": 500.0,
-        "OutMax": 8000.0,
+        "In Range A": 0.0,
+        "In Range B": 1.0,
+        "Out Range A": 500.0,
+        "Out Range B": 8000.0,
         "Clamped": true
       }
     },
@@ -81,10 +81,10 @@
         400
       ],
       "defaults": {
-        "InMin": 0.0,
-        "InMax": 1.0,
-        "OutMin": 0.5,
-        "OutMax": 4.0,
+        "In Range A": 0.0,
+        "In Range B": 1.0,
+        "Out Range A": 0.5,
+        "Out Range B": 4.0,
         "Clamped": true
       }
     },
@@ -96,7 +96,7 @@
         200
       ],
       "defaults": {
-        "Speed": 5.0,
+        "Interp Time": 5.0,
         "Current": 500.0
       }
     },
@@ -108,7 +108,7 @@
         400
       ],
       "defaults": {
-        "Speed": 5.0,
+        "Interp Time": 5.0,
         "Current": 0.5
       }
     },
@@ -147,35 +147,35 @@
       "from_node": "__graph__",
       "from_pin": "Morph",
       "to_node": "map_cutoff",
-      "to_pin": "Value"
+      "to_pin": "In"
     },
     {
       "from_node": "__graph__",
       "from_pin": "Morph",
       "to_node": "map_bw",
-      "to_pin": "Value"
+      "to_pin": "In"
     },
     {
       "from_node": "map_cutoff",
-      "from_pin": "Result",
+      "from_pin": "Out Value",
       "to_node": "interp_cutoff",
       "to_pin": "Target"
     },
     {
       "from_node": "map_bw",
-      "from_pin": "Result",
+      "from_pin": "Out Value",
       "to_node": "interp_bw",
       "to_pin": "Target"
     },
     {
       "from_node": "interp_cutoff",
-      "from_pin": "Result",
+      "from_pin": "Value",
       "to_node": "filter",
       "to_pin": "Cutoff Frequency"
     },
     {
       "from_node": "interp_bw",
-      "from_pin": "Result",
+      "from_pin": "Value",
       "to_node": "filter",
       "to_pin": "Bandwidth"
     },
@@ -183,23 +183,23 @@
       "from_node": "wave_player",
       "from_pin": "Audio",
       "to_node": "filter",
-      "to_pin": "Audio"
+      "to_pin": "In"
     },
     {
       "from_node": "filter",
-      "from_pin": "Audio",
+      "from_pin": "Out",
       "to_node": "__graph__",
       "to_pin": "Out Mono"
     },
     {
       "from_node": "filter",
-      "from_pin": "Audio",
+      "from_pin": "Out",
       "to_node": "__graph__",
       "to_pin": "Out Stereo L"
     },
     {
       "from_node": "filter",
-      "from_pin": "Audio",
+      "from_pin": "Out",
       "to_node": "__graph__",
       "to_pin": "Out Stereo R"
     },
