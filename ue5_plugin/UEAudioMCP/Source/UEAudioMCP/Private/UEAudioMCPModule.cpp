@@ -30,7 +30,7 @@ void FUEAudioMCPModule::StartupModule()
 	if (TcpServer->StartListening(AudioMCP::DEFAULT_PORT))
 	{
 		UE_LOG(LogAudioMCPModule, Log,
-			TEXT("UE Audio MCP ready — listening on port %d (18 commands registered)"),
+			TEXT("UE Audio MCP ready — listening on port %d (19 commands registered)"),
 			AudioMCP::DEFAULT_PORT);
 	}
 	else
@@ -114,11 +114,13 @@ void FUEAudioMCPModule::RegisterCommands()
 	Dispatcher->RegisterCommand(TEXT("convert_from_preset"),
 		MakeShared<FConvertFromPresetCommand>());
 
-	// 17-18. Query & live updates
+	// 17-19. Query & live updates
 	Dispatcher->RegisterCommand(TEXT("get_graph_input_names"),
 		MakeShared<FGetGraphInputNamesCommand>());
 	Dispatcher->RegisterCommand(TEXT("set_live_updates"),
 		MakeShared<FSetLiveUpdatesCommand>());
+	Dispatcher->RegisterCommand(TEXT("list_node_classes"),
+		MakeShared<FListNodeClassesCommand>());
 }
 
 IMPLEMENT_MODULE(FUEAudioMCPModule, UEAudioMCP)

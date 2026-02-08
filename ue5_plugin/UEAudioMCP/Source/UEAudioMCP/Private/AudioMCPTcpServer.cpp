@@ -141,7 +141,7 @@ void FAudioMCPTcpServer::HandleClient(FSocket* Client)
 	// Set socket buffer sizes for predictable behavior
 	int32 ActualSize = 0;
 	Client->SetSendBufferSize(65536, ActualSize);
-	Client->SetRecvBufferSize(65536, ActualSize);
+	Client->SetReceiveBufferSize(65536, ActualSize);
 
 	constexpr float ClientIdleTimeoutSeconds = 60.0f;
 

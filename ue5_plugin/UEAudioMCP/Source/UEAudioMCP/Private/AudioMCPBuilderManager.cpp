@@ -5,9 +5,12 @@
 #include "AudioMCPTypes.h"
 #include "MetasoundBuilderSubsystem.h"
 #include "MetasoundSource.h"
+#include "MetasoundDocumentInterface.h"
+#include "MetasoundFrontendDocument.h"
+#include "Interfaces/MetasoundOutputFormatInterfaces.h"
 #include "Dom/JsonObject.h"
 #include "Dom/JsonValue.h"
-#include "Engine/World.h"
+#include "Engine/Engine.h"
 #include "Editor.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogAudioMCPBuilder, Log, All);
@@ -29,6 +32,7 @@ void FAudioMCPBuilderManager::ResetState()
 	NodeHandles.Empty();
 	GraphInputOutputHandles.Empty();
 	GraphOutputInputHandles.Empty();
+	bLiveUpdatesRequested = false;
 }
 
 // ---------------------------------------------------------------------------
@@ -39,15 +43,8 @@ bool FAudioMCPBuilderManager::CreateBuilder(const FString& AssetType, const FStr
 {
 	ResetState();
 
-	// Get the MetaSound builder subsystem from the editor world
-	UWorld* World = GEditor ? GEditor->GetEditorWorldContext().World() : nullptr;
-	if (!World)
-	{
-		OutError = TEXT("No editor world available");
-		return false;
-	}
-
-	UMetaSoundBuilderSubsystem* BuilderSubsystem = World->GetSubsystem<UMetaSoundBuilderSubsystem>();
+	// Get the MetaSound builder subsystem (Engine Subsystem in UE 5.7+)
+	UMetaSoundBuilderSubsystem* BuilderSubsystem = UMetaSoundBuilderSubsystem::Get();
 	if (!BuilderSubsystem)
 	{
 		OutError = TEXT("MetaSoundBuilderSubsystem not available. Is MetaSounds plugin enabled?");
@@ -55,26 +52,60 @@ bool FAudioMCPBuilderManager::CreateBuilder(const FString& AssetType, const FStr
 	}
 
 	EMetaSoundBuilderResult Result;
-	FMetaSoundBuilderOptions Options;
-	Options.Name = FName(*Name);
-
 	UMetaSoundBuilderBase* Builder = nullptr;
 
 	if (AssetType.Equals(TEXT("Source"), ESearchCase::IgnoreCase))
 	{
-		Builder = BuilderSubsystem->CreateSourceBuilder(Options, Result);
+		// UE 5.7: CreateSourceBuilder returns output handles for OnPlay/OnFinished/AudioOut
+		FMetaSoundBuilderNodeOutputHandle OnPlayOutput;
+		FMetaSoundBuilderNodeInputHandle OnFinishedInput;
+		TArray<FMetaSoundBuilderNodeInputHandle> AudioOutInputs;
+
+		Builder = BuilderSubsystem->CreateSourceBuilder(
+			FName(*Name),
+			OnPlayOutput,
+			OnFinishedInput,
+			AudioOutInputs,
+			Result,
+			EMetaSoundOutputAudioFormat::Mono,
+			true /* bIsOneShot */);
+
+		// Store the built-in Source graph handles so __graph__ connections work
+		if (Result == EMetaSoundBuilderResult::Succeeded && Builder)
+		{
+			// Store OnPlay as a graph input (it's an output handle that feeds into the graph)
+			GraphInputOutputHandles.Add(TEXT("OnPlay"), OnPlayOutput);
+
+			// Store OnFinished as a graph output (it's an input handle that receives from the graph)
+			GraphOutputInputHandles.Add(TEXT("OnFinished"), OnFinishedInput);
+
+			// Store audio output channels: "Audio:0", "Audio:1", etc.
+			for (int32 i = 0; i < AudioOutInputs.Num(); ++i)
+			{
+				FString PinName = FString::Printf(TEXT("Audio:%d"), i);
+				GraphOutputInputHandles.Add(PinName, AudioOutInputs[i]);
+			}
+
+			UE_LOG(LogAudioMCPBuilder, Log, TEXT("Source builder '%s': %d audio outputs stored"),
+				*Name, AudioOutInputs.Num());
+		}
 	}
 	else if (AssetType.Equals(TEXT("Patch"), ESearchCase::IgnoreCase))
 	{
-		Builder = BuilderSubsystem->CreatePatchBuilder(Options, Result);
+		// UE 5.7: CreatePatchBuilder takes just name + result
+		Builder = BuilderSubsystem->CreatePatchBuilder(FName(*Name), Result);
 	}
 	else if (AssetType.Equals(TEXT("Preset"), ESearchCase::IgnoreCase))
 	{
-		Builder = BuilderSubsystem->CreatePresetBuilder(Options, Result);
+		// UE 5.7: Preset requires a referenced MetaSound — cannot create standalone.
+		// Use CreateBuilder("Source"/"Patch") first, then ConvertToPreset.
+		OutError = TEXT("Cannot create a standalone Preset builder in UE 5.7. "
+			"Create a Source or Patch builder first, then use convert_to_preset.");
+		return false;
 	}
 	else
 	{
-		OutError = FString::Printf(TEXT("Invalid asset_type '%s'. Must be Source, Patch, or Preset"), *AssetType);
+		OutError = FString::Printf(TEXT("Invalid asset_type '%s'. Must be Source or Patch"), *AssetType);
 		return false;
 	}
 
@@ -237,18 +268,41 @@ bool FAudioMCPBuilderManager::AddNode(const FString& NodeId, const FString& Node
 		return false;
 	}
 
+	// UE 5.7: Parse "Namespace::Name::Variant" into FMetasoundFrontendClassName
+	FMetasoundFrontendClassName ParsedClassName;
+	TArray<FString> Parts;
+	ClassName.ParseIntoArray(Parts, TEXT("::"), true);
+
+	if (Parts.Num() == 1)
+	{
+		ParsedClassName = FMetasoundFrontendClassName(FName(), FName(*Parts[0]));
+	}
+	else if (Parts.Num() == 2)
+	{
+		ParsedClassName = FMetasoundFrontendClassName(FName(*Parts[0]), FName(*Parts[1]));
+	}
+	else if (Parts.Num() >= 3)
+	{
+		ParsedClassName = FMetasoundFrontendClassName(FName(*Parts[0]), FName(*Parts[1]), FName(*Parts[2]));
+	}
+
 	EMetaSoundBuilderResult Result;
-	FMetaSoundNodeHandle NodeHandle = ActiveBuilder.Get()->AddNode(FName(*ClassName), Result);
+	FMetaSoundNodeHandle NodeHandle = ActiveBuilder.Get()->AddNodeByClassName(ParsedClassName, Result);
 
 	if (Result != EMetaSoundBuilderResult::Succeeded)
 	{
-		OutError = FString::Printf(TEXT("Failed to add node '%s' of type '%s' (class: %s)"),
-			*NodeId, *NodeType, *ClassName);
+		OutError = FString::Printf(TEXT("Failed to add node '%s' of type '%s' (class: %s, parsed: {Namespace='%s', Name='%s', Variant='%s'})"),
+			*NodeId, *NodeType, *ClassName,
+			*ParsedClassName.Namespace.ToString(),
+			*ParsedClassName.Name.ToString(),
+			*ParsedClassName.Variant.ToString());
 		return false;
 	}
 
-	// Set editor position for visibility
+	// Set editor position for visibility (editor-only in UE 5.7)
+#if WITH_EDITOR
 	ActiveBuilder.Get()->SetNodeLocation(NodeHandle, FVector2D(PosX, PosY), Result);
+#endif
 
 	// Store the actual node handle for pin lookups in SetNodeDefault/ConnectNodes
 	NodeHandles.Add(NodeId, NodeHandle);
@@ -541,8 +595,16 @@ bool FAudioMCPBuilderManager::ConvertToPreset(const FString& ReferencedAsset, FS
 		return false;
 	}
 
+	// UE 5.7: ConvertToPreset takes TScriptInterface<IMetaSoundDocumentInterface>
+	TScriptInterface<IMetaSoundDocumentInterface> DocInterface(Asset);
+	if (!DocInterface.GetInterface())
+	{
+		OutError = FString::Printf(TEXT("Asset '%s' does not implement IMetaSoundDocumentInterface"), *ReferencedAsset);
+		return false;
+	}
+
 	EMetaSoundBuilderResult Result;
-	ActiveBuilder.Get()->ConvertToPreset(Asset, Result);
+	ActiveBuilder.Get()->ConvertToPreset(DocInterface, Result);
 
 	if (Result != EMetaSoundBuilderResult::Succeeded)
 	{
@@ -604,17 +666,11 @@ bool FAudioMCPBuilderManager::SetLiveUpdates(bool bEnabled, FString& OutError)
 		return false;
 	}
 
-	EMetaSoundBuilderResult Result;
-	ActiveBuilder.Get()->SetLiveUpdatesEnabled(bEnabled, Result);
-
-	if (Result != EMetaSoundBuilderResult::Succeeded)
-	{
-		OutError = FString::Printf(TEXT("Failed to %s live updates"),
-			bEnabled ? TEXT("enable") : TEXT("disable"));
-		return false;
-	}
-
-	UE_LOG(LogAudioMCPBuilder, Log, TEXT("Live updates %s"), bEnabled ? TEXT("enabled") : TEXT("disabled"));
+	// UE 5.7: SetLiveUpdatesEnabled removed from BuilderBase.
+	// Live updates are now controlled via the bLiveUpdatesEnabled param in Audition().
+	UE_LOG(LogAudioMCPBuilder, Log, TEXT("Live updates flag set to %s (applied at audition time)"),
+		bEnabled ? TEXT("enabled") : TEXT("disabled"));
+	bLiveUpdatesRequested = bEnabled;
 	return true;
 }
 
@@ -636,24 +692,33 @@ bool FAudioMCPBuilderManager::BuildToAsset(const FString& Name, const FString& P
 		return false;
 	}
 
-	FString FullPath = Path;
-	if (!FullPath.EndsWith(TEXT("/")))
-	{
-		FullPath += TEXT("/");
-	}
-	FullPath += Name;
+	// UE 5.7: BuildToAsset removed. Use BuildNewMetaSound to create a registered transient,
+	// then Build with options for editor-only asset creation.
+#if WITH_EDITORONLY_DATA
+	FMetaSoundBuilderOptions Options;
+	Options.Name = FName(*Name);
+	Options.bAddToRegistry = true;
 
-	EMetaSoundBuilderResult Result;
-	ActiveBuilder.Get()->BuildToAsset(FName(*FullPath), Result);
-
-	if (Result != EMetaSoundBuilderResult::Succeeded)
+	TScriptInterface<IMetaSoundDocumentInterface> BuiltMetaSound = ActiveBuilder.Get()->Build(Options);
+	if (!BuiltMetaSound.GetObject())
 	{
-		OutError = FString::Printf(TEXT("Failed to build asset '%s' at '%s'"), *Name, *FullPath);
+		OutError = FString::Printf(TEXT("Failed to build MetaSound '%s'"), *Name);
 		return false;
 	}
 
-	UE_LOG(LogAudioMCPBuilder, Log, TEXT("Built asset: %s"), *FullPath);
+	// Register with subsystem for lookup by other systems
+	UMetaSoundBuilderSubsystem* BuilderSubsystem = UMetaSoundBuilderSubsystem::Get();
+	if (BuilderSubsystem)
+	{
+		BuilderSubsystem->RegisterBuilder(FName(*Name), ActiveBuilder.Get());
+	}
+
+	UE_LOG(LogAudioMCPBuilder, Log, TEXT("Built and registered MetaSound: %s"), *Name);
 	return true;
+#else
+	OutError = TEXT("BuildToAsset requires editor builds");
+	return false;
+#endif
 }
 
 bool FAudioMCPBuilderManager::Audition(FString& OutError)
@@ -665,6 +730,14 @@ bool FAudioMCPBuilderManager::Audition(FString& OutError)
 		return false;
 	}
 
+	// UE 5.7: Audition is only on UMetaSoundSourceBuilder, not the base class
+	UMetaSoundSourceBuilder* SourceBuilder = Cast<UMetaSoundSourceBuilder>(ActiveBuilder.Get());
+	if (!SourceBuilder)
+	{
+		OutError = TEXT("Audition is only available for Source builders (not Patch/Preset)");
+		return false;
+	}
+
 	UWorld* World = GEditor ? GEditor->GetEditorWorldContext().World() : nullptr;
 	if (!World)
 	{
@@ -672,14 +745,9 @@ bool FAudioMCPBuilderManager::Audition(FString& OutError)
 		return false;
 	}
 
-	EMetaSoundBuilderResult Result;
-	ActiveBuilder.Get()->Audition(World, Result);
-
-	if (Result != EMetaSoundBuilderResult::Succeeded)
-	{
-		OutError = TEXT("Failed to audition. Try build_to_asset first, then play via Blueprint.");
-		return false;
-	}
+	// UE 5.7 signature: Audition(Parent, AudioComponent, OnCreateDelegate, bLiveUpdates)
+	FOnCreateAuditionGeneratorHandleDelegate EmptyDelegate;
+	SourceBuilder->Audition(World, nullptr, EmptyDelegate, bLiveUpdatesRequested);
 
 	UE_LOG(LogAudioMCPBuilder, Log, TEXT("Auditioning: %s"), *ActiveBuilderName);
 	return true;
@@ -719,8 +787,8 @@ bool FAudioMCPBuilderManager::ResolveNodeType(const FString& DisplayName, FStrin
 
 	OutError = FString::Printf(
 		TEXT("Unknown node type '%s'. Use a known display name (e.g. 'Sine', 'Biquad Filter') "
-		     "or a full class name (e.g. 'UE::MathOps::Sine'). "
-		     "Use ms_search_nodes on the Python side to find valid types."),
+		     "or a full class name (e.g. 'UE::Sine::Audio'). "
+		     "Use list_node_classes command to discover available nodes."),
 		*DisplayName);
 	return false;
 }

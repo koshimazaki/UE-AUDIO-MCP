@@ -110,6 +110,9 @@ private:
 	TMap<FString, FString> NodeTypeMap;
 	bool bNodeTypeMapBuilt;
 
+	// UE 5.7: live updates flag stored here, applied at Audition() time
+	bool bLiveUpdatesRequested = false;
+
 	/** Build the node type lookup map from the MetaSound registry. */
 	void BuildNodeTypeMap();
 };

@@ -13,6 +13,9 @@ public class UEAudioMCP : ModuleRules
 			"Core",
 			"CoreUObject",
 			"Engine",
+			"MetasoundEngine",    // UMetaSoundBuilderSubsystem, UMetaSoundSourceBuilder
+			"MetasoundFrontend",  // FMetasoundFrontendClassName, FMetasoundFrontendLiteral, IMetaSoundDocumentInterface
+			"MetasoundGraphCore", // Underlying graph logic for Builder API
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]
@@ -23,11 +26,6 @@ public class UEAudioMCP : ModuleRules
 			"JsonUtilities",
 			"Projects",
 			"UnrealEd",
-			"MetasoundEngine",
-			"MetasoundFrontend",
-			"MetasoundGraphCore",
-			"MetasoundEditor",
-			"MetasoundStandardNodes",
 			"AudioMixer",
 		});
 	}
