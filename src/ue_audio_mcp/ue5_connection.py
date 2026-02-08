@@ -46,8 +46,21 @@ class UE5PluginConnection:
             log.info("Connected to UE5 plugin at %s:%d", self._host, self._port)
             return info
         except (OSError, ConnectionError) as e:
-            self._sock = None
+            if self._sock is not None:
+                try:
+                    self._sock.close()
+                except Exception:
+                    pass
+                self._sock = None
             raise ConnectionError(f"Cannot connect to UE5 plugin at {host}:{port}: {e}") from e
+        except Exception:
+            if self._sock is not None:
+                try:
+                    self._sock.close()
+                except Exception:
+                    pass
+                self._sock = None
+            raise
 
     def disconnect(self) -> None:
         """Disconnect from the UE5 plugin."""
@@ -90,7 +103,7 @@ class UE5PluginConnection:
             header = struct.pack(">I", len(payload))
             self._sock.sendall(header + payload)
             return self._recv_response()
-        except (OSError, ConnectionError) as e:
+        except (OSError, ConnectionError, json.JSONDecodeError, struct.error) as e:
             log.warning("UE5 plugin communication failed, disconnecting: %s", e)
             self.disconnect()
             raise

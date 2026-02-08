@@ -304,7 +304,7 @@
     },
     {
       "id": "filter_xfade_lp_bp",
-      "node_type": "Crossfade",
+      "node_type": "Crossfade (Audio, 2)",
       "position": [
         1300,
         0
@@ -313,7 +313,7 @@
     },
     {
       "id": "filter_xfade_final",
-      "node_type": "Crossfade",
+      "node_type": "Crossfade (Audio, 2)",
       "position": [
         1500,
         0
@@ -723,7 +723,7 @@
       "from_node": "amp_lfo_multiply",
       "from_pin": "Result",
       "to_node": "flanger_send",
-      "to_pin": "Out Audio"
+      "to_pin": "In Audio"
     },
     {
       "from_node": "amp_lfo_multiply",
@@ -783,7 +783,7 @@
       "from_node": "effects_mixer",
       "from_pin": "Out",
       "to_node": "wave_writer",
-      "to_pin": "In 0"
+      "to_pin": "In X"
     },
     {
       "from_node": "effects_mixer",
@@ -799,7 +799,7 @@
     },
     {
       "from_node": "__graph__",
-      "from_pin": "OnPlay",
+      "from_pin": "RecordEnabled",
       "to_node": "wave_writer",
       "to_pin": "Enabled"
     },

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import logging
 from typing import Any
 
@@ -38,6 +37,15 @@ class WwiseConnection:
             return info
         except CannotConnectToWaapiException:
             self._client = None
+            raise
+        except Exception:
+            # Clean up partially-created client on any unexpected error
+            if self._client is not None:
+                try:
+                    self._client.disconnect()
+                except Exception:
+                    pass
+                self._client = None
             raise
 
     def disconnect(self) -> None:

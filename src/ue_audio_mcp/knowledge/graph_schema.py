@@ -236,6 +236,24 @@ def validate_graph(spec: dict[str, Any]) -> list[str]:
         # Track which inputs are connected
         connected_inputs.add((to_node, to_pin))
 
+    # -- 5b. Default pin names must match node inputs -------------------------
+    for node in nodes:
+        nid = node.get("id", "<missing>")
+        ntype = node.get("node_type", "")
+        if ntype in _VARIABLE_NODE_TYPES:
+            continue
+        node_def = METASOUND_NODES.get(ntype)
+        if node_def is None:
+            continue
+        valid_input_names = {p["name"] for p in node_def["inputs"]}
+        for default_key in node.get("defaults", {}):
+            if default_key not in valid_input_names:
+                errors.append(
+                    f"Node '{nid}' ({ntype}): default key "
+                    f"'{default_key}' does not match any input pin. "
+                    f"Valid inputs: {sorted(valid_input_names)}"
+                )
+
     # -- 6. Required inputs must be connected --------------------------------
     for node in nodes:
         nid = node.get("id", "<missing>")

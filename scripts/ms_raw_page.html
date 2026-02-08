@@ -1,0 +1,4727 @@
+<p>MetaSound <strong>Function</strong> nodes come in many types and provide the functionality required to play audio files, mix sounds, apply filters and effects, and more. This document contains a list of function nodes with detailed information on each.</p>
+
+<p>For more detailed information on the features available in MetaSounds, see <a href="https://dev.epicgames.com/documentation/en-us/unreal-engine/metasounds-reference-guide-in-unreal-engine">MetaSounds Reference Guide</a>.</p>
+
+<h2>General</h2>
+
+<h3>BPM To Seconds</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/766900e0-73ff-499b-bcc6-8a41a29c8b3f/general_bpm_to_seconds.png" alt="BPM To Seconds" loading="lazy" convert="false" />
+<p>The <strong>BPM To Seconds</strong> node calculates a beat time in seconds from the given beats per minute (BPM), beat multiplier, and divisions of a whole note.</p>
+
+<h4>BPM To Seconds Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>BPM</strong></td>
+      <td>The input target BPM.</td>
+    </tr>
+    <tr>
+      <td><strong>Beat Multiplier</strong></td>
+      <td>The multiplier value to apply to the BPM.</td>
+    </tr>
+    <tr>
+      <td><strong>Division of Whole Note</strong></td>
+      <td>The divisions of a whole note.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>BPM To Seconds Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Seconds</strong></td>
+      <td>The output beat time in seconds.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Envelope Follower</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/ad1e6458-0352-4ef8-a15c-626d322f57e5/general_envelope_follower.png" alt="Envelope Follower" loading="lazy" convert="false" />
+<p>The <strong>Envelope Follower</strong> node outputs an envelope from an input audio signal.</p>
+
+<h4>Envelope Follower Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>In</strong></td>
+      <td>The input audio signal.</td>
+    </tr>
+    <tr>
+      <td><strong>Attack Time</strong></td>
+      <td>The attack time (in seconds).</td>
+    </tr>
+    <tr>
+      <td><strong>Release Time</strong></td>
+      <td>The release time (in seconds).</td>
+    </tr>
+    <tr>
+      <td><strong>Peak Mode</strong></td>
+      <td><div>
+<p>The following-method of the envelope follower:</p>
+<ul>
+  <li><strong>MS</strong>: Envelope follows a running Mean Squared of the audio signal.</li>
+  <li><strong>RMS</strong>: Envelope follows a running Root Meat Squared of the audio signal.</li>
+  <li><strong>Peak</strong>: Envelope follows the peaks in the audio signal.</li>
+</ul>
+</div></td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+<h4>Envelope Follower Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Envelope</strong></td>
+      <td>The output envelope value (block rate).</td>
+    </tr>
+    <tr>
+      <td><strong>Audio Envelope</strong></td>
+      <td>The output envelope value (audio rate).</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Flanger</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/ef536cf4-0ef6-4e0f-bfcc-24f27e5b8bde/general_flanger.png" alt="Flanger" loading="lazy" convert="false" />
+<p>The <strong>Flanger</strong> node applies a flanger effect to the input audio.</p>
+
+<h4>Flanger Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>In Audio</strong></td>
+      <td>The input audio signal to apply the flanger effect to.</td>
+    </tr>
+    <tr>
+      <td><strong>Modulation Rate</strong></td>
+      <td>The Low-Frequency Oscillator (LFO) rate that varies the delay time (in Hz). This value is clamped at block rate.</td>
+    </tr>
+    <tr>
+      <td><strong>Modulation Depth</strong></td>
+      <td>The LFO amplitude (strength) that scales the delay time.</td>
+    </tr>
+    <tr>
+      <td><strong>Center Delay</strong></td>
+      <td>The center delay amount (in milliseconds).</td>
+    </tr>
+    <tr>
+      <td><strong>Mix Level</strong></td>
+      <td>The balance between original and delayed signal. The value should be between 0 and 1.0. For example, a value of 0.5 uses equal amounts of each signal and a value greater than  0.5 uses more delayed signal than non-delayed signal.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Flanger Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Out Audio</strong></td>
+      <td>The output audio signal with the flanger effect applied.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Get WaveTable From Bank</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/22f98b23-4f5c-4341-ac5c-bed3a922ced4/general_get_wavetable_from_bank.png" alt="Get WaveTable From Bank" loading="lazy" convert="false" />
+<p>The <strong>Get WaveTable From Bank</strong> node retrieves (or generates an interpolated) WaveTable from a given WaveTable Bank asset.</p>
+
+<h4>Get WaveTable From Bank Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>WaveTableBank</strong></td>
+      <td>The WaveTable Bank asset to retrieve or generate an interpolated WaveTable from.</td>
+    </tr>
+    <tr>
+      <td><strong>TableIndex</strong></td>
+      <td>The index of the WaveTable to retrieve. If set between two whole values, the WaveTables located at the two closest indices are mixed together. The value will be adjusted to loop if it is set beyond the range of the WaveTable Bank. For example, if the WaveTable Bank has 3 indices, a value of 3.0 will retrieve the WaveTable at index 0.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Get WaveTable From Bank Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Out</strong></td>
+      <td>The retrieved WaveTable.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>InterpTo</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/144bc0cc-d5c1-4f7d-95d6-5ae2955912d4/general_interpto.png" alt="InterpTo" loading="lazy" convert="false" />
+<p>The <strong>InterpTo</strong> node interpolates between the current value and a target value over a specified time.</p>
+
+<h4>InterpTo Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Interp Time</strong></td>
+      <td>The time to interpolate from the current value to the target value.</td>
+    </tr>
+    <tr>
+      <td><strong>Target</strong></td>
+      <td>The value to interpolate to.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>InterpTo Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Value</strong></td>
+      <td>The current value.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>RingMod</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/963f1612-e05e-41d2-92c1-2db7d8d50bcf/general_ringmod.png" alt="RingMod" loading="lazy" convert="false" />
+<p>The <strong>RingMod</strong> node performs ring modulation with a carrier signal and a modulator signal.</p>
+
+<h4>RingMod Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>In Carrier</strong></td>
+      <td>The carrier audio signal.</td>
+    </tr>
+    <tr>
+      <td><strong>In Modulator</strong></td>
+      <td>The modulator audio signal.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>RingMod Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Out Audio</strong></td>
+      <td>The modulated audio signal.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Wave Player</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/c6cb3117-7e86-4d67-9c16-213141214f78/general_wave_player.png" alt="Wave Player" loading="lazy" convert="false" />
+<p>The <strong>Wave Player</strong> node is used to play a Sound Wave asset. There are multiple versions of this node in order to support several different channel configurations, such as Mono, Stereo, Quad (4.0), 5.1, and 7.1.</p>
+
+<h4>Wave Player Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Play / Stop</strong></td>
+      <td>The Play and Stop triggers start and stop the Wave Player playback at a sample-accurate moment in time.</td>
+    </tr>
+    <tr>
+      <td><strong>Wave Asset</strong></td>
+      <td>The Sound Wave asset played by the Wave Player during playback. This asset uses the same real-time decoders as all other sound sources in Unreal Engine.</td>
+    </tr>
+    <tr>
+      <td><strong>Start Time</strong></td>
+      <td>The time within the Sound Wave asset to begin playing the audio file. This is also referred to as seek time.</td>
+    </tr>
+    <tr>
+      <td><strong>Pitch Shift</strong></td>
+      <td>The Pitch Shift to use for the Wave Player. This is defined in units of semitones to account for the non-linear nature of frequency scaling.</td>
+    </tr>
+    <tr>
+      <td><strong>Loop</strong></td>
+      <td>Whether the Wave Player will loop the audio file or stop when it's finished. This can be toggled at any time during playback from the graph.</td>
+    </tr>
+    <tr>
+      <td><strong>Loop Start</strong></td>
+      <td>The Loop Start indicates at which point in time the Wave Player will loop the audio file.</td>
+    </tr>
+    <tr>
+      <td><strong>Loop Duration</strong></td>
+      <td>The Loop Duration represents the total time the loop will play. Any value other than -1 sets the end point of the loop to the sum of the Loop Start and Loop Duration values, while a value of -1 loops the entire audio file.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Wave Player Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>On Play</strong></td>
+      <td>Triggers when the Wave Player's Input Play pin is triggered.</td>
+    </tr>
+    <tr>
+      <td><strong>On Finished</strong></td>
+      <td>Triggers when the Wave Player finishes playing the audio file. This pin will trigger on the same sample point where the audio file finishes playing.</td>
+    </tr>
+    <tr>
+      <td><strong>On Nearly Finished</strong></td>
+      <td>Triggers on the audio rendering block before the audio file is expected to finish playback. This is commonly used to loop back and pick a new audio file variation for the Wave Player.</td>
+    </tr>
+    <tr>
+      <td><strong>On Looped</strong></td>
+      <td>Triggers on the sample where a sound looped based on the looping settings.</td>
+    </tr>
+    <tr>
+      <td><strong>On Cue Point</strong></td>
+      <td><div>
+<p>Triggers when a cue point has been parsed in the Wave Player. Cue points are metadata embedded in audio wave files on import.</p>
+
+<p>Cue points are often used by sound designers to trigger events or loop points in their audio at exact points in time. With this feature, sound designers can procedurally trigger MetaSound behavior based on embedded data in the imported audio wave file.</p>
+
+<p>This pin is executed with sample accuracy, but the integer and label associated with the cue point is read at the block rate. Cue points in the audio wave file that are closer together than the block rate of the MetaSound will only trigger on the last cue point in that block.</p>
+</div></td>
+    </tr>
+    <tr>
+      <td><strong>Cue Point ID</strong></td>
+      <td>The ID of the cue point as parsed from the imported audio wave file.</td>
+    </tr>
+    <tr>
+      <td><strong>Cue Point Label</strong></td>
+      <td>The label of the cue point as parsed from the imported audio wave file.</td>
+    </tr>
+    <tr>
+      <td><strong>Loop Percent</strong></td>
+      <td>The current location in the audio wave file within the given loop region.</td>
+    </tr>
+    <tr>
+      <td><strong>Playback Location</strong></td>
+      <td>The current location in the audio wave file as a fraction of the total length of the audio wave file.</td>
+    </tr>
+    <tr>
+      <td><strong>Out X</strong></td>
+      <td>The X channel output of the input Sound Wave asset.</td>
+    </tr>
+  </tbody>
+</table>
+
+<block-callout callout-type="note">
+<p>In the case of mono file playback, the audio in the right and left channels are up-mixed using mono-channel duplication.</p>
+</block-callout>
+
+
+
+<h3>WaveShaper</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/c76e8bd7-fa74-4a23-a4a6-81b399d1fa28/general_waveshaper.png" alt="WaveShaper" loading="lazy" convert="false" />
+<p>The <strong>WaveShaper</strong> node applies a non-linear shaping to the input audio signal.</p>
+
+<h4>WaveShaper Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>In</strong></td>
+      <td>The input audio signal to apply the non-linear shaping to.</td>
+    </tr>
+    <tr>
+      <td><strong>Amount</strong></td>
+      <td>The amount of the non-linear wave shaping to apply.</td>
+    </tr>
+    <tr>
+      <td><strong>Bias</strong></td>
+      <td>The DC offset to apply before wave shaping.</td>
+    </tr>
+    <tr>
+      <td><strong>OutputGain</strong></td>
+      <td>The amount of gain to apply after processing.</td>
+    </tr>
+    <tr>
+      <td><strong>Type</strong></td>
+      <td>The type of algorithm to use to process the audio: <strong>Sine</strong>, <strong>Inverse Tangent</strong>, <strong>Hyperbolic Tangent</strong>, <strong>Cubic Polynomial</strong>, or <strong>Hard Clip</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>WaveShaper Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Out</strong></td>
+      <td>The output audio signal with the non-linear shaping applied.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Array</h2>
+<p><strong>Array</strong> functions provide options to manipulate arrays within a MetaSound. Each of these functions have different versions which allows them to support arrays of several common data types, including: Bool, Float, Int32, String, Time, Transmission:Address, AudioBusAsset, WaveTableBankAsset, and WaveAsset.</p>
+
+<h3>Concatenate</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/0a490af9-dcf7-4b13-a189-af1248743e44/array_concatenate.png" alt="Concatenate" loading="lazy" convert="false" />
+<p>The <strong>Concatenate</strong> node concatenates two arrays on a given trigger.</p>
+
+<h4>Concatenate Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Trigger</strong></td>
+      <td>The trigger on which to concatenate the input arrays.</td>
+    </tr>
+    <tr>
+      <td><strong>Left / Right Array</strong></td>
+      <td>The input arrays.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Concatenate Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Array</strong></td>
+      <td>The concatenated array.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Get</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/1c1e7f2b-9ff3-4f83-a02e-7274c90ed625/array_get.png" alt="Get" loading="lazy" convert="false" />
+<p>The <strong>Get</strong> node retrieves an element from an array at the given index.</p>
+
+<block-callout callout-type="note">
+<p>You can use the <strong>Get Last Index</strong> node instead to access the last index of an array.</p>
+</block-callout>
+
+<h4>Get Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Trigger</strong></td>
+      <td>The trigger on which to retrieve the specified array element.</td>
+    </tr>
+    <tr>
+      <td><strong>Array</strong></td>
+      <td>The array from which to retrieve an element.</td>
+    </tr>
+    <tr>
+      <td><strong>Index</strong></td>
+      <td>The index of the element to retrieve.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Get Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Element</strong></td>
+      <td>The value of the retrieved element.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Num</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/99ff0705-125d-425b-a432-1911f4c2e2d0/array_num.png" alt="Num" loading="lazy" convert="false" />
+<p>The <strong>Num</strong> node returns the number of elements in the given array.</p>
+
+<h4>Num Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Array</strong></td>
+      <td>The array whose elements will be counted.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Num Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Num</strong></td>
+      <td>The number of elements in the given array.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Random Get</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/0962e4e5-d155-4a58-b568-2cd73e7cf9fc/array_random_get.png" alt="Random Get" loading="lazy" convert="false" />
+<p>The <strong>Random Get</strong> node randomly retrieves elements from an input array. Optionally, an array of weights can be supplied to adjust the randomness.</p>
+
+<h4>Random Get Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Next</strong></td>
+      <td>The trigger on which to get the next random value in the array.</td>
+    </tr>
+    <tr>
+      <td><strong>Reset</strong></td>
+      <td>The trigger on which to reset the randomization seed for the array.</td>
+    </tr>
+    <tr>
+      <td><strong>In Array</strong></td>
+      <td>The input array from which to randomly retrieve elements.</td>
+    </tr>
+    <tr>
+      <td><strong>Weights</strong></td>
+      <td>(Optional) An input array of weights used to define the probability of each entry retrieved. If not provided, an even probability for all elements is assumed. If this array is shorter than the input array, it is repeated to match the size.</td>
+    </tr>
+    <tr>
+      <td><strong>Seed</strong></td>
+      <td>The seed used for the random shuffle. The default value of -1 will use the current time.</td>
+    </tr>
+    <tr>
+      <td><strong>No Repeats</strong></td>
+      <td>The number of elements to track to avoid repeating in a row. For example, a value of 2 prevents this node from repeating the last two selected elements.</td>
+    </tr>
+    <tr>
+      <td><strong>Enabled Shared State</strong></td>
+      <td>If enabled, this node's state is shared across instances of this MetaSound to avoid playing the same exact variations at the same time.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Random Get Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>On Next</strong></td>
+      <td>Triggers when the Next input is triggered.</td>
+    </tr>
+    <tr>
+      <td><strong>On Reset</strong></td>
+      <td>Triggers when the Shuffle input is triggered or if the array is auto-shuffled.</td>
+    </tr>
+    <tr>
+      <td><strong>Value</strong></td>
+      <td>The randomly-selected value from the input array.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Set</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/1b02f804-5ac8-469a-8b22-d1a15ce3946b/array_set.png" alt="Set" loading="lazy" convert="false" />
+<p>The <strong>Set</strong> node sets the value of a specified index in a given array.</p>
+
+<h4>Set Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Trigger</strong></td>
+      <td>The trigger on which to set value in the array.</td>
+    </tr>
+    <tr>
+      <td><strong>Array</strong></td>
+      <td>The array in which a value will be set.</td>
+    </tr>
+    <tr>
+      <td><strong>Index</strong></td>
+      <td>The index to set in the target array.</td>
+    </tr>
+    <tr>
+      <td><strong>Value</strong></td>
+      <td>The value to which the selected index is set.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Set Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Array</strong></td>
+      <td>The array after the setting operation is completed.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Shuffle</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/ad207466-ce3c-4b1b-bfd9-208d428f5394/array_shuffle.png" alt="Shuffle" loading="lazy" convert="false" />
+<p>The <strong>Shuffle</strong> node outputs elements from a shuffled array.</p>
+
+<h4>Shuffle Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Next</strong></td>
+      <td>The trigger on which to get the next value in the shuffled array.</td>
+    </tr>
+    <tr>
+      <td><strong>Shuffle</strong></td>
+      <td>The trigger on which to shuffle the array manually.</td>
+    </tr>
+    <tr>
+      <td><strong>Reset Seed</strong></td>
+      <td>The trigger on which to reset the random seed stream.</td>
+    </tr>
+    <tr>
+      <td><strong>In Array</strong></td>
+      <td>The array from which to shuffle and output elements.</td>
+    </tr>
+    <tr>
+      <td><strong>Seed</strong></td>
+      <td>The seed used for the random shuffle. The default value of -1 uses the current time.</td>
+    </tr>
+    <tr>
+      <td><strong>Auto Shuffle</strong></td>
+      <td>If enabled, automatically shuffles when the array has been read completely.</td>
+    </tr>
+    <tr>
+      <td><strong>Enabled Shared State</strong></td>
+      <td>If enabled, the state is shared across instances of this MetaSound.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Shuffle Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>On Next</strong></td>
+      <td>Triggers when the Next input is triggered.</td>
+    </tr>
+    <tr>
+      <td><strong>On Shuffle</strong></td>
+      <td>Triggers when the Shuffle input is triggered or if the array is auto-shuffled.</td>
+    </tr>
+    <tr>
+      <td><strong>On Reset Seed</strong></td>
+      <td>Triggers when the Reset Seed input is triggered.</td>
+    </tr>
+    <tr>
+      <td><strong>Value</strong></td>
+      <td>The value of the currently-selected element.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Subset</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/a8ff7c39-576d-42d5-8a80-49e021de9df0/array_subset.png" alt="Subset" loading="lazy" convert="false" />
+<p>The <strong>Subset</strong> node returns a subset of an input array.</p>
+
+<h4>Subset Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Trigger</strong></td>
+      <td>The trigger on which to generate a subset.</td>
+    </tr>
+    <tr>
+      <td><strong>Array</strong></td>
+      <td>The input array from which to get a subset.</td>
+    </tr>
+    <tr>
+      <td><strong>Start / End Index</strong></td>
+      <td>The first and last indices to include in the subset.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Subset Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Array</strong></td>
+      <td>The subset of the input array.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Debug</h2>
+
+<h3>Get Wave Info</h3>
+
+<p>The <strong>Get Wave Info</strong> node returns the info from the Wave Asset.</p>
+
+<h4>Get Wave Info Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Wave</strong></td>
+      <td>The input Wave Asset.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Get Wave Info Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Duration</strong></td>
+      <td>The duration of the Wave Asset (in seconds).</td>
+    </tr>
+    <tr>
+      <td><strong>Name</strong></td>
+      <td>The name of the Wave Asset.</td>
+    </tr>
+    <tr>
+      <td><strong>Path</strong></td>
+      <td>The full path of the Wave Asset.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Print Log</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/cc3f5860-0040-404d-ad59-d50f7747fb75/debug_print_log.png" alt="Print Log" loading="lazy" convert="false" />
+<p>The <strong>Print Log</strong> node is used to record values to the Output Log on a given trigger for debugging purposes. There are multiple versions of this node in order to support several common data types, including: Bool, Float, Int32, and String.</p>
+
+<h4>Print Log Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Trigger</strong></td>
+      <td>The trigger on which to write the set value to the log.</td>
+    </tr>
+    <tr>
+      <td><strong>Label</strong></td>
+      <td>The label to attach to the value logged.</td>
+    </tr>
+    <tr>
+      <td><strong>Value To Log</strong></td>
+      <td>The value to record to the log when triggered.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Delays</h2>
+
+<h3>Delay</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/77d4b8dd-884b-493f-b6a1-49dc00b1cdb6/delays_delay.png" alt="Delay" loading="lazy" convert="false" />
+<p>The <strong>Delay</strong> node provides a mono buffer delay that supports dry level, wet level, and feedback. For multi-channel buffer delay, use the <strong>Stereo Delay</strong> node.</p>
+
+<h4>Delay Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>In</strong></td>
+      <td>The audio signal to apply delay to.</td>
+    </tr>
+    <tr>
+      <td><strong>Delay Time</strong></td>
+      <td>The amount of time to delay the audio (in seconds).</td>
+    </tr>
+    <tr>
+      <td><strong>Dry Level</strong></td>
+      <td>The level for the unprocessed (dry) signal</td>
+    </tr>
+    <tr>
+      <td><strong>Wet Level</strong></td>
+      <td>The level for the processed (wet) signal.</td>
+    </tr>
+    <tr>
+      <td><strong>Feedback</strong></td>
+      <td>The amount of feedback to use.</td>
+    </tr>
+    <tr>
+      <td><strong>Max Delay Time</strong></td>
+      <td>The amount of feedback to use.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Delay Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Out</strong></td>
+      <td>The delayed audio signal.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Delay Pitch Shift</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/d74f05d8-705f-4f50-881f-ba318c1779fe/delays_delay_pitch_shift.png" alt="Delay Pitch Shift" loading="lazy" convert="false" />
+<p>The <strong>Delay Pitch Shift</strong> node pitch shifts the audio buffer using a delay-based doppler-shift method. This allows for pitch shifting without changing the length of the audio file by using an internal delay buffer. The pitch will shift but the sound will not speed up or slow down.</p>
+
+<h4>Delay Pitch Shift Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>In</strong></td>
+      <td>The audio buffer to process.</td>
+    </tr>
+    <tr>
+      <td><strong>Pitch Shift</strong></td>
+      <td>The amount of pitch shift (in semitones) to apply.</td>
+    </tr>
+    <tr>
+      <td><strong>Delay Length</strong></td>
+      <td>The amount of delay (between 10 and 100 milliseconds) to apply. Changing this value can reduce artifacts in certain pitch shift regions.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Delay Pitch Shift Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Out</strong></td>
+      <td>The processed audio buffer.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Diffuser</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/82de584c-1d1a-4f75-8974-10bb7be280d7/delays_diffuser.png" alt="Diffuser" loading="lazy" convert="false" />
+<p>The <strong>Diffuser</strong> node applies diffusion to the incoming audio.</p>
+
+<h4>Diffuser Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Input Audio</strong></td>
+      <td>The audio to apply diffusion to.</td>
+    </tr>
+    <tr>
+      <td><strong>Depth</strong></td>
+      <td>The number of filters to use to diffuse the audio (between 1 and 5). This will not update while running.</td>
+    </tr>
+    <tr>
+      <td><strong>Feedback</strong></td>
+      <td>The amount of feedback to use on each diffuser (between 0 and 1).</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Diffuser Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Output Audio</strong></td>
+      <td>The diffused audio.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Grain Delay</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/bc747003-597d-4428-827c-fe440ae1c7c5/delays_grain_delay.png" alt="Grain Delay" loading="lazy" convert="false" />
+<p>The <strong>Grain Delay</strong> node performs delayed audio granulation on a given audio buffer by sampling it into "grains" and playing them after a set delay.</p>
+
+<h4>Grain Delay Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>In Audio</strong></td>
+      <td>The audio buffer to be grain delayed.</td>
+    </tr>
+    <tr>
+      <td><strong>Grain Spawn</strong></td>
+      <td>The trigger on which to spawn a new grain of audio.</td>
+    </tr>
+    <tr>
+      <td><strong>Grain Delay</strong></td>
+      <td>The delay (in milliseconds, between 0 and 2000) of the next spawned grain.</td>
+    </tr>
+    <tr>
+      <td><strong>Grain Delay Range</strong></td>
+      <td>The range delta (in milliseconds) used to randomize the delay in relation to the central Grain Delay value.</td>
+    </tr>
+    <tr>
+      <td><strong>Grain Duration</strong></td>
+      <td>The duration (in milliseconds) of the next spawned grain.</td>
+    </tr>
+    <tr>
+      <td><strong>Grain Duration Range</strong></td>
+      <td>The range delta (in milliseconds) used to randomize the duration in relation to the central Grain Duration value.</td>
+    </tr>
+    <tr>
+      <td><strong>Pitch Shift</strong></td>
+      <td>The pitch value (in semitones) to change the grain pitch of all rendering grains.</td>
+    </tr>
+    <tr>
+      <td><strong>Pitch Shift Range</strong></td>
+      <td>The pitch shift delta (in semitones) used to randomize the pitch shift in relation to the central Pitch Shift value.</td>
+    </tr>
+    <tr>
+      <td><strong>Grain Envelope</strong></td>
+      <td>The type of envelope to use for the grains: <strong>Gaussian</strong>, <strong>Triangle</strong>, <strong>Downward Triangle</strong>, <strong>Upward Triangle</strong>, <strong>Exponential Decay</strong>, or <strong>Exponential Attack</strong></td>
+    </tr>
+    <tr>
+      <td><strong>Max Grain Count</strong></td>
+      <td>The maximum number of grains to render at a time (between 1 and 100).</td>
+    </tr>
+    <tr>
+      <td><strong>Feedback Amount</strong></td>
+      <td>The amount of feedback of each grain. If feedback is applied, the grain delay will feed its audio output back into itself.</td>
+    </tr>
+  </tbody>
+</table>
+
+<block-callout callout-type="warning">
+<p>The <strong>Max Grain Count</strong> input is CPU intensive, so setting it to high values can reduce performance and introduce clipping.</p>
+</block-callout>
+
+<h4>Grain Delay Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Out Audio</strong></td>
+      <td>The grain-delayed audio buffer.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Stereo Delay</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/39e9d2dc-ef54-4299-841a-fc9e7044a859/delays_stereo_delay.png" alt="Stereo Delay" loading="lazy" convert="false" />
+<p>The <strong>Stereo Delay</strong> node provides multi-channel buffer delay. Like the <strong>Delay</strong> node, which provides mono buffer delay, this node supports dry level, wet level, and feedback, but also supports additional delay modes.</p>
+
+<h4>Stereo Delay Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>In Left / Right</strong></td>
+      <td>The input audio signals (left / right channels) to apply delay to.</td>
+    </tr>
+    <tr>
+      <td><strong>Delay Mode</strong></td>
+      <td><div>
+<p>The delay method to use:</p>
+<ul>
+  <li><strong>Normal</strong>: The left input mixes with the left delay output and feeds to the left output.</li>
+  <li><strong>Cross</strong>: The left input mixes with the right delay output and feeds to the right output.</li>
+  <li><strong>Ping Pong</strong>: The left input mixes with the left delay output and feeds to the right output.</li>
+</ul>
+</div></td>
+    </tr>
+    <tr>
+      <td><strong>Delay Time</strong></td>
+      <td>The amount of time to delay the audio (in seconds).</td>
+    </tr>
+    <tr>
+      <td><strong>Delay Ratio</strong></td>
+      <td>The ratio of delay to apply to the left and right channels. This means channels can have different delay amounts. For example, a value of -1 applies no delay to the left channel while fully delaying the right channel, which can be useful for stereo channel decorrelation.</td>
+    </tr>
+    <tr>
+      <td><strong>Dry Level</strong></td>
+      <td>The level for the unprocessed (dry) signal</td>
+    </tr>
+    <tr>
+      <td><strong>Wet Level</strong></td>
+      <td>The level for the processed (wet) signal.</td>
+    </tr>
+    <tr>
+      <td><strong>Feedback</strong></td>
+      <td>The amount of feedback to use.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+<h4>Stereo Delay Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Out Left / Right</strong></td>
+      <td>The output audio signal (left / right channels).</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Dynamics</h2>
+
+<h3>Compressor</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/14470962-6d71-4a04-92f1-f6387da7bd6d/dynamics_compressor.png" alt="Compressor" loading="lazy" convert="false" />
+<p>The <strong>Compressor</strong> node lowers the dynamic range of an input audio signal.</p>
+
+<h4>Compressor Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Audio</strong></td>
+      <td>The audio signal to compress.</td>
+    </tr>
+    <tr>
+      <td><strong>Ratio</strong></td>
+      <td>The ratio of gain reduction to apply. For example, a value of 1 produces no gain reduction and a value greater than 1 produces gain reduction.</td>
+    </tr>
+    <tr>
+      <td><strong>Threshold dB</strong></td>
+      <td>The amplitude threshold (in decibels) above which gain will be reduced.</td>
+    </tr>
+    <tr>
+      <td><strong>Attack Time</strong></td>
+      <td>The amount of time it takes for audio above the Threshold (dB) to reach its compressed volume level.</td>
+    </tr>
+    <tr>
+      <td><strong>Release Time</strong></td>
+      <td>The amount of time it takes for audio below the Threshold (dB) to return to its original volume level.</td>
+    </tr>
+    <tr>
+      <td><strong>Lookahead Time</strong></td>
+      <td>The amount of time it takes to delay the compressed signal behind the analyzed input signal.</td>
+    </tr>
+    <tr>
+      <td><strong>Knee</strong></td>
+      <td>A decibel value that determines how hard or soft the gain reduction blends. A value of 0 dB provides no blending.</td>
+    </tr>
+    <tr>
+      <td><strong>Sidechain</strong></td>
+      <td>(Optional) An external audio signal to control the compressor with. If unset, the input audio signal is used.</td>
+    </tr>
+    <tr>
+      <td><strong>Envelope Mode</strong></td>
+      <td><div>
+<p>The envelope-following method the compressor will use for gain detection:</p>
+<ul>
+  <li><strong>MS</strong>: Envelope follows a running Mean Squared of the audio signal.</li>
+  <li><strong>RMS</strong>: Envelope follows a running Root Meat Squared of the audio signal.</li>
+  <li><strong>Peak</strong>: Envelope follows the peaks in the audio signal.</li>
+</ul>
+</div></td>
+    </tr>
+    <tr>
+      <td><strong>Analog Mode</strong></td>
+      <td>If enabled, use Analog Mode for the compressor's envelope follower.</td>
+    </tr>
+    <tr>
+      <td><strong>Upwards Mode</strong></td>
+      <td>If enabled, an upwards compressor is used instead of the standard downwards compressor.</td>
+    </tr>
+    <tr>
+      <td><strong>Wet/Dry</strong></td>
+      <td>The ratio between the processed (wet) and the unprocessed (dry) signal. For example, a value of 0 is fully dry and a value of 1 is fully wet.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+<h4>Compressor Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Audio</strong></td>
+      <td>The output audio signal with the compressor effect applied.</td>
+    </tr>
+    <tr>
+      <td><strong>Gain Envelope</strong></td>
+      <td>The amount of gain applied to the signal.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Decibels to Linear Gain</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/2a796d11-e400-4c50-97d3-87a63db8fde7/dynamics_decibels_to_linear_gain.png" alt="Decibels to Linear Gain" loading="lazy" convert="false" />
+<p>The <strong>Decibels to Linear Gain</strong> node converts a logarithmic (dB) gain value to a linear gain value.</p>
+
+<h4>Decibels to Linear Gain Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Decibels</strong></td>
+      <td>The input logarithmic (dB) gain value.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Decibels to Linear Gain Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Linear Gain</strong></td>
+      <td>The output linear gain value.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Limiter</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/dc8de412-134e-4735-9315-e1457689eb36/dynamics_limiter.png" alt="Limiter" loading="lazy" convert="false" />
+<p>The <strong>Limiter</strong> node prevents a signal from going above a given threshold.</p>
+
+<h4>Limiter Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Audio</strong></td>
+      <td>The input audio signal to be limited.</td>
+    </tr>
+    <tr>
+      <td><strong>Input Gain dB</strong></td>
+      <td>The amount of gain (in decibels) to apply to the input before limiting.</td>
+    </tr>
+    <tr>
+      <td><strong>Threshold dB</strong></td>
+      <td>The amplitude threshold (in decibels) above which gain will be reduced.</td>
+    </tr>
+    <tr>
+      <td><strong>Release Time</strong></td>
+      <td>The time it takes for audio below the threshold to return to its original volume level.</td>
+    </tr>
+    <tr>
+      <td><strong>Knee</strong></td>
+      <td>The knee mode determines if the gain reduction blends are <strong>Hard</strong> or <strong>Soft</strong>.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Limiter Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Audio</strong></td>
+      <td>The limited audio signal.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Linear Gain to Decibels</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/eb8020f0-7195-4975-8a01-993270db13e9/dynamics_linear_gain_to_decibels.png" alt="Linear Gain to Decibels" loading="lazy" convert="false" />
+<p>The <strong>Linear Gain to Decibels</strong> node converts a linear gain value to a logarithmic (dB) gain value.</p>
+
+<h4>Linear Gain to Decibels Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Linear Gain</strong></td>
+      <td>The input linear gain value.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Linear Gain to Decibels Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Decibels</strong></td>
+      <td>The output logarithmic (dB) gain value.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Envelopes</h2>
+
+<p>MetaSounds provide <strong>Envelope</strong> nodes so audio designers can change aspects of their sounds over time. With the exception of the <strong>WaveTable Envelope</strong> and <strong>Evaluate WaveTable</strong> nodes, each type of Envelope node has two different versions to support Audio (audio-rate) and Float (block-rate) data types.</p>
+
+<block-callout callout-type="note">
+<p>Audio designers can customize their curve values using the various curve values contained within the nodes. For attack-time values, a curve value of less than 1.0 is a logarithmic curve (which rises quickly at first and slower near the end), and a value greater than 1.0 is an exponential curve (rises slower at first and more quickly near the end). Decay and release curves have the opposite behavior. Values of 1.0 for these curves are linear curves.</p>
+</block-callout>
+
+<h3>AD Envelope</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/0ee8c8d4-3943-4798-bd4f-cb0f0f22359b/envelopes_ad_envelope.png" alt="AD Envelope" loading="lazy" convert="false" />
+<p>The <strong>AD Envelope</strong> node generates an attack-decay envelope value output when triggered.</p>
+
+<block-callout callout-type="tip">
+<p>This node provides an additional option for looping the Attack-Decay curve similarly to a Low Frequency Oscillator (LFO) or Wave Generator. When paired with a <strong>Map Range</strong> node, this can be used to great effect in a variety of applications.</p>
+</block-callout>
+
+<h4>AD Envelope Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Trigger</strong></td>
+      <td>The trigger on which to start the attack phase of the envelope generator.</td>
+    </tr>
+    <tr>
+      <td><strong>Attack Time</strong></td>
+      <td>The amount of time (in seconds) to reach the maximum envelope value (1.0).</td>
+    </tr>
+    <tr>
+      <td><strong>Delay Time</strong></td>
+      <td>The amount of time (in seconds) to reach the minimum envelope value (0.0).</td>
+    </tr>
+    <tr>
+      <td><strong>Attack Curve</strong></td>
+      <td>The exponential curve factor of the attack phase. For example, a value of 1.0 produces linear growth, a value less than 1.0 produces logarithmic growth, and a value greater than 1.0 produces exponential growth.</td>
+    </tr>
+    <tr>
+      <td><strong>Decay Curve</strong></td>
+      <td>The exponential curve factor of the decay phase. For example, a value of 1.0 produces linear decay, a value greater than 1.0 produces logarithmic decay, and a value less than 1.0 produces exponential decay.</td>
+    </tr>
+    <tr>
+      <td><strong>Looping</strong></td>
+      <td>If enabled, the envelope will loop.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>AD Envelope Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>On Trigger</strong></td>
+      <td>Triggers when the envelope is triggered.</td>
+    </tr>
+    <tr>
+      <td><strong>On Done</strong></td>
+      <td>Triggers when the envelope finishes or loops back if looping is enabled.</td>
+    </tr>
+    <tr>
+      <td><strong>Out Envelope</strong></td>
+      <td>The output value of the envelope.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>ADSR Envelope</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/4a83d0e2-25e4-4ce1-97b2-8b2e62d92324/envelopes_adsr_envelope.png" alt="ADSR Envelope" loading="lazy" convert="false" />
+<p>The <strong>ADSR Envelope</strong> node generates an attack-decay-sustain-release envelope value output when triggered. This node is similar to the <strong>AD Envelope</strong> node, but it requires a separate release trigger for the release phase of the envelope to begin.</p>
+
+<h4>ADSR Envelope Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Trigger Attack</strong></td>
+      <td>The trigger on which to start the attack phase of the envelope generator.</td>
+    </tr>
+    <tr>
+      <td><strong>Trigger Release</strong></td>
+      <td>The trigger on which to start the release phase of the envelope generator.</td>
+    </tr>
+    <tr>
+      <td><strong>Attack Time</strong></td>
+      <td>The amount of time (in seconds) to reach the maximum envelope value (1.0).</td>
+    </tr>
+    <tr>
+      <td><strong>Delay Time</strong></td>
+      <td>The amount of time (in seconds) to reach the minimum envelope value (0.0).</td>
+    </tr>
+    <tr>
+      <td><strong>Sustain Level</strong></td>
+      <td>The sustain level of the envelope.</td>
+    </tr>
+    <tr>
+      <td><strong>Release Time</strong></td>
+      <td>The release time of the envelope.</td>
+    </tr>
+    <tr>
+      <td><strong>Attack Curve</strong></td>
+      <td>The exponential curve factor of the attack phase. For example, a value of 1.0 produces linear growth, a value less than 1.0 produces logarithmic growth, and a value greater than 1.0 produces exponential growth.</td>
+    </tr>
+    <tr>
+      <td><strong>Decay Curve</strong></td>
+      <td>The exponential curve factor of the decay phase. For example, a value of 1.0 produces linear decay, a value greater than 1.0 produces logarithmic decay, and a value less than 1.0 produces exponential decay.</td>
+    </tr>
+    <tr>
+      <td><strong>Release Curve</strong></td>
+      <td>The exponential curve factor of the release phase. For example, a value of 1.0 produces linear release, a value greater than 1.0 produces logarithmic release, and a value less than 1.0 produces exponential release.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>ADSR Envelope Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>On Attack Triggered</strong></td>
+      <td>Triggers when the envelope attack phase is triggered.</td>
+    </tr>
+    <tr>
+      <td><strong>On Decay Triggered</strong></td>
+      <td>Triggers when the envelope decay phase is triggered.</td>
+    </tr>
+    <tr>
+      <td><strong>On Sustain Triggered</strong></td>
+      <td>Triggers when the envelope sustain phase is triggered.</td>
+    </tr>
+    <tr>
+      <td><strong>On Release Triggered</strong></td>
+      <td>Triggers when the envelope release phase is triggered.</td>
+    </tr>
+    <tr>
+      <td><strong>On Done</strong></td>
+      <td>Triggers when the envelope is finished.</td>
+    </tr>
+    <tr>
+      <td><strong>Out Envelope</strong></td>
+      <td>The output value of the envelope.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Crossfade</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/1f97009e-81a9-4a5a-985f-97c4fc88d436/envelopes_crossfade.png" alt="Crossfade" loading="lazy" convert="false" />
+<p>The <strong>Crossfade</strong> node blends between inputs linearly using a provided block-rate float parameter. There are multiple versions of this node to support different input counts (between 2 and 8).</p>
+
+<h4>Crossfade Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Crossfade Value</strong></td>
+      <td>The value which represents the current blend between the provided inputs. For example, a value of 0.5 for input values of 2 and 4 will result in an output of 3.</td>
+    </tr>
+    <tr>
+      <td><strong>In X</strong></td>
+      <td>The input corresponding with position X.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Crossfade Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Out</strong></td>
+      <td>The value produced from the crossfade.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Evaluate WaveTable</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/c834fea2-acf3-4430-8ebd-904a5081b918/envelopes_evaluate_wavetable.png" alt="Evaluate  WaveTable" loading="lazy" convert="false" />
+<p>The <strong>Evaluate WaveTable</strong> node outputs the value of a WaveTable at a given input phase, allowing you to use the WaveTable as a curve in the graph.</p>
+
+<h4>Evaluate WaveTable Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>WaveTable</strong></td>
+      <td>The WaveTable to evaluate.</td>
+    </tr>
+    <tr>
+      <td><strong>Input</strong></td>
+      <td>The input to evaluate the WaveTable with. This value is clamped to a range of 0.0 to 1.0.</td>
+    </tr>
+    <tr>
+      <td><strong>Interpolation</strong></td>
+      <td>The method to use to interpolate between WaveTable values: <strong>None (Step)</strong>, <strong>Linear</strong>, or <strong>Cubic</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Evaluate WaveTable Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Output</strong></td>
+      <td>The current interpolated value.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>WaveTable Envelope</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/1e8241bd-b501-41a4-91fd-9c6d772d4c27/envelopes_wavetable_envelope.png" alt="WaveTable Envelope" loading="lazy" convert="false" />
+<p>The <strong>WaveTable Envelope</strong> node reads through the given WaveTable over the given duration.</p>
+
+<h4>WaveTable Envelope Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>WaveTable</strong></td>
+      <td>The WaveTable to read.</td>
+    </tr>
+    <tr>
+      <td><strong>Play</strong></td>
+      <td>The trigger on which to play the envelope.</td>
+    </tr>
+    <tr>
+      <td><strong>Stop</strong></td>
+      <td>The trigger on which to stop the envelope.</td>
+    </tr>
+    <tr>
+      <td><strong>Pause</strong></td>
+      <td>The trigger on which to pause the envelope.</td>
+    </tr>
+    <tr>
+      <td><strong>Duration</strong></td>
+      <td>The duration (in seconds).</td>
+    </tr>
+    <tr>
+      <td><strong>Mode</strong></td>
+      <td><div>
+<p>Determines what value the envelope completes on and if it loops:</p>
+<ul>
+  <li><strong>Loop</strong>: Interpolates the last and first values in the WaveTable and restarts interpolation of the envelope on completion.</li>
+  <li><strong>Hold</strong>: Holds the last value in the table if playback elapses beyond the WaveTable's length.</li>
+  <li><strong>Unit</strong>: Interpolates the last value in the table with 1.0 if playback elapses beyond the WaveTable's length.</li>
+  <li><strong>Zero</strong>: Interpolates the last value in the table with 0.0 if playback elapses beyond the WaveTable's length.</li>
+</ul>
+</div></td>
+    </tr>
+    <tr>
+      <td><strong>Interpolation</strong></td>
+      <td><div>
+<p>Determines how the envelope interpolates between WaveTable values:</p>
+<ul>
+  <li><strong>None (Step)</strong>: No interpolation between values. The lowest value is used.</li>
+  <li><strong>Linear</strong>: Linearly interpolates between values.</li>
+  <li><strong>Cubic</strong>: Cubically interpolates between values.</li>
+</ul>
+</div></td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+
+
+<h4>WaveTable Envelope Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>OnFinished</strong></td>
+      <td>Triggers when the envelope is finished.</td>
+    </tr>
+    <tr>
+      <td><strong>Out</strong></td>
+      <td>The output value.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>External IO</h2>
+
+<h3>Audio Bus Reader</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/a50de5e4-46a1-44fe-b112-0311011150ab/external_io_audio_bus_reader.png" alt="Audio Bus Reader" loading="lazy" convert="false" />
+<p>The <strong>Audio Bus Reader</strong> node outputs audio data from an Audio Bus asset. There are two versions of this node to support different channel amounts (either 1 or 2).</p>
+
+<h4>Audio Bus Reader Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Audio Bus</strong></td>
+      <td>The Audio Bus asset to read data from.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Audio Bus Reader Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Out X</strong></td>
+      <td>The audio output for channel X.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Wave Writer</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/889ed21b-726d-47b3-a676-664c4fe09e49/external_io_wave_writer.png" alt="Wave Writer" loading="lazy" convert="false" />
+<p>The <strong>Wave Writer</strong> node writes audio signals to disk. There are multiple versions of this node to support different channel amounts (between 1 and 8).</p>
+
+<block-callout callout-type="note">
+<p>The file is rendered at 48,000 Hz and is saved to the <strong>Saved > AudioCaptures</strong> folder.</p>
+</block-callout>
+
+<h4>Wave Writer Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Filename Prefix</strong></td>
+      <td>The filename prefix used for the output file.</td>
+    </tr>
+    <tr>
+      <td><strong>Enabled</strong></td>
+      <td>If enabled, this node will write audio signals to disk.</td>
+    </tr>
+    <tr>
+      <td><strong>In X</strong></td>
+      <td>The audio input corresponding with channel X.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Filters</h2>
+
+<h3>Biquad Filter</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/7901a180-a095-4a14-905e-75f3d47dba58/filters_biquad_filter.png" alt="Biquad Filter" loading="lazy" convert="false" />
+<p>The <strong>Biquad Filter</strong> node provides a simple two-pole biquad filter that supports a variety of configurations.</p>
+
+<h4>Biquad Filter Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>In</strong></td>
+      <td>The audio to be biquad filtered.</td>
+    </tr>
+    <tr>
+      <td><strong>Cutoff Frequency</strong></td>
+      <td>The value of the cutoff frequency.</td>
+    </tr>
+    <tr>
+      <td><strong>Bandwidth</strong></td>
+      <td>When applicable, controls the bandwidth value of the current filter type.</td>
+    </tr>
+    <tr>
+      <td><strong>Gain (dB)</strong></td>
+      <td>The gain (in decibels) applied to the band when in Parametric mode.</td>
+    </tr>
+    <tr>
+      <td><strong>Type</strong></td>
+      <td>The type of biquad filter to use.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Biquad Filter Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Out</strong></td>
+      <td>The biquad-filtered audio.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Bitcrusher</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/e44b9d7a-c5bd-4895-a1fb-54f24b831f8d/filters_bitcrusher.png" alt="Bitcrusher" loading="lazy" convert="false" />
+<p>The <strong>Bitcrusher</strong> node downsamples and lowers the bit-depth of an incoming audio signal.</p>
+
+<h4>Bitcrusher Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Audio</strong></td>
+      <td>The audio signal to bitcrush.</td>
+    </tr>
+    <tr>
+      <td><strong>Sample Rate</strong></td>
+      <td>The sampling frequency to downsample the audio to.</td>
+    </tr>
+    <tr>
+      <td><strong>Bit Depth</strong></td>
+      <td>The bit resolution to reduce the audio to.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Bitcrusher Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Audio</strong></td>
+      <td>The bitcrushed audio signal.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Dynamic Filter</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/f22f9f10-db69-4c9c-b426-2f21fff3aa0b/filters_dynamic_filter.png" alt="Dynamic Filter" loading="lazy" convert="false" />
+<p>The <strong>Dynamic Filter</strong> node filters a band of audio based on the strength of the input signal.</p>
+
+<h4>Dynamic Filter Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Audio</strong></td>
+      <td>The audio signal to filter.</td>
+    </tr>
+    <tr>
+      <td><strong>Sidechain</strong></td>
+      <td>(Optional) An external audio signal to control the filter with. If not set, the input audio signal is used.</td>
+    </tr>
+    <tr>
+      <td><strong>FilterType</strong></td>
+      <td>The filter shape to use: <strong>Bell</strong>, <strong>Low Shelf</strong>, or <strong>High Shelf</strong></td>
+    </tr>
+    <tr>
+      <td><strong>Frequency</strong></td>
+      <td>The center frequency of the filter.</td>
+    </tr>
+    <tr>
+      <td><strong>Q</strong></td>
+      <td>The filter's Q, or resonance, which controls the steepness of the filter.</td>
+    </tr>
+    <tr>
+      <td><strong>Threshold dB</strong></td>
+      <td>The amplitude threshold (dB) above which gain is reduced.</td>
+    </tr>
+    <tr>
+      <td><strong>Ratio</strong></td>
+      <td>The amount of gain reduction to apply. A value of 1 applies no reduction and a higher value provides more reduction.</td>
+    </tr>
+    <tr>
+      <td><strong>Knee</strong></td>
+      <td>A decibel value that determines how hard or soft the gain reduction blends. A value of 0 dB provides no blending.</td>
+    </tr>
+    <tr>
+      <td><strong>Range</strong></td>
+      <td>The maximum gain reduction allowed (in decibels). A negative value applies compression and a positive value flips it into an expander.</td>
+    </tr>
+    <tr>
+      <td><strong>Gain (dB)</strong></td>
+      <td>The amount of make-up gain (in decibels) to apply.</td>
+    </tr>
+    <tr>
+      <td><strong>AttackTime</strong></td>
+      <td>The amount of time (in seconds) it takes the audio above the threshold to reach its compressed volume level.</td>
+    </tr>
+    <tr>
+      <td><strong>ReleaseTime</strong></td>
+      <td>The amount of time (in seconds) it takes for the audio below the threshold to return to its original volume level.</td>
+    </tr>
+    <tr>
+      <td><strong>EnvelopeMode</strong></td>
+      <td>The envelope-following method the compressor uses for gain detection.</td>
+    </tr>
+    <tr>
+      <td><strong>AnalogMode</strong></td>
+      <td>If enabled, analog mode is used for the compressor's envelope follower.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Dynamic Filter Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Audio</strong></td>
+      <td>The filtered audio signal.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Ladder Filter</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/694d8a18-55e3-4f0f-84a3-545b75459811/filters_ladder_filter.png" alt="Ladder Filter" loading="lazy" convert="false" />
+<p>The <strong>Ladder Filter</strong> node provides a virtual analog filter that has a pleasing and classic rolloff and resonance.</p>
+
+<h4>Ladder Filter Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>In</strong></td>
+      <td>The audio to be processed by the ladder filter.</td>
+    </tr>
+    <tr>
+      <td><strong>Cutoff Frequency</strong></td>
+      <td>The value of the cutoff frequency.</td>
+    </tr>
+    <tr>
+      <td><strong>Resonance</strong></td>
+      <td>The value of the filter resonance.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Ladder Filter Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Out</strong></td>
+      <td>The ladder filtered audio.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Mono Band Splitter</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/58428da0-db47-4d9e-ada6-6df5a92507b6/filters_mono_band_splitter.png" alt="Mono Band Splitter" loading="lazy" convert="false" />
+<p>The <strong>Mono Band Splitter</strong> node splits incoming audio into separate frequency bands. There are multiple versions of this node to support different input and output counts (between 2 and 5).</p>
+
+<h4>Mono Band Splitter Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>In</strong></td>
+      <td>The base audio input channel.</td>
+    </tr>
+    <tr>
+      <td><strong>Filter Order</strong></td>
+      <td>The steepness of the crossover filters: <strong>Two Pole</strong>, <strong>Four Pole</strong>, <strong>Six Pole</strong>, or <strong>Eight Pole</strong></td>
+    </tr>
+    <tr>
+      <td><strong>Phase Compensate</strong></td>
+      <td>If enabled, each band is phase-compensated so they can be summed back together correctly.</td>
+    </tr>
+    <tr>
+      <td><strong>Crossover X</strong></td>
+      <td>The frequency of the crossover filters from <strong>Band X</strong> to the next.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Mono Band Splitter Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Band X Out</strong></td>
+      <td>The audio output corresponding to channel X.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>One-Pole High Pass Filter</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/a8b43ab8-60e1-44d1-8563-1094dd3bfa5c/filters_one-pole_high_pass_filter.png" alt="One-Pole High Pass Filter" loading="lazy" convert="false" />
+<p>The <strong>One-Pole High Pass Filter</strong> node is a computationally cheap filter useful for a number of simple applications, such as simulating occlusion.</p>
+
+<h4>One-Pole High Pass Filter Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>In</strong></td>
+      <td>The audio signal to be filtered.</td>
+    </tr>
+    <tr>
+      <td><strong>Cutoff Frequency</strong></td>
+      <td>The value of the cutoff frequency.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>One-Pole High Pass Filter Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Out</strong></td>
+      <td>The filtered audio signal.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>One-Pole Low Pass Filter</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/feff0f12-ba13-4520-9538-116c83fb03af/filters_one-pole_low_pass_filter.png" alt="One-Pole Low Pass Filter" loading="lazy" convert="false" />
+<p>The <strong>One-Pole Low Pass Filter</strong> node is a computationally cheap filter useful for a number of simple applications, such as simulating air absorption</p>
+
+<h4>One-Pole Low Pass Filter Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>In</strong></td>
+      <td>The audio signal to be filtered.</td>
+    </tr>
+    <tr>
+      <td><strong>Cutoff Frequency</strong></td>
+      <td>The value of the cutoff frequency.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>One-Pole Low Pass Filter Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Out</strong></td>
+      <td>The filtered audio signal.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Sample And Hold</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/8ca2484d-f9b1-4bf8-9397-f6225d745232/filters_sample_and_hold.png" alt="Sample and Hold" loading="lazy" convert="false" />
+<p>The <strong>Sample And Hold</strong> node outputs a single value of the input audio signal when triggered.</p>
+
+<h4>Sample And Hold Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Sample And Hold</strong></td>
+      <td>The trigger on which to sample and hold the input audio.</td>
+    </tr>
+    <tr>
+      <td><strong>In</strong></td>
+      <td>The audio signal to sample.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Sample And Hold Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>On Sample And Hold</strong></td>
+      <td>Triggers when the Sample and Hold input is triggered.</td>
+    </tr>
+    <tr>
+      <td><strong>Out</strong></td>
+      <td>The sampled audio signal.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>State Variable Filter</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/dc0a44f6-95bd-4489-99dc-d13c83524e57/filters_state_variable_filter.png" alt="State Variable Filter" loading="lazy" convert="false" />
+<p>The <strong>State Variable Filter</strong> node provides a virtual analog filter used in many synthesis applications.</p>
+
+<h4>State Variable Filter Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>In</strong></td>
+      <td>The audio to be processed by the filter.</td>
+    </tr>
+    <tr>
+      <td><strong>Cutoff Frequency</strong></td>
+      <td>The value of the cutoff frequency.</td>
+    </tr>
+    <tr>
+      <td><strong>Resonance</strong></td>
+      <td>The value of the filter resonance.</td>
+    </tr>
+    <tr>
+      <td><strong>Band Stop Control</strong></td>
+      <td>The control value applied to the band stop output.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>State Variable Filter Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Low Pass Filter</strong></td>
+      <td>The low pass filter output.</td>
+    </tr>
+    <tr>
+      <td><strong>High Pass Filter</strong></td>
+      <td>The high pass filter output.</td>
+    </tr>
+    <tr>
+      <td><strong>Band Pass</strong></td>
+      <td>The band pass filter output.</td>
+    </tr>
+    <tr>
+      <td><strong>Band Stop</strong></td>
+      <td>The band stop filter output.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Stereo Band Splitter</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/7add9e6e-f409-4609-9f70-587ac4e2de3d/filters_stereo_band_splitter.png" alt="Stereo Band Splitter" loading="lazy" convert="false" />
+<p>The <strong>Stereo Band Splitter</strong> node splits incoming audio into separate frequency bands. There are multiple versions of this node to support different input and output counts (between 2 and 5).</p>
+
+<h4>Stereo Band Splitter Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>In L / R</strong></td>
+      <td>The base audio input channels.</td>
+    </tr>
+    <tr>
+      <td><strong>Filter Order</strong></td>
+      <td>The steepness of the crossover filters: <strong>Two Pole</strong>, <strong>Four Pole</strong>, <strong>Six Pole</strong>, <strong>Eight Pole</strong></td>
+    </tr>
+    <tr>
+      <td><strong>Phase Compensate</strong></td>
+      <td>If enabled, each band is phase-compensated so that they can be summed back together correctly.</td>
+    </tr>
+    <tr>
+      <td><strong>Crossover X</strong></td>
+      <td>The frequency of the crossover filters from <strong>Band X</strong> to the next.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Stereo Band Splitter Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Band X L / R</strong></td>
+      <td>The audio output corresponding to channel X (in the left / right channel).</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Generators</h2>
+
+<p>MetaSounds have several audio-rate generators which provide options for frequency modulation.</p>
+
+<block-callout callout-type="tip">
+<p>With the exception of the <strong>Noise</strong> node, all of these nodes support sync triggering which resets their phase. When combined with an audio-rate trigger repeat or a threshold trigger, this can create many unique synthesis effects.</p>
+</block-callout>
+
+<h3>Additive Synth</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/0cf86e74-d59b-437d-9823-70f50f07a964/generators_additive_synth.png" alt="Additive Synth" loading="lazy" convert="false" />
+<p>The <strong>Additive Synth</strong> node synthesizes audio by adding given sinusoids together.</p>
+
+<h4>Additive Synth Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Base Frequency</strong></td>
+      <td>The sinusoid frequency the harmonics are based on. The value is clamped from 0.0 to the Nyquist frequency.</td>
+    </tr>
+    <tr>
+      <td><strong>HarmonicMultipliers</strong></td>
+      <td>An array of harmonic multipliers applied to the base frequency. The number of sinusoids used depends on the size of this array. The values are clamped from 0.0 to a maximum so the resulting frequency won't go above the Nyquist frequency.</td>
+    </tr>
+    <tr>
+      <td><strong>Amplitudes</strong></td>
+      <td>The array of sinusoid amplitudes. The values are clamped to a range of 0.0 to 1.0</td>
+    </tr>
+    <tr>
+      <td><strong>Phases</strong></td>
+      <td>The array of sinusoid phases (in degrees). The values are clamped to a range of 0.0 to 360.</td>
+    </tr>
+    <tr>
+      <td><strong>Pan Amounts</strong></td>
+      <td>The array of pan amounts (using equal power law). For example, a value of -1.0 is fully left and a value of 1.0 is fully right.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Additive Synth Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Out Left / Right Audio</strong></td>
+      <td>The synthesized audio output (left / right channels).</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Low Frequency Noise</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/ab5fde0a-6996-4933-8df4-5f45bfa6071c/generators_low_frequency_noise.png" alt="Low Frequency Noise" loading="lazy" convert="false" />
+<p>The <strong>Low Frequency Noise</strong> node produces random values at a set frequency and smoothly interpolates between them to add periodic variation to a signal.</p>
+
+<h4>Low Frequency Noise Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Rate</strong></td>
+      <td>The rate (Hz) of each new value. This is clamped to block rate.</td>
+    </tr>
+    <tr>
+      <td><strong>Seed</strong></td>
+      <td>The seed used for the random shuffle. The default value of -1 uses the current time.</td>
+    </tr>
+    <tr>
+      <td><strong>Reset Seed</strong></td>
+      <td>The trigger on which to reset the seed.</td>
+    </tr>
+    <tr>
+      <td><strong>Sync</strong></td>
+      <td>The trigger on which to reset the phase of the generator.</td>
+    </tr>
+    <tr>
+      <td><strong>Interpolation</strong></td>
+      <td>The method to use to interpolate between values: <strong>None</strong>, <strong>Linear</strong>, or <strong>Cubic</strong></td>
+    </tr>
+    <tr>
+      <td><strong>Rate Jitter</strong></td>
+      <td>A percentage to randomly modify (+/-) the <strong>Rate</strong> by. This value is clamped between 0.0 and 1.0.</td>
+    </tr>
+    <tr>
+      <td><strong>Step Limit</strong></td>
+      <td>A percentage to limit the next random number in sequence to. This value is clamped between 0.0 and 1.0.</td>
+    </tr>
+    <tr>
+      <td><strong>Min Value</strong></td>
+      <td>The minimum output value.</td>
+    </tr>
+    <tr>
+      <td><strong>Max Value</strong></td>
+      <td>The maximum output value.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Low Frequency Noise Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Out</strong></td>
+      <td>The scaled output based on the <strong>Min Value</strong> and <strong>Max Value</strong>.</td>
+    </tr>
+    <tr>
+      <td><strong>Normalized</strong></td>
+      <td>The normalized output.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Low-Frequency Oscillator (LFO)</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/dacec5bd-667a-4c13-aca3-cfc3597bbb0c/generators_lfo.png" alt="LFO" loading="lazy" convert="false" />
+<p>The <strong>LFO</strong> node provides a low-frequency oscillator which you can use to create a variety of audio effects, such as phasing, vibrato, and tremolo.</p>
+
+<h4>LFO Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Frequency</strong></td>
+      <td>The frequency (Hz) of the LFO (clamped at block rate).</td>
+    </tr>
+    <tr>
+      <td><strong>Shape</strong></td>
+      <td>The wave shape of the LFO: <strong>Sine</strong>, <strong>Saw</strong>, <strong>Triangle</strong>, or <strong>Square</strong></td>
+    </tr>
+    <tr>
+      <td><strong>Min / Max Value</strong></td>
+      <td>The minimum / maximum output values.</td>
+    </tr>
+    <tr>
+      <td><strong>Sync</strong></td>
+      <td>Resets the phase of the generator. You can use this in conjunction with other nodes to get audio-rate phase synced generators.</td>
+    </tr>
+    <tr>
+      <td><strong>Phase Offset</strong></td>
+      <td>The phase offset (in degrees, between 0 and 360).</td>
+    </tr>
+    <tr>
+      <td><strong>Pulse Width</strong></td>
+      <td>The pulse width (between 0 and 1).</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>LFO Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Out</strong></td>
+      <td>The output value of the LFO (clamped at block rate).</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Noise</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/5f4c22ce-b52d-453c-9eca-99a869d101ba/generators_noise.png" alt="Noise" loading="lazy" convert="false" />
+<p>The <strong>Noise</strong> node generates either pink or white noise.</p>
+
+<h4>Noise Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Seed</strong></td>
+      <td>The seed for the random number generator. The default value of -1 uses the current time.</td>
+    </tr>
+    <tr>
+      <td><strong>Type</strong></td>
+      <td>The type of noise to generate: <strong>Pink Noise</strong> or <strong>White Noise</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Noise Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Audio</strong></td>
+      <td>The generated noise output.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Perlin Noise</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/f59f323d-3f70-448b-bcd6-6b6661608fdb/generators_perlin_noise.png" alt="Perlin Noise" loading="lazy" convert="false" />
+<p>The <strong>Perlin Noise</strong> node evaluates one-dimensional Perlin value noise to add natural roughness to a signal. This node has two versions to support different data types (Audio or Float).</p>
+
+<h4>Perlin Noise Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>X</strong></td>
+      <td>The input value to the Perlin function. By default, the internal clock (in seconds) will be used.</td>
+    </tr>
+    <tr>
+      <td><strong>Layers</strong></td>
+      <td>The number of octaves of noise to sum.</td>
+    </tr>
+    <tr>
+      <td><strong>Seed</strong></td>
+      <td>The seed used for the random shuffle. The default value of -1 uses the current time.</td>
+    </tr>
+    <tr>
+      <td><strong>Min Value</strong></td>
+      <td>The minimum output value.</td>
+    </tr>
+    <tr>
+      <td><strong>Max Value</strong></td>
+      <td>The maximum output value.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Perlin Noise Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Output</strong></td>
+      <td>The scaled output based on the <strong>Min Value</strong> and <strong>Max Value</strong>.</td>
+    </tr>
+    <tr>
+      <td><strong>Normalized</strong></td>
+      <td>The normalized output.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Saw</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/69bbfd0e-4891-47c3-9578-5589661cf949/generators_saw.png" alt="Saw" loading="lazy" convert="false" />
+<p>The <strong>Saw</strong> node emits an audio signal of a saw wave with the given properties.</p>
+
+<h4>Saw Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Enabled</strong></td>
+      <td>If enabled, the oscillator produces a signal.</td>
+    </tr>
+    <tr>
+      <td><strong>Bi Polar</strong></td>
+      <td>If enabled, the output is bi-polar (-1, 1). Otherwise, the output is uni-polar (0, 1).</td>
+    </tr>
+    <tr>
+      <td><strong>Frequency</strong></td>
+      <td>The base frequency of the oscillator (in Hz).</td>
+    </tr>
+    <tr>
+      <td><strong>Modulation</strong></td>
+      <td>An audio-rate input to modulate the base frequency.</td>
+    </tr>
+    <tr>
+      <td><strong>Sync</strong></td>
+      <td>Resets the phase of the generator. You can use this in conjunction with other nodes to get audio-rate phase synced generators.</td>
+    </tr>
+    <tr>
+      <td><strong>Phase Offset</strong></td>
+      <td>The phase offset (in degrees, between 0 and 360).</td>
+    </tr>
+    <tr>
+      <td><strong>Glide</strong></td>
+      <td>The amount of glide (smooth interpolation over time) used when changing frequencies. For example, a value of 0.0 will produce no glide and a value of 1.0 produces lots of glide.</td>
+    </tr>
+    <tr>
+      <td><strong>Type</strong></td>
+      <td><div>
+<p>The generator type used to make the saw wave:</p>
+<ul>
+  <li><strong>Poly Smooth</strong>: Generates a smooth version of the saw wave.</li>
+  <li><strong>Trivial</strong>: Uses a basic implementation to generate a saw wave.</li>
+</ul>
+</div></td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+<h4>Saw Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Audio</strong></td>
+      <td>The saw wave audio signal.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Sine</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/a2e5c4ad-9371-4bc8-a08f-d222b94f2211/generators_sine.png" alt="Sine" loading="lazy" convert="false" />
+<p>The <strong>Sine</strong> node emits an audio signal of a sinusoid with the given properties.</p>
+
+<h4>Sine Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Enabled</strong></td>
+      <td>If enabled, the oscillator produces a signal.</td>
+    </tr>
+    <tr>
+      <td><strong>Bi Polar</strong></td>
+      <td>If enabled, the output is bi-polar (-1, 1). Otherwise, the output is uni-polar (0, 1).</td>
+    </tr>
+    <tr>
+      <td><strong>Frequency</strong></td>
+      <td>The base frequency of the oscillator (in Hz).</td>
+    </tr>
+    <tr>
+      <td><strong>Modulation</strong></td>
+      <td>An audio-rate input to modulate the base frequency.</td>
+    </tr>
+    <tr>
+      <td><strong>Sync</strong></td>
+      <td>Resets the phase of the generator. You can use this in conjunction with other nodes to get audio-rate phase synced generators.</td>
+    </tr>
+    <tr>
+      <td><strong>Phase Offset</strong></td>
+      <td>The phase offset (in degrees, between 0 and 360).</td>
+    </tr>
+    <tr>
+      <td><strong>Glide</strong></td>
+      <td>The amount of glide (smooth interpolation over time) used when changing frequencies. For example, a value of 0.0 will produce no glide and a value of 1.0 produces lots of glide.</td>
+    </tr>
+    <tr>
+      <td><strong>Type</strong></td>
+      <td><div>
+<p>The generator type used to make the sinusoid:</p>
+<ul>
+  <li><strong>2D Rotation</strong>: Rotates around the unit circle to generate the sine wave.</li>
+  <li><strong>Pure Math</strong>: Uses the standard math library to generate the sine wave (most expensive method).</li>
+  <li><strong>Bhaskara</strong>: Uses the Bhaskara technique to approximate the sine wave.</li>
+  <li><strong>Wave Table</strong>: Uses a wave table to generate the sine wave.</li>
+</ul>
+</div></td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+<h4>Sine Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Audio</strong></td>
+      <td>The sinusoid audio signal.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Square</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/c5389e93-cd51-43b9-9e8b-9a2f565a0ed8/generators_square.png" alt="Square" loading="lazy" convert="false" />
+<p>The <strong>Square</strong> node emits an audio signal of a square wave with the given properties.</p>
+
+<h4>Square Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Enabled</strong></td>
+      <td>If enabled, the oscillator produces a signal.</td>
+    </tr>
+    <tr>
+      <td><strong>Bi Polar</strong></td>
+      <td>If enabled, the output is bi-polar (-1, 1). Otherwise, the output is uni-polar (0, 1).</td>
+    </tr>
+    <tr>
+      <td><strong>Frequency</strong></td>
+      <td>The base frequency of the oscillator (in Hz).</td>
+    </tr>
+    <tr>
+      <td><strong>Modulation</strong></td>
+      <td>An audio-rate input to modulate the base frequency.</td>
+    </tr>
+    <tr>
+      <td><strong>Sync</strong></td>
+      <td>Resets the phase of the generator. You can use this in conjunction with other nodes to get audio-rate phase synced generators.</td>
+    </tr>
+    <tr>
+      <td><strong>Phase Offset</strong></td>
+      <td>The phase offset (in degrees, between 0 and 360).</td>
+    </tr>
+    <tr>
+      <td><strong>Glide</strong></td>
+      <td>The amount of glide (smooth interpolation over time) used when changing frequencies. For example, a value of 0.0 will produce no glide and a value of 1.0 produces lots of glide.</td>
+    </tr>
+    <tr>
+      <td><strong>Type</strong></td>
+      <td><div>
+<p>The generator type used to make the square wave:</p>
+<ul>
+  <li><strong>Poly Smooth</strong>: Generates a smooth version of the Square wave.</li>
+  <li><strong>Trivial</strong>: Uses a basic implementation to generate a Square wave.</li>
+</ul>
+</div></td>
+    </tr>
+    <tr>
+      <td><strong>Pulse Width</strong></td>
+      <td>The relative pulse width of the square wave.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+<h4>Square Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Audio</strong></td>
+      <td>The square wave audio signal.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>SuperOscillator</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/16375648-10bc-4eee-8f6e-1f9e3865954c/generators_superoscillator.png" alt="SuperOscillator" loading="lazy" convert="false" />
+<p>The <strong>SuperOscillator</strong> node generates audio using multiple internal oscillators. You can detune each internal oscillator evenly or randomly using <strong>Detune</strong> and <strong>Entropy</strong>. It supports all of the features of basic oscillator nodes, with the addition of a built-in limiter to keep the amplitude in check when there are higher voice counts. This node has two versions to support different channel configurations (Stereo or Mono).</p>
+
+<h4>SuperOscillator Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Enabled</strong></td>
+      <td>If enabled, the oscillator produces a signal.</td>
+    </tr>
+    <tr>
+      <td><strong>Limit Output</strong></td>
+      <td>If enabled, the output volume will be limited.</td>
+    </tr>
+    <tr>
+      <td><strong>Voices</strong></td>
+      <td>The number of oscillators to use. This value is clamped between 1 and 16.</td>
+    </tr>
+    <tr>
+      <td><strong>Frequency</strong></td>
+      <td>The base frequency (Hz) of the oscillator.</td>
+    </tr>
+    <tr>
+      <td><strong>Modulation</strong></td>
+      <td>The modulation frequency.</td>
+    </tr>
+    <tr>
+      <td><strong>Detune</strong></td>
+      <td>The max pitch offset (in semitones). Only oscillators beyond the 2nd are detuned.</td>
+    </tr>
+    <tr>
+      <td><strong>Entropy</strong></td>
+      <td>This value controls how evenly the voices are distributed in pitch. This value is clamped between 0.0 and 1.0.</td>
+    </tr>
+    <tr>
+      <td><strong>Blend</strong></td>
+      <td>The volume (dB) of detuned voices relative to the primary voice.</td>
+    </tr>
+    <tr>
+      <td><strong>Glide</strong></td>
+      <td>The amount of glide (smooth interpolation over time) used when changing frequencies. For example, a value of 0.0 will produce no glide and a value of 1.0 produces lots of glide.</td>
+    </tr>
+    <tr>
+      <td><strong>Pulse Width</strong></td>
+      <td>The width of the square segment of the wave. This is only used for <strong>Square</strong> waves.</td>
+    </tr>
+    <tr>
+      <td><strong>Width</strong></td>
+      <td>The stereo width of the oscillators. This value is clamped between 0.0 and 1.0.</td>
+    </tr>
+    <tr>
+      <td><strong>Type</strong></td>
+      <td>The shape of the oscillator: <strong>Sine</strong>, <strong>Saw</strong>, <strong>Triangle</strong>, or <strong>Square</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>SuperOscillator Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Audio</strong></td>
+      <td>The output audio signal.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Triangle</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/e52dd0b9-8133-4134-a997-86b18a06f7ea/generators_triangle.png" alt="Triangle" loading="lazy" convert="false" />
+<p>The <strong>Triangle</strong> node emits an audio signal of a triangle wave with the given properties.</p>
+
+<h4>Triangle Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Enabled</strong></td>
+      <td>If enabled, the oscillator produces a signal.</td>
+    </tr>
+    <tr>
+      <td><strong>Bi Polar</strong></td>
+      <td>If enabled, the output will be bi-polar (-1, 1). Otherwise, the output will be uni-polar (0, 1).</td>
+    </tr>
+    <tr>
+      <td><strong>Frequency</strong></td>
+      <td>The base frequency of the oscillator (in Hz).</td>
+    </tr>
+    <tr>
+      <td><strong>Modulation</strong></td>
+      <td>An audio-rate input to modulate the base frequency.</td>
+    </tr>
+    <tr>
+      <td><strong>Sync</strong></td>
+      <td>Resets the phase of the generator. You can use this in conjunction with other nodes to get audio-rate phase synced generators.</td>
+    </tr>
+    <tr>
+      <td><strong>Phase Offset</strong></td>
+      <td>The phase offset (in degrees, between 0 and 360).</td>
+    </tr>
+    <tr>
+      <td><strong>Glide</strong></td>
+      <td>The amount of glide (smooth interpolation over time) used when changing frequencies. For example, a value of 0.0 will produce no glide and a value of 1.0 produces lots of glide.</td>
+    </tr>
+    <tr>
+      <td><strong>Type</strong></td>
+      <td><div>
+<p>The generator type used to make the triangle wave:</p>
+<ul>
+  <li><strong>Poly Smooth</strong>: Generates a smooth version of the Triangle wave.</li>
+  <li><strong>Trivial</strong>: Uses a basic implementation to generate a Triangle wave.</li>
+</ul>
+</div></td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+<h4>Triangle Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Audio</strong></td>
+      <td>The triangle wave audio signal.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>WaveTable Oscillator</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/87710e7a-8e96-42c0-b0da-59675ffc1d9a/generators_wavetable_oscillator.png" alt="WaveTable Oscillator" loading="lazy" convert="false" />
+<p>The <strong>WaveTable Oscillator</strong> node reads through the given WaveTable at the provided frequency.</p>
+
+<h4>WaveTable Oscillator Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Play</strong></td>
+      <td>The trigger on which to play the oscillator (block rate).</td>
+    </tr>
+    <tr>
+      <td><strong>Stop</strong></td>
+      <td>The trigger on which to stop the oscillator (block rate).</td>
+    </tr>
+    <tr>
+      <td><strong>WaveTable</strong></td>
+      <td>The WaveTable to read.</td>
+    </tr>
+    <tr>
+      <td><strong>Freq</strong></td>
+      <td>The number of times to sample one period of the WaveTable per second. This frequency should be set between -20000 Hz and 20000 Hz.</td>
+    </tr>
+    <tr>
+      <td><strong>Sync</strong></td>
+      <td>The trigger on which to restart playback of the WaveTable on the trigger boundary (sample rate).</td>
+    </tr>
+    <tr>
+      <td><strong>Phase Modulator</strong></td>
+      <td>The audio source to be used for the modulating oscillation phase of the provided WaveTable. A value of 0 produces no phase modulation and a value of 1 produces a full table length (360 degrees) of phase shift.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>WaveTable Oscillator Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Out</strong></td>
+      <td>The output audio buffer.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>WaveTable Player</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/5254fbfe-29ca-4fb0-9c93-b46ad232a6e9/generators_wavetable_player.png" alt="WaveTable Player" loading="lazy" convert="false" />
+<p>The <strong>WaveTable Player</strong> node reads through a WaveTable Bank entry at a given index.</p>
+
+<h4>WaveTable Player Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Play</strong></td>
+      <td>The trigger on which to play the oscillator (block rate).</td>
+    </tr>
+    <tr>
+      <td><strong>Stop</strong></td>
+      <td>The trigger on which to stop the oscillator (block rate).</td>
+    </tr>
+    <tr>
+      <td><strong>Sync</strong></td>
+      <td>The trigger on which to restart playback of the WaveTable on the trigger boundary (sample rate).</td>
+    </tr>
+    <tr>
+      <td><strong>Bank</strong></td>
+      <td>The WaveTable Bank to play from.</td>
+    </tr>
+    <tr>
+      <td><strong>Index</strong></td>
+      <td>The index of the WaveTable in the WaveTable Bank to play.</td>
+    </tr>
+    <tr>
+      <td><strong>Pitch Shift</strong></td>
+      <td>How much to shift the pitch of the given WaveTable.</td>
+    </tr>
+    <tr>
+      <td><strong>Loop</strong></td>
+      <td>If enabled, the WaveTable will loop.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>WaveTable Player Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Mono Out</strong></td>
+      <td>The output audio buffer (in mono).</td>
+    </tr>
+    <tr>
+      <td><strong>On Finished</strong></td>
+      <td>Triggers when the WaveTable Player finishes playing the WaveTable.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Math</h2>
+
+<p>MetaSounds come with a variety of nodes that perform basic math operations on the given inputs.</p>
+
+<block-callout callout-type="note">
+<p>Operations on Audio data types are executed at a per-sample level.</p>
+</block-callout>
+
+<h3>Abs</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/6d1a002a-eaef-49e6-8145-0c47a9b02068/math_abs.png" alt="Abs" loading="lazy" convert="false" />
+<p>The <strong>Abs</strong> node returns the absolute value of a given input. For example, an input value of -2.0 will output 2.0. This node has different versions which support several common data types, including: Audio, Float, Int32, and Time.</p>
+
+<h3>Add</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/894a9a8b-b451-4fe0-ba63-a9b80826601d/math_add.png" alt="Add" loading="lazy" convert="false" />
+<p>The <strong>Add</strong> node performs addition operations on provided inputs. This node has different versions which support several common data types, including: Audio, Float to Audio, Float, Int32, and Time.</p>
+
+<h3>Clamp</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/9ea5e67d-617a-4dc4-8843-54c8fce949c3/math_clamp.png" alt="Clamp" loading="lazy" convert="false" />
+<p>The <strong>Clamp</strong> node returns the clamped value of the input within the given value range. This node has different versions which support several common data types, including: Audio, Float, and Int32.</p>
+
+<h4>Clamp Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>In</strong></td>
+      <td>The input value to clamp.</td>
+    </tr>
+    <tr>
+      <td><strong>Min / Max</strong></td>
+      <td>The min / max value to clamp the input value to.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Clamp Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Value</strong></td>
+      <td>The clamped value.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Divide</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/8fdcdba3-23dd-4bd6-9ea3-ccf137327687/math_divide.png" alt="Divide" loading="lazy" convert="false" />
+<p>The <strong>Divide</strong> node performs division operations on provided inputs. This node has different versions which support several common data types, including: Float, Int32, and Time by Float.</p>
+
+<h3>Filter Q To Bandwidth</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/7d98cc58-9b13-4269-a1dc-685e73487c60/math_filter_q_to_bandwidth.png" alt="Filter Q To Bandwidth" loading="lazy" convert="false" />
+<p>The <strong>Filter Q To Bandwidth</strong> node converts a given Q (quality-factor) parameter for filter control to a bandwidth value.</p>
+
+<h3>Linear To Log Frequency</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/b2ce7a0a-e04b-4956-ab5b-f3b03412c882/math_linear_to_log_frequency.png" alt="Linear To Log Frequency" loading="lazy" convert="false" />
+<p>The <strong>Linear To Log Frequency</strong> node converts a linear space input value to a log-frequency output.</p>
+
+<h4>Linear To Log Frequency Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Value</strong></td>
+      <td>The linear input value to map to a log frequency output.</td>
+    </tr>
+    <tr>
+      <td><strong>Min / Max Domain</strong></td>
+      <td>The min / max domain for the input value. The input and output values are clamped to this domain.</td>
+    </tr>
+    <tr>
+      <td><strong>Min / Max Range</strong></td>
+      <td>The min / max positive range for the output frequency (Hz) value. The input and output values are clamped to this range.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Linear To Log Frequency Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Frequency</strong></td>
+      <td>The output frequency (Hz) that is the log frequency of the input value.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Log</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/ccfd8041-cc5d-433e-a904-c011ebbaf08e/math_log.png" alt="Log" loading="lazy" convert="false" />
+<p>The <strong>Log</strong> node calculates the float-base logarithm of another float.</p>
+
+<h3>Map Range</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/af8ace1c-13c1-4a40-bc65-9e9f04c24e13/math_map_range.png" alt="Map Range" loading="lazy" convert="false" />
+<p>The <strong>Map Range</strong> node maps an input value in a given input range to a given output range. The results can also be clamped. This node has different versions which support several common data types, including: Audio, Float, and Int32. These nodes are analogous to the <strong>Blueprint Map</strong> Range nodes.</p>
+
+<block-callout callout-type="tip">
+<p>The Audio version of this node does a per-sample mapping. This is useful when mapping audio-rate signals to audio-rate modulation parameters, such as Frequency Modulator in FM synthesis.</p>
+</block-callout>
+
+<h4>Map Range Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>In</strong></td>
+      <td>The input value to map.</td>
+    </tr>
+    <tr>
+      <td><strong>In Range A / B</strong></td>
+      <td>The minimum and maximum input value range.</td>
+    </tr>
+    <tr>
+      <td><strong>Out Range A / B</strong></td>
+      <td>The minimum and maximum output value range.</td>
+    </tr>
+    <tr>
+      <td><strong>Clamped</strong></td>
+      <td>If enabled, the input will be clamped to the specified input range.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Map Range Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Out Value</strong></td>
+      <td>The mapped output value.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Max</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/54f45c13-e1f5-4b9b-8a5e-29a3742c4c5b/math_max.png" alt="Max" loading="lazy" convert="false" />
+<p>The <strong>Max</strong> node returns the higher value (max) of A and B. This node has different versions to support several common data types, including: Audio, Float, and Int32.</p>
+
+<h4>Max Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>A / B</strong></td>
+      <td>The input values to compare.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Max Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Value</strong></td>
+      <td>The higher value (max) of A and B.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Min</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/90092c97-0881-4be2-9394-c158fd303734/math_min.png" alt="Min" loading="lazy" convert="false" />
+<p>The <strong>Min</strong> node returns the lower value (min) of A and B. This node has different versions which support several common data types, including: Audio, Float, and Int32.</p>
+
+<h4>MinInputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>A / B</strong></td>
+      <td>The input values to compare.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Min Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Value</strong></td>
+      <td>The lower value (min) of A and B.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Modulo</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/6d00fd07-8542-45d5-bb29-13b21187b51f/math_modulo.png" alt="Modulo" loading="lazy" convert="false" />
+<p>The <strong>Modulo</strong> node returns the remainder of a division operation of two given Int32 values.</p>
+
+<h3>Multiply</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/e940030e-b693-411f-8214-3607039098ba/math_multiply.png" alt="Multiply" loading="lazy" convert="false" />
+<p>The <strong>Multiply</strong> node performs multiplication operations on provided inputs. This node has different versions which support several common data types, including: Audio by Float, Audio, Float, Int32, and Time by Float.</p>
+
+<block-callout callout-type="tip">
+<p>This node can be used to provide ring-modulation type effects and audio-rate amplitude modulation.</p>
+</block-callout>
+
+<h3>Power</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/d44bac82-06f9-45b8-ab17-bf250fa02c00/math_power.png" alt="Power" loading="lazy" convert="false" />
+<p>The <strong>Power</strong> node raises a given Float to the power of another Float.</p>
+
+<h3>Subtract</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/4470336f-9492-4fff-afc1-9e7919c745f1/math_subtract.png" alt="Subtract" loading="lazy" convert="false" />
+<p>The <strong>Subtract</strong> node performs subtraction operations on provided inputs. This node has different versions which support several common data types, including: Audio, Float, Int32, and Time.</p>
+
+<h2>Mix</h2>
+
+<p>MetaSounds provide two node types to create audio mixes, the <strong>Mono Mixer</strong> node and the <strong>Stereo Mixer</strong> node. These nodes have different versions which support between 2 and 8 input audio buffers, which are combined into a single buffer by using the input channel's corresponding gain values and summing them together.</p>
+
+<block-callout callout-type="note">
+<p>The gain values are not clamped so they can be used for attenuating and inverting the audio signal.</p>
+</block-callout>
+
+<block-callout callout-type="tip">
+<p>These nodes are useful for mapping audio-rate buffers to different ranges for modulating various audio-rate-capable parameters.</p>
+</block-callout>
+
+<h3>Mono Mixer</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/ced6533c-1048-4ab0-90b6-9b219fe00c04/mix_mono_mixer.png" alt="Mono Mixer" loading="lazy" convert="false" />
+<h3>Stereo Mixer</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/01e2e47c-1812-4aac-af96-a4e123809f3c/mix_stereo_mixer.png" alt="Stereo Mixer" loading="lazy" convert="false" />
+<h2>Music</h2>
+
+<h3>Frequency To MIDI</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/9a749f18-fe8c-46dc-a603-2b8bfdceb2f8/music_frequency_to_midi.png" alt="Frequency To MIDI" loading="lazy" convert="false" />
+<p>The <strong>Frequency To MIDI</strong> node converts a frequency value (in Hz) to a standard MIDI scale note value (where middle C is 60).</p>
+
+<h4>Frequency To MIDI Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Frequency In</strong></td>
+      <td>The input frequency value (in Hz).</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Frequency To MIDI Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Out MIDI</strong></td>
+      <td>The output MIDI note value.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>MIDI Note Quantizer</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/6f8fd716-4443-4f1f-abfb-f018af229f56/music_midi_note_quantizer.png" alt="MIDI Note Quantizer" loading="lazy" convert="false" />
+<p>The <strong>MIDI Note Quantizer</strong> node quantizes a MIDI note to the nearest note that matches the provided criteria.</p>
+
+<h4>MIDI Note Quantizer Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Note In</strong></td>
+      <td>The MIDI note to quantize.</td>
+    </tr>
+    <tr>
+      <td><strong>Root Note</strong></td>
+      <td>The MIDI note to treat as the root. For example, a value of 0 equals C, a value of 1 equals C#/Db, and so on. The octave does not matter. Additionally, all values less than 0 clamp to 0.</td>
+    </tr>
+    <tr>
+      <td><strong>Scale Degrees</strong></td>
+      <td>An array containing a set of notes (in ascending order) representing half steps. The array must start with 0.0 to represent the root note and the highest value in the array must represent the root note in a higher octave, such as 12.0 for a single octave range or 24.0 for a two octave range.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>MIDI Note Quantizer Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Note Out</strong></td>
+      <td>The quantized note.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>MIDI To Frequency</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/332edcb7-ddde-41f2-a3d9-d83016740a7d/music_midi_to_frequency.png" alt="MIDI To Frequency" loading="lazy" convert="false" />
+<p>The <strong>Frequency to MIDI</strong> node converts a standard MIDI scale note value (where middle C is 60) to a frequency value (in Hz). This node has two different versions which support Float and Int32 data types respectively.</p>
+
+<block-callout callout-type="tip">
+<p>You can use this node to musically control generators that take frequencies (in Hz) as an input. Additionally, the Float version can take fractional MIDI note values, which can be useful for microtonality and custom tuning.</p>
+</block-callout>
+
+<h4>MIDI To Frequency Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>MIDI In</strong></td>
+      <td>The input value which represents a MIDI note value.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>MIDI To Frequency Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Out Frequency</strong></td>
+      <td>The output frequency value (in Hz).</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Scale to Note Array</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/c02b1209-995b-4333-a480-496543bfd4cd/music_scale_to_note_array.png" alt="Scale to Note Array" loading="lazy" convert="false" />
+<p>The <strong>Scale to Note Array</strong> node returns an array of floating-point numbers representing notes of the selected scale.</p>
+
+<block-callout callout-type="tip">
+<p>This node can be useful when creating procedural music by using the <strong>Chord Tones Only</strong> toggle to switch between full scale and chord tones.</p>
+</block-callout>
+
+<h4>Scale to Note Array Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Scale Degrees</strong></td>
+      <td>The preset scale to get the notes for.</td>
+    </tr>
+    <tr>
+      <td><strong>Chord Tones Only</strong></td>
+      <td>If enabled, a subset of the scale representing chord tones is returned. For example, scale degrees of 1, 3, 5, and 7.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Scale to Note Array Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Scale Array Out</strong></td>
+      <td>The array representation of the scale as half-steps above the root. The set is inclusive at both ends (starting at 0.0f and ending at 12.0f).</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Random</h2>
+
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/9649ad26-058b-4f71-a80d-237ba8d6e785/random_random.png" alt="Random" loading="lazy" convert="false" />
+<p>MetaSounds provide several <strong>Random</strong> nodes categorized by their output value type, including Bool, Float, Int, and Time. These nodes output a random value from their input type and a seed.</p>
+
+<block-callout callout-type="tip">
+<p>Using the Reset trigger with an identical seed will produce the same results. This is useful to get randomized repetition.</p>
+</block-callout>
+
+<h4>Random Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Next</strong></td>
+      <td>The trigger on which to generate the next random value.</td>
+    </tr>
+    <tr>
+      <td><strong>Reset</strong></td>
+      <td>The trigger on which to reset the random sequence with the supplied seed.</td>
+    </tr>
+    <tr>
+      <td><strong>Seed</strong></td>
+      <td>The seed value to use for the randomization. The default value of -1 uses a random seed.</td>
+    </tr>
+    <tr>
+      <td><strong>Min / Max</strong></td>
+      <td>The inclusive range of the random value.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Random Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>On Next</strong></td>
+      <td>Triggers when the Next input is triggered.</td>
+    </tr>
+    <tr>
+      <td><strong>On Reset</strong></td>
+      <td>Triggers when the Reset input is triggered.</td>
+    </tr>
+    <tr>
+      <td><strong>Value</strong></td>
+      <td>The randomly generated value.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Spatialization</h2>
+
+<h3>ITD Panner</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/1b996224-cec1-4094-9f0d-e9d0c7dcb3d9/spatialization_itd_panner.png" alt="ITD Panner" loading="lazy" convert="false" />
+<p>The <strong>ITD Panner</strong> node pans an input audio signal using an interaural time delay method.</p>
+
+<h4>ITD Panner Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>In</strong></td>
+      <td>The input audio to spatialize.</td>
+    </tr>
+    <tr>
+      <td><strong>Angle</strong></td>
+      <td>The sound source angle (in degrees). A value of 90 degrees is front, 0 degrees is right, 270 degrees is behind, and 180 degrees is left.</td>
+    </tr>
+    <tr>
+      <td><strong>Distance Factor</strong></td>
+      <td>The normalized distance factor (0.0 to 1.0) to use for Interaural Level Difference (ILD) calculations. A value of 0.0 is near and a value of 1.0 is far. The further away the input audio is, the less difference in levels (gain) between the ears.</td>
+    </tr>
+    <tr>
+      <td><strong>Head Width</strong></td>
+      <td>The width (in centimeters) of the listener's head.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>ITD Panner Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Out Left / Right</strong></td>
+      <td>The audio output (left / right channel).</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Mid-Side Decode</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/3e3c60e1-46e3-402e-8da8-9b60da13c0f2/spatialization_mid-side_decode.png" alt="Mid-Side Decode" loading="lazy" convert="false" />
+<p>The <strong>Mid-Side Decode</strong> node converts a stereo signal with mid and side channels to left and right channels.</p>
+
+<h4>Mid-Side Decode Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>In Mid / Side</strong></td>
+      <td>The audio channels to convert.</td>
+    </tr>
+    <tr>
+      <td><strong>Spread Amount</strong></td>
+      <td>The amount of stereo spread. A value of 0.0 produces no spread, a value of 0.5 is the original signal, and a value of 1.0 is fully wide.</td>
+    </tr>
+    <tr>
+      <td><strong>Equal Power</strong></td>
+      <td>If enabled, an equal power relationship between the input audio channels will be maintained.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Mid-Side Decode Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Out Left / Right</strong></td>
+      <td>The output audio channels.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Mid-Side Encode</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/006660c4-0459-4406-958a-3d9d5c4411e5/spatialization_mid-side_encode.png" alt="Mid-Side Encode" loading="lazy" convert="false" />
+<p>The <strong>Mid-Side Encode</strong> node converts a stereo signal with left and right channels to mid and side channels.</p>
+
+<h4>Mid-Side Encode Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>In Left / Right</strong></td>
+      <td>The audio channels to convert.</td>
+    </tr>
+    <tr>
+      <td><strong>Spread Amount</strong></td>
+      <td>The amount of stereo spread. A value of 0.0 produces no spread, a value of 0.5 is the original signal, and a value of 1.0 is fully wide.</td>
+    </tr>
+    <tr>
+      <td><strong>Equal Power</strong></td>
+      <td>If enabled, an equal power relationship between the input audio channels is maintained.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Mid-Side Encode Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Out Mid / Side</strong></td>
+      <td>The output audio channels.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Stereo Panner</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/2e34f73f-1d34-41c3-85c0-ebe19a7438ad/spatialization_stereo_panner.png" alt="Stereo Panner" loading="lazy" convert="false" />
+<p>The <strong>Stereo Panner</strong> node pans an input audio signal to left and right outputs.</p>
+
+<h4>Stereo Panner Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>In</strong></td>
+      <td>The input audio signal to pan.</td>
+    </tr>
+    <tr>
+      <td><strong>Pan Amount</strong></td>
+      <td>The amount to pan the audio signal (-1.0 is fully left, 1.0 is fully right).</td>
+    </tr>
+    <tr>
+      <td><strong>Panning Law</strong></td>
+      <td><div>
+<p>The panning law to use:</p>
+<ul>
+  <li><strong>Equal Power</strong>: The power of the audio signal is constant while panning.</li>
+  <li><strong>Linear</strong>: The amplitude of the audio signal is constant while panning.</li>
+</ul>
+</div></td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+<h4>Stereo Panner Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Out Left / Right</strong></td>
+      <td>The output audio signal (left / right channels).</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Triggers</h2>
+
+<h3>Trigger Accumulate</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/260a2493-ed7a-4e34-a743-fd3144f85600/triggers_trigger_accumulate.png" alt="Trigger Accumulate" loading="lazy" convert="false" />
+<p>The <strong>Trigger Accumulate</strong> node triggers once all connected input triggers have been triggered at least once. There are multiple versions of this node in order to support different input counts (between 1 and 8).</p>
+
+<block-callout callout-type="tip">
+<p>This node is can be useful to detect when multiple <strong>Wave Player</strong> nodes to finish before triggering the On Finished Output trigger.</p>
+</block-callout>
+
+<h4>Trigger Accumulate Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>In X</strong></td>
+      <td>The trigger input(s).</td>
+    </tr>
+    <tr>
+      <td><strong>Auto Reset</strong></td>
+      <td>The trigger on which the accumulation on this node is reset.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Trigger Accumulate Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Out</strong></td>
+      <td>Triggers when all input triggers have been accumulated.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Trigger Any</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/b2760eaa-4e5d-4253-a1ba-83083917f8c8/triggers_trigger_any.png" alt="Trigger Any" loading="lazy" convert="false" />
+<p>The <strong>Trigger Any</strong> node triggers once any of the connected input triggers activate. This node has different versions which support different input counts (between 2 and 8).</p>
+
+<block-callout callout-type="tip">
+<p>This is a useful node when you want to have many different trigger sources execute another node's input.</p>
+</block-callout>
+
+<h4>Trigger Any Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>In X</strong></td>
+      <td>The trigger input(s).</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Trigger Any Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Out</strong></td>
+      <td>Triggers when any input trigger is triggered.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Trigger Compare</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/acff386f-52c1-4d98-8b37-61784334b8e7/triggers_trigger_compare.png" alt="Trigger Compare" loading="lazy" convert="false" />
+<p>The <strong>Trigger Compare</strong> node triggers either true or false based on comparing connected inputs. This node has different versions which support several common data types, including: Bool, Float, and Int32.</p>
+
+<h4>Trigger Compare Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Compare</strong></td>
+      <td>The trigger on which to compare A and B.</td>
+    </tr>
+    <tr>
+      <td><strong>A / B</strong></td>
+      <td>The values to compare.</td>
+    </tr>
+    <tr>
+      <td><strong>Type</strong></td>
+      <td>The type of comparison to make: <strong>Equals</strong>, <strong>Not Equals</strong>, <strong>Less Than</strong>, <strong>Greater Than</strong>, <strong>Less Than Or Equals</strong>, or <strong>Greater Than Or Equals</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Trigger Compare Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>True / False</strong></td>
+      <td>Triggers with the resulting trigger after making the comparison.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Trigger Control</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/314682e2-7837-4fce-b25f-8dc448819895/triggers_trigger_control.png" alt="Trigger Control" loading="lazy" convert="false" />
+<p>The <strong>Trigger Control</strong> node provides controls to allow or block trigger signals from passing through to the output.</p>
+
+<h4>Trigger Control Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Trigger In</strong></td>
+      <td>The input trigger to control.</td>
+    </tr>
+    <tr>
+      <td><strong>Open</strong></td>
+      <td>The trigger on which to allow the input trigger to pass through.</td>
+    </tr>
+    <tr>
+      <td><strong>Close</strong></td>
+      <td>The trigger on which to block the input trigger to pass through.</td>
+    </tr>
+    <tr>
+      <td><strong>Toggle</strong></td>
+      <td>The trigger on which to toggle the open/closed state of this node.</td>
+    </tr>
+    <tr>
+      <td><strong>Start Closed</strong></td>
+      <td>If enabled, the node will start in a closed state.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Trigger Control Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Trigger Out</strong></td>
+      <td>The output trigger that passes through if the node is open.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Trigger Counter</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/b3f65374-b293-4922-b300-a20f149ca317/triggers_trigger_counter.png" alt="Trigger Counter" loading="lazy" convert="false" />
+<p>The <strong>Trigger Counter</strong> node counts the connected input trigger activations.</p>
+
+<block-callout callout-type="tip">
+<p>This node is useful for sequencing array inputs and a large number of other procedural use cases.</p>
+</block-callout>
+
+<h4>Trigger Counter Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>In</strong></td>
+      <td>The input trigger for which to count activations.</td>
+    </tr>
+    <tr>
+      <td><strong>Reset</strong></td>
+      <td>The trigger on which to reset the counter to zero and the value back to the start value.</td>
+    </tr>
+    <tr>
+      <td><strong>Start Value</strong></td>
+      <td>The value to start with on initialization and when reset.</td>
+    </tr>
+    <tr>
+      <td><strong>Step Size</strong></td>
+      <td>The value to add to the current value for each input trigger. This can be negative.</td>
+    </tr>
+    <tr>
+      <td><strong>Reset Count</strong></td>
+      <td>The number of input triggers to count before automatically resetting. If the value is set to 0, the node won't automatically reset.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Trigger Counter Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>On Trigger</strong></td>
+      <td>Triggers when the input trigger is triggered and the count is updated.</td>
+    </tr>
+    <tr>
+      <td><strong>On Reset</strong></td>
+      <td>Triggers when the input reset is triggered or if the counter automatically resets.</td>
+    </tr>
+    <tr>
+      <td><strong>Count</strong></td>
+      <td>The current trigger count.</td>
+    </tr>
+    <tr>
+      <td><strong>Value</strong></td>
+      <td>The current value.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Trigger Delay</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/cd16bf16-b2d6-48a2-ab38-6192a1c7174c/triggers_trigger_delay.png" alt="Trigger Delay" loading="lazy" convert="false" />
+<p>The <strong>Trigger Delay</strong> node executes a trigger after a given delay time from the most recent execution of the input trigger.</p>
+
+<block-callout callout-type="note">
+<p>This node is similar to the <strong>Trigger Pipe</strong> node, but differs by only considering the most recent trigger execution. This means that additional triggers that happen within the delay time will reset the timer and cause the output trigger to be delayed again.</p>
+</block-callout>
+
+<h4>Trigger Delay Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>In</strong></td>
+      <td>The input trigger to delay.</td>
+    </tr>
+    <tr>
+      <td><strong>Reset</strong></td>
+      <td>The trigger on which to reset the delay and clear the execution task, if it is pending.</td>
+    </tr>
+    <tr>
+      <td><strong>Delay Time</strong></td>
+      <td>The amount of time to delay the trigger (in seconds).</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Trigger Delay Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Out</strong></td>
+      <td>The delayed output trigger.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Trigger Filter</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/9a51181d-6bf7-4d86-b8a8-cb7b19080356/triggers_trigger_filter.png" alt="Trigger Filter" loading="lazy" convert="false" />
+<p>The <strong>Trigger Filter</strong> node responds to a trigger by randomly activating one of the two output triggers.</p>
+
+<h4>Trigger Filter Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Trigger</strong></td>
+      <td>The trigger on which to randomly activate an output trigger.</td>
+    </tr>
+    <tr>
+      <td><strong>Reset</strong></td>
+      <td>The trigger on which to reset the random sequence with the provided seed.</td>
+    </tr>
+    <tr>
+      <td><strong>Seed</strong></td>
+      <td>The seed value to use for the randomization. A value of -1 will use a random seed.</td>
+    </tr>
+    <tr>
+      <td><strong>Probability</strong></td>
+      <td>The probability that a particular output trigger will get activated. For example, a value of 0.0 is always heads, a value of 1.0 is always tails, and 0.5 is equal odds.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Trigger Filter Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Heads / Tails</strong></td>
+      <td>The possible output triggers.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Trigger On Threshold</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/55121e7a-b727-490c-a557-2ef7d5ac5e2f/triggers_trigger_on_threshold.png" alt="Trigger On Threshold" loading="lazy" convert="false" />
+<p>The <strong>Trigger On Threshold</strong> node operates as an edge detector and triggers when the input audio crosses a given threshold value while moving in the specified direction. This node has different versions which support several common data types, including: Audio, Float, and Int32.</p>
+
+<block-callout callout-type="tip">
+<p>If set to Rising Edge, a trigger is output when the signal crosses the threshold with a positive slope. This is useful when paired with a generator node and connected to another generator's sync trigger input.</p>
+</block-callout>
+
+<h4>Trigger On Threshold Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>In</strong></td>
+      <td>The input audio signal.</td>
+    </tr>
+    <tr>
+      <td><strong>Threshold</strong></td>
+      <td>The threshold at which to trigger output.</td>
+    </tr>
+    <tr>
+      <td><strong>Type</strong></td>
+      <td>The type of trigger threshold: <strong>Rising Edge</strong>, <strong>Falling Edge</strong>, or <strong>Abs Threshold</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Trigger On Threshold Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Out</strong></td>
+      <td>The output threshold trigger.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Trigger On Value Change</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/61544e03-1695-4f56-a348-7a91345fb8f1/triggers_trigger_on_value_change.png" alt="Trigger On Value Change" loading="lazy" convert="false" />
+<p>The <strong>Trigger On Value Change</strong> node triggers when a given value changes. This node has different versions which support several common data types, including: Bool, Float, and Int32.</p>
+
+<h4>Trigger On Value Change Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Value</strong></td>
+      <td>The input value to watch.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Trigger On Value Change Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Trigger</strong></td>
+      <td>The output trigger.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Trigger Once</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/46c0a4eb-d6b8-4502-9961-e75a1749e087/triggers_trigger_once.png" alt="Trigger Once" loading="lazy" convert="false" />
+<p>The <strong>Trigger Once</strong> node triggers the first time an input trigger is activated and ignores all other occurrences, unless reset.</p>
+
+<h4>Trigger Once Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Trigger In</strong></td>
+      <td>The input trigger.</td>
+    </tr>
+    <tr>
+      <td><strong>Reset</strong></td>
+      <td>The trigger on which to open the node and allow another trigger through.</td>
+    </tr>
+    <tr>
+      <td><strong>Start Closed</strong></td>
+      <td>If enabled, the node is closed when playback begins.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Trigger Once Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Trigger Out</strong></td>
+      <td>The output trigger.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Trigger Pipe</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/bc7253a7-4abb-4857-85b0-c5b1331d06d3/triggers_trigger_pipe.png" alt="Trigger Pipe" loading="lazy" convert="false" />
+<p>The <strong>Trigger Pipe</strong> node delays execution of all input trigger signals by the given delay.</p>
+
+<block-callout callout-type="note">
+<p>This node is similar to the <strong>Trigger Delay</strong> node, but does not reset the timer upon receiving additional triggers.</p>
+</block-callout>
+
+<h4>Trigger Pipe Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>In</strong></td>
+      <td>The input trigger to delay.</td>
+    </tr>
+    <tr>
+      <td><strong>Reset</strong></td>
+      <td>The trigger on which to reset the trigger delay and clear any pending execution tasks.</td>
+    </tr>
+    <tr>
+      <td><strong>Delay Time</strong></td>
+      <td>The time to delay the input trigger (in seconds).</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Trigger Pipe Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Out</strong></td>
+      <td>The delayed output trigger.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Trigger Repeat</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/6a9df4da-3e06-4f02-9abb-10ccd6ada847/triggers_trigger_repeat.png" alt="Trigger Repeat" loading="lazy" convert="false" />
+<p>The <strong>Trigger Repeat</strong> node emits a trigger periodically at a given sample-accurate and arbitrarily-precise rate.</p>
+
+<h4>Trigger Repeat Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Start / Stop</strong></td>
+      <td>The triggers on which to start or stop executing periodic output triggers.</td>
+    </tr>
+    <tr>
+      <td><strong>Period</strong></td>
+      <td>The period to trigger (in seconds).</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Trigger Repeat Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>RepeatOut</strong></td>
+      <td>The periodically generated output trigger.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Trigger Route</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/1ae33b4c-5901-4208-a053-9251a3350d77/triggers_trigger_route.png" alt="Trigger Route" loading="lazy" convert="false" />
+<p>The <strong>Trigger Route</strong> node routes different input values to a single output value. This node has multiple versions for different input counts (between 2 and 8) and for each supported data type, including: Audio, Bool, Float, Int32, and Time.</p>
+
+<h4>Trigger Route Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Set X</strong></td>
+      <td>The input triggers which initialize the routing. The default option is 0.</td>
+    </tr>
+    <tr>
+      <td><strong>Value X</strong></td>
+      <td>The input value to route to the output when triggered by its corresponding trigger.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Trigger Route Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>On Set</strong></td>
+      <td>Triggers when any of the input triggers are set.</td>
+    </tr>
+    <tr>
+      <td><strong>Value</strong></td>
+      <td>The output value set by an activated input trigger.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Trigger Select</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/d56f092a-4070-4908-8ca8-3f67b9cac326/triggers_trigger_select.png" alt="Trigger Select" loading="lazy" convert="false" />
+<p>The <strong>Trigger Select</strong> node passes triggers through to the currently selected output trigger. This node has multiple versions for different input counts (between 2 and 8).</p>
+
+<h4>Trigger Select Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>In</strong></td>
+      <td>The trigger to pass through.</td>
+    </tr>
+    <tr>
+      <td><strong>Index</strong></td>
+      <td>The output index to trigger. If the provided value is out of range, it will be ignored.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Trigger Select Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Out X</strong></td>
+      <td>The output trigger at index X.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Trigger Sequence</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/57f24e4b-0c6f-4b0f-aaa4-11154daff460/triggers_trigger_sequence.png" alt="Trigger Sequence" loading="lazy" convert="false" />
+<p>The <strong>Trigger Sequence</strong> node responds to input triggers by sending the next output trigger in a sequence. This node has multiple versions which provide different numbers of output triggers (between 2 and 8).</p>
+
+<h4>Trigger Sequence Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>In</strong></td>
+      <td>The input trigger.</td>
+    </tr>
+    <tr>
+      <td><strong>Reset</strong></td>
+      <td>The trigger on which to reset the sequence back to 0.</td>
+    </tr>
+    <tr>
+      <td><strong>Loop</strong></td>
+      <td>If enabled, the sequence automatically loops back to 0 once all triggers have been activated.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Trigger Sequence Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Out X</strong></td>
+      <td>The trigger outputs in sequence.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Trigger Toggle</h3>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/1eb65b1d-9423-4ea0-89c0-e3e4fd256457/triggers_trigger_toggle.png" alt="Trigger Toggle" loading="lazy" convert="false" />
+<p>The <strong>Trigger Toggle</strong> node toggles a Bool value on or off.</p>
+
+<h4>Trigger Toggle Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>On / Off</strong></td>
+      <td>The trigger on which to toggle the Bool output on or off.</td>
+    </tr>
+    <tr>
+      <td><strong>Init</strong></td>
+      <td>The initial states of the Bool.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Trigger Toggle Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Out</strong></td>
+      <td>Triggers when the Bool is toggled.</td>
+    </tr>
+    <tr>
+      <td><strong>Value</strong></td>
+      <td>The current Bool value.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Value</h2>
+<img src="https://d1iv7db44yhgxn.cloudfront.net/documentation/images/c7dcb9b8-e330-45c6-8013-0f6dc66541f2/value_value.png" alt="Value" loading="lazy" convert="false" />
+<p>The <strong>Value</strong> node sets a variable value on a trigger. This node has different versions for each of the supported data types, including: Bool, Float, Int32, and String.</p>
+
+<h4>Value Inputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Set</strong></td>
+      <td>The trigger on which to write the set value to the output.</td>
+    </tr>
+    <tr>
+      <td><strong>Reset</strong></td>
+      <td>The trigger on which to reset the value to the initial value.</td>
+    </tr>
+    <tr>
+      <td><strong>Init Value</strong></td>
+      <td>The value to initialize the output value to.</td>
+    </tr>
+    <tr>
+      <td><strong>Target Value</strong></td>
+      <td>The value to set the output to when triggered.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Value Outputs</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>Output</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>On Set</strong></td>
+      <td>Triggers when the value is set.</td>
+    </tr>
+    <tr>
+      <td><strong>On Reset</strong></td>
+      <td>Triggers when the value is reset.</td>
+    </tr>
+    <tr>
+      <td><strong>Output Value</strong></td>
+      <td>The current output value.</td>
+    </tr>
+  </tbody>
+</table>

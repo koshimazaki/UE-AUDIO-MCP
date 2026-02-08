@@ -388,6 +388,8 @@ def _build_wwise_layer(
 
     result_json = template_fn(**kwargs)
     result = json.loads(result_json)
+    if result.get("status") == "error":
+        return {"mode": "error", "reason": result.get("message", "Wwise template failed"), "result": result}
     return {"mode": "executed", "result": result}
 
 
@@ -562,7 +564,7 @@ def build_audio_system(
     - Wwise-only: executes Wwise, returns MetaSounds commands for later
     - Offline: returns all 3 layer specs as JSON (dry-run preview)
 
-    Available patterns: gunshot, footsteps, ambient, spatial, ui_sound, weather, preset_morph, macro_sequence.
+    Available patterns: gunshot, footsteps, ambient, spatial, ui_sound, weather, preset_morph, macro_sequence, sfx_generator, vehicle_engine.
 
     Args:
         pattern: Pattern name (e.g. "gunshot", "footsteps")

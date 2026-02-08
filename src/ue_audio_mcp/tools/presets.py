@@ -184,21 +184,21 @@ def ms_preset_morph(
             "action": "add_node", "id": map_id,
             "node_type": "Map Range", "position": [200, node_id * 200],
         })
-        commands.append({"action": "set_default", "node_id": map_id, "input": "InMin", "value": 0.0})
-        commands.append({"action": "set_default", "node_id": map_id, "input": "InMax", "value": 1.0})
-        commands.append({"action": "set_default", "node_id": map_id, "input": "OutMin", "value": float(set_a[param_name])})
-        commands.append({"action": "set_default", "node_id": map_id, "input": "OutMax", "value": float(set_b[param_name])})
+        commands.append({"action": "set_default", "node_id": map_id, "input": "In Range A", "value": 0.0})
+        commands.append({"action": "set_default", "node_id": map_id, "input": "In Range B", "value": 1.0})
+        commands.append({"action": "set_default", "node_id": map_id, "input": "Out Range A", "value": float(set_a[param_name])})
+        commands.append({"action": "set_default", "node_id": map_id, "input": "Out Range B", "value": float(set_b[param_name])})
 
         # InterpTo: smooth the mapped value
         commands.append({
             "action": "add_node", "id": interp_id,
             "node_type": "InterpTo", "position": [500, node_id * 200],
         })
-        commands.append({"action": "set_default", "node_id": interp_id, "input": "Speed", "value": 5.0})
+        commands.append({"action": "set_default", "node_id": interp_id, "input": "Interp Time", "value": 5.0})
 
         # Wire: Morph -> Map Range -> InterpTo
-        commands.append({"action": "connect", "from_node": "__graph__", "from_pin": "Morph", "to_node": map_id, "to_pin": "Value"})
-        commands.append({"action": "connect", "from_node": map_id, "from_pin": "Result", "to_node": interp_id, "to_pin": "Target"})
+        commands.append({"action": "connect", "from_node": "__graph__", "from_pin": "Morph", "to_node": map_id, "to_pin": "In"})
+        commands.append({"action": "connect", "from_node": map_id, "from_pin": "Out Value", "to_node": interp_id, "to_pin": "Target"})
 
         morph_outputs[param_name] = interp_id
         node_id += 1
