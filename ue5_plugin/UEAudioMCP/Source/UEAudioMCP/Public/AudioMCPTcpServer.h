@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "HAL/Runnable.h"
 #include "HAL/ThreadSafeBool.h"
+#include "HAL/CriticalSection.h"
 #include "Sockets.h"
 
 class FAudioMCPCommandDispatcher;
@@ -58,4 +59,9 @@ private:
 	FSocket* ListenSocket;
 	FRunnableThread* Thread;
 	FThreadSafeBool bStopping;
+
+	/** Guards ActiveClientSocket access between TCP thread and StopListening(). */
+	FCriticalSection ClientSocketMutex;
+	/** Current client socket — stored so StopListening() can close it to unblock RecvExact(). */
+	FSocket* ActiveClientSocket = nullptr;
 };

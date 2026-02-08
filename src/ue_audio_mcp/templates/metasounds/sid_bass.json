@@ -1,0 +1,90 @@
+{
+  "name": "SID Bass",
+  "asset_type": "Source",
+  "description": "Classic C64 bass sound using SID Voice with pulse waveform and filter sweep. Trigger gates the voice, SID Filter in LP mode with envelope-driven cutoff creates the plucky bass character. Resonance boost adds analog warmth.",
+  "author": "Koshi Mazaki",
+  "interfaces": [
+    "UE.Source.Default"
+  ],
+  "inputs": [
+    {"name": "OnPlay", "type": "Trigger"},
+    {"name": "Frequency", "type": "Float", "default": 110.0, "description": "Bass frequency in Hz"},
+    {"name": "Pulse Width", "type": "Float", "default": 0.5, "description": "Pulse width 0.0-1.0"},
+    {"name": "Filter Cutoff", "type": "Float", "default": 0.3, "description": "Base filter cutoff 0.0-1.0"},
+    {"name": "Filter Sweep", "type": "Float", "default": 0.7, "description": "Envelope peak cutoff 0.0-1.0"},
+    {"name": "Resonance", "type": "Float", "default": 0.4, "description": "Filter resonance 0.0-1.0"}
+  ],
+  "outputs": [
+    {"name": "Out Mono", "type": "Audio"},
+    {"name": "OnFinished", "type": "Trigger"}
+  ],
+  "nodes": [
+    {
+      "id": "sid_voice",
+      "node_type": "SID Voice",
+      "position": [0, 0],
+      "defaults": {
+        "Attack": 0,
+        "Decay": 7,
+        "Sustain": 5,
+        "Release": 4
+      },
+      "comment": "SID voice — pulse wave with short attack, medium decay for plucky bass"
+    },
+    {
+      "id": "sid_envelope_mod",
+      "node_type": "SID Envelope",
+      "position": [0, 300],
+      "defaults": {
+        "Attack": 0,
+        "Decay": 9,
+        "Sustain": 0,
+        "Release": 6
+      },
+      "comment": "Separate SID envelope for filter cutoff modulation — fast pluck"
+    },
+    {
+      "id": "map_range",
+      "node_type": "Map Range",
+      "position": [300, 300],
+      "defaults": {
+        "In Range A": 0.0,
+        "In Range B": 1.0,
+        "Clamped": true
+      },
+      "comment": "Maps envelope 0-1 to Filter Cutoff..Filter Sweep range"
+    },
+    {
+      "id": "sid_filter",
+      "node_type": "SID Filter",
+      "position": [600, 0],
+      "defaults": {
+        "Res Boost": 0.2
+      },
+      "comment": "SID 6581 LP filter — non-linear analog warmth"
+    },
+    {
+      "id": "gain",
+      "node_type": "Multiply (Audio by Float)",
+      "position": [900, 0],
+      "defaults": {
+        "B": 0.8
+      },
+      "comment": "Output level"
+    }
+  ],
+  "connections": [
+    {"from_node": "__graph__", "from_pin": "OnPlay", "to_node": "sid_voice", "to_pin": "Gate"},
+    {"from_node": "__graph__", "from_pin": "OnPlay", "to_node": "sid_envelope_mod", "to_pin": "Gate"},
+    {"from_node": "__graph__", "from_pin": "Frequency", "to_node": "sid_voice", "to_pin": "Frequency"},
+    {"from_node": "__graph__", "from_pin": "Pulse Width", "to_node": "sid_voice", "to_pin": "Pulse Width"},
+    {"from_node": "sid_envelope_mod", "from_pin": "Out", "to_node": "map_range", "to_pin": "In"},
+    {"from_node": "__graph__", "from_pin": "Filter Cutoff", "to_node": "map_range", "to_pin": "Out Range A"},
+    {"from_node": "__graph__", "from_pin": "Filter Sweep", "to_node": "map_range", "to_pin": "Out Range B"},
+    {"from_node": "map_range", "from_pin": "Value", "to_node": "sid_filter", "to_pin": "Cutoff"},
+    {"from_node": "__graph__", "from_pin": "Resonance", "to_node": "sid_filter", "to_pin": "Resonance"},
+    {"from_node": "sid_voice", "from_pin": "Out", "to_node": "sid_filter", "to_pin": "In"},
+    {"from_node": "sid_filter", "from_pin": "Out", "to_node": "gain", "to_pin": "A"},
+    {"from_node": "gain", "from_pin": "Out", "to_node": "__graph__", "to_pin": "Out Mono"}
+  ]
+}

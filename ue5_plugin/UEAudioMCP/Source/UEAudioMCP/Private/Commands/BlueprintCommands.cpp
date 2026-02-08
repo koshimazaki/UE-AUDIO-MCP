@@ -8,6 +8,7 @@
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
 #include "Kismet/GameplayStatics.h"
+#include "UObject/SoftObjectPath.h"
 #include "Editor.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogAudioMCPBlueprint, Log, All);
@@ -210,6 +211,52 @@ TSharedPtr<FJsonObject> FCallFunctionCommand::Execute(
 			{
 				NameProp->SetPropertyValue_InContainer(ParamBuffer, FName(*JsonVal->AsString()));
 			}
+			else if (FObjectProperty* ObjProp = CastField<FObjectProperty>(Prop))
+			{
+				// Load UObject asset from string path (e.g. "/Game/Audio/MySound.MySound")
+				FString AssetPath = JsonVal->AsString();
+				if (!AssetPath.IsEmpty())
+				{
+					UObject* LoadedObj = StaticLoadObject(ObjProp->PropertyClass, nullptr, *AssetPath);
+					if (LoadedObj)
+					{
+						ObjProp->SetObjectPropertyValue_InContainer(ParamBuffer, LoadedObj);
+					}
+					else
+					{
+						UE_LOG(LogAudioMCPBlueprint, Warning,
+							TEXT("Could not load asset '%s' for param '%s'"), *AssetPath, *PropName);
+					}
+				}
+			}
+			else if (FStructProperty* StructProp = CastField<FStructProperty>(Prop))
+			{
+				// Handle FVector from JSON object {"X": 0, "Y": 0, "Z": 0}
+				if (StructProp->Struct == TBaseStructure<FVector>::Get())
+				{
+					const TSharedPtr<FJsonObject>* VecObj = nullptr;
+					if (JsonVal->TryGetObject(VecObj) && VecObj && (*VecObj).IsValid())
+					{
+						FVector Vec;
+						Vec.X = (*VecObj)->GetNumberField(TEXT("X"));
+						Vec.Y = (*VecObj)->GetNumberField(TEXT("Y"));
+						Vec.Z = (*VecObj)->GetNumberField(TEXT("Z"));
+						*StructProp->ContainerPtrToValuePtr<FVector>(ParamBuffer) = Vec;
+					}
+				}
+				else if (StructProp->Struct == TBaseStructure<FRotator>::Get())
+				{
+					const TSharedPtr<FJsonObject>* RotObj = nullptr;
+					if (JsonVal->TryGetObject(RotObj) && RotObj && (*RotObj).IsValid())
+					{
+						FRotator Rot;
+						Rot.Pitch = (*RotObj)->GetNumberField(TEXT("Pitch"));
+						Rot.Yaw = (*RotObj)->GetNumberField(TEXT("Yaw"));
+						Rot.Roll = (*RotObj)->GetNumberField(TEXT("Roll"));
+						*StructProp->ContainerPtrToValuePtr<FRotator>(ParamBuffer) = Rot;
+					}
+				}
+			}
 		}
 	}
 
@@ -246,6 +293,12 @@ TSharedPtr<FJsonObject> FCallFunctionCommand::Execute(
 			else if (FStrProperty* StrProp = CastField<FStrProperty>(Prop))
 			{
 				Response->SetStringField(TEXT("return_value"), StrProp->GetPropertyValue_InContainer(ParamBuffer));
+			}
+			else if (FObjectProperty* ObjProp = CastField<FObjectProperty>(Prop))
+			{
+				UObject* RetObj = ObjProp->GetObjectPropertyValue_InContainer(ParamBuffer);
+				Response->SetStringField(TEXT("return_value"),
+					RetObj ? RetObj->GetPathName() : TEXT("null"));
 			}
 		}
 	}

@@ -54,7 +54,7 @@
     },
     {
       "id": "random_get",
-      "node_type": "Random Get (WaveAsset:Array)",
+      "node_type": "Random Get (WaveAssetArray)",
       "position": [
         400,
         0

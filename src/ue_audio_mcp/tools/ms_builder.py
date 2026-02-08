@@ -270,3 +270,14 @@ def ms_audition(name: str = "") -> str:
         return _ok({"message": "Auditioning" + (" '{}'".format(name) if name else ""), "result": result})
     except Exception as e:
         return _error(str(e))
+
+
+@mcp.tool()
+def ms_stop_audition() -> str:
+    """Stop any currently playing MetaSounds audition preview."""
+    conn = get_ue5_connection()
+    try:
+        result = conn.send_command({"action": "stop_audition"})
+        return _ok({"message": "Audition stopped", "result": result})
+    except Exception as e:
+        return _error(str(e))

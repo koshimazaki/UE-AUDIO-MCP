@@ -231,8 +231,8 @@
       ],
       "defaults": {
         "Shape": "Sine",
-        "MinValue": -1.0,
-        "MaxValue": 1.0
+        "Min Value": -1.0,
+        "Max Value": 1.0
       },
       "comment": "Vibrato/FM \u2014 goes up to audio rate for FM synthesis when VibratoRate is high"
     },
@@ -365,8 +365,8 @@
       ],
       "defaults": {
         "Shape": "Sine",
-        "MinValue": 0.0,
-        "MaxValue": 1.0
+        "Min Value": 0.0,
+        "Max Value": 1.0
       },
       "comment": "Unipolar amplitude modulation LFO \u2014 tremolo effect"
     },

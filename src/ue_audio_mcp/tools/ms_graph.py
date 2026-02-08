@@ -74,7 +74,7 @@ def ms_graph_from_template(
 ) -> str:
     """Generate a complete graph spec from a template.
 
-    Available templates: gunshot, footsteps, ambient, spatial, ui_sound, weather, vehicle_engine, sfx_generator.
+    Templates are auto-discovered from the metasounds template directory.
 
     Args:
         template_name: Template name (e.g. "gunshot", "footsteps")
@@ -83,7 +83,15 @@ def ms_graph_from_template(
     Returns:
         JSON with the complete graph specification ready for validation.
     """
-    valid_templates = {"gunshot", "footsteps", "ambient", "spatial", "ui_sound", "weather", "vehicle_engine", "sfx_generator"}
+    template_dir = os.path.join(
+        os.path.dirname(os.path.dirname(__file__)),
+        "templates", "metasounds",
+    )
+    valid_templates = {
+        os.path.splitext(f)[0]
+        for f in os.listdir(template_dir)
+        if f.endswith(".json")
+    } if os.path.isdir(template_dir) else set()
     if template_name not in valid_templates:
         return _error("Unknown template '{}'. Available: {}".format(
             template_name, ", ".join(sorted(valid_templates))
@@ -94,10 +102,6 @@ def ms_graph_from_template(
     except (json.JSONDecodeError, ValueError):
         return _error("Invalid params JSON")
 
-    template_dir = os.path.join(
-        os.path.dirname(os.path.dirname(__file__)),
-        "templates", "metasounds",
-    )
     template_path = os.path.join(template_dir, "{}.json".format(template_name))
 
     if not os.path.isfile(template_path):

@@ -177,9 +177,39 @@ bool FAudioMCPBuilderManager::AddGraphInput(const FString& Name, const FString& 
 		return false;
 	}
 
+	// Parse default value upfront so it can be passed directly to AddGraphInputNode
+	FMetasoundFrontendLiteral DefaultLiteral;
+	if (!DefaultValue.IsEmpty())
+	{
+		if (DefaultValue.IsNumeric())
+		{
+			// Use TypeName to decide int32 vs float literal
+			if (TypeName.Equals(TEXT("Int32"), ESearchCase::IgnoreCase))
+			{
+				DefaultLiteral.Set(static_cast<int32>(FCString::Atod(*DefaultValue)));
+			}
+			else
+			{
+				DefaultLiteral.Set(FCString::Atof(*DefaultValue));
+			}
+		}
+		else if (DefaultValue.Equals(TEXT("true"), ESearchCase::IgnoreCase))
+		{
+			DefaultLiteral.Set(true);
+		}
+		else if (DefaultValue.Equals(TEXT("false"), ESearchCase::IgnoreCase))
+		{
+			DefaultLiteral.Set(false);
+		}
+		else
+		{
+			DefaultLiteral.Set(DefaultValue);
+		}
+	}
+
 	EMetaSoundBuilderResult Result;
 	FMetaSoundBuilderNodeOutputHandle OutputHandle = ActiveBuilder.Get()->AddGraphInputNode(
-		FName(*Name), FName(*TypeName), FMetasoundFrontendLiteral(), Result);
+		FName(*Name), FName(*TypeName), DefaultLiteral, Result);
 
 	if (Result != EMetaSoundBuilderResult::Succeeded)
 	{
@@ -190,45 +220,8 @@ bool FAudioMCPBuilderManager::AddGraphInput(const FString& Name, const FString& 
 	// Store the output handle (graph inputs have outputs that feed into the graph)
 	GraphInputOutputHandles.Add(Name, OutputHandle);
 
-	// Apply default value if provided
-	if (!DefaultValue.IsEmpty())
-	{
-		FMetasoundFrontendLiteral Literal;
-
-		// Try numeric first, then bool, then string
-		if (DefaultValue.IsNumeric())
-		{
-			Literal.Set(FCString::Atof(*DefaultValue));
-		}
-		else if (DefaultValue.Equals(TEXT("true"), ESearchCase::IgnoreCase))
-		{
-			Literal.Set(true);
-		}
-		else if (DefaultValue.Equals(TEXT("false"), ESearchCase::IgnoreCase))
-		{
-			Literal.Set(false);
-		}
-		else
-		{
-			Literal.Set(DefaultValue);
-		}
-
-		// Find the input handle for this graph input node to set its default
-		FMetaSoundBuilderNodeInputHandle DefaultInputHandle = ActiveBuilder.Get()->FindNodeInputByName(
-			FMetaSoundNodeHandle(), FName(*Name), Result);
-		if (Result == EMetaSoundBuilderResult::Succeeded)
-		{
-			ActiveBuilder.Get()->SetNodeInputDefault(DefaultInputHandle, Literal, Result);
-		}
-		// Non-fatal if default setting fails — the node was still created
-		if (Result != EMetaSoundBuilderResult::Succeeded)
-		{
-			UE_LOG(LogAudioMCPBuilder, Warning, TEXT("Graph input '%s' created but default value '%s' could not be set"),
-				*Name, *DefaultValue);
-		}
-	}
-
-	UE_LOG(LogAudioMCPBuilder, Log, TEXT("Added graph input: %s (%s)"), *Name, *TypeName);
+	UE_LOG(LogAudioMCPBuilder, Log, TEXT("Added graph input: %s (%s)%s"), *Name, *TypeName,
+		DefaultValue.IsEmpty() ? TEXT("") : *FString::Printf(TEXT(" default=%s"), *DefaultValue));
 	return true;
 }
 
@@ -321,10 +314,13 @@ bool FAudioMCPBuilderManager::AddNode(const FString& NodeId, const FString& Node
 
 	// Set editor position for visibility (UE 5.7: via EditorSubsystem)
 #if WITH_EDITOR
-	UMetaSoundEditorSubsystem* EditorSS = GEditor->GetEditorSubsystem<UMetaSoundEditorSubsystem>();
-	if (EditorSS)
+	if (GEditor)
 	{
-		EditorSS->SetNodeLocation(ActiveBuilder.Get(), NodeHandle, FVector2D(PosX, PosY), Result);
+		UMetaSoundEditorSubsystem* EditorSS = GEditor->GetEditorSubsystem<UMetaSoundEditorSubsystem>();
+		if (EditorSS)
+		{
+			EditorSS->SetNodeLocation(ActiveBuilder.Get(), NodeHandle, FVector2D(PosX, PosY), Result);
+		}
 	}
 #endif
 
@@ -367,7 +363,24 @@ bool FAudioMCPBuilderManager::SetNodeDefault(const FString& NodeId, const FStrin
 
 	if (Value->Type == EJson::Number)
 	{
-		Literal.Set(static_cast<float>(Value->AsNumber()));
+		double NumVal = Value->AsNumber();
+		// Try float first. If the pin expects int32 and SetNodeInputDefault fails,
+		// retry with int32 literal. Check for no fractional part as a hint.
+		double IntPart;
+		if (FMath::Modf(NumVal, &IntPart) == 0.0 && NumVal >= MIN_int32 && NumVal <= MAX_int32)
+		{
+			// Whole number — try int32 first, fall back to float
+			Literal.Set(static_cast<int32>(NumVal));
+			ActiveBuilder.Get()->SetNodeInputDefault(InputHandle, Literal, Result);
+			if (Result == EMetaSoundBuilderResult::Succeeded)
+			{
+				UE_LOG(LogAudioMCPBuilder, Log, TEXT("Set default: %s.%s (int32)"), *NodeId, *InputName);
+				return true;
+			}
+			// Int32 failed — fall through to try as float
+			Literal = FMetasoundFrontendLiteral();
+		}
+		Literal.Set(static_cast<float>(NumVal));
 	}
 	else if (Value->Type == EJson::Boolean)
 	{
@@ -502,7 +515,14 @@ bool FAudioMCPBuilderManager::AddGraphVariable(const FString& Name, const FStrin
 	{
 		if (DefaultValue.IsNumeric())
 		{
-			DefaultLiteral.Set(FCString::Atof(*DefaultValue));
+			if (TypeName.Equals(TEXT("Int32"), ESearchCase::IgnoreCase))
+			{
+				DefaultLiteral.Set(static_cast<int32>(FCString::Atod(*DefaultValue)));
+			}
+			else
+			{
+				DefaultLiteral.Set(FCString::Atof(*DefaultValue));
+			}
 		}
 		else if (DefaultValue.Equals(TEXT("true"), ESearchCase::IgnoreCase))
 		{
@@ -611,6 +631,18 @@ bool FAudioMCPBuilderManager::ConvertToPreset(const FString& ReferencedAsset, FS
 		return false;
 	}
 
+	// Validate asset path (same rules as BuildToAsset)
+	if (!ReferencedAsset.StartsWith(TEXT("/Game/")) && !ReferencedAsset.StartsWith(TEXT("/Engine/")))
+	{
+		OutError = FString::Printf(TEXT("Asset path must start with /Game/ or /Engine/ (got '%s')"), *ReferencedAsset);
+		return false;
+	}
+	if (ReferencedAsset.Contains(TEXT("..")))
+	{
+		OutError = TEXT("Asset path must not contain '..'");
+		return false;
+	}
+
 	// Load the referenced MetaSound asset
 	UObject* Asset = StaticLoadObject(UObject::StaticClass(), nullptr, *ReferencedAsset);
 	if (!Asset)
@@ -636,7 +668,12 @@ bool FAudioMCPBuilderManager::ConvertToPreset(const FString& ReferencedAsset, FS
 		return false;
 	}
 
-	UE_LOG(LogAudioMCPBuilder, Log, TEXT("Converted to preset of: %s"), *ReferencedAsset);
+	// Preset conversion rewires the graph — all previous node/pin handles are invalidated
+	NodeHandles.Empty();
+	GraphInputOutputHandles.Empty();
+	GraphOutputInputHandles.Empty();
+
+	UE_LOG(LogAudioMCPBuilder, Log, TEXT("Converted to preset of: %s (handle maps cleared)"), *ReferencedAsset);
 	return true;
 }
 
@@ -657,7 +694,12 @@ bool FAudioMCPBuilderManager::ConvertFromPreset(FString& OutError)
 		return false;
 	}
 
-	UE_LOG(LogAudioMCPBuilder, Log, TEXT("Converted from preset to full graph"));
+	// Conversion from preset creates a new graph — all previous handles are invalidated
+	NodeHandles.Empty();
+	GraphInputOutputHandles.Empty();
+	GraphOutputInputHandles.Empty();
+
+	UE_LOG(LogAudioMCPBuilder, Log, TEXT("Converted from preset to full graph (handle maps cleared)"));
 	return true;
 }
 
@@ -715,9 +757,19 @@ bool FAudioMCPBuilderManager::BuildToAsset(const FString& Name, const FString& P
 		OutError = FString::Printf(TEXT("Path must start with /Game/ (got '%s')"), *Path);
 		return false;
 	}
+	if (Path.Contains(TEXT("..")))
+	{
+		OutError = TEXT("Path must not contain '..'");
+		return false;
+	}
 
 #if WITH_EDITOR
 	// UE 5.7: Use UMetaSoundEditorSubsystem::BuildToAsset to save a real .uasset to disk.
+	if (!GEditor)
+	{
+		OutError = TEXT("GEditor not available (too early in startup or during shutdown)");
+		return false;
+	}
 	UMetaSoundEditorSubsystem* EditorSubsystem = GEditor->GetEditorSubsystem<UMetaSoundEditorSubsystem>();
 	if (!EditorSubsystem)
 	{
@@ -759,6 +811,12 @@ bool FAudioMCPBuilderManager::OpenInEditor(FString& OutError)
 	if (!LastBuiltAsset.IsValid())
 	{
 		OutError = TEXT("No built asset available. Call build_to_asset first.");
+		return false;
+	}
+
+	if (!GEditor)
+	{
+		OutError = TEXT("GEditor not available (too early in startup or during shutdown)");
 		return false;
 	}
 

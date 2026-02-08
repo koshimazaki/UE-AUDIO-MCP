@@ -60,6 +60,16 @@ def wwise_preview(object_path: str, action: str = "play") -> str:
                 result_data["errors"] = errors
             return _ok(result_data)
 
+        # Clean up any existing transports for this object to avoid leaks
+        existing = conn.call("ak.wwise.core.transport.getList")
+        existing_list = existing.get("list", []) if existing else []
+        for t in existing_list:
+            if t.get("object") == object_path:
+                try:
+                    conn.call("ak.wwise.core.transport.destroy", {"transport": t["transport"]})
+                except Exception:
+                    pass
+
         # Create transport and execute action
         transport = conn.call("ak.wwise.core.transport.create", {
             "object": object_path,
@@ -94,6 +104,9 @@ def wwise_generate_banks(bank_names: str) -> str:
 
     if not isinstance(names, list) or not names:
         return _error("bank_names must be a non-empty JSON array of strings")
+
+    if not all(isinstance(n, str) for n in names):
+        return _error("All bank names must be strings")
 
     conn = get_wwise_connection()
     try:

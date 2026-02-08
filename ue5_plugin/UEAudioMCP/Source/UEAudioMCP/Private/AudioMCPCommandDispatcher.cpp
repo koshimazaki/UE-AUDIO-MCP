@@ -15,6 +15,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogAudioMCPDispatcher, Log, All);
 FAudioMCPCommandDispatcher::FAudioMCPCommandDispatcher(FAudioMCPBuilderManager* InBuilderManager)
 	: BuilderManager(InBuilderManager)
 	, bShuttingDown(false)
+	, bAlive(MakeShared<FThreadSafeBool>(true))
 {
 }
 
@@ -25,6 +26,9 @@ FAudioMCPCommandDispatcher::~FAudioMCPCommandDispatcher()
 void FAudioMCPCommandDispatcher::SignalShutdown()
 {
 	bShuttingDown = true;
+	// Mark alive flag as false so any in-flight AsyncTask lambdas
+	// will skip execution instead of dereferencing freed BuilderManager
+	*bAlive = false;
 }
 
 void FAudioMCPCommandDispatcher::RegisterCommand(const FString& Action, TSharedPtr<IAudioMCPCommand> Handler)
@@ -77,10 +81,13 @@ FString FAudioMCPCommandDispatcher::Dispatch(const FString& JsonString)
 		TSharedPtr<IAudioMCPCommand> Handler;
 		TSharedPtr<FJsonObject> Params;
 		FAudioMCPBuilderManager* BuilderMgr;
+		TSharedPtr<FThreadSafeBool> Alive;  // Shared flag to detect shutdown
 
 		FDispatchState(FEvent* InEvent, TSharedPtr<IAudioMCPCommand> InHandler,
-		               TSharedPtr<FJsonObject> InParams, FAudioMCPBuilderManager* InMgr)
-			: CompletionEvent(InEvent), Handler(InHandler), Params(InParams), BuilderMgr(InMgr) {}
+		               TSharedPtr<FJsonObject> InParams, FAudioMCPBuilderManager* InMgr,
+		               TSharedPtr<FThreadSafeBool> InAlive)
+			: CompletionEvent(InEvent), Handler(InHandler), Params(InParams),
+			  BuilderMgr(InMgr), Alive(InAlive) {}
 
 		~FDispatchState()
 		{
@@ -93,16 +100,38 @@ FString FAudioMCPCommandDispatcher::Dispatch(const FString& JsonString)
 
 	TSharedPtr<FDispatchState> State = MakeShared<FDispatchState>(
 		FPlatformProcess::GetSynchEventFromPool(false),
-		*HandlerPtr, JsonObj, BuilderManager);
+		*HandlerPtr, JsonObj, BuilderManager, bAlive);
 
 	AsyncTask(ENamedThreads::GameThread, [State]()
 	{
-		State->Result = State->Handler->Execute(State->Params, *State->BuilderMgr);
+		// Guard against use-after-free: if shutdown destroyed BuilderManager,
+		// skip execution and just trigger the event so the TCP thread unblocks.
+		if (*State->Alive)
+		{
+			State->Result = State->Handler->Execute(State->Params, *State->BuilderMgr);
+		}
 		State->CompletionEvent->Trigger();
 	});
 
-	// Wait for game thread execution (25s timeout, under Python's 30s)
-	bool bCompleted = State->CompletionEvent->Wait(AudioMCP::GAME_THREAD_TIMEOUT_MS);
+	// Poll in 500ms intervals instead of a single 25s wait.
+	// This lets the TCP thread exit promptly when bShuttingDown is set,
+	// preventing a 25-second editor freeze during shutdown.
+	constexpr uint32 PollIntervalMs = 500;
+	uint32 ElapsedMs = 0;
+	bool bCompleted = false;
+	while (ElapsedMs < static_cast<uint32>(AudioMCP::GAME_THREAD_TIMEOUT_MS))
+	{
+		if (State->CompletionEvent->Wait(PollIntervalMs))
+		{
+			bCompleted = true;
+			break;
+		}
+		ElapsedMs += PollIntervalMs;
+		if (bShuttingDown)
+		{
+			break;  // Exit quickly on shutdown instead of waiting full timeout
+		}
+	}
 
 	if (!bCompleted)
 	{

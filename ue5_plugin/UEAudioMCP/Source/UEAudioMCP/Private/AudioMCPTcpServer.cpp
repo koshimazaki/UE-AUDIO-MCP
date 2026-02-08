@@ -74,6 +74,16 @@ void FAudioMCPTcpServer::StopListening()
 		ListenSocket->Close();
 	}
 
+	// Close the active client socket to unblock any RecvExact() call on the TCP thread.
+	// Without this, a blocked Recv() would hang WaitForCompletion() indefinitely.
+	{
+		FScopeLock Lock(&ClientSocketMutex);
+		if (ActiveClientSocket)
+		{
+			ActiveClientSocket->Close();
+		}
+	}
+
 	if (Thread)
 	{
 		Thread->WaitForCompletion();
@@ -138,6 +148,12 @@ void FAudioMCPTcpServer::Exit()
 
 void FAudioMCPTcpServer::HandleClient(FSocket* Client)
 {
+	// Register client socket so StopListening() can close it to unblock RecvExact()
+	{
+		FScopeLock Lock(&ClientSocketMutex);
+		ActiveClientSocket = Client;
+	}
+
 	// Set socket buffer sizes for predictable behavior
 	int32 ActualSize = 0;
 	Client->SetSendBufferSize(65536, ActualSize);
@@ -211,6 +227,18 @@ void FAudioMCPTcpServer::HandleClient(FSocket* Client)
 		{
 			break;
 		}
+
+		// 6. Shrink payload buffer if it grew too large (W5: prevent monotonic growth)
+		if (PayloadBuf.Max() > 65536)
+		{
+			PayloadBuf.Empty();
+		}
+	}
+
+	// Clear client socket registration so StopListening() won't close a stale pointer
+	{
+		FScopeLock Lock(&ClientSocketMutex);
+		ActiveClientSocket = nullptr;
 	}
 }
 

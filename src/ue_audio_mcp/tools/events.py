@@ -81,32 +81,44 @@ def wwise_create_game_parameter(
         max_value: Maximum range value
         default_value: Default value
     """
+    if min_value >= max_value:
+        return _error("min_value ({}) must be less than max_value ({})".format(min_value, max_value))
+    if not (min_value <= default_value <= max_value):
+        return _error("default_value ({}) must be between min_value ({}) and max_value ({})".format(
+            default_value, min_value, max_value))
+
     conn = get_wwise_connection()
     try:
-        gp_result = conn.call("ak.wwise.core.object.create", {
-            "parent": DEFAULT_PATHS["game_parameters"],
-            "type": "GameParameter",
-            "name": name,
-            "onNameConflict": "merge",
-        })
-        gp_id = gp_result.get("id")
+        conn.call("ak.wwise.core.undo.beginGroup")
+        try:
+            gp_result = conn.call("ak.wwise.core.object.create", {
+                "parent": DEFAULT_PATHS["game_parameters"],
+                "type": "GameParameter",
+                "name": name,
+                "onNameConflict": "merge",
+            })
+            gp_id = gp_result.get("id")
 
-        # Set range properties
-        conn.call("ak.wwise.core.object.setProperty", {
-            "object": gp_id,
-            "property": "RangeMin",
-            "value": min_value,
-        })
-        conn.call("ak.wwise.core.object.setProperty", {
-            "object": gp_id,
-            "property": "RangeMax",
-            "value": max_value,
-        })
-        conn.call("ak.wwise.core.object.setProperty", {
-            "object": gp_id,
-            "property": "InitialValue",
-            "value": default_value,
-        })
+            # Set range properties
+            conn.call("ak.wwise.core.object.setProperty", {
+                "object": gp_id,
+                "property": "RangeMin",
+                "value": min_value,
+            })
+            conn.call("ak.wwise.core.object.setProperty", {
+                "object": gp_id,
+                "property": "RangeMax",
+                "value": max_value,
+            })
+            conn.call("ak.wwise.core.object.setProperty", {
+                "object": gp_id,
+                "property": "InitialValue",
+                "value": default_value,
+            })
+        finally:
+            conn.call("ak.wwise.core.undo.endGroup", {
+                "displayName": "Create GameParameter: {}".format(name),
+            })
 
         return _ok({
             "game_parameter_id": gp_id,

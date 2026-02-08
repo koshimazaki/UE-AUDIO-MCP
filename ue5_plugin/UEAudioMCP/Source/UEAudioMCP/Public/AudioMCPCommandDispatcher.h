@@ -40,4 +40,11 @@ private:
 	TMap<FString, TSharedPtr<IAudioMCPCommand>> CommandMap;
 	FAudioMCPBuilderManager* BuilderManager;
 	FThreadSafeBool bShuttingDown;
+
+	/**
+	 * Shared alive flag — set to false on SignalShutdown().
+	 * Captured by AsyncTask lambdas so they can check validity
+	 * before dereferencing BuilderManager (prevents use-after-free).
+	 */
+	TSharedPtr<FThreadSafeBool> bAlive;
 };

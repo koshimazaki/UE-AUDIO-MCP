@@ -63,8 +63,8 @@
       "defaults": {
         "Frequency": 0.25,
         "Shape": "Sine",
-        "MinValue": 0.6,
-        "MaxValue": 1.0
+        "Min Value": 0.6,
+        "Max Value": 1.0
       }
     },
     {

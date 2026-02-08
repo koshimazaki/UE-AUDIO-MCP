@@ -268,6 +268,11 @@ def ms_macro_trigger(
         return _error("At least one step is required")
 
     ALLOWED_ACTIONS = {"set_default", "convert_to_preset", "convert_from_preset"}
+    REQUIRED_FIELDS: dict[str, list[str]] = {
+        "set_default": ["node_id", "input", "value"],
+        "convert_to_preset": ["referenced_asset"],
+        "convert_from_preset": [],
+    }
 
     # Validate steps
     commands: list[dict[str, Any]] = []
@@ -279,6 +284,12 @@ def ms_macro_trigger(
         if action not in ALLOWED_ACTIONS:
             return _error("Step {}: invalid action '{}'. Must be one of: {}".format(
                 i + 1, action, ", ".join(sorted(ALLOWED_ACTIONS))
+            ))
+
+        missing = [f for f in REQUIRED_FIELDS[action] if f not in step]
+        if missing:
+            return _error("Step {} ({}): missing required fields: {}".format(
+                i + 1, action, ", ".join(missing)
             ))
 
         commands.append(step)

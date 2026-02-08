@@ -153,6 +153,17 @@ TSharedPtr<FJsonObject> FGetNodeLocationsCommand::Execute(
 		return AudioMCP::MakeErrorResponse(TEXT("Missing required param 'asset_path'"));
 	}
 
+	// Validate asset path
+	if (!AssetPath.StartsWith(TEXT("/Game/")) && !AssetPath.StartsWith(TEXT("/Engine/")))
+	{
+		return AudioMCP::MakeErrorResponse(
+			FString::Printf(TEXT("Asset path must start with /Game/ or /Engine/ (got '%s')"), *AssetPath));
+	}
+	if (AssetPath.Contains(TEXT("..")))
+	{
+		return AudioMCP::MakeErrorResponse(TEXT("Asset path must not contain '..'"));
+	}
+
 	// Load the MetaSound asset
 	UObject* Asset = StaticLoadObject(UObject::StaticClass(), nullptr, *AssetPath);
 	if (!Asset)
@@ -175,6 +186,21 @@ TSharedPtr<FJsonObject> FGetNodeLocationsCommand::Execute(
 
 	TArray<TSharedPtr<FJsonValue>> NodeArray;
 	TArray<TSharedPtr<FJsonValue>> EdgeArray;
+
+	// Build vertex ID → pin name lookup for edge resolution
+	// VertexIDs are globally unique within a MetaSound document
+	TMap<FGuid, FString> VertexIdToPinName;
+	for (const FMetasoundFrontendNode& Node : Graph.Nodes)
+	{
+		for (const FMetasoundFrontendVertex& Input : Node.Interface.Inputs)
+		{
+			VertexIdToPinName.Add(Input.VertexID, Input.Name.ToString());
+		}
+		for (const FMetasoundFrontendVertex& Output : Node.Interface.Outputs)
+		{
+			VertexIdToPinName.Add(Output.VertexID, Output.Name.ToString());
+		}
+	}
 
 	for (const FMetasoundFrontendNode& Node : Graph.Nodes)
 	{
@@ -245,14 +271,22 @@ TSharedPtr<FJsonObject> FGetNodeLocationsCommand::Execute(
 		NodeArray.Add(MakeShared<FJsonValueObject>(NodeObj));
 	}
 
-	// Read edges (connections)
+	// Read edges (connections) — resolve vertex GUIDs to pin names
 	for (const FMetasoundFrontendEdge& Edge : Graph.Edges)
 	{
 		TSharedPtr<FJsonObject> EdgeObj = MakeShared<FJsonObject>();
 		EdgeObj->SetStringField(TEXT("from_node"), Edge.FromNodeID.ToString());
-		EdgeObj->SetStringField(TEXT("from_pin"), Edge.FromVertexID.ToString());
 		EdgeObj->SetStringField(TEXT("to_node"), Edge.ToNodeID.ToString());
-		EdgeObj->SetStringField(TEXT("to_pin"), Edge.ToVertexID.ToString());
+
+		// Resolve vertex IDs to human-readable pin names
+		FString* FromPinName = VertexIdToPinName.Find(Edge.FromVertexID);
+		EdgeObj->SetStringField(TEXT("from_pin"),
+			FromPinName ? *FromPinName : Edge.FromVertexID.ToString());
+
+		FString* ToPinName = VertexIdToPinName.Find(Edge.ToVertexID);
+		EdgeObj->SetStringField(TEXT("to_pin"),
+			ToPinName ? *ToPinName : Edge.ToVertexID.ToString());
+
 		EdgeArray.Add(MakeShared<FJsonValueObject>(EdgeObj));
 	}
 

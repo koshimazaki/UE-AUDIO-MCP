@@ -174,7 +174,7 @@ _register(_node(
 _register(_node(
     "WaveTable Oscillator", "Generators",
     "Oscillator that reads from a wavetable for arbitrary waveforms.",
-    [_in("WaveTable", "UObject", required=False),
+    [_in("WaveTable", "WaveAsset", required=False),
      _in("Play", "Trigger", required=False),
      _in("Stop", "Trigger", required=False),
      _in("Freq", "Int32"),
@@ -213,7 +213,7 @@ _register(_node(
      _in("Step Limit", "Float", required=False),
      _in("Min Value", "Float", required=False),
      _in("Max Value", "Float", required=False)],
-    [_out("Out", "Float"),
+    [_out("Out", "Audio"),
      _out("Normalized", "Float")],
     ["noise", "modulation", "random", "organic", "drift", "lfo"],
     complexity=2,
@@ -224,9 +224,11 @@ _register(_node(
     "LFO for modulation: sine, saw, square, triangle, sample-and-hold shapes.",
     [_in("Frequency", "Float", default=1.0),
      _in("Shape", "Enum", default="Sine"),
-     _in("MinValue", "Float", default=-1.0),
-     _in("MaxValue", "Float", default=1.0),
-     _in("PhaseOffset", "Float", required=False, default=0.0)],
+     _in("Min Value", "Float", default=-1.0),
+     _in("Max Value", "Float", default=1.0),
+     _in("Phase Offset", "Float", required=False, default=0.0),
+     _in("Sync", "Trigger", required=False),
+     _in("Pulse Width", "Float", required=False, default=0.5)],
     [_out("Out", "Float")],
     ["lfo", "modulation", "tremolo", "vibrato", "wobble", "sweep"],
     complexity=2,
@@ -424,7 +426,7 @@ _register(_node(
 _register(_node(
     "WaveTable Envelope", "Envelopes",
     "Envelope shaped by a wavetable for arbitrary envelope curves.",
-    [_in("WaveTable", "UObject"),
+    [_in("WaveTable", "WaveAsset"),
      _in("Duration", "Time", default=1.0),
      _in("Play", "Trigger"),
      _in("Stop", "Trigger", required=False),
@@ -440,7 +442,7 @@ _register(_node(
 _register(_node(
     "Evaluate WaveTable", "Envelopes",
     "Looks up a wavetable value at a given position (0-1).",
-    [_in("WaveTable", "UObject", required=False),
+    [_in("WaveTable", "WaveAsset", required=False),
      _in("Position", "Float", default=0.0),
      _in("Interpolation", "Enum", required=False)],
     [_out("Value", "Float")],
@@ -615,11 +617,16 @@ _register(_node(
 _register(_node(
     "Stereo Delay", "Delays",
     "Stereo delay with independent L/R delay times and feedback.",
-    [_in("Feedback", "Float", required=False, default=0.3),
+    [_in("In Left", "Audio"),
+     _in("In Right", "Audio"),
+     _in("Feedback", "Float", required=False, default=0.3),
      _in("Delay Time", "Time", required=False),
+     _in("Delay Mode", "Enum", required=False, default="Normal"),
+     _in("Delay Ratio", "Float", required=False, default=1.0),
      _in("Dry Level", "Float"),
      _in("Wet Level", "Float")],
-    [],
+    [_out("Out Left", "Audio"),
+     _out("Out Right", "Audio")],
     ["delay", "stereo", "echo", "ping pong", "time", "spatial"],
     complexity=3,
 ))
@@ -703,7 +710,7 @@ _register(_node(
      _in("Upwards Mode", "Bool", required=False, default=False),
      _in("Wet/Dry", "Float", required=False, default=1.0)],
     [_out("Audio", "Audio"),
-     _out("Gain Envelope", "Float")],
+     _out("Gain Envelope", "Audio")],
     ["compressor", "dynamics", "loudness", "squeeze", "punch", "sidechain",
      "parallel", "limiter", "vehicle", "engine"],
     complexity=3,
@@ -1110,7 +1117,7 @@ _register(_node(
     "Min", "Math",
     "Returns the smaller of two float values.",
     [_in("A", "Float"), _in("B", "Float")],
-    [_out("Result", "Float")],
+    [_out("Value", "Float")],
     ["math", "min", "minimum", "compare", "smaller"],
     complexity=1,
 ))
@@ -1119,7 +1126,7 @@ _register(_node(
     "Max", "Math",
     "Returns the larger of two float values.",
     [_in("A", "Float"), _in("B", "Float")],
-    [_out("Result", "Float")],
+    [_out("Value", "Float")],
     ["math", "max", "maximum", "compare", "larger"],
     complexity=1,
 ))
@@ -1319,7 +1326,7 @@ _register(_node(
     [_in("BPM", "Float", default=120.0),
      _in("Beat Multiplier", "Float"),
      _in("Division of Whole Note", "Enum")],
-    [_out("Seconds", "Time")],
+    [_out("Seconds", "Float")],
     ["music", "BPM", "tempo", "beat", "time", "clock", "rhythm"],
     complexity=1,
 ))
@@ -1910,6 +1917,99 @@ _register(_node(
      _out("Out X", "Audio")],
     ["wave", "player", "general"],
     complexity=2,
+))
+
+# -------------------------------------------------------------------
+# ReSID SIDKIT Edition — MOS 6581/8580 emulation nodes (5 nodes)
+# -------------------------------------------------------------------
+
+_register(_node(
+    "SID Oscillator", "ReSID SIDKIT Edition",
+    "MOS 6581/8580 waveform generator. 24-bit accumulator with saw, triangle, pulse, noise, and combined waveforms from actual C64 chip samples.",
+    [_in("Frequency", "Float", default=440.0),
+     _in("Pulse Width", "Float", required=False, default=0.5),
+     _in("Waveform", "Enum:SIDWaveform", default="Sawtooth"),
+     _in("Chip Model", "Enum:SIDChipModel", required=False, default="MOS6581")],
+    [_out("Out", "Audio")],
+    ["sid", "oscillator", "c64", "chiptune", "retro", "waveform"],
+    complexity=2,
+))
+
+_register(_node(
+    "SID Envelope", "ReSID SIDKIT Edition",
+    "MOS 6581/8580 ADSR envelope generator with non-linear exponential decay and authentic SID timing including the ADSR delay bug.",
+    [_in("Gate", "Trigger"),
+     _in("Attack", "Int32", default=0),
+     _in("Decay", "Int32", default=9),
+     _in("Sustain", "Int32", default=0),
+     _in("Release", "Int32", default=9)],
+    [_out("Out", "Audio")],
+    ["sid", "envelope", "adsr", "c64", "chiptune", "retro"],
+    complexity=2,
+))
+
+_register(_node(
+    "SID Filter", "ReSID SIDKIT Edition",
+    "MOS 6581/8580 analog filter emulation. Route any audio through the SID chip's non-linear two-integrator-loop biquad filter with voltage-controlled resistor model.",
+    [_in("In", "Audio"),
+     _in("Cutoff", "Float", default=0.5),
+     _in("Resonance", "Float", required=False, default=0.0),
+     _in("Mode", "Enum:SIDFilterMode", default="LowPass"),
+     _in("Chip Model", "Enum:SIDChipModel", required=False, default="MOS6581"),
+     _in("Res Boost", "Float", required=False, default=0.0)],
+    [_out("Out", "Audio")],
+    ["sid", "filter", "analog", "c64", "chiptune", "retro", "lo-fi"],
+    complexity=2,
+))
+
+_register(_node(
+    "SID Voice", "ReSID SIDKIT Edition",
+    "Complete SID voice: oscillator x envelope. Combines waveform generation with ADSR in a single node for quick patching.",
+    [_in("Gate", "Trigger"),
+     _in("Frequency", "Float", default=440.0),
+     _in("Pulse Width", "Float", required=False, default=0.5),
+     _in("Waveform", "Enum:SIDWaveform", default="Sawtooth"),
+     _in("Attack", "Int32", default=0),
+     _in("Decay", "Int32", default=9),
+     _in("Sustain", "Int32", default=0),
+     _in("Release", "Int32", default=9),
+     _in("Chip Model", "Enum:SIDChipModel", required=False, default="MOS6581")],
+    [_out("Out", "Audio")],
+    ["sid", "voice", "c64", "chiptune", "retro", "oscillator", "envelope"],
+    complexity=2,
+))
+
+_register(_node(
+    "SID Chip", "ReSID SIDKIT Edition",
+    "Complete MOS 6581/8580 SID chip emulation. 3 voices with oscillator+envelope, analog filter, FM cross-modulation, and per-voice volume (SIDKIT extensions).",
+    [_in("Gate 1", "Trigger"), _in("Freq 1", "Float", default=440.0),
+     _in("PW 1", "Float", required=False, default=0.5),
+     _in("Wave 1", "Enum:SIDWaveform", default="Sawtooth"),
+     _in("A 1", "Int32", default=0), _in("D 1", "Int32", default=9),
+     _in("S 1", "Int32", default=0), _in("R 1", "Int32", default=9),
+     _in("Gate 2", "Trigger"), _in("Freq 2", "Float", default=440.0),
+     _in("PW 2", "Float", required=False, default=0.5),
+     _in("Wave 2", "Enum:SIDWaveform", default="Sawtooth"),
+     _in("A 2", "Int32", default=0), _in("D 2", "Int32", default=9),
+     _in("S 2", "Int32", default=0), _in("R 2", "Int32", default=9),
+     _in("Gate 3", "Trigger"), _in("Freq 3", "Float", default=440.0),
+     _in("PW 3", "Float", required=False, default=0.5),
+     _in("Wave 3", "Enum:SIDWaveform", default="Sawtooth"),
+     _in("A 3", "Int32", default=0), _in("D 3", "Int32", default=9),
+     _in("S 3", "Int32", default=0), _in("R 3", "Int32", default=9),
+     _in("Filter Cutoff", "Float", default=0.5),
+     _in("Filter Resonance", "Float", required=False, default=0.0),
+     _in("Filter Mode", "Enum:SIDFilterMode", default="LowPass"),
+     _in("Filter Routing", "Int32", default=1),
+     _in("Volume", "Float", default=1.0),
+     _in("Chip Model", "Enum:SIDChipModel", required=False, default="MOS6581"),
+     _in("Res Boost", "Float", required=False, default=0.0)],
+    [_out("Out", "Audio"),
+     _out("Voice 1 Out", "Audio"),
+     _out("Voice 2 Out", "Audio"),
+     _out("Voice 3 Out", "Audio")],
+    ["sid", "chip", "c64", "chiptune", "retro", "fm", "filter", "3-voice"],
+    complexity=4,
 ))
 
 

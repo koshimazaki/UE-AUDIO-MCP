@@ -18,6 +18,11 @@
 			"Name": "UEAudioMCP",
 			"Type": "Editor",
 			"LoadingPhase": "PostEngineInit"
+		},
+		{
+			"Name": "SIDMetaSoundNodes",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
 		}
 	],
 	"Plugins": [

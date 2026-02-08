@@ -201,5 +201,14 @@ namespace AudioMCPNodeRegistry
 		// Wave Writer (for debugging)
 		// =================================================================
 		Map.Add(TEXT("Wave Writer"),         TEXT("UE::Wave Writer::Audio"));
+
+		// =================================================================
+		// ReSID SIDKIT Edition — MOS 6581/8580 emulation nodes
+		// =================================================================
+		Map.Add(TEXT("SID Oscillator"),      TEXT("UE::SID Oscillator::Audio"));
+		Map.Add(TEXT("SID Envelope"),        TEXT("UE::SID Envelope::Float"));
+		Map.Add(TEXT("SID Filter"),          TEXT("UE::SID Filter::Audio"));
+		Map.Add(TEXT("SID Voice"),           TEXT("UE::SID Voice::Audio"));
+		Map.Add(TEXT("SID Chip"),            TEXT("UE::SID Chip::Audio"));
 	}
 }
