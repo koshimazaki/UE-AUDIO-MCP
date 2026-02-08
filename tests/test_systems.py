@@ -6,7 +6,12 @@ import json
 
 import pytest
 
-from ue_audio_mcp.tools.systems import PATTERNS, build_audio_system
+from ue_audio_mcp.tools.systems import (
+    AAA_AUDIO_CATEGORIES,
+    PATTERNS,
+    build_aaa_project,
+    build_audio_system,
+)
 
 
 def _parse(result: str) -> dict:
@@ -465,3 +470,169 @@ class TestIntegrationSpec:
                     "{} blueprint should be planned".format(name)
                 linked += 1
         assert linked >= 7  # All except macro_sequence
+
+
+# ---------------------------------------------------------------------------
+# AAA Project Orchestrator — build_aaa_project
+# ---------------------------------------------------------------------------
+
+class TestAAAProjectOffline:
+    """build_aaa_project in offline mode — returns planned specs for all categories."""
+
+    def test_aaa_project_offline_all_categories(self):
+        result = _parse(build_aaa_project())
+        assert result["status"] == "ok"
+        assert result["mode"] == "offline"
+        assert result["summary"]["total_categories"] == len(AAA_AUDIO_CATEGORIES)
+        assert result["summary"]["infrastructure_mode"] == "planned"
+        assert result["summary"]["routing_applied"] == 0
+        assert result["summary"]["moves_applied"] == 0
+
+    def test_aaa_project_offline_categories_present(self):
+        result = _parse(build_aaa_project())
+        for cat_key in AAA_AUDIO_CATEGORIES:
+            assert cat_key in result["categories"], \
+                "Missing category: {}".format(cat_key)
+            cat = result["categories"][cat_key]
+            assert "system" in cat
+            assert cat["system"]["status"] == "ok"
+
+    def test_aaa_project_offline_infrastructure_planned(self):
+        result = _parse(build_aaa_project())
+        infra = result["infrastructure"]
+        assert infra["mode"] == "planned"
+        assert "description" in infra
+
+    def test_aaa_project_offline_each_category_has_layers(self):
+        result = _parse(build_aaa_project())
+        for cat_key, cat in result["categories"].items():
+            system = cat["system"]
+            assert "layers" in system, "{} missing layers".format(cat_key)
+            assert system["layers"]["metasounds"]["mode"] == "planned", \
+                "{} MS not planned".format(cat_key)
+
+    def test_aaa_project_offline_manifest_shape(self):
+        result = _parse(build_aaa_project())
+        assert "categories_built" in result
+        assert "infrastructure" in result
+        assert "categories" in result
+        assert "routing" in result
+        assert "moves" in result
+        assert "summary" in result
+        assert isinstance(result["routing"], list)
+        assert isinstance(result["moves"], list)
+
+
+class TestAAAProjectCustomCategories:
+    """build_aaa_project with category filter."""
+
+    def test_single_category(self):
+        result = _parse(build_aaa_project(categories="player_footsteps"))
+        assert result["status"] == "ok"
+        assert result["summary"]["total_categories"] == 1
+        assert "player_footsteps" in result["categories"]
+        assert "player_weapons" not in result["categories"]
+
+    def test_multiple_categories(self):
+        result = _parse(build_aaa_project(categories="player_footsteps,ui,weather"))
+        assert result["status"] == "ok"
+        assert result["summary"]["total_categories"] == 3
+        assert set(result["categories_built"]) == {"player_footsteps", "ui", "weather"}
+
+    def test_invalid_category(self):
+        result = _parse(build_aaa_project(categories="nonexistent"))
+        assert result["status"] == "error"
+        assert "Unknown categories" in result["message"]
+
+    def test_invalid_setup_params(self):
+        result = _parse(build_aaa_project(setup_params="not-json"))
+        assert result["status"] == "error"
+        assert "Invalid setup_params" in result["message"]
+
+    def test_setup_params_not_object(self):
+        result = _parse(build_aaa_project(setup_params="[1,2]"))
+        assert result["status"] == "error"
+        assert "JSON object" in result["message"]
+
+
+class TestAAAProjectWwiseOnly:
+    """build_aaa_project with Wwise connected."""
+
+    def test_aaa_project_wwise_only(self, wwise_conn, mock_waapi):
+        _setup_wwise_mock(mock_waapi)
+        result = _parse(build_aaa_project())
+        assert result["status"] == "ok"
+        assert result["mode"] == "wwise_only"
+        assert result["infrastructure"]["mode"] == "executed"
+        assert result["summary"]["total_categories"] == len(AAA_AUDIO_CATEGORIES)
+
+    def test_aaa_project_bus_routing(self, wwise_conn, mock_waapi):
+        """Verify setReference calls for bus routing."""
+        _setup_wwise_mock(mock_waapi)
+        result = _parse(build_aaa_project(categories="player_weapons"))
+        assert result["status"] == "ok"
+        routing = result["routing"]
+        assert len(routing) > 0, "Bus routing should have been applied"
+        assert routing[0]["category"] == "player_weapons"
+        assert routing[0]["status"] == "ok"
+
+    def test_aaa_project_work_unit_moves(self, wwise_conn, mock_waapi):
+        """Verify move calls to correct work units."""
+        _setup_wwise_mock(mock_waapi)
+        result = _parse(build_aaa_project(categories="player_footsteps"))
+        assert result["status"] == "ok"
+        moves = result["moves"]
+        assert len(moves) > 0, "Work unit moves should have been applied"
+        move_types = [m["type"] for m in moves]
+        assert "actor_mixer" in move_types or "event" in move_types
+
+    def test_aaa_project_wwise_setreference_calls(self, wwise_conn, mock_waapi):
+        """Verify actual WAAPI setReference and move calls were made."""
+        _setup_wwise_mock(mock_waapi)
+        _parse(build_aaa_project(categories="ui"))
+        # Check that setReference was called for bus routing
+        set_ref_calls = [
+            c for c in mock_waapi.calls
+            if c[0] == "ak.wwise.core.object.setReference"
+        ]
+        assert len(set_ref_calls) > 0, "setReference should have been called for bus routing"
+        # Check that move was called for work unit organization
+        move_calls = [
+            c for c in mock_waapi.calls
+            if c[0] == "ak.wwise.core.object.move"
+        ]
+        assert len(move_calls) > 0, "move should have been called for work unit organization"
+        # Infrastructure creates many objects too
+        create_calls = [
+            c for c in mock_waapi.calls
+            if c[0] == "ak.wwise.core.object.create"
+        ]
+        assert len(create_calls) > 10  # buses + work units + switches + states
+
+
+class TestAAAProjectCategoryMapping:
+    """Verify AAA_AUDIO_CATEGORIES structure is consistent."""
+
+    def test_all_categories_reference_valid_patterns(self):
+        for cat_key, cat_cfg in AAA_AUDIO_CATEGORIES.items():
+            assert cat_cfg["pattern"] in PATTERNS, \
+                "{} references unknown pattern '{}'".format(cat_key, cat_cfg["pattern"])
+
+    def test_all_categories_have_required_fields(self):
+        required = {"pattern", "name", "bus", "bus_path", "actor_work_unit", "event_work_unit"}
+        for cat_key, cat_cfg in AAA_AUDIO_CATEGORIES.items():
+            missing = required - set(cat_cfg.keys())
+            assert not missing, \
+                "{} missing fields: {}".format(cat_key, missing)
+
+    def test_category_names_are_unique(self):
+        names = [cfg["name"] for cfg in AAA_AUDIO_CATEGORIES.values()]
+        assert len(names) == len(set(names)), "Duplicate category names"
+
+    def test_category_bus_paths_are_valid(self):
+        for cat_key, cat_cfg in AAA_AUDIO_CATEGORIES.items():
+            bus_path = cat_cfg["bus_path"]
+            assert bus_path.startswith("\\"), \
+                "{} bus_path should start with backslash".format(cat_key)
+            assert cat_cfg["bus"] in bus_path, \
+                "{} bus '{}' not found in bus_path".format(cat_key, cat_cfg["bus"])

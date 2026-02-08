@@ -1,7 +1,11 @@
-"""Orchestration layer — build_audio_system tool.
+"""Orchestration layer — build_audio_system + build_aaa_project tools.
 
 Wires all 3 layers (Wwise + MetaSounds + Blueprints) into a single tool
 that generates complete audio systems from a pattern name.
+
+build_aaa_project goes further: creates AAA Wwise infrastructure, then
+generates content for every audio category, routes outputs to correct
+buses, and moves objects to dedicated work units.
 
 Auto-detects connection state for graceful degradation:
   Full:       Wwise + UE5 running  -> executes everything, returns IDs
@@ -639,4 +643,280 @@ def build_audio_system(
         "connections": connections,
         "integration": integration,
         "errors": layer_errors,
+    })
+
+
+# ---------------------------------------------------------------------------
+# AAA Project Orchestrator
+# ---------------------------------------------------------------------------
+
+AAA_AUDIO_CATEGORIES: dict[str, dict[str, Any]] = {
+    "player_footsteps": {
+        "pattern": "footsteps",
+        "name": "Player_Footsteps",
+        "bus": "PlayerFootsteps",
+        "bus_path": "\\Master-Mixer Hierarchy\\Default Work Unit\\Master Audio Bus\\PlayerMaster\\PlayerLocomotion\\PlayerFootsteps",
+        "actor_work_unit": "Player_Locomotion",
+        "event_work_unit": "Player",
+        "params": {
+            "wwise": {
+                "surface_types": ["Concrete", "Grass", "Metal", "Wood", "Gravel"],
+                "with_switch_group": True,
+            },
+        },
+    },
+    "player_weapons": {
+        "pattern": "gunshot",
+        "name": "Player_Rifle",
+        "bus": "PlayerWeapons",
+        "bus_path": "\\Master-Mixer Hierarchy\\Default Work Unit\\Master Audio Bus\\PlayerMaster\\PlayerWeapons",
+        "actor_work_unit": "Player_Weapons",
+        "event_work_unit": "Player",
+        "params": {
+            "wwise": {"weapon_name": "Rifle", "num_variations": 4, "pitch_randomization": 120},
+        },
+    },
+    "npc_footsteps": {
+        "pattern": "footsteps",
+        "name": "NPC_Footsteps",
+        "bus": "NPCFootsteps",
+        "bus_path": "\\Master-Mixer Hierarchy\\Default Work Unit\\Master Audio Bus\\NPCMaster\\NPCFootsteps",
+        "actor_work_unit": "NPC_Locomotion",
+        "event_work_unit": "NPC",
+        "params": {
+            "wwise": {
+                "surface_types": ["Concrete", "Grass", "Metal"],
+                "with_switch_group": True,
+            },
+        },
+    },
+    "ambient_wind": {
+        "pattern": "ambient",
+        "name": "Ambient_Wind",
+        "bus": "3DAmbience",
+        "bus_path": "\\Master-Mixer Hierarchy\\Default Work Unit\\Master Audio Bus\\AmbientMaster\\3DAmbience",
+        "actor_work_unit": "Ambience",
+        "event_work_unit": "Ambience",
+        "params": {
+            "wwise": {
+                "layer_names": ["Wind_Light", "Wind_Medium", "Wind_Heavy"],
+                "rtpc_parameter_name": "Wind_Intensity",
+            },
+        },
+    },
+    "weather": {
+        "pattern": "weather",
+        "name": "Weather_System",
+        "bus": "2DAmbience",
+        "bus_path": "\\Master-Mixer Hierarchy\\Default Work Unit\\Master Audio Bus\\AmbientMaster\\2DAmbience",
+        "actor_work_unit": "Ambience",
+        "event_work_unit": "Ambience",
+        "params": {
+            "wwise": {
+                "weather_states": ["Clear", "Cloudy", "LightRain", "HeavyRain", "Storm", "Snow"],
+            },
+        },
+    },
+    "ui": {
+        "pattern": "ui_sound",
+        "name": "UI_Click",
+        "bus": "UIMaster",
+        "bus_path": "\\Master-Mixer Hierarchy\\Default Work Unit\\Master Audio Bus\\UIMaster",
+        "actor_work_unit": "UI",
+        "event_work_unit": "UI",
+        "params": {
+            "wwise": {"sound_name": "Click", "bus_path": ""},
+        },
+    },
+}
+
+
+def _route_to_bus(conn, object_path: str, bus_path: str) -> dict[str, Any]:
+    """Set OutputBus reference on a Wwise container to route to an AAA bus."""
+    try:
+        conn.call("ak.wwise.core.object.setReference", {
+            "object": object_path,
+            "reference": "OutputBus",
+            "value": bus_path,
+        })
+        return {"status": "ok", "object": object_path, "bus": bus_path}
+    except Exception as e:
+        return {"status": "error", "object": object_path, "bus": bus_path, "error": str(e)}
+
+
+def _move_to_work_unit(conn, object_path: str, work_unit_path: str) -> dict[str, Any]:
+    """Move a Wwise object from Default WU to a named Work Unit."""
+    try:
+        conn.call("ak.wwise.core.object.move", {
+            "object": object_path,
+            "parent": work_unit_path,
+            "onNameConflict": "merge",
+        })
+        return {"status": "ok", "object": object_path, "destination": work_unit_path}
+    except Exception as e:
+        return {"status": "error", "object": object_path, "destination": work_unit_path, "error": str(e)}
+
+
+@mcp.tool()
+def build_aaa_project(
+    categories: str = "",
+    setup_params: str = "{}",
+) -> str:
+    """Build a complete AAA audio project: infrastructure + content for all categories.
+
+    Creates AAA Wwise infrastructure (buses, work units, switches, states),
+    then generates 3-layer content (Wwise + MetaSounds + Blueprints) for each
+    audio category, routes outputs to correct buses, and moves objects to
+    dedicated work units.
+
+    Auto-detects connection state:
+    - Full (Wwise + UE5): creates infrastructure, builds all content, routes + moves
+    - Wwise-only: creates infrastructure, builds Wwise content, returns MS commands
+    - Offline: returns complete manifest of what would be created (dry-run)
+
+    Args:
+        categories: Comma-separated category filter (default: all).
+            Available: player_footsteps, player_weapons, npc_footsteps,
+            ambient_wind, weather, ui
+        setup_params: JSON overrides for template_aaa_setup, e.g.
+            {"include_reverbs": false}
+    """
+    # 1. Parse category filter
+    if categories.strip():
+        requested = [c.strip() for c in categories.split(",")]
+        invalid = [c for c in requested if c not in AAA_AUDIO_CATEGORIES]
+        if invalid:
+            return _error(
+                "Unknown categories: {}. Available: {}".format(
+                    ", ".join(invalid),
+                    ", ".join(sorted(AAA_AUDIO_CATEGORIES)),
+                )
+            )
+        active_categories = {k: AAA_AUDIO_CATEGORIES[k] for k in requested}
+    else:
+        active_categories = dict(AAA_AUDIO_CATEGORIES)
+
+    # 2. Parse setup params
+    try:
+        setup_kw = json.loads(setup_params)
+    except (json.JSONDecodeError, ValueError):
+        return _error("Invalid setup_params — must be valid JSON")
+
+    if not isinstance(setup_kw, dict):
+        return _error("setup_params must be a JSON object")
+
+    # 3. Detect connection mode
+    wwise = get_wwise_connection()
+    ue5 = get_ue5_connection()
+    wwise_connected = wwise.is_connected()
+    ue5_connected = ue5.is_connected()
+
+    if wwise_connected and ue5_connected:
+        mode = "full"
+    elif wwise_connected:
+        mode = "wwise_only"
+    else:
+        mode = "offline"
+
+    # 4. Create AAA infrastructure
+    infrastructure: dict[str, Any]
+    if wwise_connected:
+        from ue_audio_mcp.tools.templates import template_aaa_setup
+        try:
+            setup_result = json.loads(template_aaa_setup(**setup_kw))
+        except TypeError as e:
+            return _error("Invalid setup_params key: {}".format(e))
+        if setup_result.get("status") != "ok":
+            return _error("AAA setup failed: {}".format(
+                setup_result.get("message", "unknown error")
+            ))
+        infrastructure = {
+            "mode": "executed",
+            "buses": setup_result.get("buses", {}),
+            "actor_work_units": setup_result.get("actor_work_units", {}),
+            "event_work_units": setup_result.get("event_work_units", {}),
+            "switch_groups": setup_result.get("switch_groups", {}),
+            "state_groups": setup_result.get("state_groups", {}),
+            "summary": setup_result.get("summary", {}),
+        }
+    else:
+        infrastructure = {
+            "mode": "planned",
+            "description": "AAA Wwise infrastructure (buses, work units, switches, states)",
+            "setup_params": setup_kw,
+        }
+
+    # 5. Build content for each category
+    category_results: dict[str, Any] = {}
+    routing_results: list[dict[str, Any]] = []
+    move_results: list[dict[str, Any]] = []
+
+    for cat_key, cat_cfg in active_categories.items():
+        pattern = cat_cfg["pattern"]
+        name = cat_cfg["name"]
+        params = cat_cfg.get("params", {})
+
+        # Build the 3-layer audio system
+        system_result_json = build_audio_system(
+            pattern=pattern,
+            name=name,
+            params_json=json.dumps(params),
+        )
+        system_result = json.loads(system_result_json)
+
+        category_results[cat_key] = {
+            "pattern": pattern,
+            "name": name,
+            "bus": cat_cfg["bus"],
+            "actor_work_unit": cat_cfg["actor_work_unit"],
+            "event_work_unit": cat_cfg["event_work_unit"],
+            "system": system_result,
+        }
+
+        # 6. Post-process: route to bus + move to work units (Wwise connected only)
+        if wwise_connected and system_result.get("status") == "ok":
+            wwise_layer = system_result.get("layers", {}).get("wwise", {})
+            wwise_result_data = wwise_layer.get("result", {})
+
+            # Find the main container ID from the Wwise result.
+            # Each template returns a different key for its top-level container:
+            #   gunshot -> container_id, footsteps/weather -> switch_container_id,
+            #   ambient -> blend_container_id, ui_sound -> actor_mixer_id or sound_id
+            container_id = (
+                wwise_result_data.get("container_id")
+                or wwise_result_data.get("switch_container_id")
+                or wwise_result_data.get("blend_container_id")
+                or wwise_result_data.get("actor_mixer_id")
+            )
+            if container_id:
+                # Route container to correct bus
+                route = _route_to_bus(wwise, container_id, cat_cfg["bus_path"])
+                routing_results.append({"category": cat_key, **route})
+
+                # Move container to correct actor-mixer work unit
+                actor_wu_path = "\\Actor-Mixer Hierarchy\\{}".format(cat_cfg["actor_work_unit"])
+                move = _move_to_work_unit(wwise, container_id, actor_wu_path)
+                move_results.append({"category": cat_key, "type": "actor_mixer", **move})
+
+            # Move event to correct event work unit
+            event_id = wwise_result_data.get("event_id")
+            if event_id:
+                event_wu_path = "\\Events\\{}".format(cat_cfg["event_work_unit"])
+                move = _move_to_work_unit(wwise, event_id, event_wu_path)
+                move_results.append({"category": cat_key, "type": "event", **move})
+
+    # 7. Build manifest
+    return _ok({
+        "mode": mode,
+        "categories_built": list(category_results.keys()),
+        "infrastructure": infrastructure,
+        "categories": category_results,
+        "routing": routing_results,
+        "moves": move_results,
+        "summary": {
+            "total_categories": len(category_results),
+            "infrastructure_mode": infrastructure["mode"],
+            "routing_applied": len(routing_results),
+            "moves_applied": len(move_results),
+        },
     })
