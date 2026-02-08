@@ -208,3 +208,15 @@ TSharedPtr<FJsonObject> FAuditionCommand::Execute(
 		Name.IsEmpty() ? TEXT("Auditioning current graph") :
 		FString::Printf(TEXT("Auditioning '%s'"), *Name));
 }
+
+// ---------------------------------------------------------------------------
+// stop_audition
+// ---------------------------------------------------------------------------
+
+TSharedPtr<FJsonObject> FStopAuditionCommand::Execute(
+	const TSharedPtr<FJsonObject>& Params,
+	FAudioMCPBuilderManager& BuilderManager)
+{
+	BuilderManager.StopAudition();
+	return AudioMCP::MakeOkResponse(TEXT("Audition stopped"));
+}

@@ -10,7 +10,9 @@
 #include "Interfaces/MetasoundOutputFormatInterfaces.h"
 #include "Dom/JsonObject.h"
 #include "Dom/JsonValue.h"
+#include "Components/AudioComponent.h"
 #include "Engine/Engine.h"
+#include "Engine/World.h"
 #include "Editor.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogAudioMCPBuilder, Log, All);
@@ -27,12 +29,27 @@ FAudioMCPBuilderManager::~FAudioMCPBuilderManager()
 
 void FAudioMCPBuilderManager::ResetState()
 {
+	StopAudition();
 	ActiveBuilder.Reset();
 	ActiveBuilderName.Empty();
 	NodeHandles.Empty();
 	GraphInputOutputHandles.Empty();
 	GraphOutputInputHandles.Empty();
 	bLiveUpdatesRequested = false;
+}
+
+void FAudioMCPBuilderManager::StopAudition()
+{
+	if (AuditionAudioComponent.IsValid())
+	{
+		UAudioComponent* Comp = AuditionAudioComponent.Get();
+		if (Comp && Comp->IsPlaying())
+		{
+			Comp->Stop();
+			UE_LOG(LogAudioMCPBuilder, Log, TEXT("Stopped previous audition"));
+		}
+		AuditionAudioComponent.Reset();
+	}
 }
 
 // ---------------------------------------------------------------------------
@@ -68,7 +85,7 @@ bool FAudioMCPBuilderManager::CreateBuilder(const FString& AssetType, const FStr
 			AudioOutInputs,
 			Result,
 			EMetaSoundOutputAudioFormat::Mono,
-			true /* bIsOneShot */);
+			false /* bIsOneShot = false for continuous playback */);
 
 		// Store the built-in Source graph handles so __graph__ connections work
 		if (Result == EMetaSoundBuilderResult::Succeeded && Builder)
@@ -692,33 +709,17 @@ bool FAudioMCPBuilderManager::BuildToAsset(const FString& Name, const FString& P
 		return false;
 	}
 
-	// UE 5.7: BuildToAsset removed. Use BuildNewMetaSound to create a registered transient,
-	// then Build with options for editor-only asset creation.
-#if WITH_EDITORONLY_DATA
-	FMetaSoundBuilderOptions Options;
-	Options.Name = FName(*Name);
-	Options.bAddToRegistry = true;
-
-	TScriptInterface<IMetaSoundDocumentInterface> BuiltMetaSound = ActiveBuilder.Get()->Build(Options);
+	// UE 5.7: Use BuildNewMetaSound to create a registered transient MetaSound.
+	// This is the safest path — avoids the crash-prone Build(FMetaSoundBuilderOptions).
+	TScriptInterface<IMetaSoundDocumentInterface> BuiltMetaSound = ActiveBuilder.Get()->BuildNewMetaSound(FName(*Name));
 	if (!BuiltMetaSound.GetObject())
 	{
 		OutError = FString::Printf(TEXT("Failed to build MetaSound '%s'"), *Name);
 		return false;
 	}
 
-	// Register with subsystem for lookup by other systems
-	UMetaSoundBuilderSubsystem* BuilderSubsystem = UMetaSoundBuilderSubsystem::Get();
-	if (BuilderSubsystem)
-	{
-		BuilderSubsystem->RegisterBuilder(FName(*Name), ActiveBuilder.Get());
-	}
-
 	UE_LOG(LogAudioMCPBuilder, Log, TEXT("Built and registered MetaSound: %s"), *Name);
 	return true;
-#else
-	OutError = TEXT("BuildToAsset requires editor builds");
-	return false;
-#endif
 }
 
 bool FAudioMCPBuilderManager::Audition(FString& OutError)
@@ -745,11 +746,47 @@ bool FAudioMCPBuilderManager::Audition(FString& OutError)
 		return false;
 	}
 
-	// UE 5.7 signature: Audition(Parent, AudioComponent, OnCreateDelegate, bLiveUpdates)
-	FOnCreateAuditionGeneratorHandleDelegate EmptyDelegate;
-	SourceBuilder->Audition(World, nullptr, EmptyDelegate, bLiveUpdatesRequested);
+	// Stop any previous audition before starting a new one
+	StopAudition();
 
-	UE_LOG(LogAudioMCPBuilder, Log, TEXT("Auditioning: %s"), *ActiveBuilderName);
+	// Create a transient AudioComponent for playback (non-spatial / 2D)
+	UAudioComponent* AudioComp = NewObject<UAudioComponent>(World->GetWorldSettings());
+	if (!AudioComp)
+	{
+		OutError = TEXT("Failed to create AudioComponent for audition");
+		return false;
+	}
+	AudioComp->bIsUISound = true;            // Non-spatial, plays on UI bus
+	AudioComp->bAllowSpatialization = false;  // No 3D positioning needed
+	AudioComp->bAutoDestroy = false;          // We manage lifetime via TStrongObjectPtr
+	AudioComp->SetVolumeMultiplier(1.0f);
+	AudioComp->RegisterComponent();
+
+	// Store in member to prevent garbage collection during playback
+	AuditionAudioComponent.Reset(AudioComp);
+
+	UE_LOG(LogAudioMCPBuilder, Log, TEXT("Audition: AudioComponent created — bIsUISound=%d, bAllowSpatialization=%d, Volume=%.2f, Registered=%d"),
+		AudioComp->bIsUISound, AudioComp->bAllowSpatialization, AudioComp->VolumeMultiplier, AudioComp->IsRegistered());
+
+	// UE 5.7 signature: Audition(Parent, AudioComponent, OnCreateDelegate, bLiveUpdates)
+	FOnCreateAuditionGeneratorHandleDelegate GeneratorDelegate;
+	SourceBuilder->Audition(World, AudioComp, GeneratorDelegate, bLiveUpdatesRequested);
+
+	// Check state immediately after Audition call
+	bool bPlaying = AudioComp->IsPlaying();
+	bool bActive = AudioComp->IsActive();
+	USoundBase* Sound = AudioComp->Sound;
+
+	UE_LOG(LogAudioMCPBuilder, Log, TEXT("Audition: called SourceBuilder->Audition() for '%s'. IsPlaying=%d, IsActive=%d, Sound=%s"),
+		*ActiveBuilderName, bPlaying, bActive, Sound ? *Sound->GetName() : TEXT("null"));
+
+	if (!bPlaying && !bActive)
+	{
+		UE_LOG(LogAudioMCPBuilder, Warning, TEXT("Audition: AudioComponent not playing after Audition() call. "
+			"This may indicate the graph has no audio output connected to __graph__ Audio:0, "
+			"or the MetaSound source failed to build internally."));
+	}
+
 	return true;
 #else
 	OutError = TEXT("Audition is only available in editor builds");

@@ -57,3 +57,12 @@ public:
 		const TSharedPtr<FJsonObject>& Params,
 		FAudioMCPBuilderManager& BuilderManager) override;
 };
+
+/** stop_audition: Stop any currently playing audition. */
+class FStopAuditionCommand : public IAudioMCPCommand
+{
+public:
+	virtual TSharedPtr<FJsonObject> Execute(
+		const TSharedPtr<FJsonObject>& Params,
+		FAudioMCPBuilderManager& BuilderManager) override;
+};

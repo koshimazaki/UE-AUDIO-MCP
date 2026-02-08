@@ -90,11 +90,13 @@ void FUEAudioMCPModule::RegisterCommands()
 	Dispatcher->RegisterCommand(TEXT("connect"),
 		MakeShared<FConnectCommand>());
 
-	// 9-10. Build & audition
+	// 9-11. Build & audition
 	Dispatcher->RegisterCommand(TEXT("build_to_asset"),
 		MakeShared<FBuildToAssetCommand>());
 	Dispatcher->RegisterCommand(TEXT("audition"),
 		MakeShared<FAuditionCommand>());
+	Dispatcher->RegisterCommand(TEXT("stop_audition"),
+		MakeShared<FStopAuditionCommand>());
 
 	// 11. Blueprint reflection
 	Dispatcher->RegisterCommand(TEXT("call_function"),

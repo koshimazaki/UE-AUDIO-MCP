@@ -12,6 +12,7 @@ import json
 import socket
 import struct
 import sys
+import time
 
 
 def send_command(sock, cmd):
@@ -73,7 +74,7 @@ def test_sine_tone(sock):
         {"action": "add_node", "id": "sine1", "node_type": "Sine"},
         {"action": "set_default", "node_id": "sine1", "input": "Frequency", "value": 440.0},
         {"action": "add_node", "id": "gain1", "node_type": "Multiply (Audio by Float)"},
-        {"action": "set_default", "node_id": "gain1", "input": "AdditionalOperands", "value": 0.25},
+        {"action": "set_default", "node_id": "gain1", "input": "AdditionalOperands", "value": 1.0},
         {"action": "connect", "from_node": "sine1", "from_pin": "Audio",
          "to_node": "gain1", "to_pin": "PrimaryOperand"},
         {"action": "connect", "from_node": "gain1", "from_pin": "Out",
@@ -93,7 +94,19 @@ def test_sine_tone(sock):
             print(f"  [{i+1}/{len(commands)}] FAIL: {action} -- {msg}")
             return False
 
-    print("\n  Sine tone should be audible!")
+    print("\n  Audition started — waiting 3 seconds for playback...")
+    print("  (Check UE Output Log for 'LogAudioMCPBuilder' messages)")
+    print("  Key log lines to look for:")
+    print("    - 'AudioComponent created' with Registered=1")
+    print("    - 'IsPlaying=1, IsActive=1' means audio is flowing")
+    print("    - 'IsPlaying=0, IsActive=0' means graph may have no audio output")
+    time.sleep(3)
+
+    # Stop audition
+    resp = send_command(sock, {"action": "stop_audition"})
+    print(f"  Stop: {resp.get('status')} — {resp.get('message', '')}")
+
+    print("  Done. Did you hear a 440Hz sine tone?")
     return True
 
 

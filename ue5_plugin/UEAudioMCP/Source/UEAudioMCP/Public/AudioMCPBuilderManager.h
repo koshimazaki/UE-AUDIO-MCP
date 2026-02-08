@@ -7,8 +7,9 @@
 #include "MetasoundFrontendDocument.h"
 #include "MetasoundBuilderBase.h"
 
-// Forward declaration — full include in .cpp
+// Forward declarations — full includes in .cpp
 class UMetaSoundBuilderBase;
+class UAudioComponent;
 
 /**
  * Manages the active MetaSounds builder session.
@@ -82,6 +83,9 @@ public:
 	/** Audition/preview the current graph in the editor. */
 	bool Audition(FString& OutError);
 
+	/** Stop any currently playing audition. */
+	void StopAudition();
+
 	/** Check if a builder is currently active. */
 	bool HasActiveBuilder() const { return ActiveBuilder.IsValid(); }
 
@@ -112,6 +116,9 @@ private:
 
 	// UE 5.7: live updates flag stored here, applied at Audition() time
 	bool bLiveUpdatesRequested = false;
+
+	// Keep AudioComponent alive during audition (prevents GC)
+	TStrongObjectPtr<UAudioComponent> AuditionAudioComponent;
 
 	/** Build the node type lookup map from the MetaSound registry. */
 	void BuildNodeTypeMap();
