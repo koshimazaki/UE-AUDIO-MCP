@@ -9,6 +9,7 @@ venv/
 
 memories.json
 project_scan.json
+.claude/plans/
 # Node
 node_modules/
 
