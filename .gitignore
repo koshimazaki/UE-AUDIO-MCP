@@ -7,9 +7,6 @@ build/
 .venv/
 venv/
 
-memories.json
-project_scan.json
-.claude/plans/
 # Node
 node_modules/
 
@@ -43,6 +40,7 @@ TODO.md
 ROADMAP.md
 memories.json
 project_scan.json
+.claude/plans/
 
 # Generated data
 scripts/bp_*.json
