@@ -322,16 +322,9 @@ def ms_export_graph(asset_path: str, convert_to_template: bool = False) -> str:
     }
 
     if convert_to_template:
-        try:
-            from scripts.convert_export_to_template import convert_export_to_template
-            template = convert_export_to_template(result)
-            response["template"] = template
-            response["message"] += " (template generated)"
-        except ImportError:
-            # scripts dir not on path — use inline conversion
-            template = _inline_convert(result)
-            response["template"] = template
-            response["message"] += " (template generated)"
+        template = _inline_convert(result)
+        response["template"] = template
+        response["message"] += " (template generated)"
 
     return _ok(response)
 
@@ -341,7 +334,9 @@ def _inline_convert(export_data: dict) -> dict:
     import re
 
     asset_path = export_data.get("asset_path", "")
-    asset_name = asset_path.rstrip("/").split("/")[-1]
+    # Extract name: /Game/Audio/MySound.MySound -> MySound
+    raw_name = asset_path.rstrip("/").split("/")[-1]
+    asset_name = raw_name.split(".")[-1] if "." in raw_name else raw_name
 
     template: dict = {
         "name": asset_name,
@@ -370,6 +365,7 @@ def _inline_convert(export_data: dict) -> dict:
     guid_to_short: dict[str, str] = {}
     input_nodes: dict[str, str] = {}
     output_nodes: dict[str, str] = {}
+    used_ids: set[str] = set()
     template["nodes"] = []
 
     for i, node in enumerate(export_data.get("nodes", [])):
@@ -388,6 +384,13 @@ def _inline_convert(export_data: dict) -> dict:
 
         short = re.sub(r"[^a-zA-Z0-9\s]", "", name).strip().lower()
         short = re.sub(r"\s+", "_", short) or "node_{}".format(i)
+        # Deduplicate: sine, sine_2, sine_3, ...
+        base = short
+        counter = 2
+        while short in used_ids:
+            short = "{}_{}".format(base, counter)
+            counter += 1
+        used_ids.add(short)
         guid_to_short[nid] = short
 
         # Determine node_type from class_name

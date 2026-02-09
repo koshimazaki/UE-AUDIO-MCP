@@ -145,11 +145,10 @@ def convert_export_to_template(export_data: dict) -> dict:
     Returns:
         Template dict compatible with graph_schema.py validate_graph()
     """
-    # Extract asset name from path
+    # Extract asset name from path: /Game/Audio/MySound.MySound -> MySound
     asset_path = export_data.get("asset_path", "")
-    asset_name = asset_path.rstrip("/").split("/")[-1].split(".")[-1]
-    if "." in asset_name:
-        asset_name = asset_name.split(".")[-1]
+    raw_name = asset_path.rstrip("/").split("/")[-1]
+    asset_name = raw_name.split(".")[-1] if "." in raw_name else raw_name
 
     template: dict = {
         "name": asset_name,
@@ -196,6 +195,7 @@ def convert_export_to_template(export_data: dict) -> dict:
     input_nodes: dict[str, str] = {}   # node_guid -> pin_name (graph input)
     output_nodes: dict[str, str] = {}  # node_guid -> pin_name (graph output)
     external_nodes: list[dict] = []
+    used_ids: set[str] = set()
 
     for i, node in enumerate(nodes_raw):
         node_id = node.get("node_id", "")
@@ -208,12 +208,8 @@ def convert_export_to_template(export_data: dict) -> dict:
         elif class_type == "Output":
             output_nodes[node_id] = node_name
             guid_to_short[node_id] = "__graph__"
-        elif class_type in ("Variable", "VariableAccessor", "VariableMutator", "VariableDeferred"):
-            short = _make_short_id(node_name, i)
-            guid_to_short[node_id] = short
-            external_nodes.append(node)
         else:
-            short = _make_short_id(node_name, i)
+            short = _make_short_id(node_name, i, used_ids)
             guid_to_short[node_id] = short
             external_nodes.append(node)
 
@@ -298,12 +294,19 @@ def convert_export_to_template(export_data: dict) -> dict:
     return template
 
 
-def _make_short_id(name: str, index: int) -> str:
-    """Convert a node name to a short, snake_case ID."""
+def _make_short_id(name: str, index: int, used: set[str] | None = None) -> str:
+    """Convert a node name to a unique, snake_case ID."""
     short = re.sub(r"[^a-zA-Z0-9\s]", "", name).strip().lower()
     short = re.sub(r"\s+", "_", short)
     if not short:
         short = f"node_{index}"
+    if used is not None:
+        base = short
+        counter = 2
+        while short in used:
+            short = f"{base}_{counter}"
+            counter += 1
+        used.add(short)
     return short
 
 

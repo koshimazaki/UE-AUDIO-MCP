@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import json
 import os
 
@@ -354,7 +355,7 @@ def test_inline_convert_defaults():
 
 
 def test_inline_convert_variables():
-    export_with_vars = dict(MOCK_EXPORT_RESPONSE)
+    export_with_vars = copy.deepcopy(MOCK_EXPORT_RESPONSE)
     export_with_vars["variables"] = [
         {"name": "TargetCutoff", "type": "Float", "default": 1000.0, "id": "var-guid"},
     ]
@@ -364,3 +365,77 @@ def test_inline_convert_variables():
     assert template["variables"][0]["name"] == "TargetCutoff"
     assert template["variables"][0]["default"] == 1000.0
     assert "id" not in template["variables"][0]  # id should be stripped
+
+
+def test_inline_convert_duplicate_node_names():
+    """Two nodes with the same display name must get unique short IDs."""
+    export = copy.deepcopy(MOCK_EXPORT_RESPONSE)
+    # Add a second Sine node
+    export["nodes"].append({
+        "node_id": "guid-sine-2",
+        "class_name": "UE::Sine::Audio",
+        "name": "Sine",
+        "class_type": "External",
+        "x": 200, "y": 0,
+        "inputs": [{"name": "Frequency", "type": "Float", "default": 880.0}],
+        "outputs": [{"name": "Audio", "type": "Audio"}],
+    })
+    template = _inline_convert(export)
+    node_ids = [n["id"] for n in template["nodes"]]
+    # All IDs must be unique
+    assert len(node_ids) == len(set(node_ids)), f"Duplicate IDs: {node_ids}"
+    # Should have sine and sine_2
+    assert "sine" in node_ids
+    assert "sine_2" in node_ids
+
+
+def test_inline_convert_empty_graph():
+    """An export with zero external nodes should produce empty nodes/connections."""
+    export = {
+        "status": "ok",
+        "asset_path": "/Game/Audio/Empty",
+        "asset_type": "Source",
+        "interfaces": [],
+        "graph_inputs": [],
+        "graph_outputs": [],
+        "variables": [],
+        "nodes": [],
+        "edges": [],
+    }
+    template = _inline_convert(export)
+    assert template["name"] == "Empty"
+    assert template["nodes"] == []
+    assert template["connections"] == []
+
+
+def test_inline_convert_dotted_asset_path():
+    """Asset paths like /Game/Audio/MySound.MySound should extract 'MySound'."""
+    export = copy.deepcopy(MOCK_EXPORT_RESPONSE)
+    export["asset_path"] = "/Game/Audio/MySound.MySound"
+    template = _inline_convert(export)
+    assert template["name"] == "MySound"
+
+
+def test_inline_convert_variable_class_types():
+    """VariableAccessor/Mutator nodes should map to sentinel node types."""
+    export = copy.deepcopy(MOCK_EXPORT_RESPONSE)
+    export["nodes"].append({
+        "node_id": "guid-var-get",
+        "class_name": "TargetCutoff",
+        "name": "TargetCutoff",
+        "class_type": "VariableAccessor",
+        "x": 0, "y": 300,
+        "inputs": [], "outputs": [{"name": "TargetCutoff", "type": "Float"}],
+    })
+    export["nodes"].append({
+        "node_id": "guid-var-set",
+        "class_name": "TargetCutoff",
+        "name": "TargetCutoff",
+        "class_type": "VariableMutator",
+        "x": 0, "y": 400,
+        "inputs": [{"name": "TargetCutoff", "type": "Float"}], "outputs": [],
+    })
+    template = _inline_convert(export)
+    types = {n["node_type"] for n in template["nodes"]}
+    assert "__variable_get__" in types
+    assert "__variable_set__" in types
