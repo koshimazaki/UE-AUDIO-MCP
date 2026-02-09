@@ -25,9 +25,9 @@ dependencies = ["mcp[cli]>=1.3.0", "waapi-client>=0.7", "numpy>=1.24"]
 dev = ["pytest>=7.0", "pytest-asyncio>=0.21"]
 
 [project.urls]
-Homepage = "https://github.com/koshimazaki/UE5-WWISE"
-Repository = "https://github.com/koshimazaki/UE5-WWISE"
-Issues = "https://github.com/koshimazaki/UE5-WWISE/issues"
+Homepage = "https://github.com/koshimazaki/UE-AUDIO-MCP"
+Repository = "https://github.com/koshimazaki/UE-AUDIO-MCP"
+Issues = "https://github.com/koshimazaki/UE-AUDIO-MCP/issues"
 
 [project.scripts]
 ue-audio-mcp = "ue_audio_mcp.server:main"

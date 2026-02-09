@@ -88,7 +88,7 @@ C64 chiptune plays      ->    ReSID SID Chip node    ->   Music bus, stereo mix
 
 ## What's Included
 
-### 52 MCP Tools
+### 53 MCP Tools
 
 | Category | Tools | What They Do |
 |----------|-------|-------------|
@@ -283,7 +283,7 @@ Total                 43,200 lines   207 files
 ```
 Phase 1: Wwise MCP Server        Done    20 tools, WAAPI bridge
 Phase 2: Knowledge Base           Done    22K+ entries, semantic search, 144 MS nodes
-Phase 3: UE5 Plugin + Tools       Done    C++ plugin (24 cmds), 22 tools, TCP protocol
+Phase 3: UE5 Plugin + Tools       Done    C++ plugin (25 cmds), 22 tools, TCP protocol
 Phase 4: Orchestration            Done    11 patterns, AAA project, 3-mode auto-detection
 Phase 5: ReSID SIDKIT Edition     Done    5 custom C++ MetaSounds nodes, 3 templates
 Phase 6: Blueprint Scanner        Done    Graph inspection, editor menu, batch scanner
