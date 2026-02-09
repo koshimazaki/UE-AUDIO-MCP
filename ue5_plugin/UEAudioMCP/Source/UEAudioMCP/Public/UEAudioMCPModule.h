@@ -11,7 +11,7 @@ class FAudioMCPBuilderManager;
 
 /**
  * Editor module that starts the Audio MCP TCP server on load.
- * Creates the builder manager, registers all 24 commands,
+ * Creates the builder manager, registers all 25 commands,
  * and starts listening on port 9877.
  */
 class FUEAudioMCPModule : public IModuleInterface

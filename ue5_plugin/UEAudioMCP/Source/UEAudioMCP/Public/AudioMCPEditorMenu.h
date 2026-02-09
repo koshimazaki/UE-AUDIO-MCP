@@ -6,7 +6,7 @@
 
 /**
  * Registers the "Audio MCP" menu in the editor main menu bar.
- * Provides: Scan Project, Scan Selected, Export Positions, Open Results, Status.
+ * Provides: Scan Project, Scan Selected, Export MetaSounds, Open Results, Status.
  */
 class FAudioMCPEditorMenu
 {
@@ -27,7 +27,7 @@ private:
 	// --- Menu action handlers ---
 	static void OnScanProject();
 	static void OnScanSelected();
-	static void OnExportNodePositions();
+	static void OnExportMetaSounds();
 	static void OnOpenResultsFolder();
 	static void OnShowStatus();
 

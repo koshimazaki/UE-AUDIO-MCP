@@ -123,7 +123,7 @@ void FAudioMCPEditorMenu::PopulateMenu(UToolMenu* Menu)
 			LOCTEXT("ExportMetaSounds", "Export MetaSounds"),
 			LOCTEXT("ExportMetaSoundsTip", "Full export of all MetaSound graphs (nodes, types, defaults, variables, interfaces)"),
 			FSlateIcon(FAppStyle::GetAppStyleSetName(), "Icons.Save"),
-			FUIAction(FExecuteAction::CreateStatic(&FAudioMCPEditorMenu::OnExportNodePositions))
+			FUIAction(FExecuteAction::CreateStatic(&FAudioMCPEditorMenu::OnExportMetaSounds))
 		);
 
 		Section.AddMenuEntry(
@@ -325,9 +325,9 @@ void FAudioMCPEditorMenu::OnScanSelected()
 }
 
 
-void FAudioMCPEditorMenu::OnExportNodePositions()
+void FAudioMCPEditorMenu::OnExportMetaSounds()
 {
-	// Find all MetaSoundSource assets and export their node positions
+	// Find all MetaSound assets and export their full graph data
 	IAssetRegistry& Registry =
 		FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry").Get();
 

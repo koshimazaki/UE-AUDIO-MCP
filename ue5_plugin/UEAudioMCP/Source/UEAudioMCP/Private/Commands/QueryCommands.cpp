@@ -86,7 +86,8 @@ namespace QueryHelpers
 		{
 			return TEXT("Source");
 		}
-		if (Asset->GetClass()->GetName().Contains(TEXT("Patch")))
+		static const FTopLevelAssetPath PatchClassPath(TEXT("/Script/MetasoundEngine"), TEXT("MetaSoundPatch"));
+		if (Asset->GetClass()->GetClassPathName() == PatchClassPath)
 		{
 			return TEXT("Patch");
 		}
@@ -267,23 +268,8 @@ TSharedPtr<FJsonObject> FListNodeClassesCommand::Execute(
 	for (const FMetasoundFrontendClass& FrontendClass : AllClasses)
 	{
 		const FMetasoundFrontendClassMetadata& Metadata = FrontendClass.Metadata;
-
-		// Build the full class name string: "Namespace::Name::Variant"
-		FString Namespace = Metadata.GetClassName().Namespace.ToString();
-		FString Name = Metadata.GetClassName().Name.ToString();
-		FString Variant = Metadata.GetClassName().Variant.ToString();
-
-		FString FullName;
-		if (Namespace.IsEmpty())
-		{
-			FullName = Variant.IsEmpty() ? Name : FString::Printf(TEXT("%s::%s"), *Name, *Variant);
-		}
-		else
-		{
-			FullName = Variant.IsEmpty()
-				? FString::Printf(TEXT("%s::%s"), *Namespace, *Name)
-				: FString::Printf(TEXT("%s::%s::%s"), *Namespace, *Name, *Variant);
-		}
+		const FMetasoundFrontendClassName& CN = Metadata.GetClassName();
+		FString FullName = QueryHelpers::BuildFullClassName(CN);
 
 		// Apply filter if specified
 		if (!Filter.IsEmpty() && !FullName.Contains(Filter, ESearchCase::IgnoreCase))
@@ -297,9 +283,9 @@ TSharedPtr<FJsonObject> FListNodeClassesCommand::Execute(
 		{
 			TSharedPtr<FJsonObject> NodeObj = MakeShared<FJsonObject>();
 			NodeObj->SetStringField(TEXT("class_name"), FullName);
-			NodeObj->SetStringField(TEXT("namespace"), Namespace);
-			NodeObj->SetStringField(TEXT("name"), Name);
-			NodeObj->SetStringField(TEXT("variant"), Variant);
+			NodeObj->SetStringField(TEXT("namespace"), CN.Namespace.ToString());
+			NodeObj->SetStringField(TEXT("name"), CN.Name.ToString());
+			NodeObj->SetStringField(TEXT("variant"), CN.Variant.ToString());
 			NodeArray.Add(MakeShared<FJsonValueObject>(NodeObj));
 		}
 	}
@@ -366,14 +352,11 @@ TSharedPtr<FJsonObject> FGetNodeLocationsCommand::Execute(
 		// Position
 		const TMap<FGuid, FVector2D>& Locations = Node.Style.Display.Locations;
 		bool bHasPosition = Locations.Num() > 0;
-		double PosX = 0.0, PosY = 0.0;
+		NodeObj->SetBoolField(TEXT("has_position"), bHasPosition);
 		if (bHasPosition)
 		{
-			for (const auto& Pair : Locations) { PosX = Pair.Value.X; PosY = Pair.Value.Y; break; }
+			for (const auto& Pair : Locations) { NodeObj->SetNumberField(TEXT("x"), Pair.Value.X); NodeObj->SetNumberField(TEXT("y"), Pair.Value.Y); break; }
 		}
-		NodeObj->SetNumberField(TEXT("x"), PosX);
-		NodeObj->SetNumberField(TEXT("y"), PosY);
-		NodeObj->SetBoolField(TEXT("has_position"), bHasPosition);
 
 		// Input pins with types and defaults
 		TArray<TSharedPtr<FJsonValue>> InputPins;

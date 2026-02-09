@@ -106,11 +106,11 @@ void FUEAudioMCPModule::RegisterCommands()
 	Dispatcher->RegisterCommand(TEXT("open_in_editor"),
 		MakeShared<FOpenInEditorCommand>());
 
-	// 11. Blueprint reflection
+	// 13. Blueprint reflection
 	Dispatcher->RegisterCommand(TEXT("call_function"),
 		MakeShared<FCallFunctionCommand>());
 
-	// 12-14. Graph variables (UE 5.7)
+	// 14-16. Graph variables (UE 5.7)
 	Dispatcher->RegisterCommand(TEXT("add_graph_variable"),
 		MakeShared<FAddGraphVariableCommand>());
 	Dispatcher->RegisterCommand(TEXT("add_variable_get_node"),
@@ -118,13 +118,13 @@ void FUEAudioMCPModule::RegisterCommands()
 	Dispatcher->RegisterCommand(TEXT("add_variable_set_node"),
 		MakeShared<FAddVariableSetNodeCommand>());
 
-	// 15-16. Preset conversion
+	// 17-18. Preset conversion
 	Dispatcher->RegisterCommand(TEXT("convert_to_preset"),
 		MakeShared<FConvertToPresetCommand>());
 	Dispatcher->RegisterCommand(TEXT("convert_from_preset"),
 		MakeShared<FConvertFromPresetCommand>());
 
-	// 17-20. Query & live updates
+	// 19-22. Query & live updates
 	Dispatcher->RegisterCommand(TEXT("get_graph_input_names"),
 		MakeShared<FGetGraphInputNamesCommand>());
 	Dispatcher->RegisterCommand(TEXT("set_live_updates"),
@@ -134,13 +134,13 @@ void FUEAudioMCPModule::RegisterCommands()
 	Dispatcher->RegisterCommand(TEXT("get_node_locations"),
 		MakeShared<FGetNodeLocationsCommand>());
 
-	// 21-22. Blueprint graph inspection & asset queries
+	// 23-24. Blueprint graph inspection & asset queries
 	Dispatcher->RegisterCommand(TEXT("scan_blueprint"),
 		MakeShared<FScanBlueprintCommand>());
 	Dispatcher->RegisterCommand(TEXT("list_assets"),
 		MakeShared<FListAssetsCommand>());
 
-	// 23. Full MetaSound graph export
+	// 25. Full MetaSound graph export
 	Dispatcher->RegisterCommand(TEXT("export_metasound"),
 		MakeShared<FExportMetaSoundCommand>());
 }
