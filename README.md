@@ -1,8 +1,16 @@
+```
+ _   _ _____    _   _   _ ____ ___ ___    __  __  ____ ____
+| | | | ____|  / \ | | | |  _ \_ _/ _ \  |  \/  |/ ___|  _ \
+| | | |  _|   / _ \| | | | | | | | | | | | |\/| | |   | |_) |
+| |_| | |___ / ___ \ |_| | |_| | | |_| | | |  | | |___|  __/
+ \___/|_____/_/   \_\___/|____/___\___/  |_|  |_|\____|_|
+```
+
 # UE Audio MCP
 
 **AI-driven game audio pipelines -- from natural language to Wwise + MetaSounds + Blueprints.**
 
-One MCP server. Three audio engines. 52 tools. 22K+ Blueprint nodes. Optimised for **Unreal Engine 5.7** and **Wwise 2024**.
+One MCP server. Three audio engines. 53 tools. 22K+ Blueprint nodes. Optimised for **Unreal Engine 5.7** and **Wwise 2024**.
 
 Complete audio systems from a single prompt.
 
@@ -21,7 +29,7 @@ Complete audio systems from a single prompt.
                                 v
                     +---------------------------+
                     |      UE Audio MCP         |
-                    |      52 tools             |
+                    |      53 tools             |
                     |      22K+ knowledge       |
                     +---------------------------+
                             |
@@ -36,7 +44,7 @@ Complete audio systems from a single prompt.
              v               v                   v
      +----------------+ +---------------------------+
      | Wwise App      | | UE5 C++ Plugin             |
-     | WAAPI :8080    | | TCP:9877 (24 commands)     |
+     | WAAPI :8080    | | TCP:9877 (25 commands)     |
      +----------------+ | MetaSounds Builder API     |
                         | Blueprint Graph Scanner    |
                         | Editor Menu Integration    |
@@ -132,7 +140,7 @@ Scans 7 K2Node types that Python can't access: **CallFunction**, **Event**, **Cu
 |--------|-------------|
 | **Scan Project Audio** | Scans all Blueprints under /Game/ with progress bar, saves JSON |
 | **Scan Selected Blueprint** | Deep-scan with full pin details for selected Content Browser asset |
-| **Export Node Positions** | Exports MetaSound node pixel positions (all Sources + Patches) |
+| **Export MetaSounds** | Full graph export with types, defaults, variables, interfaces (all Sources + Patches) |
 | **Open Results Folder** | Opens Saved/AudioMCP/ in file browser |
 | **Server Status** | Shows TCP server port and command count |
 
@@ -172,7 +180,7 @@ SIDKIT extensions beyond stock reSID: FM cross-modulation (Cwejman S1 style), re
 
 Editor-only plugin providing TCP server for MetaSounds Builder API and Blueprint graph access:
 
-- **24 commands**: builder lifecycle, node ops, graph I/O, variables, presets, audition, blueprint scanning, asset queries, live updates
+- **25 commands**: builder lifecycle, node ops, graph I/O, variables, presets, audition, blueprint scanning, asset queries, live updates
 - **Wire protocol**: 4-byte length-prefix + UTF-8 JSON on port 9877
 - **Node registry**: 70 display-name -> class-name mappings (65 standard + 5 SID) + passthrough for `::` names
 - **Thread safety**: FRunnable TCP -> AsyncTask(GameThread) dispatch
@@ -286,13 +294,12 @@ Phase 7: A2HW Protocol Spec      WIP     Defined in SIDKIT, extended here
 
 ### Coming Next
 
-- **Game project knowledge** -- Scanning Lyra, Stack-O-Bot, and community projects to grow the Blueprint pattern library with real-world audio implementations
-- **Error learning** -- SIDKIT-pattern error_signature -> fix mapping (build fails get remembered)
-- **Cloudflare D1 + Vectorize** -- Cloud-hosted knowledge base for team sharing
+- **Live plugin testing** -- End-to-end validation with UE5.7 running
+- **Game project scanning** -- Extracting Blueprints + MetaSounds from Lyra, Stack-O-Bot, and community projects
+- **Error learning** -- Error signature -> fix mapping (build fails get remembered)
 - **AudioLink integration** -- Automated MetaSounds -> Wwise routing via AudioLink bridge
 - **More AAA categories** -- Dialogue, music, cinematics, vehicles expanded
-- **Live parameter dashboard** -- Real-time RTPC/MetaSounds parameter monitoring
-- **A2HW Protocol** -- Formalising the Agent-to-Hardware protocol for AI-controlled audio across platforms (game engines, DAWs, hardware)
+- **A2HW Protocol** -- Agent-to-Hardware protocol for AI-controlled audio across platforms
 
 ---
 
@@ -306,7 +313,7 @@ npx skills add koshimazaki/ue-audio-skills
 
 | Skill | What it does |
 |-------|-------------|
-| `/mcp-plugin` | TCP plugin control -- 24 commands for building MetaSounds graphs, scanning blueprints, listing assets |
+| `/mcp-plugin` | TCP plugin control -- 25 commands for building MetaSounds graphs, scanning blueprints, listing assets |
 | `/metasound-dsp` | MetaSounds DSP specialist -- 144 nodes, Builder API, signal flow patterns, graph templates |
 | `/unreal-bp` | Blueprint audio logic -- game event detection, parameter wiring, asset scanning |
 | `/build-system` | Full pipeline orchestrator -- generates complete 3-layer audio systems from a single description |

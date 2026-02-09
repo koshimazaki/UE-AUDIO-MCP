@@ -4,13 +4,30 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ue-audio-mcp"
-version = "0.1.0"
-description = "MCP server for Wwise game audio via WAAPI"
+version = "0.0.2"
+description = "MCP server for game audio — Wwise + MetaSounds + Blueprints from natural language"
 requires-python = ">=3.10"
+license = "MIT"
+readme = "README.md"
+authors = [{ name = "Koshi Mazaki", email = "koshimazaki@users.noreply.github.com" }]
+keywords = ["mcp", "wwise", "metasounds", "unreal-engine", "game-audio", "waapi", "procedural-audio"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Multimedia :: Sound/Audio",
+    "Topic :: Games/Entertainment",
+]
 dependencies = ["mcp[cli]>=1.3.0", "waapi-client>=0.7", "numpy>=1.24"]
 
 [project.optional-dependencies]
 dev = ["pytest>=7.0", "pytest-asyncio>=0.21"]
+
+[project.urls]
+Homepage = "https://github.com/koshimazaki/UE5-WWISE"
+Repository = "https://github.com/koshimazaki/UE5-WWISE"
+Issues = "https://github.com/koshimazaki/UE5-WWISE/issues"
 
 [project.scripts]
 ue-audio-mcp = "ue_audio_mcp.server:main"

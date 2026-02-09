@@ -1,14 +1,12 @@
 # UE Audio MCP - Project Instructions
 
 ## Project Overview
- The ** MCP server for game audio** — generating complete Wwise + MetaSounds + Blueprint audio systems from natural language.
+MCP server for game audio — generating complete Wwise + MetaSounds + Blueprint audio systems from natural language.
 
 **Architecture**: Three-layer system
 - **Blueprint (WHEN)** — Game event detection, parameter setting via Remote Control API
 - **MetaSounds (WHAT)** — Procedural DSP synthesis via Builder API (UE 5.4+)
 - **Wwise (HOW)** — Mixing, buses, spatialization, RTPC via WAAPI (ws://127.0.0.1:8080/waapi)
-
-**Inspired by SIDKIT** — Same agent-generated audio philosophy, different target (game engines vs hardware).
 
 ---
 
@@ -17,38 +15,9 @@
 |-----------|-----------|-------|
 | MCP Server | Python (FastMCP) | Main server, stdio transport |
 | Wwise Bridge | `waapi-client` | Official Audiokinetic Python lib, WebSocket :8080 |
-| UE5 Bridge | C++ plugin + TCP (port 9877) | JSON command protocol, all UE5 tools route through this |
-| Knowledge (structured) | Cloudflare D1 | Nodes, WAAPI functions, types, patterns, error fixes |
-| Knowledge (semantic) | Cloudflare Vectorize | Embeddings over same D1 data for meaning-based search |
-| Error Learning | Cloudflare D1 | SIDKIT pattern: error_signature → fix mapping |
-| Templates | Parameterised JSON | 6+ game audio patterns |
-
-## Knowledge Architecture (D1 + Vectorize)
-
-**Two search paths for two different needs:**
-- **D1 (structured)** — Source of truth. SQL queries by category, type, name, property.
-  - `WHERE category = 'filters'` → exact node list
-  - `WHERE type = 'SwitchContainer'` → Wwise object spec
-- **Vectorize (semantic)** — Same entries embedded for meaning-based search.
-  - "make it sound underwater" → finds Lowpass, Biquad, wet reverb pattern
-  - "add spatial movement" → finds ITD Panner, Stereo Panner, Doppler
-
-**D1 Tables:**
-| Table | Contents | Example Query |
-|---|---|---|
-| `metasound_nodes` | 80+ nodes, inputs/outputs/types | category, data_type, name |
-| `waapi_functions` | 87 WAAPI calls, params/returns | namespace, operation |
-| `wwise_types` | 16 object types, properties | type_name, property |
-| `audio_patterns` | Game audio patterns (gunshot, footstep...) | pattern_type, complexity |
-| `error_patterns` | error_signature → successful_fix | error_hash, success_rate |
-| `ue_game_examples` | Lyra, Fortnite, game audio references | game, system_type |
-
-**Cloudflare Setup (fully independent):**
-- Own D1 database: `ue-audio-knowledge` (no runtime link to SIDKIT)
-- Own Vectorize index: `ue-audio-index` (own embeddings)
-- Own Workers (same Cloudflare account, separate deployments)
-- **One-time seed**: Copy universal DSP knowledge from SIDKIT (oscillators, filters, envelopes, LFOs, effects) — then grows independently
-- No shared workers, no cross-reference, no A2HW dependency at runtime
+| UE5 Bridge | C++ plugin + TCP (port 9877) | JSON command protocol, 25 commands |
+| Knowledge | Local SQLite + TF-IDF | 144 nodes, 22K+ BP entries, semantic search |
+| Templates | Parameterised JSON | 22 MetaSounds + 30 Blueprint + 6 Wwise |
 
 ## Key APIs
 - **WAAPI**: 87 functions, WAMP/WebSocket on :8080, HTTP on :8090. Wwise MUST be running.
@@ -57,15 +26,6 @@
 - **AudioLink (UE 5.1+)**: One-way MetaSounds → Wwise routing.
 
 ---
-
-## Development Phases
-```
-Phase 1: Wwise MCP (standalone, WAAPI)     → ships alone
-Phase 2: MetaSounds Knowledge Base          → ships alone
-Phase 3: UE5 Audio Plugin (Builder API)     → needs Phase 2
-Phase 4: Systems Layer (orchestration)      → needs Phase 1+3
-Phase 5: A2HW Protocol Spec                → parallel
-```
 
 ## Agent Specialisations
 
@@ -106,47 +66,28 @@ Handles: WAAPI calls, Wwise object hierarchy, RTPC curves, switch containers, bu
 ```
 src/ue_audio_mcp/
 ├── server.py              → FastMCP entry point + lifespan
-├── connection.py          → WaapiConnection singleton + UE5 plugin connection
+├── connection.py          → WaapiConnection + UE5PluginConnection singletons
 ├── tools/
-│   ├── wwise/             → WAAPI tool implementations
-│   ├── metasounds/        → MetaSounds Builder tools (via C++ plugin)
-│   ├── blueprints/        → Blueprint tools (via C++ plugin)
-│   └── systems/           → High-level system generators (orchestrator)
+│   ├── wwise_*.py         → WAAPI tool implementations (20 tools)
+│   ├── ms_*.py            → MetaSounds tools (knowledge + builder, 18 tools)
+│   ├── bp_*.py            → Blueprint tools (6 tools)
+│   └── systems.py         → Orchestrator (build_audio_system, build_aaa_project)
 ├── knowledge/
-│   ├── d1_client.py       → Cloudflare D1 structured queries
-│   ├── vectorize_client.py → Cloudflare Vectorize semantic search
+│   ├── db.py              → SQLite knowledge DB (9 tables, singleton)
+│   ├── embeddings.py      → TF-IDF + cosine similarity search
 │   ├── wwise_types.py     → Object types, properties, defaults
-│   └── metasound_nodes.py → Node catalogue, data types
-├── storage/
-│   └── error_learning.py  → SIDKIT-pattern error→fix storage (D1)
-├── protocol/              → A2HW protocol implementation
-└── templates/             → Parameterised audio pattern templates
-workers/                   → Cloudflare Workers (D1 + Vectorize API)
-research/                  → API research docs (WAAPI, MetaSounds, UE MCP landscape)
-tests/                     → Integration & unit tests
+│   ├── metasound_nodes.py → 144 nodes, 798 pins, 20 categories
+│   └── tutorials.py       → Builder API catalogue, patterns, conversions
+├── templates/
+│   ├── metasounds/        → 22 MS graph templates (JSON)
+│   ├── blueprints/        → 30 BP templates (JSON)
+│   └── wwise/             → 6 Wwise hierarchy templates (JSON)
+└── graph_schema.py        → Graph spec format + 7-stage validator
+ue5_plugin/UEAudioMCP/     → C++ plugin (25 commands, TCP:9877)
+ue5_plugin/SIDMetaSoundNodes/ → ReSID SID chip nodes (5 custom nodes)
+research/                  → 3 core reference docs (WAAPI, MetaSounds, MCP landscape)
+tests/                     → 332 tests across 20 files
 ```
-
-### SIDKIT-Inspired Patterns
-- **Error learning**: When builds fail, store error_signature + fix in D1. Query before generating to avoid known mistakes.
-- **Agentic iteration**: Tools can retry with feedback (max 10 iterations, like SIDKIT's compile loop).
-- **Knowledge search**: Agent has `search_knowledge` tool — queries D1 by type OR Vectorize by meaning.
-- **Template system**: Parameterised patterns (gunshot, footstep, ambient, UI, weather, spatial) — like SIDKIT's game/synth/sequencer templates.
-
----
-
-## Research Available
-- `research/research_waapi_mcp_server.md` — Complete WAAPI reference (87 functions, all object types, 5 game audio patterns with code, AudioLink setup)
-- `research/research_metasounds_game_audio.md` — MetaSounds nodes (80+), Builder API, 6 game audio patterns, Lyra reference architecture
-- `research/research_unreal_mcp_landscape.md` — 10 repos analysed, build-vs-fork decision, architecture synthesis
-
-## Reference Implementations
-- **SIDKIT Agent** (`sidkit-agent/`) — Rust, agentic loop + ToolExecutor, 8 tools, error learning (SQLite), knowledge base (19 categories, semantic search), GCC compile→flash pipeline. **Primary architecture reference.**
-- **BilkentAudio/Wwise-MCP** (23 stars) — Existing Wwise MCP, FastMCP + WAAPI wrapper. Reference for WAAPI patterns, NOT forking.
-- **blender-mcp** (16.9k stars) — Gold standard: addon (socket server inside app) + MCP server (FastMCP). TCP+JSON pattern.
-- **chongdashu/unreal-mcp** (1,370 stars) — UE5 MCP leader. C++ plugin + Python. Modular tool files pattern. No audio.
-- **runreal/unreal-mcp** (70 stars) — No-plugin approach via UE Python remote exec. Lightweight but can't do Builder API.
-- **VibeComfy MCP** — 8,400+ ComfyUI nodes via MCP (node database pattern)
-- **Lyra Starter Game** — Epic's canonical UE5 audio reference
 
 ## Common Patterns (6 Game Audio Systems)
 1. **Gunshot** — RandomSequenceContainer + variations + pitch randomisation + ADSR
@@ -161,3 +102,5 @@ tests/                     → Integration & unit tests
 ## Quick Commands
 - `/ue-agent` — Launch UE5 specialist for MetaSounds/Blueprint/DSP tasks
 - `/wwise-agent` — Launch Wwise specialist for WAAPI/mixing/routing tasks
+- `/build-system` — Full pipeline audio system generator
+- `/mcp-plugin` — UE5 plugin TCP control (25 commands)
