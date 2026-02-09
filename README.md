@@ -2,7 +2,7 @@
 
 **AI-driven game audio pipelines -- from natural language to Wwise + MetaSounds + Blueprints.**
 
-One MCP server. Three audio engines. 52 tools. 307 tests. Complete audio systems from a single prompt.
+One MCP server. Three audio engines. 52 tools. Complete audio systems from a single prompt.
 
 > "Build weather-responsive ambient with rain, wind, and clear states that crossfade based on intensity"
 >
@@ -33,23 +33,25 @@ Each layer is a different tool, different specialist, different iteration cycle.
                     +---------------------------+
                     |      UE Audio MCP         |
                     |      52 tools             |
-                    |      22K+ knowledge       |
+                    |      26K+ knowledge       |
                     +---------------------------+
                             |
               +-------------+-------------------+
               v             v                   v
      +----------------+ +------------+  +------------------+
      |  Wwise Tools   | | MetaSounds |  | Blueprint Tools  |
-     |  (WAAPI)       | |  Tools     |  | (Remote Control) |
-     |  20 tools      | | 22 tools   |  | 4 tools          |
+     |  (WAAPI)       | |  Tools     |  | (TCP + WAAPI)    |
+     |  21 tools      | | 22 tools   |  | 6 tools          |
      +-------+--------+ +-----+------+  +--------+---------+
              |               |                   |
              v               v                   v
-     +----------------+ +------------+  +------------------+
-     | Wwise App      | | UE5 C++    |  | UE5 Editor       |
-     | WAAPI :8080    | | Plugin     |  | Remote Control   |
-     +----------------+ | TCP:9877   |  +------------------+
-                        +------------+
+     +----------------+ +---------------------------+
+     | Wwise App      | | UE5 C++ Plugin            |
+     | WAAPI :8080    | | TCP:9877 (24 commands)     |
+     +----------------+ | MetaSounds Builder API     |
+                        | Blueprint Graph Scanner    |
+                        | Editor Menu Integration    |
+                        +---------------------------+
 ```
 
 ### The Three Layers
@@ -89,72 +91,73 @@ C64 chiptune plays      ->    ReSID SID Chip node    ->   Music bus, stereo mix
 | MetaSounds Graphs | 3 | Validate, to Builder API commands, from template |
 | MetaSounds Builder | 10 | Create source, add node, connect, set defaults, audition, presets |
 | MetaSounds Advanced | 5 | Variables, preset swap/morph, macro trigger |
-| Blueprint | 4 | Search 22K nodes, info, categories, call function |
+| Blueprint | 6 | Search 22K+ nodes, scan graphs, list assets, call function |
 | UE5 Connection | 3 | Connect, status, info |
 | Orchestration | 2 | `build_audio_system` + `build_aaa_project` |
 
-### 25 MetaSounds Templates
+### Knowledge Base -- 26K+ Entries
 
-Full DSP graphs with nodes, connections, and defaults -- validated against the knowledge DB:
-
-| Template | Nodes | Signal Chain |
-|----------|-------|-------------|
-| `gunshot` | 5 | Random Get -> Wave Player -> ADSR -> Multiply |
-| `footsteps` | 6 | Trigger Route -> Random Get -> Wave Player -> AD Env -> LPF |
-| `ambient` | 3 | Wave Player (Stereo) -> LFO -> Stereo Mixer |
-| `wind` | 7 | Noise -> LPF (LFO + PawnSpeed modulated cutoff) -> Stereo |
-| `weather` | 5 | Wave Player -> InterpTo -> Biquad Filter L/R |
-| `vehicle_engine` | 14 | Trigger Sequence -> 3x Random Get -> Wave Player layers -> Compressor |
-| `sfx_generator` | 25 | Oscillator -> Spectral (WaveShaper/BitCrush/RingMod) -> SVF -> ADSR -> Effects |
-| `sid_chip_tune` | 2 | SID Chip (3-voice) -> Output Gain -- full C64 chiptune |
-| `sid_bass` | 5 | SID Voice -> SID Filter (LP) with envelope-driven cutoff sweep |
-| `sid_lead` | 8 | 2x SID Oscillator (saw+pulse detuned) -> SID Filter (BP, high res) |
-| `preset_morph` | 8 | Morph param -> MapRange -> InterpTo -> Filter |
-| `macro_sequence` | 10 | MacroStep triggers -> graph variables -> filter sweep |
-| + 13 more | | subtractive_synth, mono_synth, snare, weapon_burst, sound_pad, etc. |
-
-### 30 Blueprint Templates
-
-Game logic patterns from Epic tutorials and community:
-
-| Category | Templates |
-|----------|-----------|
-| Weapons | weapon_burst_control, weapon_source |
-| Movement | footfalls_simple, player_oriented_sound |
-| Ambient | ambient_height_wind, ambient_stingers, ambient_weighted_trigger, soundscape_ambient |
-| Music/Quartz | quartz_beat_sync, quartz_multi_clock, quartz_music_playlist, quartz_vertical_music, triggered_music_stinger |
-| Effects/Analysis | audio_modulation, spectral_analysis, submix_spectral_fireflies, physics_audio |
-| UI/Control | sfx_generator_widget, metasound_preset_widget, audio_visualiser |
-| Spatial | spatial_attenuation, volume_proxy |
-| System | submix_recording, synesthesia_stems |
-
-### 6 Wwise Templates
-
-Pre-built WAAPI object hierarchies with undo support:
-
-| Template | Creates |
-|----------|---------|
-| `gunshot` | RandomSequenceContainer + variations + pitch randomization |
-| `footsteps` | SwitchContainer by surface + per-surface RandomSequence |
-| `ambient` | BlendContainer + RTPC-driven layer volumes |
-| `ui_sound` | Non-spatial sound + event + UI bus routing |
-| `weather` | StateGroup + SwitchContainer + crossfade transitions |
-| `vehicle_engine` | RPM layers + BlendContainer + RTPC |
-
-### Knowledge Base
+Structured data + semantic search (TF-IDF + cosine similarity) across the full UE5 audio API surface:
 
 | Data | Entries | Source |
 |------|---------|--------|
+| **Blueprint API nodes** | **22,649** | Epic Blueprint API Reference (Playwright scraper, UE 5.7) |
+| **Blueprint categories** | **2,524** | Recursive BFS scrape of Epic SPA |
+| Blueprint nodes (curated) | 946 | 11 hand-categorized audio sub-modules |
 | MetaSounds nodes | 144 (798 pins, 21 categories) | Epic MetaSounds Reference + Editor screenshots |
-| Blueprint API nodes (scraped) | 22,649 | Epic Blueprint API Reference (Playwright scraper) |
-| Blueprint categories | 2,524 | Recursive BFS scrape of Epic SPA |
-| Blueprint nodes (curated) | 946 | 11 hand-categorized sub-modules |
-| WAAPI functions | 66 | Audiokinetic SDK reference |
-| Blueprint audio | 55 | GameplayStatics, AudioComponent, Quartz |
-| Wwise types | 19 | Types, properties, categories |
 | Builder API functions | 68+ | UE 5.7 MetaSounds Builder API |
+| WAAPI functions | 66 | Audiokinetic SDK reference |
+| Blueprint audio functions | 55 | GameplayStatics, AudioComponent, Quartz |
+| Wwise types & properties | 19 | Types, categories, default paths |
 | Audio patterns | 6 | Game audio design patterns |
 | UE4->UE5 conversion | 14 | Sound Cue -> MetaSounds migration map |
+| **Project Blueprints** | **growing** | Scanned from Lyra, Stack-O-Bot, and user projects |
+
+The 22K+ Blueprint leaf nodes include full pin specs (inputs, outputs, types, descriptions) scraped directly from Epic's documentation SPA. The batch scanner (`scripts/scan_project.py`) imports scanned project Blueprints into the knowledge DB and rebuilds the TF-IDF index for semantic search across all sources.
+
+### 61 Templates
+
+| Type | Count | Examples |
+|------|-------|---------|
+| MetaSounds DSP | 25 | gunshot, footsteps, ambient, wind, weather, vehicle_engine, sfx_generator, sid_chip_tune, sid_bass, sid_lead, preset_morph, macro_sequence, subtractive_synth, mono_synth, snare... |
+| Blueprint Logic | 30 | weapon_burst, footfalls, ambient_wind, quartz_beat_sync, spectral_analysis, sfx_generator_widget, spatial_attenuation, submix_recording, physics_audio... |
+| Wwise Hierarchy | 6 | gunshot, footsteps, ambient, ui_sound, weather, vehicle_engine |
+
+All MetaSounds templates are validated against the knowledge DB with pin-level accuracy.
+
+---
+
+## Blueprint Scanner + Editor Menu
+
+Deep-inspect UE5 Blueprint graphs from the editor or batch-scan entire projects.
+
+### C++ Graph Scanner
+
+Scans 7 K2Node types that Python can't access: **CallFunction**, **Event**, **CustomEvent**, **VariableGet/Set**, **MacroInstance**, **DynamicCast**. Each node is checked against 21 audio keywords (Sound, Audio, Ak, Wwise, MetaSound, RTPC, PostEvent, etc.) for automatic audio relevance tagging.
+
+### Editor Menu
+
+"Audio MCP" appears in the UE5 main menu bar:
+
+| Action | What It Does |
+|--------|-------------|
+| **Scan Project Audio** | Scans all Blueprints under /Game/ with progress bar, saves JSON |
+| **Scan Selected Blueprint** | Deep-scan with full pin details for selected Content Browser asset |
+| **Export Node Positions** | Exports MetaSound node pixel positions (all Sources + Patches) |
+| **Open Results Folder** | Opens Saved/AudioMCP/ in file browser |
+| **Server Status** | Shows TCP server port and command count |
+
+### Batch Scanner
+
+```bash
+python scripts/scan_project.py --audio-only --import-db --rebuild-embeddings
+```
+
+Connects to the UE5 plugin, discovers all Blueprint assets via Asset Registry, scans each for audio-relevant nodes, imports results into the knowledge DB, and rebuilds the TF-IDF semantic search index.
+
+### Asset Registry Queries
+
+`list_assets` queries 12 asset classes: Blueprint, WidgetBlueprint, AnimBlueprint, MetaSoundSource, MetaSoundPatch, SoundWave, SoundCue, SoundAttenuation, SoundClass, SoundConcurrency, SoundMix, ReverbEffect.
 
 ---
 
@@ -162,49 +165,25 @@ Pre-built WAAPI object hierarchies with undo support:
 
 5 custom C++ MetaSounds nodes wrapping a cycle-accurate MOS 6581/8580 SID chip emulator. The same reSID core running in the [SIDKIT](https://github.com/koshimazaki/SIDKIT) project, now available as native MetaSounds DSP nodes.
 
-### Nodes
-
 | Node | Type | Description |
 |------|------|-------------|
-| **SID Oscillator** | Audio | 24-bit accumulator, 8 waveforms (saw/tri/pulse/noise + combined), actual chip sample tables |
-| **SID Envelope** | Float | Non-linear exponential ADSR with authentic SID timing and the ADSR delay bug |
-| **SID Filter** | Audio | Route ANY audio through the 6581's analog filter -- non-linear VCR model (VICE) |
+| **SID Oscillator** | Audio | 24-bit accumulator, 8 waveforms (saw/tri/pulse/noise + combined) |
+| **SID Envelope** | Float | Non-linear exponential ADSR with authentic SID timing and delay bug |
+| **SID Filter** | Audio | Route any audio through the 6581's analog filter -- VICE VCR model |
 | **SID Voice** | Audio | Oscillator x Envelope convenience combo |
 | **SID Chip** | Audio | Complete 3-voice SID with filter, FM cross-modulation, per-voice outputs |
 
-### SIDKIT Extensions (beyond stock reSID)
+SIDKIT extensions beyond stock reSID: FM cross-modulation (Cwejman S1 style), resonance boost up to Q=8.0, per-voice volume, audio-rate freq/PW/cutoff control, VICE 2024 filter model.
 
-- **FM cross-modulation** -- any oscillator modulates any other (Cwejman S1 style)
-- **Resonance boost** -- Q up to 8.0, self-oscillating filter at 1.0
-- **Per-voice volume** -- 0-282 (256=unity, +10% headroom)
-- **Direct modulation API** -- audio-rate freq/PW/cutoff control
-- **VICE 2024 filter** -- 50MB lookup tables for the most accurate 6581 analog model
-
-### Architecture
-
-```
-ue5_plugin/UEAudioMCP/
-+-- Source/SIDMetaSoundNodes/     Runtime module (ships in games)
-|   +-- Public/
-|   |   +-- SIDNodeEnums.h        ESIDWaveform(8), ESIDFilterMode(7), ESIDChipModel(2)
-|   +-- Private/Nodes/
-|       +-- SIDOscillatorNode.cpp  TExecutableOperator wrapping WaveformGenerator
-|       +-- SIDEnvelopeNode.cpp    TExecutableOperator wrapping EnvelopeGenerator
-|       +-- SIDFilterNode.cpp      TExecutableOperator wrapping Filter (VICE model)
-|       +-- SIDVoiceNode.cpp       TExecutableOperator wrapping Voice
-|       +-- SIDChipNode.cpp        TExecutableOperator wrapping full SID16
-+-- Source/ThirdParty/ReSID/       37 files, cycle-accurate C64 SID emulation
-```
-
-The SID nodes appear under the **"ReSID SIDKIT Edition"** category in the MetaSounds editor. `SIDMetaSoundNodes` is a separate Runtime module so the DSP nodes work in shipped games without the MCP TCP server.
+`SIDMetaSoundNodes` is a separate Runtime module -- ships in games without the MCP TCP server.
 
 ---
 
 ## UE5 C++ Plugin
 
-Editor-only plugin providing TCP server for MetaSounds Builder API access:
+Editor-only plugin providing TCP server for MetaSounds Builder API and Blueprint graph access:
 
-- **18 commands**: create_builder, add_node, connect, set_default, build_to_asset, audition, graph variables, preset conversion, live updates
+- **24 commands**: builder lifecycle, node ops, graph I/O, variables, presets, audition, blueprint scanning, asset queries, live updates
 - **Wire protocol**: 4-byte length-prefix + UTF-8 JSON on port 9877
 - **Node registry**: 70 display-name -> class-name mappings (65 standard + 5 SID) + passthrough for `::` names
 - **Thread safety**: FRunnable TCP -> AsyncTask(GameThread) dispatch
@@ -253,7 +232,7 @@ pip install -e ".[dev]"
 # Run MCP server
 ue-audio-mcp
 
-# Run tests (307 passing)
+# Run tests
 pytest tests/ -v
 ```
 
@@ -284,67 +263,43 @@ Works without Wwise or UE5 running -- knowledge base, templates, and offline mod
 ## Project Stats
 
 ```
-Python (src/)         12,250 lines   29 files
-C++ Plugin            5,534 lines    33 files
-ReSID ThirdParty      16,995 lines   37 files
-Tests                 3,288 lines    18 files
+Python (src/)         12,300 lines   43 files
+C++ Plugin             6,200 lines   36 files
+ReSID ThirdParty      17,300 lines   37 files
+Scripts                4,000 lines   10 files
 Templates             61 files       (25 MetaSounds + 30 Blueprint + 6 Wwise)
+Tests                  3,400 lines   20 files
                      --------
-Total                 38,067 lines   117+ files
+Total                 43,200 lines   207 files
 ```
-
----
-
-## A2HW Protocol
-
-This project is the second implementation of the **Agent-to-Hardware (A2HW)** protocol -- a standard for AI-controlled audio across platforms.
-
-```
-                 +------------------------------+
-                 |   A2HW Protocol               |
-                 |   "describe sound, get sound" |
-                 +--------------+---------------+
-                                |
-          +---------+-----------+----------+----------+
-          v         v           v          v          v
-     +---------+ +-------+ +--------+ +-------+ +-------+
-     | Teensy  | | Wwise | |  UE5   | | iPad  | |  DAW  |
-     | SysEx   | | WAAPI | |Builder | | AUv3  | |  OSC  |
-     | +Flash  | |       | |  API   | |       | | +MIDI |
-     +---------+ +-------+ +--------+ +-------+ +-------+
-      SIDKIT      <-- This project -->   Future targets
-```
-
-| | SIDKIT (A2HW v1) | UE Audio MCP (A2HW v2) |
-|---|---|---|
-| Target | C64 SID chip on Teensy ARM | Wwise + MetaSounds + Blueprint |
-| Renderers | 1 (SysEx -> hardware) | 3 (WAAPI + Builder API + Remote Control) |
-| Complexity | Linear: compile -> flash -> play | Graph: 3 tools must agree on naming |
-| Agent | Rust, 8 tools, error learning | Python, 52 tools, knowledge DB |
-| Protocol | SysEx JSON commands | Same pattern, 3 transports |
-
-Same philosophy: **describe intent, system figures out the wiring.**
 
 ---
 
 ## Development Status
 
 ```
-Phase 1: Wwise MCP Server       Done   20 tools, WAAPI bridge
-Phase 2: Knowledge Base          Done   144 nodes (798 pins), 22K+ scraped, semantic search
-Phase 3: UE5 Plugin + Tools      Done   C++ plugin, 22 tools, TCP protocol
-Phase 4: Orchestration           Done   11 patterns, AAA project, 3-mode auto-detection
-Phase 5: ReSID SIDKIT Edition    Done   5 custom C++ MetaSounds nodes, 3 templates
-Phase 6: A2HW Protocol Spec     WIP    Defined in SIDKIT, extended here
+Phase 1: Wwise MCP Server        Done    20 tools, WAAPI bridge
+Phase 2: Knowledge Base           Done    26K+ entries, semantic search, 144 MS nodes
+Phase 3: UE5 Plugin + Tools       Done    C++ plugin (24 cmds), 22 tools, TCP protocol
+Phase 4: Orchestration            Done    11 patterns, AAA project, 3-mode auto-detection
+Phase 5: ReSID SIDKIT Edition     Done    5 custom C++ MetaSounds nodes, 3 templates
+Phase 6: Blueprint Scanner        Done    Graph inspection, editor menu, batch scanner
+Phase 7: A2HW Protocol Spec      WIP     Defined in SIDKIT, extended here
 ```
 
-**307 tests passing** across 18 test modules.
+### Coming Next
+
+- **Game project knowledge** -- Scanning Lyra, Stack-O-Bot, and community projects to grow the Blueprint pattern library with real-world audio implementations
+- **Error learning** -- SIDKIT-pattern error_signature -> fix mapping (build fails get remembered)
+- **Cloudflare D1 + Vectorize** -- Cloud-hosted knowledge base for team sharing
+- **AudioLink integration** -- Automated MetaSounds -> Wwise routing via AudioLink bridge
+- **More AAA categories** -- Dialogue, music, cinematics, vehicles expanded
+- **Live parameter dashboard** -- Real-time RTPC/MetaSounds parameter monitoring
+- **A2HW Protocol** -- Formalising the Agent-to-Hardware protocol for AI-controlled audio across platforms (game engines, DAWs, hardware)
 
 ---
 
 ## Prior Art
-
-This work fills a gap in the existing MCP ecosystem.
 
 | Existing Tool | Audio? |
 |---|---|
