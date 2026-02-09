@@ -33,7 +33,7 @@ Each layer is a different tool, different specialist, different iteration cycle.
                     +---------------------------+
                     |      UE Audio MCP         |
                     |      52 tools             |
-                    |      26K+ knowledge       |
+                    |      24K+ knowledge       |
                     +---------------------------+
                             |
               +-------------+-------------------+
