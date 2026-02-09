@@ -1,131 +1,102 @@
-# UE Audio MCP — Progress & Roadmap
+# UE Audio MCP — Status & Next Steps
 
-## Pipeline Status
+## Current Status (2026-02-09)
 
 ```
-Layer            Python Tools    Execution           Status
-─────────────    ────────────    ────────────────    ──────
-Wwise (WAAPI)    20 tools        LIVE via WS:8080    COMPLETE
-MetaSounds       18 tools        C++ plugin written  CODE READY, UNCOMPILED
-Blueprint        4 tools         Knowledge/query     SPEC ONLY
-AudioLink        Documented      Not implemented     GAP
-Sample import    Wwise: done     UE5 Content: no     HALF
-Lifecycle        None            None                GAP
+Component           Count    Status
+─────────────────   ──────   ──────────────────
+MCP Tools           53       All working (Python)
+C++ Plugin Cmds     25       Compiled on UE 5.7.2 macOS
+Tests               332      All passing
+MetaSounds Nodes    144      20 categories, 798 pins
+Templates           22       MS + BP + Wwise
+Patterns            10       build_audio_system orchestrator
+Slash Commands      4        /ue-agent, /wwise-agent, /build-system, /mcp-plugin
 ```
 
-## What's Built
+### Pipeline Layers
 
-- [x] Wwise MCP — 20 tools, WAAPI bridge, works live
-- [x] Knowledge DB — 116 MetaSounds nodes, 22K+ BP API nodes, 66 WAAPI functions
-- [x] Semantic search — TF-IDF + cosine similarity, <1ms queries
-- [x] MetaSounds graph schema — JSON format, 7-stage validator, Builder API command generation
-- [x] MetaSounds templates — 22 templates (gunshot, footsteps, ambient, wind, weather, vehicle_engine, sfx_generator, etc.)
-- [x] Blueprint templates — 30 templates from Epic tutorials + community
-- [x] Wwise templates — 6 integration specs
-- [x] Orchestration — `build_audio_system` with 10 patterns, 3-mode auto-detection
-- [x] C++ plugin source — 18 commands, TCP:9877, thread-safe dispatch
-- [x] UE 5.7 Builder API knowledge — 68+ functions, graph variables, presets, live update
-- [x] Blueprint API scraper — Playwright, 22K+ nodes from Epic SPA
-- [x] UE4→UE5 conversion map — 14 entries (Sound Cue → MetaSounds)
-- [x] README — updated with full inventory
-- [x] CREDITS — all tutorial authors attributed
-- [x] 241 tests passing
-- [ ] add get node position to see the range and position graphs properly
+```
+Layer            Tools    Execution            Status
+─────────────    ──────   ──────────────────   ──────────
+Wwise (WAAPI)    20       LIVE via WS:8080     COMPLETE
+MetaSounds       18       C++ plugin TCP:9877  COMPILED, UNTESTED LIVE
+Blueprint        6        Knowledge + scan     COMPLETE (scan/list/export)
+Orchestration    3        build_audio_system   COMPLETE (offline mode verified)
+Knowledge        6        SQLite + TF-IDF      COMPLETE
+```
 
-## Phase: Get It Running
+### Completed Phases
+- [x] Phase 1: Wwise MCP Server (20 tools, WAAPI bridge)
+- [x] Phase 2: MetaSounds Knowledge Base (144 nodes, semantic search)
+- [x] Phase 3: UE5 Plugin + Python connectivity (25 C++ commands, TCP protocol)
+- [x] Phase 4: Orchestration Layer (10 patterns, 3-mode auto-detect)
+- [x] ReSID MetaSounds Port (5 custom SID chip nodes)
+- [x] UE 5.7.2 Compile Fixes (8 fixes, clean build)
+- [x] Blueprint Scanner + Editor Menu (scan/list/export from editor)
+- [x] MetaSounds Graph Exporter (full graph export with types, defaults, variables)
+- [x] Code Review Cleanup (dedup, rename, robustness fixes)
 
-### 1. UE5.7 + Plugin Compile
-- [ ] Install UE5.7 (downloading)
-- [ ] Compile C++ plugin in UE5.7 — may need API changes from 5.4
-- [ ] Test TCP connection (Python ↔ plugin)
-- [ ] Test `ping` command round-trip
-- [ ] Test `create_builder` + `add_node` + `build_to_asset`
+---
 
-### 2. Wwise Project Setup
-- [ ] Create blank Wwise project with standard bus hierarchy (Master/SFX/Music/Ambient/UI/Vehicles)
-- [ ] Set up AudioLink bus
-- [ ] Test WAAPI connection from MCP
-- [ ] Script/template for one-click Wwise project bootstrap
+## Next Steps
 
-### 3. Samples
-- [ ] Find free .wav samples (Freesound CC0, Epic Starter Content, TechAudioTools on Fab)
-- [ ] Import to Wwise via `wwise_import_audio`
-- [ ] Import to UE5 Content folder (manual or script)
-- [ ] Test Wave Player references in MetaSounds
+### Step 1: Test Plugin Live
+- [ ] Open UE 5.7 project with plugin compiled
+- [ ] Test TCP connection (Python `ue5_connect` → plugin `ping`)
+- [ ] Test `create_builder` + `add_node` + `connect` + `build_to_asset`
+- [ ] Test `audition` — hear generated MetaSounds live
+- [ ] Test `export_metasound` — round-trip export from editor
+- [ ] Test `scan_blueprint` + `list_assets` from editor menu
+- [ ] Fix any runtime issues found
 
-### 4. First Live Test
-- [ ] Build one MetaSounds asset live via MCP → hear audio
-- [ ] Build one Wwise event live via MCP → trigger in editor
-- [ ] Connect AudioLink (MetaSounds output → Wwise bus)
+### Step 2: Extract BPs & MetaSounds from Real Projects
+- [ ] **UE Intro Project** (demo we have) — 46 BPs, 13 MS graphs (already scanned)
+- [ ] **Stack O Bot** — Epic sample project, extract all BPs + MetaSounds
+- [ ] **Lyra Starter Game** — Epic's canonical audio reference, 50+ BPs expected
+- [ ] Import all scan data to knowledge DB
+- [ ] Rebuild TF-IDF embeddings with expanded corpus
+- [ ] Validate pin names and node types against real engine data
 
-## Phase: Demo Features
+### Step 3: Test Blueprints & Spawning
+- [ ] Test building MetaSounds assets from templates in each project
+- [ ] Test spawning audio actors in PIE (Play In Editor)
+- [ ] Test Wwise integration (WAAPI → event creation → trigger)
+- [ ] Test AudioLink bridge (MetaSounds → Wwise bus)
+- [ ] Test parameter wiring (Blueprint → MetaSounds input)
+- [ ] Document any gaps or failures
 
-### 5. Lifecycle Management (remove/swap/list)
-- [ ] `list_active_systems` — track what's been spawned (Python state)
-- [ ] `remove_audio_system` — tear down Wwise objects + delete MS assets
-- [ ] `replace_audio_system` — swap one pattern for another in-place
-- [ ] Add C++ plugin commands for asset deletion
-- [ ] Demo flow: "make gunshot" → "add ambient" → "swap gunshot for SFX" → "clear all"
-
-### 6. Blueprint Integration
-- [ ] Pre-make template BP actors in editor (footstep trigger, weapon fire, ambient zone, etc.)
-- [ ] Wire parameters at runtime via Remote Control API
-- [ ] Test: MCP sets float parameter → MetaSounds responds → audio changes
-- [ ] NOTE: Programmatic BP graph creation is unsolved — use template BPs + parameter wiring
-
-### 7. Claude Code Skills
-- [ ] `/spawn-audio` — create audio system in current scene
-- [ ] `/swap-audio` — replace one system with another
-- [ ] `/clear-audio` — remove all spawned audio
-- [ ] Update `/build-system` for live execution mode
-- [ ] Clean context between operations
-
-## Phase: Demo & Ship
-
-### 8. Demo Scene
-- [ ] Pick UE5 tutorial scene or marketplace level
-- [ ] Place audio triggers (zones, animation notifies, input actions)
-- [ ] Set up camera path for recording
-
-### 9. Record Video (2-3 min)
-- [ ] Show: "make me weapon audio" → system spawns
-- [ ] Show: "now add ambient" → layers on top
-- [ ] Show: "swap weapons for SFX generator" → replaces
-- [ ] Show: knowledge search ("what node handles spatialization?")
+### Step 4: Video Demo (2-3 min)
+- [ ] Script demo flow: prompt → system spawns → audio plays
+- [ ] Show: "make me weapon audio" → full stack creates
+- [ ] Show: "add ambient" → layers on existing
+- [ ] Show: knowledge search ("what handles spatialization?")
+- [ ] Show: project scanning from editor menu
 - [ ] Show: offline mode generating specs
+- [ ] Record with OBS, clean audio capture
 
-### 10. Polish & Publish
-- [ ] Fix 6 bp_node_specs.json parse errors
-- [ ] Clean up any UE5.7 API deprecation warnings
+### Step 5: Extended — Full Game Level Demo
+- [ ] Pick or create a game-like level (character + environment)
+- [ ] Full sound design: footsteps, weapons, ambient, UI, weather
+- [ ] Character with weapon using full 3-layer stack
+- [ ] Multiple audio zones with different ambiences
+- [ ] Dynamic weather affecting audio (rain → muffled sounds)
+- [ ] Record as ultimate portfolio/demo material
+
+### Step 6: Polish & Ship
+- [ ] Open source release (see .claude/plans/ for v0.0.2 plan)
+- [ ] Clean git history (squash or BFG)
+- [ ] LICENSE, CHANGELOG, pyproject.toml updates
 - [ ] GitHub release with version tag
 - [ ] Social media post with video
 - [ ] Link from SIDKIT / portfolio
 
+---
+
 ## Known Issues
 
-- `bp_node_specs.json` has JSON parse errors (6 test failures) — scraped data corruption
-- C++ plugin never compiled — may need UE5.7 API adjustments
-- Blueprint layer is spec-only — can't create BP graphs programmatically
+- MetaSounds Builder API is experimental — may change between UE versions
+- Blueprint layer can't create BP graphs programmatically (use template BPs + parameter wiring)
 - AudioLink setup not automated — manual configuration in editor
-- `security hook (make_sure.sh)` flags false positives on db.py
-
-## Architecture Notes
-
-### Why Wwise + MetaSounds?
-- MetaSounds = DSP engine (makes the sound)
-- Wwise = audio middleware (manages the mix, states, spatialization)
-- AudioLink bridges them: MetaSounds → Wwise bus
-- Blueprint handles game logic triggers and parameter setting
-
-### Why Blueprint creation is hard
-No UE5 API exposes programmatic Blueprint graph creation. Options:
-1. Python remote exec (fragile, version-dependent)
-2. Pre-made template BPs + runtime parameter wiring (our approach)
-3. C++ UEdGraph manipulation (complex, undocumented)
-
-### A2HW Protocol
-This project is the second implementation of A2HW (Agent-to-Hardware):
-- SIDKIT: A2HW v1 → Teensy SID chip (1 renderer)
-- UE Audio MCP: A2HW v2 → Wwise + MetaSounds + Blueprint (3 renderers)
-- Same pattern: intent → schema → validate → render
-- Protocol spec: see SIDKIT docs/architecture/A2HW-PROTOCOL.md
+- Plugin TCP drops after ~17 rapid requests — need reconnect logic (scan_project.py has workaround)
+- SIDChipNode per-voice outputs silent at runtime (voice_output[] never populated)
