@@ -1,4 +1,4 @@
-"""Tests for Blueprint tools — bp_search, bp_node_info, bp_list_categories, bp_call_function."""
+"""Tests for Blueprint tools — bp_search, bp_node_info, bp_list_categories, bp_call_function, bp_scan_blueprint."""
 
 from __future__ import annotations
 
@@ -6,8 +6,10 @@ import json
 
 from ue_audio_mcp.tools.blueprints import (
     bp_call_function,
+    bp_list_assets,
     bp_list_categories,
     bp_node_info,
+    bp_scan_blueprint,
     bp_search,
 )
 
@@ -141,3 +143,162 @@ def test_call_function_invalid_json(ue5_conn, knowledge_db):
     result = json.loads(bp_call_function("PlaySound2D", "not json"))
     assert result["status"] == "error"
     assert "Invalid" in result["message"]
+
+
+# -- bp_list_assets ----------------------------------------------------------
+
+_LIST_ASSETS_RESPONSE = {
+    "status": "ok",
+    "message": "Found 42 Blueprint assets under '/Game/' (42 shown)",
+    "total": 42,
+    "shown": 42,
+    "path": "/Game/",
+    "class_filter": "Blueprint",
+    "assets": [
+        {"path": "/Game/BP_Char.BP_Char", "name": "BP_Char", "class": "Blueprint", "package_path": "/Game"},
+        {"path": "/Game/BP_Enemy.BP_Enemy", "name": "BP_Enemy", "class": "Blueprint", "package_path": "/Game"},
+    ],
+}
+
+
+def test_list_assets_success(ue5_conn, mock_ue5_plugin, knowledge_db):
+    mock_ue5_plugin.set_response("list_assets", _LIST_ASSETS_RESPONSE)
+    result = json.loads(bp_list_assets("Blueprint", "/Game/"))
+    assert result["status"] == "ok"
+    assert result["total"] == 42
+    assert len(result["assets"]) == 2
+    cmd = mock_ue5_plugin.commands[-1]
+    assert cmd["action"] == "list_assets"
+    assert cmd["class_filter"] == "Blueprint"
+    assert cmd["recursive_classes"] is True
+
+
+def test_list_assets_metasounds(ue5_conn, mock_ue5_plugin, knowledge_db):
+    mock_ue5_plugin.set_response("list_assets", {
+        "status": "ok", "total": 5, "shown": 5, "assets": [],
+    })
+    result = json.loads(bp_list_assets("MetaSoundSource"))
+    assert result["status"] == "ok"
+    cmd = mock_ue5_plugin.commands[-1]
+    assert cmd["class_filter"] == "MetaSoundSource"
+
+
+def test_list_assets_not_connected(knowledge_db):
+    import ue_audio_mcp.ue5_connection as ue5_module
+    ue5_module._connection = None
+    result = json.loads(bp_list_assets())
+    assert result["status"] == "error"
+    assert "Not connected" in result["message"]
+    ue5_module._connection = None
+
+
+def test_list_assets_error_response(ue5_conn, mock_ue5_plugin, knowledge_db):
+    mock_ue5_plugin.set_response("list_assets", {
+        "status": "error", "message": "Unknown class_filter 'Bogus'",
+    })
+    result = json.loads(bp_list_assets("Bogus"))
+    assert result["status"] == "error"
+    assert "Unknown" in result["message"]
+
+
+# -- bp_scan_blueprint -------------------------------------------------------
+
+_SCAN_RESPONSE = {
+    "status": "ok",
+    "message": "Scanned 'BP_Character': 2 graphs, 45 nodes (3 audio-relevant)",
+    "asset_path": "/Game/BP_Character",
+    "blueprint_name": "BP_Character",
+    "parent_class": "Character",
+    "blueprint_type": "Blueprint",
+    "total_nodes": 45,
+    "graphs": [
+        {
+            "name": "EventGraph",
+            "type": "ubergraph",
+            "total_nodes": 40,
+            "shown_nodes": 40,
+            "nodes": [
+                {
+                    "type": "Event",
+                    "title": "Event BeginPlay",
+                    "event_name": "ReceiveBeginPlay",
+                    "audio_relevant": False,
+                    "x": 0, "y": 0,
+                },
+                {
+                    "type": "CallFunction",
+                    "title": "Play Sound at Location",
+                    "function_name": "PlaySoundAtLocation",
+                    "function_class": "GameplayStatics",
+                    "audio_relevant": True,
+                    "x": 200, "y": 100,
+                },
+            ],
+        },
+    ],
+    "audio_summary": {
+        "has_audio": True,
+        "audio_node_count": 3,
+        "audio_functions": ["PlaySoundAtLocation", "PostEvent", "SetRTPCValue"],
+    },
+}
+
+
+def test_scan_blueprint_success(ue5_conn, mock_ue5_plugin, knowledge_db):
+    mock_ue5_plugin.set_response("scan_blueprint", _SCAN_RESPONSE)
+    result = json.loads(bp_scan_blueprint("/Game/BP_Character"))
+    assert result["status"] == "ok"
+    assert result["blueprint_name"] == "BP_Character"
+    assert result["parent_class"] == "Character"
+    assert result["total_nodes"] == 45
+    assert len(result["graphs"]) == 1
+    assert result["graphs"][0]["name"] == "EventGraph"
+    assert result["audio_summary"]["has_audio"] is True
+    assert "PlaySoundAtLocation" in result["audio_summary"]["audio_functions"]
+    # Verify command sent correctly
+    cmd = mock_ue5_plugin.commands[-1]
+    assert cmd["action"] == "scan_blueprint"
+    assert cmd["asset_path"] == "/Game/BP_Character"
+    assert cmd["audio_only"] is False
+    assert cmd["include_pins"] is False
+
+
+def test_scan_blueprint_audio_only(ue5_conn, mock_ue5_plugin, knowledge_db):
+    mock_ue5_plugin.set_response("scan_blueprint", _SCAN_RESPONSE)
+    result = json.loads(bp_scan_blueprint("/Game/BP_Character", audio_only=True))
+    assert result["status"] == "ok"
+    cmd = mock_ue5_plugin.commands[-1]
+    assert cmd["audio_only"] is True
+
+
+def test_scan_blueprint_with_pins(ue5_conn, mock_ue5_plugin, knowledge_db):
+    mock_ue5_plugin.set_response("scan_blueprint", _SCAN_RESPONSE)
+    result = json.loads(bp_scan_blueprint("/Game/BP_Character", include_pins=True))
+    assert result["status"] == "ok"
+    cmd = mock_ue5_plugin.commands[-1]
+    assert cmd["include_pins"] is True
+
+
+def test_scan_blueprint_empty_path(ue5_conn, knowledge_db):
+    result = json.loads(bp_scan_blueprint(""))
+    assert result["status"] == "error"
+    assert "empty" in result["message"].lower()
+
+
+def test_scan_blueprint_not_connected(knowledge_db):
+    import ue_audio_mcp.ue5_connection as ue5_module
+    ue5_module._connection = None
+    result = json.loads(bp_scan_blueprint("/Game/BP_Character"))
+    assert result["status"] == "error"
+    assert "Not connected" in result["message"]
+    ue5_module._connection = None
+
+
+def test_scan_blueprint_error_response(ue5_conn, mock_ue5_plugin, knowledge_db):
+    mock_ue5_plugin.set_response("scan_blueprint", {
+        "status": "error",
+        "message": "Asset '/Game/Missing' not found",
+    })
+    result = json.loads(bp_scan_blueprint("/Game/Missing"))
+    assert result["status"] == "error"
+    assert "not found" in result["message"]

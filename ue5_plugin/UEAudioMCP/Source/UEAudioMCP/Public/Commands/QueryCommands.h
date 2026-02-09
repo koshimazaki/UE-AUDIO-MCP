@@ -39,3 +39,21 @@ public:
 		const TSharedPtr<FJsonObject>& Params,
 		FAudioMCPBuilderManager& BuilderManager) override;
 };
+
+/** scan_blueprint: Deep-scan a Blueprint asset to extract graph nodes, function calls, and audio relevance. */
+class FScanBlueprintCommand : public IAudioMCPCommand
+{
+public:
+	virtual TSharedPtr<FJsonObject> Execute(
+		const TSharedPtr<FJsonObject>& Params,
+		FAudioMCPBuilderManager& BuilderManager) override;
+};
+
+/** list_assets: Query the Asset Registry for assets by class and path. */
+class FListAssetsCommand : public IAudioMCPCommand
+{
+public:
+	virtual TSharedPtr<FJsonObject> Execute(
+		const TSharedPtr<FJsonObject>& Params,
+		FAudioMCPBuilderManager& BuilderManager) override;
+};

@@ -28,6 +28,9 @@ public class UEAudioMCP : ModuleRules
 			"UnrealEd",
 			"AudioMixer",
 			"MetasoundEditor",   // UMetaSoundEditorSubsystem: BuildToAsset, SetNodeLocation
+			"BlueprintGraph",    // UK2Node_CallFunction, UK2Node_Event — Blueprint graph inspection
+			"ToolMenus",         // UToolMenus — editor menu bar integration
+			"ContentBrowser",    // IContentBrowserSingleton — selected asset queries
 		});
 	}
 }

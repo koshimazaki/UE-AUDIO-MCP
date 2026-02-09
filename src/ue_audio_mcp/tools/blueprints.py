@@ -155,6 +155,78 @@ def bp_list_categories(source: str = "all") -> str:
 
 
 @mcp.tool()
+def bp_list_assets(
+    class_filter: str = "Blueprint",
+    path: str = "/Game/",
+    limit: int = 500,
+) -> str:
+    """List project assets by class type via the UE5 plugin.
+
+    Queries the Asset Registry for all assets matching the given class
+    under the specified path. Useful for discovering Blueprints,
+    MetaSounds, SoundWaves, etc. before scanning.
+
+    Requires the UE5 C++ plugin to be running.
+
+    Args:
+        class_filter: Asset class name — Blueprint, MetaSoundSource, SoundWave, etc.
+        path: Path prefix to search under (default: /Game/)
+        limit: Max results to return (default: 500)
+    """
+    conn = get_ue5_connection()
+    try:
+        result = conn.send_command({
+            "action": "list_assets",
+            "class_filter": class_filter,
+            "path": path,
+            "recursive_classes": True,
+            "limit": limit,
+        })
+        if result.get("status") == "error":
+            return _error(result.get("message", "list_assets failed"))
+        return _ok(result)
+    except Exception as e:
+        return _error(str(e))
+
+
+@mcp.tool()
+def bp_scan_blueprint(
+    asset_path: str,
+    audio_only: bool = False,
+    include_pins: bool = False,
+) -> str:
+    """Deep-scan a Blueprint asset to extract graph nodes, function calls, and audio relevance.
+
+    Inspects all graphs (event graphs, function graphs, macros) and classifies
+    each node by type: CallFunction, Event, CustomEvent, VariableGet/Set, etc.
+    Detects audio-relevant nodes (PlaySound, PostEvent, AudioComponent refs).
+
+    Requires the UE5 C++ plugin to be running.
+
+    Args:
+        asset_path: Blueprint asset path (e.g. "/Game/Blueprints/BP_Character")
+        audio_only: If True, only return audio-relevant nodes
+        include_pins: If True, include full pin details per node
+    """
+    if not asset_path.strip():
+        return _error("asset_path cannot be empty")
+
+    conn = get_ue5_connection()
+    try:
+        result = conn.send_command({
+            "action": "scan_blueprint",
+            "asset_path": asset_path,
+            "audio_only": audio_only,
+            "include_pins": include_pins,
+        })
+        if result.get("status") == "error":
+            return _error(result.get("message", "scan_blueprint failed"))
+        return _ok(result)
+    except Exception as e:
+        return _error(str(e))
+
+
+@mcp.tool()
 def bp_call_function(function_name: str, args_json: str = "{}") -> str:
     """Execute a Blueprint function via the UE5 plugin.
 

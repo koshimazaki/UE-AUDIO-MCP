@@ -9,6 +9,19 @@
 #include "Dom/JsonObject.h"
 #include "Dom/JsonValue.h"
 
+// Blueprint graph inspection
+#include "Engine/Blueprint.h"
+#include "EdGraph/EdGraph.h"
+#include "EdGraph/EdGraphNode.h"
+#include "EdGraph/EdGraphPin.h"
+#include "K2Node_CallFunction.h"
+#include "K2Node_Event.h"
+#include "K2Node_CustomEvent.h"
+#include "K2Node_VariableGet.h"
+#include "K2Node_VariableSet.h"
+#include "K2Node_MacroInstance.h"
+#include "K2Node_DynamicCast.h"
+
 // ---------------------------------------------------------------------------
 // get_graph_input_names
 // ---------------------------------------------------------------------------
@@ -182,10 +195,18 @@ TSharedPtr<FJsonObject> FGetNodeLocationsCommand::Execute(
 
 	// Access the frontend document (read-only)
 	const FMetasoundFrontendDocument& Document = DocInterface->GetConstDocument();
-	const FMetasoundFrontendGraph& Graph = Document.RootGraph;
+	// UE 5.7: RootGraph is FMetasoundFrontendGraphClass, use GetConstDefaultGraph()
+	const FMetasoundFrontendGraph& Graph = Document.RootGraph.GetConstDefaultGraph();
 
 	TArray<TSharedPtr<FJsonValue>> NodeArray;
 	TArray<TSharedPtr<FJsonValue>> EdgeArray;
+
+	// Build ClassID → ClassName lookup from document dependencies
+	TMap<FGuid, FMetasoundFrontendClassName> ClassIdToName;
+	for (const FMetasoundFrontendClass& Dep : Document.Dependencies)
+	{
+		ClassIdToName.Add(Dep.ID, Dep.Metadata.GetClassName());
+	}
 
 	// Build vertex ID → pin name lookup for edge resolution
 	// VertexIDs are globally unique within a MetaSound document
@@ -209,11 +230,17 @@ TSharedPtr<FJsonObject> FGetNodeLocationsCommand::Execute(
 		// Node identity
 		NodeObj->SetStringField(TEXT("node_id"), Node.GetID().ToString());
 
-		// Class name: Namespace::Name::Variant
-		const FMetasoundFrontendClassName& ClassName = Node.ClassMetadata.GetClassName();
-		FString Namespace = ClassName.Namespace.ToString();
-		FString Name = ClassName.Name.ToString();
-		FString Variant = ClassName.Variant.ToString();
+		// Class name: look up via ClassID in document dependencies
+		FString Namespace;
+		FString Name = Node.Name.ToString();
+		FString Variant;
+
+		if (const FMetasoundFrontendClassName* FoundName = ClassIdToName.Find(Node.ClassID))
+		{
+			Namespace = FoundName->Namespace.ToString();
+			Name = FoundName->Name.ToString();
+			Variant = FoundName->Variant.ToString();
+		}
 
 		FString FullName;
 		if (Namespace.IsEmpty())
@@ -296,5 +323,440 @@ TSharedPtr<FJsonObject> FGetNodeLocationsCommand::Execute(
 	Response->SetArrayField(TEXT("nodes"), NodeArray);
 	Response->SetArrayField(TEXT("edges"), EdgeArray);
 	Response->SetStringField(TEXT("asset_path"), AssetPath);
+	return Response;
+}
+
+// ---------------------------------------------------------------------------
+// scan_blueprint — deep-scan Blueprint graph nodes for function calls & audio
+// ---------------------------------------------------------------------------
+
+namespace
+{
+	/** Check if a function or class name is audio-related. */
+	bool IsAudioRelevant(const FString& Name)
+	{
+		static const TCHAR* Keywords[] = {
+			TEXT("Sound"), TEXT("Audio"), TEXT("Ak"), TEXT("Wwise"),
+			TEXT("MetaSound"), TEXT("Reverb"), TEXT("SoundMix"),
+			TEXT("Dialogue"), TEXT("RTPC"), TEXT("Occlusion"),
+			TEXT("Attenuation"), TEXT("PostEvent"), TEXT("SetSwitch"),
+			TEXT("SetState"), TEXT("Submix"), TEXT("Modulation"),
+			TEXT("SoundClass"), TEXT("SoundCue"), TEXT("Listener"),
+			TEXT("Spatialization"), TEXT("AudioVolume"),
+		};
+
+		for (const TCHAR* Keyword : Keywords)
+		{
+			if (Name.Contains(Keyword, ESearchCase::IgnoreCase))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+}
+
+TSharedPtr<FJsonObject> FScanBlueprintCommand::Execute(
+	const TSharedPtr<FJsonObject>& Params,
+	FAudioMCPBuilderManager& BuilderManager)
+{
+	// --- 1. Extract params ---
+	FString AssetPath;
+	if (!Params->TryGetStringField(TEXT("asset_path"), AssetPath))
+	{
+		return AudioMCP::MakeErrorResponse(TEXT("Missing required param 'asset_path'"));
+	}
+
+	bool bAudioOnly = false;
+	Params->TryGetBoolField(TEXT("audio_only"), bAudioOnly);
+
+	bool bIncludePins = false;
+	Params->TryGetBoolField(TEXT("include_pins"), bIncludePins);
+
+	// --- 2. Validate path ---
+	if (!AssetPath.StartsWith(TEXT("/Game/")) && !AssetPath.StartsWith(TEXT("/Engine/")))
+	{
+		return AudioMCP::MakeErrorResponse(
+			FString::Printf(TEXT("Asset path must start with /Game/ or /Engine/ (got '%s')"), *AssetPath));
+	}
+	if (AssetPath.Contains(TEXT("..")))
+	{
+		return AudioMCP::MakeErrorResponse(TEXT("Asset path must not contain '..'"));
+	}
+
+	// --- 3. Load Blueprint ---
+	UObject* Asset = StaticLoadObject(UObject::StaticClass(), nullptr, *AssetPath);
+	if (!Asset)
+	{
+		return AudioMCP::MakeErrorResponse(
+			FString::Printf(TEXT("Could not load asset '%s'"), *AssetPath));
+	}
+
+	UBlueprint* BP = Cast<UBlueprint>(Asset);
+	if (!BP)
+	{
+		return AudioMCP::MakeErrorResponse(
+			FString::Printf(TEXT("Asset '%s' is not a Blueprint (class: %s)"),
+				*AssetPath, *Asset->GetClass()->GetName()));
+	}
+
+	// --- 4. Blueprint metadata ---
+	FString BPName = BP->GetName();
+	FString ParentClass = BP->ParentClass ? BP->ParentClass->GetName() : TEXT("None");
+	FString BlueprintType = BP->GetClass()->GetName();
+
+	// --- 5. Collect graphs ---
+	struct FGraphEntry
+	{
+		FString Type;
+		UEdGraph* Graph;
+	};
+	TArray<FGraphEntry> AllGraphs;
+
+	for (UEdGraph* Graph : BP->UbergraphPages)
+	{
+		if (Graph) AllGraphs.Add({TEXT("ubergraph"), Graph});
+	}
+	for (UEdGraph* Graph : BP->FunctionGraphs)
+	{
+		if (Graph) AllGraphs.Add({TEXT("function"), Graph});
+	}
+	for (UEdGraph* Graph : BP->MacroGraphs)
+	{
+		if (Graph) AllGraphs.Add({TEXT("macro"), Graph});
+	}
+
+	// --- 6. Iterate graphs and nodes ---
+	TArray<TSharedPtr<FJsonValue>> GraphsArray;
+	TArray<FString> AudioFunctions;
+	int32 TotalNodes = 0;
+	int32 AudioNodeCount = 0;
+
+	for (const FGraphEntry& Entry : AllGraphs)
+	{
+		UEdGraph* Graph = Entry.Graph;
+		TArray<TSharedPtr<FJsonValue>> NodesArray;
+
+		for (UEdGraphNode* Node : Graph->Nodes)
+		{
+			if (!Node) continue;
+			TotalNodes++;
+
+			// Classify node
+			FString NodeType;
+			FString FuncName;
+			FString FuncClass;
+			FString EventName;
+			FString VarName;
+			FString MacroName;
+			FString CastTarget;
+			bool bNodeAudioRelevant = false;
+
+			if (UK2Node_CallFunction* CallNode = Cast<UK2Node_CallFunction>(Node))
+			{
+				NodeType = TEXT("CallFunction");
+				FuncName = CallNode->FunctionReference.GetMemberName().ToString();
+
+				UFunction* TargetFunc = CallNode->GetTargetFunction();
+				if (TargetFunc && TargetFunc->GetOwnerClass())
+				{
+					FuncClass = TargetFunc->GetOwnerClass()->GetName();
+				}
+
+				bNodeAudioRelevant = IsAudioRelevant(FuncName) || IsAudioRelevant(FuncClass);
+				if (bNodeAudioRelevant && !AudioFunctions.Contains(FuncName))
+				{
+					AudioFunctions.Add(FuncName);
+				}
+			}
+			else if (UK2Node_CustomEvent* CustomEvent = Cast<UK2Node_CustomEvent>(Node))
+			{
+				NodeType = TEXT("CustomEvent");
+				EventName = CustomEvent->CustomFunctionName;
+				bNodeAudioRelevant = IsAudioRelevant(EventName);
+			}
+			else if (UK2Node_Event* EventNode = Cast<UK2Node_Event>(Node))
+			{
+				NodeType = TEXT("Event");
+				EventName = EventNode->EventReference.GetMemberName().ToString();
+			}
+			else if (UK2Node_VariableGet* VarGet = Cast<UK2Node_VariableGet>(Node))
+			{
+				NodeType = TEXT("VariableGet");
+				VarName = VarGet->GetVarName().ToString();
+				bNodeAudioRelevant = IsAudioRelevant(VarName);
+			}
+			else if (UK2Node_VariableSet* VarSet = Cast<UK2Node_VariableSet>(Node))
+			{
+				NodeType = TEXT("VariableSet");
+				VarName = VarSet->GetVarName().ToString();
+				bNodeAudioRelevant = IsAudioRelevant(VarName);
+			}
+			else if (UK2Node_MacroInstance* Macro = Cast<UK2Node_MacroInstance>(Node))
+			{
+				NodeType = TEXT("MacroInstance");
+				UEdGraph* MacroGraph = Macro->GetMacroGraph();
+				MacroName = MacroGraph ? MacroGraph->GetName() : TEXT("Unknown");
+			}
+			else if (UK2Node_DynamicCast* CastNode = Cast<UK2Node_DynamicCast>(Node))
+			{
+				NodeType = TEXT("Cast");
+				CastTarget = CastNode->TargetType ? CastNode->TargetType->GetName() : TEXT("Unknown");
+				bNodeAudioRelevant = IsAudioRelevant(CastTarget);
+			}
+			else
+			{
+				NodeType = Node->GetClass()->GetName();
+			}
+
+			if (bNodeAudioRelevant) AudioNodeCount++;
+
+			// Skip non-audio nodes when audio_only filter is active
+			if (bAudioOnly && !bNodeAudioRelevant) continue;
+
+			// Build node JSON
+			TSharedPtr<FJsonObject> NodeObj = MakeShared<FJsonObject>();
+			NodeObj->SetStringField(TEXT("type"), NodeType);
+			NodeObj->SetStringField(TEXT("title"),
+				Node->GetNodeTitle(ENodeTitleType::ListView).ToString());
+
+			if (!FuncName.IsEmpty())
+			{
+				NodeObj->SetStringField(TEXT("function_name"), FuncName);
+				if (!FuncClass.IsEmpty())
+				{
+					NodeObj->SetStringField(TEXT("function_class"), FuncClass);
+				}
+			}
+			if (!EventName.IsEmpty())
+			{
+				NodeObj->SetStringField(TEXT("event_name"), EventName);
+			}
+			if (!VarName.IsEmpty())
+			{
+				NodeObj->SetStringField(TEXT("variable_name"), VarName);
+			}
+			if (!MacroName.IsEmpty())
+			{
+				NodeObj->SetStringField(TEXT("macro_name"), MacroName);
+			}
+			if (!CastTarget.IsEmpty())
+			{
+				NodeObj->SetStringField(TEXT("cast_target"), CastTarget);
+			}
+
+			NodeObj->SetBoolField(TEXT("audio_relevant"), bNodeAudioRelevant);
+			NodeObj->SetNumberField(TEXT("x"), Node->NodePosX);
+			NodeObj->SetNumberField(TEXT("y"), Node->NodePosY);
+
+			if (!Node->NodeComment.IsEmpty())
+			{
+				NodeObj->SetStringField(TEXT("comment"), Node->NodeComment);
+			}
+
+			// Optional pin details
+			if (bIncludePins)
+			{
+				TArray<TSharedPtr<FJsonValue>> PinsArray;
+				for (const UEdGraphPin* Pin : Node->Pins)
+				{
+					if (!Pin) continue;
+
+					TSharedPtr<FJsonObject> PinObj = MakeShared<FJsonObject>();
+					PinObj->SetStringField(TEXT("name"), Pin->PinName.ToString());
+					PinObj->SetStringField(TEXT("direction"),
+						Pin->Direction == EEdGraphPinDirection::EGPD_Input
+							? TEXT("input") : TEXT("output"));
+					PinObj->SetStringField(TEXT("type"),
+						Pin->PinType.PinCategory.ToString());
+
+					if (Pin->PinType.PinSubCategoryObject.IsValid())
+					{
+						PinObj->SetStringField(TEXT("sub_type"),
+							Pin->PinType.PinSubCategoryObject->GetName());
+					}
+
+					if (!Pin->DefaultValue.IsEmpty())
+					{
+						PinObj->SetStringField(TEXT("default"), Pin->DefaultValue);
+					}
+
+					PinObj->SetBoolField(TEXT("connected"), Pin->LinkedTo.Num() > 0);
+					PinObj->SetNumberField(TEXT("link_count"), Pin->LinkedTo.Num());
+
+					PinsArray.Add(MakeShared<FJsonValueObject>(PinObj));
+				}
+				NodeObj->SetArrayField(TEXT("pins"), PinsArray);
+			}
+
+			NodesArray.Add(MakeShared<FJsonValueObject>(NodeObj));
+		}
+
+		// Build graph JSON
+		TSharedPtr<FJsonObject> GraphObj = MakeShared<FJsonObject>();
+		GraphObj->SetStringField(TEXT("name"), Graph->GetName());
+		GraphObj->SetStringField(TEXT("type"), Entry.Type);
+		GraphObj->SetNumberField(TEXT("total_nodes"), Graph->Nodes.Num());
+		GraphObj->SetNumberField(TEXT("shown_nodes"), NodesArray.Num());
+		GraphObj->SetArrayField(TEXT("nodes"), NodesArray);
+
+		GraphsArray.Add(MakeShared<FJsonValueObject>(GraphObj));
+	}
+
+	// --- 7. Audio summary ---
+	TSharedPtr<FJsonObject> AudioSummary = MakeShared<FJsonObject>();
+	AudioSummary->SetBoolField(TEXT("has_audio"), AudioNodeCount > 0);
+	AudioSummary->SetNumberField(TEXT("audio_node_count"), AudioNodeCount);
+
+	TArray<TSharedPtr<FJsonValue>> FuncArray;
+	for (const FString& Func : AudioFunctions)
+	{
+		FuncArray.Add(MakeShared<FJsonValueString>(Func));
+	}
+	AudioSummary->SetArrayField(TEXT("audio_functions"), FuncArray);
+
+	// --- 8. Response ---
+	TSharedPtr<FJsonObject> Response = AudioMCP::MakeOkResponse(
+		FString::Printf(TEXT("Scanned '%s': %d graphs, %d nodes (%d audio-relevant)"),
+			*BPName, GraphsArray.Num(), TotalNodes, AudioNodeCount));
+	Response->SetStringField(TEXT("asset_path"), AssetPath);
+	Response->SetStringField(TEXT("blueprint_name"), BPName);
+	Response->SetStringField(TEXT("parent_class"), ParentClass);
+	Response->SetStringField(TEXT("blueprint_type"), BlueprintType);
+	Response->SetNumberField(TEXT("total_nodes"), TotalNodes);
+	Response->SetArrayField(TEXT("graphs"), GraphsArray);
+	Response->SetObjectField(TEXT("audio_summary"), AudioSummary);
+	return Response;
+}
+
+// ---------------------------------------------------------------------------
+// list_assets — query Asset Registry for assets by class and path
+// ---------------------------------------------------------------------------
+
+#include "AssetRegistry/AssetRegistryModule.h"
+
+namespace
+{
+	/** Map short class names to full FTopLevelAssetPath. */
+	bool ResolveClassPath(const FString& ShortName, FTopLevelAssetPath& OutPath)
+	{
+		struct FClassEntry { const TCHAR* Name; const TCHAR* Package; const TCHAR* Asset; };
+		static const FClassEntry Map[] = {
+			{ TEXT("Blueprint"),          TEXT("/Script/Engine"),           TEXT("Blueprint") },
+			{ TEXT("WidgetBlueprint"),    TEXT("/Script/UMGEditor"),       TEXT("WidgetBlueprint") },
+			{ TEXT("AnimBlueprint"),      TEXT("/Script/Engine"),           TEXT("AnimBlueprint") },
+			{ TEXT("MetaSoundSource"),    TEXT("/Script/MetasoundEngine"), TEXT("MetaSoundSource") },
+			{ TEXT("MetaSoundPatch"),     TEXT("/Script/MetasoundEngine"), TEXT("MetaSoundPatch") },
+			{ TEXT("SoundWave"),          TEXT("/Script/Engine"),           TEXT("SoundWave") },
+			{ TEXT("SoundCue"),           TEXT("/Script/Engine"),           TEXT("SoundCue") },
+			{ TEXT("SoundAttenuation"),   TEXT("/Script/Engine"),           TEXT("SoundAttenuation") },
+			{ TEXT("SoundClass"),         TEXT("/Script/Engine"),           TEXT("SoundClass") },
+			{ TEXT("SoundConcurrency"),   TEXT("/Script/Engine"),           TEXT("SoundConcurrency") },
+			{ TEXT("SoundMix"),           TEXT("/Script/Engine"),           TEXT("SoundMix") },
+			{ TEXT("ReverbEffect"),       TEXT("/Script/Engine"),           TEXT("ReverbEffect") },
+		};
+
+		for (const FClassEntry& Entry : Map)
+		{
+			if (ShortName.Equals(Entry.Name, ESearchCase::IgnoreCase))
+			{
+				OutPath = FTopLevelAssetPath(Entry.Package, Entry.Asset);
+				return true;
+			}
+		}
+		return false;
+	}
+}
+
+TSharedPtr<FJsonObject> FListAssetsCommand::Execute(
+	const TSharedPtr<FJsonObject>& Params,
+	FAudioMCPBuilderManager& BuilderManager)
+{
+	// --- Params ---
+	FString ClassFilter;
+	Params->TryGetStringField(TEXT("class_filter"), ClassFilter);
+
+	FString Path = TEXT("/Game/");
+	Params->TryGetStringField(TEXT("path"), Path);
+
+	bool bRecursiveClasses = true;
+	Params->TryGetBoolField(TEXT("recursive_classes"), bRecursiveClasses);
+
+	int32 Limit = 5000;
+	double LimitVal;
+	if (Params->TryGetNumberField(TEXT("limit"), LimitVal))
+	{
+		Limit = FMath::Clamp(static_cast<int32>(LimitVal), 1, 50000);
+	}
+
+	// --- Validate path ---
+	if (!Path.StartsWith(TEXT("/Game/")) && !Path.StartsWith(TEXT("/Engine/")))
+	{
+		return AudioMCP::MakeErrorResponse(
+			FString::Printf(TEXT("Path must start with /Game/ or /Engine/ (got '%s')"), *Path));
+	}
+
+	// --- Build filter ---
+	IAssetRegistry& Registry =
+		FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry").Get();
+
+	FARFilter Filter;
+	Filter.PackagePaths.Add(FName(*Path));
+	Filter.bRecursivePaths = true;
+	Filter.bRecursiveClasses = bRecursiveClasses;
+
+	if (!ClassFilter.IsEmpty())
+	{
+		FTopLevelAssetPath ClassPath;
+		if (ResolveClassPath(ClassFilter, ClassPath))
+		{
+			Filter.ClassPaths.Add(ClassPath);
+		}
+		else
+		{
+			return AudioMCP::MakeErrorResponse(
+				FString::Printf(TEXT("Unknown class_filter '%s'. Supported: Blueprint, WidgetBlueprint, "
+					"AnimBlueprint, MetaSoundSource, MetaSoundPatch, SoundWave, SoundCue, "
+					"SoundAttenuation, SoundClass, SoundConcurrency, SoundMix, ReverbEffect"),
+					*ClassFilter));
+		}
+	}
+
+	// --- Query ---
+	TArray<FAssetData> Assets;
+	Registry.GetAssets(Filter, Assets);
+
+	// --- Build response ---
+	TArray<TSharedPtr<FJsonValue>> AssetArray;
+	int32 Shown = 0;
+
+	for (const FAssetData& Asset : Assets)
+	{
+		if (Shown >= Limit) break;
+
+		TSharedPtr<FJsonObject> AssetObj = MakeShared<FJsonObject>();
+		AssetObj->SetStringField(TEXT("path"), Asset.GetObjectPathString());
+		AssetObj->SetStringField(TEXT("name"), Asset.AssetName.ToString());
+		AssetObj->SetStringField(TEXT("class"),
+			Asset.AssetClassPath.GetAssetName().ToString());
+		AssetObj->SetStringField(TEXT("package_path"), Asset.PackagePath.ToString());
+
+		AssetArray.Add(MakeShared<FJsonValueObject>(AssetObj));
+		Shown++;
+	}
+
+	TSharedPtr<FJsonObject> Response = AudioMCP::MakeOkResponse(
+		FString::Printf(TEXT("Found %d %s assets under '%s' (%d shown)"),
+			Assets.Num(),
+			ClassFilter.IsEmpty() ? TEXT("") : *ClassFilter,
+			*Path, Shown));
+	Response->SetArrayField(TEXT("assets"), AssetArray);
+	Response->SetNumberField(TEXT("total"), Assets.Num());
+	Response->SetNumberField(TEXT("shown"), Shown);
+	Response->SetStringField(TEXT("path"), Path);
+	if (!ClassFilter.IsEmpty())
+	{
+		Response->SetStringField(TEXT("class_filter"), ClassFilter);
+	}
 	return Response;
 }

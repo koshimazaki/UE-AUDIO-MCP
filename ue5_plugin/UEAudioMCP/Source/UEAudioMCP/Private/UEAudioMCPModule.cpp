@@ -12,6 +12,7 @@
 #include "Commands/VariableCommands.h"
 #include "Commands/PresetCommands.h"
 #include "Commands/QueryCommands.h"
+#include "AudioMCPEditorMenu.h"
 #include "Modules/ModuleManager.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogAudioMCPModule, Log, All);
@@ -30,7 +31,7 @@ void FUEAudioMCPModule::StartupModule()
 	if (TcpServer->StartListening(AudioMCP::DEFAULT_PORT))
 	{
 		UE_LOG(LogAudioMCPModule, Log,
-			TEXT("UE Audio MCP ready — listening on port %d (22 commands registered)"),
+			TEXT("UE Audio MCP ready — listening on port %d (24 commands registered)"),
 			AudioMCP::DEFAULT_PORT);
 	}
 	else
@@ -39,11 +40,16 @@ void FUEAudioMCPModule::StartupModule()
 			TEXT("Failed to start Audio MCP TCP server on port %d"),
 			AudioMCP::DEFAULT_PORT);
 	}
+
+	// Register editor menu (deferred until ToolMenus is ready)
+	FAudioMCPEditorMenu::Register();
 }
 
 void FUEAudioMCPModule::ShutdownModule()
 {
 	UE_LOG(LogAudioMCPModule, Log, TEXT("UE Audio MCP plugin shutting down..."));
+
+	FAudioMCPEditorMenu::Unregister();
 
 	// Signal dispatcher first so in-flight commands return immediately
 	// instead of posting AsyncTasks that can never run (deadlock prevention)
@@ -118,7 +124,7 @@ void FUEAudioMCPModule::RegisterCommands()
 	Dispatcher->RegisterCommand(TEXT("convert_from_preset"),
 		MakeShared<FConvertFromPresetCommand>());
 
-	// 17-19. Query & live updates
+	// 17-20. Query & live updates
 	Dispatcher->RegisterCommand(TEXT("get_graph_input_names"),
 		MakeShared<FGetGraphInputNamesCommand>());
 	Dispatcher->RegisterCommand(TEXT("set_live_updates"),
@@ -127,6 +133,12 @@ void FUEAudioMCPModule::RegisterCommands()
 		MakeShared<FListNodeClassesCommand>());
 	Dispatcher->RegisterCommand(TEXT("get_node_locations"),
 		MakeShared<FGetNodeLocationsCommand>());
+
+	// 21-22. Blueprint graph inspection & asset queries
+	Dispatcher->RegisterCommand(TEXT("scan_blueprint"),
+		MakeShared<FScanBlueprintCommand>());
+	Dispatcher->RegisterCommand(TEXT("list_assets"),
+		MakeShared<FListAssetsCommand>());
 }
 
 IMPLEMENT_MODULE(FUEAudioMCPModule, UEAudioMCP)

@@ -70,17 +70,48 @@ def get_asset_registry():
     return unreal.AssetRegistryHelpers.get_asset_registry()
 
 
+MODULE_MAP = {
+    "Blueprint": "Engine",
+    "WidgetBlueprint": "UMGEditor",
+    "AnimBlueprint": "Engine",
+    "SoundWave": "Engine",
+    "SoundCue": "Engine",
+    "MetaSoundSource": "MetasoundEngine",
+    "MetaSoundPatch": "MetasoundEngine",
+    "SoundAttenuation": "Engine",
+    "SoundClass": "Engine",
+    "SoundConcurrency": "Engine",
+    "SoundMix": "Engine",
+    "ReverbEffect": "Engine",
+    "SoundControlBus": "AudioModulation",
+    "SoundControlBusMix": "AudioModulation",
+    "AnimSequence": "Engine",
+    "AnimMontage": "Engine",
+}
+
+
 def find_assets_by_class(class_names):
+    """UE 5.7 compatible: uses get_assets_by_class (no ARFilter needed)."""
     registry = get_asset_registry()
     results = []
+    seen = set()
     for class_name in class_names:
-        ar_filter = unreal.ARFilter()
-        ar_filter.class_names = [unreal.Name(class_name)]
-        ar_filter.recursive_classes = True
-        assets = registry.get_assets(ar_filter)
+        module = MODULE_MAP.get(class_name, "Engine")
+        class_path = unreal.TopLevelAssetPath("/Script/" + module, class_name)
+        assets = registry.get_assets_by_class(class_path, search_sub_classes=False)
+        if not assets and module == "Engine":
+            for alt_module in ["MetasoundEngine", "AudioModulation", "UMGEditor"]:
+                class_path = unreal.TopLevelAssetPath("/Script/" + alt_module, class_name)
+                assets = registry.get_assets_by_class(class_path, search_sub_classes=False)
+                if assets:
+                    break
         for asset in assets:
+            pkg = str(asset.package_name)
+            if pkg in seen:
+                continue
+            seen.add(pkg)
             results.append({
-                "package_name": str(asset.package_name),
+                "package_name": pkg,
                 "asset_name": str(asset.asset_name),
                 "asset_class": str(asset.asset_class_path.asset_name) if hasattr(asset, 'asset_class_path') else class_name,
                 "package_path": str(asset.package_path),
@@ -93,14 +124,18 @@ def find_assets_by_class(class_names):
 # ---------------------------------------------------------------------------
 
 def inspect_blueprint(asset_path):
+    """UE 5.7 compatible Blueprint inspection using BlueprintEditorLibrary + CDO."""
     bp = unreal.EditorAssetLibrary.load_asset(asset_path)
     if bp is None:
         return None
+
+    bel = getattr(unreal, "BlueprintEditorLibrary", None)
 
     result = {
         "path": asset_path,
         "name": str(bp.get_name()),
         "parent_class": "",
+        "bp_class": str(bp.get_class().get_name()),
         "graphs": [],
         "variables": [],
         "components": [],
@@ -109,175 +144,64 @@ def inspect_blueprint(asset_path):
         "interaction_nodes": [],
     }
 
-    # Parent class
+    # Parent class via BlueprintEditorLibrary.generated_class()
+    gen_class = None
     try:
-        gen_class = bp.get_editor_property("generated_class")
-        if gen_class:
-            parent = gen_class.get_super_class()
-            if parent:
-                result["parent_class"] = str(parent.get_name())
+        if bel:
+            gen_class = bel.generated_class(bp)
+            if gen_class:
+                # Walk up the class hierarchy to find the first non-generated parent
+                parent = gen_class.get_class()
+                parent_name = str(gen_class.get_name())
+                # Strip _C suffix to get readable name
+                if parent_name.endswith("_C"):
+                    parent_name = parent_name[:-2]
+                result["parent_class"] = parent_name
     except Exception:
         pass
 
-    # Components
-    try:
-        scs = bp.get_editor_property("simple_construction_script")
-        if scs:
-            all_nodes = scs.get_all_nodes()
-            for scs_node in all_nodes:
-                comp_template = scs_node.get_editor_property("component_template")
-                if comp_template:
-                    comp_info = {
-                        "name": str(comp_template.get_name()),
-                        "class": str(comp_template.get_class().get_name()),
-                    }
-                    result["components"].append(comp_info)
-                    if "Audio" in comp_info["class"] or "Sound" in comp_info["class"]:
-                        result["audio_relevant"] = True
-    except Exception:
-        pass
-
-    # Event graphs
-    try:
-        graphs = bp.get_editor_property("ubergraph_pages")
-        if graphs:
-            for graph in graphs:
-                graph_data = inspect_graph(graph)
-                result["graphs"].append(graph_data)
-                for node in graph_data.get("nodes", []):
-                    node_title = node.get("title", "")
-                    node_class = node.get("class", "")
-                    combined = node_title + " " + node_class
-                    for kw in AUDIO_KEYWORDS:
-                        if kw.lower() in combined.lower():
-                            result["audio_nodes"].append({
-                                "keyword": kw,
-                                "node_title": node_title,
-                                "node_class": node_class,
-                                "graph": graph_data.get("name", ""),
-                            })
-                            result["audio_relevant"] = True
-                            break
-                    for kw in INTERACTION_KEYWORDS:
-                        if kw.lower() in combined.lower():
-                            result["interaction_nodes"].append({
-                                "keyword": kw,
-                                "node_title": node_title,
-                                "node_class": node_class,
-                                "graph": graph_data.get("name", ""),
-                            })
-                            break
-    except Exception as e:
-        result["graphs_error"] = str(e)
-
-    # Function graphs
-    try:
-        func_graphs = bp.get_editor_property("function_graphs")
-        if func_graphs:
-            for graph in func_graphs:
-                graph_data = inspect_graph(graph)
-                graph_data["type"] = "function"
-                result["graphs"].append(graph_data)
-    except Exception:
-        pass
-
-    # Variables
-    try:
-        new_vars = bp.get_editor_property("new_variables")
-        if new_vars:
-            for var in new_vars:
-                result["variables"].append({
-                    "name": str(var.get_editor_property("var_name")),
-                    "type": str(var.get_editor_property("var_type")),
-                })
-    except Exception:
-        pass
-
-    return result
-
-
-def inspect_graph(graph):
-    graph_data = {
-        "name": str(graph.get_name()),
-        "type": "event",
-        "nodes": [],
-    }
-
-    try:
-        schema = graph.get_editor_property("schema")
-        if schema:
-            graph_data["schema"] = str(schema.get_class().get_name())
-    except Exception:
-        pass
-
-    try:
-        nodes = graph.get_editor_property("nodes")
-        if nodes:
-            for node in nodes:
-                node_data = inspect_node(node)
-                if node_data:
-                    graph_data["nodes"].append(node_data)
-    except Exception as e:
-        graph_data["nodes_error"] = str(e)
-
-    return graph_data
-
-
-def inspect_node(node):
-    if node is None:
-        return None
-
-    node_data = {
-        "class": str(node.get_class().get_name()),
-        "title": "",
-        "pins": [],
-        "position": {"x": 0, "y": 0},
-    }
-
-    try:
-        node_data["title"] = str(node.get_node_title(unreal.NodeTitleType.FULL_TITLE))
-    except Exception:
+    # Components via CDO (works in UE 5.7!)
+    if gen_class:
         try:
-            node_data["title"] = str(node.get_name())
+            cdo = unreal.get_default_object(gen_class)
+            if cdo:
+                all_comps = cdo.get_components_by_class(unreal.ActorComponent)
+                if all_comps:
+                    for comp in all_comps:
+                        comp_class = str(comp.get_class().get_name())
+                        comp_info = {
+                            "name": str(comp.get_name()),
+                            "class": comp_class,
+                        }
+                        result["components"].append(comp_info)
+                        if any(kw in comp_class for kw in ["Audio", "Sound", "MetaSound", "Ak"]):
+                            result["audio_relevant"] = True
+                            result["audio_nodes"].append({
+                                "keyword": comp_class,
+                                "node_title": comp_info["name"],
+                                "node_class": comp_class,
+                                "graph": "(component)",
+                            })
         except Exception:
             pass
 
-    try:
-        node_data["position"]["x"] = node.get_editor_property("node_pos_x")
-        node_data["position"]["y"] = node.get_editor_property("node_pos_y")
-    except Exception:
-        pass
+    # Graph names (can detect existence but not read nodes in UE 5.7)
+    if bel:
+        for graph_name in ["EventGraph", "UserConstructionScript"]:
+            try:
+                graph = bel.find_graph(bp, graph_name)
+                if graph:
+                    result["graphs"].append({
+                        "name": str(graph.get_name()),
+                        "type": "event" if graph_name == "EventGraph" else "function",
+                        "nodes": [],
+                        "note": "Graph nodes protected in UE 5.7 Python — use C++ plugin scan_blueprint for full node inspection",
+                    })
+            except Exception:
+                pass
 
-    try:
-        pins = node.get_all_pins()
-        if pins:
-            for pin in pins:
-                pin_data = {
-                    "name": str(pin.get_name()),
-                    "direction": "input" if pin.direction == unreal.EdGraphPinDirection.EGPD_INPUT else "output",
-                    "type": str(pin.pin_type),
-                    "connected": bool(pin.linked_to),
-                }
-                if pin.linked_to:
-                    pin_data["connected_to"] = []
-                    for linked_pin in pin.linked_to:
-                        owner = linked_pin.get_owning_node()
-                        pin_data["connected_to"].append({
-                            "node": str(owner.get_name()) if owner else "?",
-                            "pin": str(linked_pin.get_name()),
-                        })
-                node_data["pins"].append(pin_data)
-    except Exception:
-        pass
+    return result
 
-    try:
-        comment = node.get_editor_property("node_comment")
-        if comment:
-            node_data["comment"] = str(comment)
-    except Exception:
-        pass
-
-    return node_data
 
 
 # ---------------------------------------------------------------------------
