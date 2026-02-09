@@ -7,6 +7,8 @@ build/
 .venv/
 venv/
 
+memories.json
+project_scan.json
 # Node
 node_modules/
 
