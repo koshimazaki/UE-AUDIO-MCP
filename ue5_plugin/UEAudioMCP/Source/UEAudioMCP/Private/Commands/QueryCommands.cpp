@@ -413,6 +413,337 @@ TSharedPtr<FJsonObject> FGetNodeLocationsCommand::Execute(
 }
 
 // ---------------------------------------------------------------------------
+// export_metasound — full graph export with types, defaults, variables, I/O
+// ---------------------------------------------------------------------------
+
+TSharedPtr<FJsonObject> FExportMetaSoundCommand::Execute(
+	const TSharedPtr<FJsonObject>& Params,
+	FAudioMCPBuilderManager& BuilderManager)
+{
+	FString AssetPath;
+	if (!Params->TryGetStringField(TEXT("asset_path"), AssetPath))
+	{
+		return AudioMCP::MakeErrorResponse(TEXT("Missing required param 'asset_path'"));
+	}
+
+	if (!AssetPath.StartsWith(TEXT("/Game/")) && !AssetPath.StartsWith(TEXT("/Engine/")))
+	{
+		return AudioMCP::MakeErrorResponse(
+			FString::Printf(TEXT("Asset path must start with /Game/ or /Engine/ (got '%s')"), *AssetPath));
+	}
+	if (AssetPath.Contains(TEXT("..")))
+	{
+		return AudioMCP::MakeErrorResponse(TEXT("Asset path must not contain '..'"));
+	}
+
+	UObject* Asset = StaticLoadObject(UObject::StaticClass(), nullptr, *AssetPath);
+	if (!Asset)
+	{
+		return AudioMCP::MakeErrorResponse(
+			FString::Printf(TEXT("Could not load asset '%s'"), *AssetPath));
+	}
+
+	TScriptInterface<IMetaSoundDocumentInterface> DocInterface(Asset);
+	if (!DocInterface.GetInterface())
+	{
+		return AudioMCP::MakeErrorResponse(
+			FString::Printf(TEXT("Asset '%s' is not a MetaSound"), *AssetPath));
+	}
+
+	const FMetasoundFrontendDocument& Document = DocInterface->GetConstDocument();
+	const FMetasoundFrontendGraph& Graph = Document.RootGraph.GetConstDefaultGraph();
+
+	// --- Asset type ---
+	FString AssetType = TEXT("Unknown");
+	if (Asset->IsA(UMetaSoundSource::StaticClass()))
+	{
+		AssetType = TEXT("Source");
+	}
+	else if (Asset->GetClass()->GetName().Contains(TEXT("Patch")))
+	{
+		AssetType = TEXT("Patch");
+	}
+
+	// --- Is preset ---
+	bool bIsPreset = Document.RootGraph.PresetOptions.bIsPreset;
+
+	// --- Interfaces ---
+	TArray<TSharedPtr<FJsonValue>> InterfaceArray;
+	for (const FMetasoundFrontendVersion& Interface : Document.Interfaces)
+	{
+		InterfaceArray.Add(MakeShared<FJsonValueString>(Interface.Name.ToString()));
+	}
+
+	// --- Graph-level I/O from RootGraph interface ---
+	TArray<TSharedPtr<FJsonValue>> GraphInputsArray;
+	for (const FMetasoundFrontendClassInput& ClassInput : Document.RootGraph.Interface.Inputs)
+	{
+		TSharedPtr<FJsonObject> InputObj = MakeShared<FJsonObject>();
+		InputObj->SetStringField(TEXT("name"), ClassInput.Name.ToString());
+		InputObj->SetStringField(TEXT("type"), ClassInput.TypeName.ToString());
+
+		// Extract default literal
+		const FMetasoundFrontendLiteral& Lit = ClassInput.Default;
+		float FloatVal; int32 IntVal; bool BoolVal; FString StringVal;
+		if (Lit.TryGet(FloatVal))
+		{
+			InputObj->SetNumberField(TEXT("default"), FloatVal);
+		}
+		else if (Lit.TryGet(IntVal))
+		{
+			InputObj->SetNumberField(TEXT("default"), IntVal);
+		}
+		else if (Lit.TryGet(BoolVal))
+		{
+			InputObj->SetBoolField(TEXT("default"), BoolVal);
+		}
+		else if (Lit.TryGet(StringVal) && !StringVal.IsEmpty())
+		{
+			InputObj->SetStringField(TEXT("default"), StringVal);
+		}
+
+		GraphInputsArray.Add(MakeShared<FJsonValueObject>(InputObj));
+	}
+
+	TArray<TSharedPtr<FJsonValue>> GraphOutputsArray;
+	for (const FMetasoundFrontendClassOutput& ClassOutput : Document.RootGraph.Interface.Outputs)
+	{
+		TSharedPtr<FJsonObject> OutputObj = MakeShared<FJsonObject>();
+		OutputObj->SetStringField(TEXT("name"), ClassOutput.Name.ToString());
+		OutputObj->SetStringField(TEXT("type"), ClassOutput.TypeName.ToString());
+		GraphOutputsArray.Add(MakeShared<FJsonValueObject>(OutputObj));
+	}
+
+	// --- Graph variables ---
+	TArray<TSharedPtr<FJsonValue>> VariablesArray;
+	for (const FMetasoundFrontendVariable& Var : Graph.Variables)
+	{
+		TSharedPtr<FJsonObject> VarObj = MakeShared<FJsonObject>();
+		VarObj->SetStringField(TEXT("name"), Var.Name.ToString());
+		VarObj->SetStringField(TEXT("type"), Var.TypeName.ToString());
+		VarObj->SetStringField(TEXT("id"), Var.ID.ToString());
+
+		// Variable default literal
+		const FMetasoundFrontendLiteral& VLit = Var.Literal;
+		float VFloat; int32 VInt; bool VBool; FString VString;
+		if (VLit.TryGet(VFloat))
+		{
+			VarObj->SetNumberField(TEXT("default"), VFloat);
+		}
+		else if (VLit.TryGet(VInt))
+		{
+			VarObj->SetNumberField(TEXT("default"), VInt);
+		}
+		else if (VLit.TryGet(VBool))
+		{
+			VarObj->SetBoolField(TEXT("default"), VBool);
+		}
+		else if (VLit.TryGet(VString) && !VString.IsEmpty())
+		{
+			VarObj->SetStringField(TEXT("default"), VString);
+		}
+
+		VariablesArray.Add(MakeShared<FJsonValueObject>(VarObj));
+	}
+
+	// --- Build ClassID → ClassName + ClassType lookups ---
+	TMap<FGuid, FMetasoundFrontendClassName> ClassIdToName;
+	TMap<FGuid, FString> ClassIdToType;
+	for (const FMetasoundFrontendClass& Dep : Document.Dependencies)
+	{
+		ClassIdToName.Add(Dep.ID, Dep.Metadata.GetClassName());
+
+		EMetasoundFrontendClassType ClassType = Dep.Metadata.GetType();
+		FString TypeStr;
+		switch (ClassType)
+		{
+		case EMetasoundFrontendClassType::External:  TypeStr = TEXT("External"); break;
+		case EMetasoundFrontendClassType::Input:     TypeStr = TEXT("Input"); break;
+		case EMetasoundFrontendClassType::Output:    TypeStr = TEXT("Output"); break;
+		case EMetasoundFrontendClassType::Variable:  TypeStr = TEXT("Variable"); break;
+		case EMetasoundFrontendClassType::VariableDeferredAccessor: TypeStr = TEXT("VariableDeferred"); break;
+		case EMetasoundFrontendClassType::VariableAccessor: TypeStr = TEXT("VariableAccessor"); break;
+		case EMetasoundFrontendClassType::VariableMutator:  TypeStr = TEXT("VariableMutator"); break;
+		default: TypeStr = TEXT("Unknown"); break;
+		}
+		ClassIdToType.Add(Dep.ID, TypeStr);
+	}
+
+	// --- Build vertex ID → pin name lookup for edges ---
+	TMap<FGuid, FString> VertexIdToPinName;
+	TMap<FGuid, FString> NodeIdToName;
+
+	for (const FMetasoundFrontendNode& Node : Graph.Nodes)
+	{
+		FString NodeDisplayName = Node.Name.ToString();
+		if (const FMetasoundFrontendClassName* FoundName = ClassIdToName.Find(Node.ClassID))
+		{
+			NodeDisplayName = FoundName->Name.ToString();
+		}
+		NodeIdToName.Add(Node.GetID(), NodeDisplayName);
+
+		for (const FMetasoundFrontendVertex& Input : Node.Interface.Inputs)
+		{
+			VertexIdToPinName.Add(Input.VertexID, Input.Name.ToString());
+		}
+		for (const FMetasoundFrontendVertex& Output : Node.Interface.Outputs)
+		{
+			VertexIdToPinName.Add(Output.VertexID, Output.Name.ToString());
+		}
+	}
+
+	// --- Nodes ---
+	TArray<TSharedPtr<FJsonValue>> NodeArray;
+	for (const FMetasoundFrontendNode& Node : Graph.Nodes)
+	{
+		TSharedPtr<FJsonObject> NodeObj = MakeShared<FJsonObject>();
+		NodeObj->SetStringField(TEXT("node_id"), Node.GetID().ToString());
+
+		// Class name
+		FString Namespace, Name = Node.Name.ToString(), Variant;
+		if (const FMetasoundFrontendClassName* FoundName = ClassIdToName.Find(Node.ClassID))
+		{
+			Namespace = FoundName->Namespace.ToString();
+			Name = FoundName->Name.ToString();
+			Variant = FoundName->Variant.ToString();
+		}
+
+		FString FullName;
+		if (Namespace.IsEmpty())
+		{
+			FullName = Variant.IsEmpty() ? Name : FString::Printf(TEXT("%s::%s"), *Name, *Variant);
+		}
+		else
+		{
+			FullName = Variant.IsEmpty()
+				? FString::Printf(TEXT("%s::%s"), *Namespace, *Name)
+				: FString::Printf(TEXT("%s::%s::%s"), *Namespace, *Name, *Variant);
+		}
+		NodeObj->SetStringField(TEXT("class_name"), FullName);
+		NodeObj->SetStringField(TEXT("name"), Node.Name.ToString());
+
+		// Class type
+		if (FString* TypeStr = ClassIdToType.Find(Node.ClassID))
+		{
+			NodeObj->SetStringField(TEXT("class_type"), *TypeStr);
+		}
+
+		// Position
+		const TMap<FGuid, FVector2D>& Locations = Node.Style.Display.Locations;
+		if (Locations.Num() > 0)
+		{
+			for (const auto& Pair : Locations)
+			{
+				NodeObj->SetNumberField(TEXT("x"), Pair.Value.X);
+				NodeObj->SetNumberField(TEXT("y"), Pair.Value.Y);
+				break;
+			}
+		}
+
+		// Comment
+		if (!Node.Style.Display.Comment.IsEmpty())
+		{
+			NodeObj->SetStringField(TEXT("comment"), Node.Style.Display.Comment);
+		}
+
+		// Input pins with types and defaults
+		TArray<TSharedPtr<FJsonValue>> InputPins;
+		for (const FMetasoundFrontendVertex& Input : Node.Interface.Inputs)
+		{
+			TSharedPtr<FJsonObject> PinObj = MakeShared<FJsonObject>();
+			PinObj->SetStringField(TEXT("name"), Input.Name.ToString());
+			PinObj->SetStringField(TEXT("type"), Input.TypeName.ToString());
+
+			for (const FMetasoundFrontendVertexLiteral& Literal : Node.InputLiterals)
+			{
+				if (Literal.VertexID == Input.VertexID)
+				{
+					const FMetasoundFrontendLiteral& Lit = Literal.Value;
+					float FVal; int32 IVal; bool BVal; FString SVal;
+					if (Lit.TryGet(FVal))
+					{
+						PinObj->SetNumberField(TEXT("default"), FVal);
+					}
+					else if (Lit.TryGet(IVal))
+					{
+						PinObj->SetNumberField(TEXT("default"), IVal);
+					}
+					else if (Lit.TryGet(BVal))
+					{
+						PinObj->SetBoolField(TEXT("default"), BVal);
+					}
+					else if (Lit.TryGet(SVal) && !SVal.IsEmpty())
+					{
+						PinObj->SetStringField(TEXT("default"), SVal);
+					}
+					break;
+				}
+			}
+
+			InputPins.Add(MakeShared<FJsonValueObject>(PinObj));
+		}
+		NodeObj->SetArrayField(TEXT("inputs"), InputPins);
+
+		// Output pins with types
+		TArray<TSharedPtr<FJsonValue>> OutputPins;
+		for (const FMetasoundFrontendVertex& Output : Node.Interface.Outputs)
+		{
+			TSharedPtr<FJsonObject> PinObj = MakeShared<FJsonObject>();
+			PinObj->SetStringField(TEXT("name"), Output.Name.ToString());
+			PinObj->SetStringField(TEXT("type"), Output.TypeName.ToString());
+			OutputPins.Add(MakeShared<FJsonValueObject>(PinObj));
+		}
+		NodeObj->SetArrayField(TEXT("outputs"), OutputPins);
+
+		NodeArray.Add(MakeShared<FJsonValueObject>(NodeObj));
+	}
+
+	// --- Edges ---
+	TArray<TSharedPtr<FJsonValue>> EdgeArray;
+	for (const FMetasoundFrontendEdge& Edge : Graph.Edges)
+	{
+		TSharedPtr<FJsonObject> EdgeObj = MakeShared<FJsonObject>();
+		EdgeObj->SetStringField(TEXT("from_node"), Edge.FromNodeID.ToString());
+		EdgeObj->SetStringField(TEXT("to_node"), Edge.ToNodeID.ToString());
+
+		if (FString* FromName = NodeIdToName.Find(Edge.FromNodeID))
+		{
+			EdgeObj->SetStringField(TEXT("from_node_name"), *FromName);
+		}
+		if (FString* ToName = NodeIdToName.Find(Edge.ToNodeID))
+		{
+			EdgeObj->SetStringField(TEXT("to_node_name"), *ToName);
+		}
+
+		FString* FromPinName = VertexIdToPinName.Find(Edge.FromVertexID);
+		EdgeObj->SetStringField(TEXT("from_pin"),
+			FromPinName ? *FromPinName : Edge.FromVertexID.ToString());
+
+		FString* ToPinName = VertexIdToPinName.Find(Edge.ToVertexID);
+		EdgeObj->SetStringField(TEXT("to_pin"),
+			ToPinName ? *ToPinName : Edge.ToVertexID.ToString());
+
+		EdgeArray.Add(MakeShared<FJsonValueObject>(EdgeObj));
+	}
+
+	// --- Response ---
+	TSharedPtr<FJsonObject> Response = AudioMCP::MakeOkResponse(
+		FString::Printf(TEXT("Exported '%s': %d nodes, %d edges, %d vars, %d interfaces"),
+			*AssetPath, NodeArray.Num(), EdgeArray.Num(),
+			VariablesArray.Num(), InterfaceArray.Num()));
+	Response->SetStringField(TEXT("asset_path"), AssetPath);
+	Response->SetStringField(TEXT("asset_type"), AssetType);
+	Response->SetBoolField(TEXT("is_preset"), bIsPreset);
+	Response->SetArrayField(TEXT("interfaces"), InterfaceArray);
+	Response->SetArrayField(TEXT("graph_inputs"), GraphInputsArray);
+	Response->SetArrayField(TEXT("graph_outputs"), GraphOutputsArray);
+	Response->SetArrayField(TEXT("variables"), VariablesArray);
+	Response->SetArrayField(TEXT("nodes"), NodeArray);
+	Response->SetArrayField(TEXT("edges"), EdgeArray);
+	return Response;
+}
+
+// ---------------------------------------------------------------------------
 // scan_blueprint — deep-scan Blueprint graph nodes for function calls & audio
 // ---------------------------------------------------------------------------
 

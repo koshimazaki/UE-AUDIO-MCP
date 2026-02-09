@@ -11,8 +11,10 @@ from ue_audio_mcp.tools.ms_builder import (
     ms_build_graph,
     ms_connect_pins,
     ms_create_source,
+    ms_export_graph,
     ms_save_asset,
     ms_set_default,
+    _inline_convert,
 )
 
 
@@ -171,3 +173,194 @@ def test_audition_not_connected():
     assert result["status"] == "error"
     assert "Not connected" in result["message"]
     ue5_module._connection = None
+
+
+# -- ms_export_graph ---------------------------------------------------------
+
+MOCK_EXPORT_RESPONSE = {
+    "status": "ok",
+    "asset_path": "/Game/Audio/TestSound",
+    "asset_type": "Source",
+    "is_preset": False,
+    "interfaces": ["UE.Source.OneShot"],
+    "graph_inputs": [
+        {"name": "OnPlay", "type": "Trigger"},
+        {"name": "Frequency", "type": "Float", "default": 440.0},
+    ],
+    "graph_outputs": [
+        {"name": "Out Mono", "type": "Audio"},
+        {"name": "OnFinished", "type": "Trigger"},
+    ],
+    "variables": [],
+    "nodes": [
+        {
+            "node_id": "guid-input-onplay",
+            "class_name": "OnPlay",
+            "name": "OnPlay",
+            "class_type": "Input",
+            "x": -400, "y": 0,
+            "inputs": [], "outputs": [{"name": "OnPlay", "type": "Trigger"}],
+        },
+        {
+            "node_id": "guid-input-freq",
+            "class_name": "Frequency",
+            "name": "Frequency",
+            "class_type": "Input",
+            "x": -400, "y": 100,
+            "inputs": [], "outputs": [{"name": "Frequency", "type": "Float"}],
+        },
+        {
+            "node_id": "guid-output-mono",
+            "class_name": "Out Mono",
+            "name": "Out Mono",
+            "class_type": "Output",
+            "x": 400, "y": 0,
+            "inputs": [{"name": "Out Mono", "type": "Audio"}], "outputs": [],
+        },
+        {
+            "node_id": "guid-output-finished",
+            "class_name": "OnFinished",
+            "name": "OnFinished",
+            "class_type": "Output",
+            "x": 400, "y": 100,
+            "inputs": [{"name": "OnFinished", "type": "Trigger"}], "outputs": [],
+        },
+        {
+            "node_id": "guid-sine",
+            "class_name": "UE::Sine::Audio",
+            "name": "Sine",
+            "class_type": "External",
+            "x": 0, "y": 0,
+            "inputs": [
+                {"name": "Frequency", "type": "Float", "default": 440.0},
+                {"name": "Enabled", "type": "Bool", "default": True},
+            ],
+            "outputs": [{"name": "Audio", "type": "Audio"}],
+        },
+        {
+            "node_id": "guid-env",
+            "class_name": "UE::AD Envelope::Audio",
+            "name": "AD Envelope",
+            "class_type": "External",
+            "x": 0, "y": 200,
+            "inputs": [
+                {"name": "Trigger", "type": "Trigger"},
+                {"name": "Attack", "type": "Float", "default": 0.01},
+                {"name": "Decay", "type": "Float", "default": 0.1},
+            ],
+            "outputs": [
+                {"name": "Envelope", "type": "Audio"},
+                {"name": "OnDone", "type": "Trigger"},
+            ],
+        },
+    ],
+    "edges": [
+        {"from_node": "guid-input-freq", "from_pin": "Frequency", "to_node": "guid-sine", "to_pin": "Frequency"},
+        {"from_node": "guid-input-onplay", "from_pin": "OnPlay", "to_node": "guid-env", "to_pin": "Trigger"},
+        {"from_node": "guid-sine", "from_pin": "Audio", "to_node": "guid-output-mono", "to_pin": "Out Mono"},
+        {"from_node": "guid-env", "from_pin": "OnDone", "to_node": "guid-output-finished", "to_pin": "OnFinished"},
+    ],
+}
+
+
+def test_export_graph_basic(ue5_conn, mock_ue5_plugin):
+    mock_ue5_plugin.set_response("export_metasound", MOCK_EXPORT_RESPONSE)
+    result = json.loads(ms_export_graph("/Game/Audio/TestSound"))
+    assert result["status"] == "ok"
+    assert "6 nodes" in result["message"]
+    assert "4 edges" in result["message"]
+    assert result["export"]["asset_type"] == "Source"
+    assert mock_ue5_plugin.commands[-1]["action"] == "export_metasound"
+
+
+def test_export_graph_invalid_path(ue5_conn):
+    result = json.loads(ms_export_graph("/tmp/bad"))
+    assert result["status"] == "error"
+    assert "/Game/" in result["message"]
+
+
+def test_export_graph_traversal_path(ue5_conn):
+    result = json.loads(ms_export_graph("/Game/../etc/passwd"))
+    assert result["status"] == "error"
+    assert ".." in result["message"]
+
+
+def test_export_graph_not_connected():
+    import ue_audio_mcp.ue5_connection as ue5_module
+    ue5_module._connection = None
+    result = json.loads(ms_export_graph("/Game/Audio/Test"))
+    assert result["status"] == "error"
+    assert "Not connected" in result["message"]
+    ue5_module._connection = None
+
+
+def test_export_graph_with_template(ue5_conn, mock_ue5_plugin):
+    mock_ue5_plugin.set_response("export_metasound", MOCK_EXPORT_RESPONSE)
+    result = json.loads(ms_export_graph("/Game/Audio/TestSound", convert_to_template=True))
+    assert result["status"] == "ok"
+    assert "template" in result
+    template = result["template"]
+    assert template["name"] == "TestSound"
+    assert template["asset_type"] == "Source"
+    assert len(template["nodes"]) == 2  # only External nodes
+    assert len(template["connections"]) == 4
+    assert "template generated" in result["message"]
+
+
+def test_export_graph_error_response(ue5_conn, mock_ue5_plugin):
+    mock_ue5_plugin.set_response("export_metasound", {
+        "status": "error", "message": "Asset not found"
+    })
+    result = json.loads(ms_export_graph("/Game/Audio/Missing"))
+    assert result["status"] == "error"
+    assert "Asset not found" in result["message"]
+
+
+# -- _inline_convert ---------------------------------------------------------
+
+def test_inline_convert_basic():
+    template = _inline_convert(MOCK_EXPORT_RESPONSE)
+    assert template["name"] == "TestSound"
+    assert template["asset_type"] == "Source"
+    assert template["interfaces"] == ["UE.Source.OneShot"]
+    assert len(template["inputs"]) == 2
+    assert len(template["outputs"]) == 2
+    assert len(template["nodes"]) == 2
+    assert len(template["connections"]) == 4
+
+
+def test_inline_convert_node_types():
+    template = _inline_convert(MOCK_EXPORT_RESPONSE)
+    node_types = {n["node_type"] for n in template["nodes"]}
+    assert "Sine" in node_types
+    # "AD Envelope" matches the base name in METASOUND_NODES before variant check
+    assert "AD Envelope" in node_types or "AD Envelope (Audio)" in node_types
+
+
+def test_inline_convert_graph_boundary():
+    template = _inline_convert(MOCK_EXPORT_RESPONSE)
+    # Input/Output nodes should become __graph__ in connections
+    graph_from = [c for c in template["connections"] if c["from_node"] == "__graph__"]
+    graph_to = [c for c in template["connections"] if c["to_node"] == "__graph__"]
+    assert len(graph_from) == 2  # OnPlay and Frequency inputs
+    assert len(graph_to) == 2    # Out Mono and OnFinished outputs
+
+
+def test_inline_convert_defaults():
+    template = _inline_convert(MOCK_EXPORT_RESPONSE)
+    sine = [n for n in template["nodes"] if n["node_type"] == "Sine"][0]
+    assert "defaults" in sine
+    assert sine["defaults"]["Frequency"] == 440.0
+
+
+def test_inline_convert_variables():
+    export_with_vars = dict(MOCK_EXPORT_RESPONSE)
+    export_with_vars["variables"] = [
+        {"name": "TargetCutoff", "type": "Float", "default": 1000.0, "id": "var-guid"},
+    ]
+    template = _inline_convert(export_with_vars)
+    assert "variables" in template
+    assert len(template["variables"]) == 1
+    assert template["variables"][0]["name"] == "TargetCutoff"
+    assert template["variables"][0]["default"] == 1000.0
+    assert "id" not in template["variables"][0]  # id should be stripped

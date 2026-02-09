@@ -1,6 +1,6 @@
 ---
 name: mcp-plugin
-description: UE5 Audio MCP plugin TCP control. Use when sending commands to the Unreal Editor plugin, building MetaSounds graphs via TCP, scanning blueprints, listing assets, or debugging the plugin connection on port 9877.
+description: UE5 Audio MCP plugin TCP control. Use when sending commands to the Unreal Editor plugin, building MetaSounds graphs via TCP, scanning blueprints, listing assets, exporting MetaSounds graphs, or debugging the plugin connection on port 9877.
 allowed-tools: Bash, Read, Grep, Glob
 argument-hint: [command-or-task]
 ---
@@ -27,7 +27,7 @@ r = s.recv(4); l = struct.unpack('>I', r)[0]; print(json.loads(s.recv(l)))
 "
 ```
 
-## All 24 Commands
+## All 25 Commands
 
 ### System
 | Command | Params | Returns |
@@ -81,6 +81,7 @@ r = s.recv(4); l = struct.unpack('>I', r)[0]; print(json.loads(s.recv(l)))
 |---------|--------|---------|
 | `list_node_classes` | filter?, limit? (200) | nodes[], total, shown |
 | `get_node_locations` | asset_path | nodes[], edges[] |
+| `export_metasound` | asset_path | asset_type, is_preset, interfaces[], graph_inputs[], graph_outputs[], variables[], nodes[], edges[] |
 | `get_graph_input_names` | — | names[], count |
 | `set_live_updates` | enabled (bool) | enabled |
 
@@ -138,12 +139,12 @@ Full pin reference: `scripts/ms_node_specs.json` (93 nodes, 464 pins)
 {"action":"build_to_asset", "name":"FilteredSynth", "path":"/Game/Audio/MCP"}
 ```
 
-### Project Scan
+### Project Scan & Export
 ```json
 {"action":"list_assets", "class_filter":"Blueprint"}
 {"action":"scan_blueprint", "asset_path":"/Game/BP_Player", "audio_only":true}
 {"action":"list_assets", "class_filter":"MetaSoundSource"}
-{"action":"get_node_locations", "asset_path":"/Game/Audio/MS_Gunshot"}
+{"action":"export_metasound", "asset_path":"/Game/Audio/MS_Gunshot"}
 ```
 
 Or batch: `python scripts/scan_project.py --full-export --import-db --rebuild-embeddings`

@@ -119,9 +119,9 @@ void FAudioMCPEditorMenu::PopulateMenu(UToolMenu* Menu)
 			LOCTEXT("ExportSection", "Export"));
 
 		Section.AddMenuEntry(
-			"ExportPositions",
-			LOCTEXT("ExportPositions", "Export Node Positions"),
-			LOCTEXT("ExportPositionsTip", "Export MetaSound node pixel positions to JSON"),
+			"ExportMetaSounds",
+			LOCTEXT("ExportMetaSounds", "Export MetaSounds"),
+			LOCTEXT("ExportMetaSoundsTip", "Full export of all MetaSound graphs (nodes, types, defaults, variables, interfaces)"),
 			FSlateIcon(FAppStyle::GetAppStyleSetName(), "Icons.Save"),
 			FUIAction(FExecuteAction::CreateStatic(&FAudioMCPEditorMenu::OnExportNodePositions))
 		);
@@ -357,15 +357,15 @@ void FAudioMCPEditorMenu::OnExportNodePositions()
 		return;
 	}
 
-	// Use FGetNodeLocationsCommand for each asset
-	FGetNodeLocationsCommand LocCmd;
+	// Use FExportMetaSoundCommand for full graph export
+	FExportMetaSoundCommand ExportCmd;
 	FAudioMCPBuilderManager DummyManager;
 
 	TArray<TSharedPtr<FJsonValue>> ResultsArray;
 	int32 Success = 0;
 
 	FScopedSlowTask SlowTask(Assets.Num(),
-		LOCTEXT("ExportingPositions", "Exporting MetaSound node positions..."));
+		LOCTEXT("ExportingMetaSounds", "Exporting MetaSound graphs..."));
 	SlowTask.MakeDialog(true);
 
 	for (const FAssetData& Asset : Assets)
@@ -376,7 +376,7 @@ void FAudioMCPEditorMenu::OnExportNodePositions()
 		TSharedPtr<FJsonObject> Params = MakeShared<FJsonObject>();
 		Params->SetStringField(TEXT("asset_path"), Asset.GetObjectPathString());
 
-		TSharedPtr<FJsonObject> Result = LocCmd.Execute(Params, DummyManager);
+		TSharedPtr<FJsonObject> Result = ExportCmd.Execute(Params, DummyManager);
 		if (Result->GetStringField(TEXT("status")) == TEXT("ok"))
 		{
 			ResultsArray.Add(MakeShared<FJsonValueObject>(Result));
@@ -388,11 +388,11 @@ void FAudioMCPEditorMenu::OnExportNodePositions()
 	Root->SetNumberField(TEXT("count"), Success);
 	Root->SetArrayField(TEXT("metasounds"), ResultsArray);
 
-	FString OutputPath = SaveResultJson(TEXT("node_positions.json"), Root);
+	FString OutputPath = SaveResultJson(TEXT("metasound_export.json"), Root);
 
 	ShowNotification(
 		FText::Format(
-			LOCTEXT("ExportDone", "Exported positions for {0} MetaSound asset(s)"),
+			LOCTEXT("ExportDone", "Exported {0} MetaSound graph(s) to Saved/AudioMCP/"),
 			Success),
 		SNotificationItem::CS_Success);
 }
@@ -411,7 +411,7 @@ void FAudioMCPEditorMenu::OnShowStatus()
 		TEXT("Audio MCP TCP Server\n"
 			 "Port: %d\n"
 			 "Project: %s\n"
-			 "Commands: 24"),
+			 "Commands: 25"),
 		AudioMCP::DEFAULT_PORT,
 		FApp::GetProjectName());
 

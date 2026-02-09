@@ -40,6 +40,15 @@ public:
 		FAudioMCPBuilderManager& BuilderManager) override;
 };
 
+/** export_metasound: Full export of a MetaSound asset — nodes, pins, types, defaults, variables, interfaces, graph I/O. */
+class FExportMetaSoundCommand : public IAudioMCPCommand
+{
+public:
+	virtual TSharedPtr<FJsonObject> Execute(
+		const TSharedPtr<FJsonObject>& Params,
+		FAudioMCPBuilderManager& BuilderManager) override;
+};
+
 /** scan_blueprint: Deep-scan a Blueprint asset to extract graph nodes, function calls, and audio relevance. */
 class FScanBlueprintCommand : public IAudioMCPCommand
 {

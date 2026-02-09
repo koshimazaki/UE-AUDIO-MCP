@@ -31,7 +31,7 @@ void FUEAudioMCPModule::StartupModule()
 	if (TcpServer->StartListening(AudioMCP::DEFAULT_PORT))
 	{
 		UE_LOG(LogAudioMCPModule, Log,
-			TEXT("UE Audio MCP ready — listening on port %d (24 commands registered)"),
+			TEXT("UE Audio MCP ready — listening on port %d (25 commands registered)"),
 			AudioMCP::DEFAULT_PORT);
 	}
 	else
@@ -139,6 +139,10 @@ void FUEAudioMCPModule::RegisterCommands()
 		MakeShared<FScanBlueprintCommand>());
 	Dispatcher->RegisterCommand(TEXT("list_assets"),
 		MakeShared<FListAssetsCommand>());
+
+	// 23. Full MetaSound graph export
+	Dispatcher->RegisterCommand(TEXT("export_metasound"),
+		MakeShared<FExportMetaSoundCommand>());
 }
 
 IMPLEMENT_MODULE(FUEAudioMCPModule, UEAudioMCP)
