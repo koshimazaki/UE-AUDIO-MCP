@@ -21,8 +21,8 @@ One MCP server. Three audio engines. 53 tools. 22K+ Blueprint nodes. Optimised f
 ### Install
 
 ```bash
-git clone https://github.com/koshimazaki/UE5-AUDIO-MCP.git
-cd UE5-AUDIO-MCP
+git clone https://github.com/koshimazaki/UE-AUDIO-MCP.git
+cd UE-AUDIO-MCP
 pip install -e ".[dev]"
 
 # Run MCP server
