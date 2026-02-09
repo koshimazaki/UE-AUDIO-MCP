@@ -14,11 +14,22 @@
 
 One MCP server. Three audio engines. 53 tools. 22K+ Blueprint nodes. Optimised for **Unreal Engine 5.7** and **Wwise 2024**.
 
-Complete audio systems from a single prompt.
-
-> "Build weather-responsive ambient with rain, wind, and clear states that crossfade based on intensity"
+> "Create a footsteps sound setup for my character -- use MetaSounds noise and filter in the patch, Wwise SwitchContainer for surfaces, Blueprint trigger on anim notify"
 >
-> MetaSounds DSP graph generated. Wwise bus hierarchy + RTPC curves created. Blueprint trigger logic wired. AudioLink bridged. You hear rain starting.
+> MCP generates the MetaSounds DSP graph (noise -> filter -> AD envelope), creates the Wwise hierarchy with surface switches, and outputs Blueprint wiring for the animation trigger.
+
+### Install
+
+```bash
+git clone https://github.com/koshimazaki/UE5-WWISE.git
+cd UE5-WWISE
+pip install -e ".[dev]"
+
+# Run MCP server
+ue-audio-mcp
+```
+
+Works without Wwise or UE5 running -- knowledge base, templates, and offline mode always available.
 
 ---
 
@@ -221,9 +232,7 @@ Creates bus hierarchy, work units, events, MetaSounds sources, and Blueprint wir
 
 ---
 
-## Quick Start
-
-### Requirements
+## Requirements
 
 | Component | Version | Notes |
 |-----------|---------|-------|
@@ -231,17 +240,6 @@ Creates bus hierarchy, work units, events, MetaSounds sources, and Blueprint wir
 | Wwise | **2024.1+** | WAAPI enabled (Project Settings > Wwise > Enable WAAPI) |
 | Python | 3.10+ | MCP server runtime |
 | Wwise Authoring | Running | WAAPI WebSocket on localhost:8080 (66 functions) |
-
-### Install
-
-```bash
-git clone https://github.com/koshimazaki/UE5-WWISE.git
-cd UE5-WWISE
-pip install -e ".[dev]"
-
-# Run MCP server
-ue-audio-mcp
-```
 
 ### MCP Client Config
 
@@ -255,8 +253,6 @@ ue-audio-mcp
   }
 }
 ```
-
-Works without Wwise or UE5 running -- knowledge base, templates, and offline mode always available.
 
 ### UE5 Plugin Installation
 
