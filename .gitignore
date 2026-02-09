@@ -33,3 +33,21 @@ Thumbs.db
 
 # Logs
 *.log
+logs/
+
+# Internal planning
+TODO.md
+ROADMAP.md
+memories.json
+project_scan.json
+
+# Generated data
+scripts/bp_*.json
+scripts/bp_*.backup
+scripts/ms_*.json
+scripts/ms_raw_page.html
+scripts/uasset_*.json
+scripts/node_specs_sample.json
+scripts/verify_*
+scripts/tutorial_exports/
+*.npz
