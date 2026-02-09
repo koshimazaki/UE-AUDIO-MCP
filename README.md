@@ -344,21 +344,21 @@ Phase 6: A2HW Protocol Spec     WIP    Defined in SIDKIT, extended here
 
 ## Prior Art
 
-No MCP server for game audio exists. This is first-of-kind.
+This work fills a gap in the existing MCP ecosystem.
 
 | Existing Tool | Audio? |
 |---|---|
 | [blender-mcp](https://github.com/ahujasid/blender-mcp) (16.9k stars) -- Controls Blender | No |
 | [unreal-mcp](https://github.com/chongdashu/unreal-mcp) (1,370 stars) -- Controls UE5 editor | No |
 | [VibeComfy MCP](https://github.com/koshimazaki/VibeComfy) -- 8,400+ ComfyUI nodes | No |
-| [BilkentAudio/Wwise-MCP](https://github.com/BilkentAudio/wwise-mcp) -- Basic Wwise wrapper | Partial |
+| [BilkentAudio/Wwise-MCP](https://github.com/BilkentAudio/wwise-mcp) -- Wwise wrapper | Partial |
 | **This project** -- Complete 3-layer game audio + SID chip emulation | **Yes** |
 
 ---
 
 ## Credits
 
-All templates and knowledge curated from public sources: Epic Games documentation, Audiokinetic SDK reference, and community tutorials. ReSID emulation based on [reSID](http://www.zimmers.net/anonftp/pub/cbm/crossplatform/emulators/resid/) by Dag Lem with SIDKIT extensions.
+All templates and knowledge curated from public sources: Epic Games documentation, and tutorials, Audiokinetic SDK reference, and community tutorials. ReSID emulation based on [reSID](http://www.zimmers.net/anonftp/pub/cbm/crossplatform/emulators/resid/) by Dag Lem with SIDKIT extensions.
 
 See [CREDITS.md](CREDITS.md) for full attribution to tutorial authors and data sources.
 
