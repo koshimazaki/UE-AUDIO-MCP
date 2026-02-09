@@ -26,7 +26,10 @@
 // ----------------------------------------------------------------------------
 // Constructor.
 // ----------------------------------------------------------------------------
-__attribute__( ( optimize( "Os" ) ) ) SID16::SID16()
+#if defined(__GNUC__) && !defined(__clang__)
+__attribute__((optimize("Os")))
+#endif
+SID16::SID16()
 {
   // Initialize pointers.
   sample = 0;
@@ -62,7 +65,10 @@ SID16::~SID16()
 // ----------------------------------------------------------------------------
 // Set chip model.
 // ----------------------------------------------------------------------------
-void __attribute__( ( optimize( "Os" ) ) ) SID16::set_chip_model(chip_model model)
+#if defined(__GNUC__) && !defined(__clang__)
+__attribute__((optimize("Os")))
+#endif
+void SID16::set_chip_model(chip_model model)
 {
   for (int i = 0; i < 3; i++) {
     voice[i].set_chip_model(model);
@@ -76,7 +82,10 @@ void __attribute__( ( optimize( "Os" ) ) ) SID16::set_chip_model(chip_model mode
 // ----------------------------------------------------------------------------
 // SID reset.
 // ----------------------------------------------------------------------------
-void __attribute__( ( optimize( "Os" ) ) ) SID16::reset()
+#if defined(__GNUC__) && !defined(__clang__)
+__attribute__((optimize("Os")))
+#endif
+void SID16::reset()
 {
   for (int i = 0; i < 3; i++) {
     voice[i].reset();
@@ -748,6 +757,11 @@ void SID16::clock()
       #endif
   }
 
+  // Store per-voice output for monitoring (pre-filter, DC-removed)
+  voice_output[0] = v0 - voice[0].voice_DC;
+  voice_output[1] = v1 - voice[1].voice_DC;
+  voice_output[2] = v2 - voice[2].voice_DC;
+
   filter.clock( v0, v1, v2, ext_in );
 
   // Clock external filter.
@@ -866,6 +880,11 @@ void SID16::clock(cycle_count delta_t)
       voiceOut[ 2 ] = ( ( forceOutput[ 2 ] & ~3 ) - 512 ) << 8;
       #endif
   }
+
+  // Store per-voice output for monitoring (pre-filter, DC-removed)
+  voice_output[0] = v0 - voice[0].voice_DC;
+  voice_output[1] = v1 - voice[1].voice_DC;
+  voice_output[2] = v2 - voice[2].voice_DC;
 
   filter.clock(delta_t, v0, v1, v2, ext_in);
 
@@ -1007,6 +1026,11 @@ void SID16::clock(cycle_count delta_t)
   #endif
   }
 
+
+  // Store per-voice output for monitoring (pre-filter, DC-removed)
+  voice_output[0] = v0 - voice[0].voice_DC;
+  voice_output[1] = v1 - voice[1].voice_DC;
+  voice_output[2] = v2 - voice[2].voice_DC;
 
   // Clock filter.
   filter.clock( delta_t, v0, v1, v2, ext_in );

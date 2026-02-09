@@ -296,6 +296,23 @@ Phase 7: A2HW Protocol Spec      WIP     Defined in SIDKIT, extended here
 
 ---
 
+## Agent Skills
+
+Install UE Audio agent skills for Claude Code, Cursor, Windsurf, and [35+ other agents](https://skills.sh):
+
+```bash
+npx skills add koshimazaki/ue-audio-skills
+```
+
+| Skill | What it does |
+|-------|-------------|
+| `/mcp-plugin` | TCP plugin control -- 24 commands for building MetaSounds graphs, scanning blueprints, listing assets |
+| `/metasound-dsp` | MetaSounds DSP specialist -- 144 nodes, Builder API, signal flow patterns, graph templates |
+| `/unreal-bp` | Blueprint audio logic -- game event detection, parameter wiring, asset scanning |
+| `/build-system` | Full pipeline orchestrator -- generates complete 3-layer audio systems from a single description |
+
+---
+
 ## Prior Art
 
 | Existing Tool | Audio? |

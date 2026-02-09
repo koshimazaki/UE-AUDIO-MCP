@@ -60,9 +60,9 @@ public:
   inline bool isFMEnabled() const { return fm_enabled; }
 
   // Resonance boost (0-255, 0=stock, 255=self-oscillation)
-  inline void setResBoost(int boost) { res_boost = boost; }
+  inline void setResBoost(int boost) { res_boost = boost; filter.set_resonance_boost(boost); }
   inline int getResBoost() const { return res_boost; }
-  inline void enableResBoost(bool enable) { res_boost_enabled = enable; }
+  inline void enableResBoost(bool enable) { res_boost_enabled = enable; if (enable) filter.set_resonance_boost(res_boost); else filter.set_resonance_boost(0); }
   inline bool isResBoostEnabled() const { return res_boost_enabled; }
 
   // Monitoring API (read current state for visualization)
@@ -219,6 +219,8 @@ protected:
 };
 
 // Include implementation (header-only build)
+#ifndef RESID_HEADER_ONLY
 #include "sid_impl.h"
+#endif
 
 #endif // not __SID_H__

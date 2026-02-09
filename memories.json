@@ -219,8 +219,8 @@
       ],
       "timestamp": "2026-02-06T15:09:24.940Z",
       "context": "Phase 2 comprehensive analysis for UE5-WWISE MCP project",
-      "accessCount": 2,
-      "lastAccessed": "2026-02-07T11:54:06.223Z",
+      "accessCount": 3,
+      "lastAccessed": "2026-02-09T15:47:47.960Z",
       "lastVerified": "2026-02-06T15:09:24.940Z",
       "status": "fresh"
     },
@@ -756,8 +756,8 @@
       ],
       "timestamp": "2026-02-08T20:45:48.302Z",
       "context": "Review of new build_aaa_project tool and tests in UE5-WWISE project",
-      "accessCount": 0,
-      "lastAccessed": "2026-02-08T20:45:48.302Z",
+      "accessCount": 1,
+      "lastAccessed": "2026-02-09T15:47:47.960Z",
       "lastVerified": "2026-02-08T20:45:48.302Z",
       "status": "fresh"
     },
@@ -776,8 +776,8 @@
       ],
       "timestamp": "2026-02-08T21:44:05.609Z",
       "context": "Complete audio system audit of StackOBot UE5.7 project",
-      "accessCount": 0,
-      "lastAccessed": "2026-02-08T21:44:05.609Z",
+      "accessCount": 1,
+      "lastAccessed": "2026-02-09T15:47:47.960Z",
       "lastVerified": "2026-02-08T21:44:05.609Z",
       "status": "fresh"
     },
@@ -876,7 +876,99 @@
       "lastAccessed": "2026-02-09T03:27:50.819Z",
       "lastVerified": "2026-02-09T03:27:50.819Z",
       "status": "fresh"
+    },
+    {
+      "id": "mem_1770646324147_cbq4s2lt3",
+      "content": "ReSID Header Include Chain Analysis for Duplicate Symbol Investigation\n\nSIDDEFS.H:\n- Defines: RESID_INLINING = 1, RESID_INLINE = inline\n- No _impl.h includes\n- Defines base types and enums\n- Does NOT include any other headers at bottom\n\nWAVE.H (Line 665):\n- Bottom: #include \"wave_impl.h\" (UNCONDITIONAL)\n- Guarded by: #if RESID_INLINING || defined(RESID_WAVE_CC)\n- Contains inline code (lines 144-661)\n- Data: extern const unsigned short model_wave[2][8][1<<12]; (extern declaration only)\n- Also externs: model_dac0_8[64], model_dac1_8[64]\n\nENVELOPE.H (Line 454):\n- Bottom: #include \"envelope_impl.h\" (UNCONDITIONAL)\n- Guarded by: #if RESID_INLINING || defined(__ENVELOPE_CC__)\n- Contains inline code (lines 112-451)\n- Has lookup tables referenced but no definitions\n\nFILTER.H (Line 598):\n- Bottom: #include \"filter_impl.h\" (UNCONDITIONAL)\n- Guarded by: #if RESID_INLINING || defined(__FILTER_CC__)\n- Contains inline code + Randomnoise class with buffer[1024] (data!)\n- Has static member arrays f0_6581[2048], f0_8580[2048]\n\nSID.H (Line 222):\n- Bottom: #include \"sid_impl.h\" (UNCONDITIONAL)\n- No #if guard shown in excerpt\n- Contains Voice voice[3], Filter filter, etc.\n\nVOICE.H (Line 131):\n- Bottom: #include \"voice_impl.h\" (UNCONDITIONAL)\n- Guarded by: #if RESID_INLINING || defined(__VOICE_CC__)\n- Contains inline code (lines 108-128)\n\nMODEL_WAVE.H:\n- DEFINITION file: const unsigned char model_wave8[2][4][4096] = {...}\n- This is actual data definition (not extern), 32KB array\n- No includes at bottom\n\nMODEL_DAC.H:\n- DEFINITION file: const unsigned char model_dac0_8[64] = {...}\n- Also defines: const unsigned char model_dac1_8[64] = {...}\n- These are definitions with initializers\n- No includes at bottom\n\nEXTFILT.H (Line 165):\n- Bottom: #include \"extfilt_impl.h\" (UNCONDITIONAL)\n- Guarded by: #if RESID_INLINING || defined(__EXTFILT_CC__)\n- Contains inline code (lines 84-160)\n\nPOT.H (Line 32):\n- Bottom: #include \"pot_impl.h\" (UNCONDITIONAL)\n- No #if guard, just includes it directly\n\nKEY FINDING:\nAll 8 header files include their corresponding _impl.h at the bottom UNCONDITIONALLY. These are header-only library pattern. The _impl.h files contain the actual implementation code (already provided as inline in the main .h file when RESID_INLINING=1).\n\nDATA SYMBOLS:\n- model_wave.h: defines model_wave8[2][4][4096] (32KB)\n- model_dac.h: defines model_dac0_8[64] and model_dac1_8[64] (128 bytes total)\n- filter.h: defines Randomnoise class with buffer[1024] (1KB per instance)\n- Duplicates occur if multiple .cpp files include these headers without proper ODR guards",
+      "type": "code",
+      "tags": [
+        "code",
+        "resid",
+        "duplicate-symbols",
+        "header-analysis",
+        "ue5-plugin",
+        "cpp-linking"
+      ],
+      "timestamp": "2026-02-09T14:12:04.147Z",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-09T14:12:04.147Z",
+      "lastVerified": "2026-02-09T14:12:04.147Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770646523140_dyuz8webi",
+      "content": "## UE5-WWISE C++ Plugin Compilation Audit (2026-02-09)\n\n### CRITICAL FINDINGS - DEPRECATED API USAGE\n\n**Issue 1: GetOrConstructDataReadReference (DEPRECATED in UE 5.6)**\n- Files affected: 6 locations across SID nodes\n  - SIDEnvelopeNode.cpp:83 (FTrigger)\n  - SIDChipNode.cpp:159,168,177 (3x FTrigger)\n  - SIDVoiceNode.cpp:91 (FTrigger)\n  - SIDFilterNode.cpp:86 (FAudioBuffer)\n- Problem: GetOrConstructDataReadReference is deprecated, should be GetOrCreateDefaultDataReadReference\n- Solution: Replace all 6 calls with GetOrCreateDefaultDataReadReference\n- Severity: HIGH - will cause compilation warnings/errors on UE 5.7.2\n\n**Issue 2: __attribute__((optimize(\"Os\"))) without Clang guards**\n- Files affected: sid_impl.h (3 locations: lines 30, 69, 86)\n- Status: ALREADY GUARDED CORRECTLY\n  ```c++\n  #if defined(__GNUC__) && !defined(__clang__)\n  __attribute__((optimize(\"Os\")))\n  #endif\n  ```\n- Verdict: No fix needed - guards prevent Clang errors\n\n### VERIFIED SAFE\n\n✓ No FNodeFacade usage found (all using TNodeFacade pattern)\n✓ No namespace declarations inside class bodies\n✓ No implicit FName→FString conversions (all using .ToString() explicitly)\n✓ LOCTEXT_NAMESPACE properly defined/undefined in all files using LOCTEXT macros\n✓ ReSID header includes isolated to THIRD_PARTY_INCLUDES_START/END blocks in 5 node .cpp files only:\n  - SIDOscillatorNode.cpp: #include \"wave.h\"\n  - SIDEnvelopeNode.cpp: #include \"envelope.h\"\n  - SIDFilterNode.cpp: #include \"filter.h\"\n  - SIDVoiceNode.cpp: #include \"voice.h\"\n  - SIDChipNode.cpp: #include \"sid.h\"\n  No duplicate symbol risk - each header included by its corresponding .cpp once\n\n### FILE INVENTORY (63 total files)\n\n**Main Plugin (UEAudioMCP module):**\n- Public headers: 7 (.h files)\n- Private implementation: 11 (.cpp files)\n- Command classes: 7 command types (10 .cpp/.h files)\n- Status: All clean\n\n**SID MetaSounds Runtime Module:**\n- 5 node implementations (.cpp files)\n- 2 public headers (enums, module)\n- Status: 6 deprecated API calls to fix\n\n**ThirdParty ReSID:**\n- 37 header files (mostly impl_h templates)\n- Status: Clang-safe, no modifications needed\n\n### COMPILATION READINESS FOR UE 5.7.2 / macOS CLANG\n\n**Before Fix:** Will fail on 6 GetOrConstructDataReadReference calls\n**After Fix:** Will compile cleanly (no other blocking issues identified)\n\nEstimated fix time: ~5 minutes (regex replace in 6 locations)",
+      "type": "tip",
+      "tags": [
+        "tip",
+        "api",
+        "cpp-audit",
+        "compilation",
+        "ue5.7",
+        "deprecated-api",
+        "high-priority"
+      ],
+      "timestamp": "2026-02-09T14:15:23.140Z",
+      "context": "Systematic scan of all C++ files in /Users/radek/Documents/GIthub/UE5-WWISE/ue5_plugin/UEAudioMCP/Source/",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-09T14:15:23.140Z",
+      "lastVerified": "2026-02-09T14:15:23.140Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770648985440_c52oymf1y",
+      "content": "UE Audio MCP Slate Tab Architecture Patterns - Explored 2026-02-09\n\n## Key Patterns Found\n\n### 1. Module Lifecycle (UEAudioMCPModule)\n- **Startup order**: BuilderManager → Dispatcher → RegisterCommands → TcpServer → EditorMenu\n- TCP server manages state via:\n  - `ListenSocket` — bound to 127.0.0.1:9877\n  - `ActiveClientSocket` — guarded by `FCriticalSection ClientSocketMutex`\n  - `bStopping` — FThreadSafeBool for graceful shutdown\n- One client at a time (HandleClient loop)\n- Dispatcher: command map + BuilderManager pointer, SignalShutdown() for module exit\n\n### 2. Editor Menu Pattern (FAudioMCPEditorMenu)\n- **Registration**: UToolMenus::RegisterStartupCallback → RegisterImpl (deferred)\n- **Extension**: UToolMenus::Get()->ExtendMenu(\"LevelEditor.MainMenu\")\n- **PopulateMenu**: Creates sections (Scanning, Export, Info), adds entries with FUIAction callbacks\n- **Icons**: FSlateIcon(FAppStyle::GetAppStyleSetName(), \"Icons.Search\")\n- **Notifications**: FSlateNotificationManager::Get().AddNotification() → SNotificationItem::CS_Success/Fail\n- **Includes needed**: ToolMenus.h, Framework/Notifications/NotificationManager.h, Widgets/Notifications/SNotificationList.h\n\n### 3. Module Dependencies (Build.cs)\n**Private dependencies for tabs:**\n- `Slate` — FSlateIcon, FUIAction, core UI types\n- `SlateCore` — FSlateNotificationManager\n- `EditorStyle` — FAppStyle (icon sets)\n- `UnrealEd` — FGlobalTabmanager, FTabManager (for dockable tabs)\n- `ToolMenus` — already present\n\nNOT YET ADDED (needed for tabs):\n- `AppFramework` — FTabManager, FTabSpawnerEntry, SDockTab container logic\n\n### 4. TCP Server State Tracking\n- `IsListening()` — checks `ListenSocket != nullptr`\n- `bStopping` — FThreadSafeBool checked in Run() loop\n- `ActiveClientSocket` — thread-safe via FCriticalSection\n- No command history or client tracking — one sequential client\n\nFor tab display:\n- Query `IsListening()` to show green/red status\n- Query `Dispatcher->GetCommandMap().Num()` (if exposed) for command count\n- Log parsing from TcpServer thread logs\n\n### 5. Slate Tab Registration Pattern (UE5 Standard)\n```cpp\n// Header:\nclass FAudioMCPTab\n{\n  static void RegisterTab();\n  static void UnregisterTab();\n  static TSharedRef<SDockTab> OnSpawnTab(const FSpawnTabArgs& Args);\n};\n\n// Startup:\nvoid FUEAudioMCPModule::StartupModule()\n{\n  FAudioMCPTab::RegisterTab();  // After TcpServer setup\n  FAudioMCPEditorMenu::Register();\n}\n\n// Shutdown:\nvoid FUEAudioMCPModule::ShutdownModule()\n{\n  FAudioMCPTab::UnregisterTab();  // Before TcpServer teardown\n  FAudioMCPEditorMenu::Unregister();\n}\n\n// Registration:\nvoid FAudioMCPTab::RegisterTab()\n{\n  FGlobalTabmanager::Get()->RegisterNomadTabSpawner(\n    \"AudioMCPPanel\",\n    FOnSpawnTab::CreateStatic(&FAudioMCPTab::OnSpawnTab)\n  )\n  .SetDisplayName(LOCTEXT(\"AudioMCPPanel\", \"Audio MCP\"))\n  .SetTooltipText(LOCTEXT(\"AudioMCPPanelTooltip\", \"...\"))\n  .SetIcon(FSlateIcon(...));\n}\n\n// Spawning:\nTSharedRef<SDockTab> FAudioMCPTab::OnSpawnTab(const FSpawnTabArgs& Args)\n{\n  TSharedRef<SVerticalBox> Content = SNew(SVerticalBox)\n    + SVerticalBox::Slot()\n    [ SNew(STextBlock) ... ]\n    + SVerticalBox::Slot()\n    [ SNew(SButton) ... ];\n  \n  return SNew(SDockTab)\n    .TabRole(ETabRole::NomadTab)\n    .Label(LOCTEXT(\"AudioMCPPanel\", \"Audio MCP\"))\n    [ Content ];\n}\n```\n\n### 6. Includes Needed for Tabs\n```cpp\n#include \"Widgets/Docking/SDockTab.h\"      // SDockTab\n#include \"Widgets/SBoxPanel.h\"              // SVerticalBox, SHorizontalBox\n#include \"Widgets/Text/STextBlock.h\"        // STextBlock\n#include \"Widgets/Input/SButton.h\"          // SButton\n#include \"Widgets/Layout/SBorder.h\"         // SBorder (styling)\n#include \"Widgets/Colors/SColorBlock.h\"     // SColorBlock (status indicator)\n#include \"Framework/Docking/TabManager.h\"   // FGlobalTabmanager, FTabSpawnerEntry\n#include \"Styling/AppStyle.h\"               // FAppStyle::Get()\n```\n\n### 7. Tab Content Options\n**Status display:**\n- `SColorBlock` with green/red based on `IsListening()`\n- Status text: \"Connected\", \"Port: 9877\", \"Commands: 24\"\n- Last command timestamp\n\n**Command log:**\n- `SListView` with command history\n- OR simple `SScrollBox` with text output\n\n**Menu link:**\n- `SButton` to trigger \"Scan Project\" or \"Open Results Folder\"\n- Use `FAudioMCPEditorMenu::OnScanProject()` directly (make public)\n\n### 8. State Refresh Pattern\n- Tab doesn't auto-refresh — use FTickableGameObject or timer\n- OR capture callback in OnSpawnTab to register with TcpServer for state updates\n- Simple: poll `IsListening()` in Tick if needed for live status\n\n## Next Steps\n1. Create AudioMCPTab.h/.cpp files\n2. Add `AppFramework` to Build.cs PrivateDependencies\n3. Hook RegisterTab/UnregisterTab into module lifecycle\n4. Design 3 sections: Status, Commands, Actions\n",
+      "type": "config",
+      "tags": [
+        "config",
+        "ue5-wwise",
+        "slate-ui",
+        "editor-tabs",
+        "architecture"
+      ],
+      "timestamp": "2026-02-09T14:56:25.440Z",
+      "accessCount": 1,
+      "lastAccessed": "2026-02-09T15:47:47.960Z",
+      "lastVerified": "2026-02-09T14:56:25.440Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770651771598_spg2m20t9",
+      "content": "Blueprint Export + MCP Plugin Skill — COMPLETE (2026-02-09)\n\n**Feature 1: Full Project Export**\n- Enhanced `scripts/scan_project.py` with --full-export flag\n- TCPConnection class with auto-reconnect (retries=3, progressive delay)\n- Per-BP error handling (one failing BP doesn't kill the scan)\n- New phases: MetaSounds graph reading via get_node_locations, cross-reference extraction\n- Fixed waapi_functions column: `uri` not `name` in _rebuild_embeddings\n- UEIntroProject scan: 46 BPs (4 audio-relevant), 13 MetaSounds graphs (143 nodes, 124 edges), 13 SoundWaves, 1 SoundAttenuation\n- project_scan.json: 1.1 MB, DB import: 43 BPs, 234 embedding entries\n\n**Feature 2: /mcp-plugin Skill**\n- `.claude/commands/mcp-plugin.md` — comprehensive TCP command reference\n- All 24 commands documented with params/returns tables\n- Verified node class names and pin names\n- Two workflow examples: basic patch + filtered synth\n- Source code reference section\n\n**Gotcha**: Plugin TCP connection drops after ~17 BPs — TCPConnection auto-reconnect needed\n**Gotcha**: waapi_functions table uses `uri` column, not `name`",
+      "type": "code",
+      "tags": [
+        "code",
+        "ue5-wwise",
+        "scan-project",
+        "mcp-plugin",
+        "blueprint-export",
+        "complete"
+      ],
+      "timestamp": "2026-02-09T15:42:51.598Z",
+      "accessCount": 1,
+      "lastAccessed": "2026-02-09T15:47:47.960Z",
+      "lastVerified": "2026-02-09T15:42:51.598Z",
+      "status": "fresh"
+    },
+    {
+      "id": "mem_1770652140038_aq1p9hn66",
+      "content": "UE5 5.7 MetaSounds Frontend API Research (2026-02-09)\n\n## Confirmed via Epic Documentation\n\n### FMetasoundFrontendLiteral\n- **GetType()**: YES - Returns `EMetasoundFrontendLiteralType`\n- **TryGet() overloads**: YES - 10 total overloads:\n  - `TryGet(float&)`, `TryGet(TArray<float>&)`\n  - `TryGet(int32&)`, `TryGet(TArray<int32>&)`\n  - `TryGet(bool&)`, `TryGet(TArray<bool>&)`\n  - `TryGet(FString&)`, `TryGet(TArray<FString>&)`\n  - `TryGet(UObject*&)`, `TryGet(TArray<UObject*>&)`\n- All return `bool` (success/failure)\n- Other methods: Clear(), Set(), IsValid(), IsArray(), GetArrayNum(), ToString(), ToLiteral(), SetType()\n- Member: `Type` (protected, EMetasoundFrontendLiteralType)\n- Header: MetasoundFrontendLiteral.h\n\n### Source\n- Epic Dev Docs API Reference (5.7): https://dev.epicgames.com/documentation/en-us/unreal-engine/API/Plugins/MetasoundFrontend/FMetasoundFrontendLiteral\n\n## Unable to Confirm (Not in Public Docs)\nThese types exist in UE5 source but are not in public API docs:\n- **EMetasoundFrontendLiteralType** enum values\n- **FMetasoundFrontendVertexLiteral** (VertexID, Value members)\n- **FMetasoundFrontendNode** (InputLiterals member)\n- **FMetasoundFrontendDocument** (Interfaces member)\n- **FMetasoundFrontendVersion** (Name, Major, Minor fields)\n\nMust check UE5 source at: Engine/Plugins/Runtime/Metasound/Source/MetasoundFrontend/Public/",
+      "type": "error",
+      "tags": [
+        "error",
+        "api",
+        "research",
+        "ue5",
+        "metasounds",
+        "frontend"
+      ],
+      "timestamp": "2026-02-09T15:49:00.035Z",
+      "context": "Researching MetaSounds frontend API for literal and document structures in UE 5.7",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-09T15:49:00.035Z",
+      "lastVerified": "2026-02-09T15:49:00.035Z",
+      "status": "fresh"
     }
   ],
-  "lastUpdated": "2026-02-09T03:27:50.819Z"
+  "lastUpdated": "2026-02-09T15:49:00.035Z"
 }

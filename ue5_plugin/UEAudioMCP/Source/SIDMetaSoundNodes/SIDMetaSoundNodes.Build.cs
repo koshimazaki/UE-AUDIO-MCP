@@ -17,7 +17,7 @@ public class SIDMetaSoundNodes : ModuleRules
 		PublicDefinitions.Add("USE_NEW_FILTER=1");
 
 		// Suppress reSID compiler warnings (C-style casts, signed/unsigned, etc.)
-		bEnableUndefinedIdentifierWarnings = false;
+		UndefinedIdentifierWarningLevel = WarningLevel.Off;
 
 		PublicDependencyModuleNames.AddRange(new string[]
 		{

@@ -162,6 +162,8 @@ sound_sample ExternalFilter::output()
 #endif // RESID_INLINING || defined(__EXTFILT_CC__)
 
 // Include implementation (header-only build)
+#ifndef RESID_HEADER_ONLY
 #include "extfilt_impl.h"
+#endif
 
 #endif // not __EXTFILT_H__

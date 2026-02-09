@@ -6,6 +6,7 @@
 #include "MetasoundFrontendSearchEngine.h"
 #include "MetasoundFrontendDocument.h"
 #include "MetasoundDocumentInterface.h"
+#include "MetasoundSource.h"
 #include "Dom/JsonObject.h"
 #include "Dom/JsonValue.h"
 
@@ -201,6 +202,25 @@ TSharedPtr<FJsonObject> FGetNodeLocationsCommand::Execute(
 	TArray<TSharedPtr<FJsonValue>> NodeArray;
 	TArray<TSharedPtr<FJsonValue>> EdgeArray;
 
+	// --- Document-level metadata: asset type + interfaces ---
+	FString AssetType = TEXT("Unknown");
+	if (Asset->IsA(UMetaSoundSource::StaticClass()))
+	{
+		AssetType = TEXT("Source");
+	}
+	else if (Asset->GetClass()->GetName().Contains(TEXT("Patch")))
+	{
+		AssetType = TEXT("Patch");
+	}
+
+	TArray<TSharedPtr<FJsonValue>> InterfaceArray;
+	for (const FMetasoundFrontendVersion& Interface : Document.Interfaces)
+	{
+		FString InterfaceName = FString::Printf(TEXT("%s %d.%d"),
+			*Interface.Name.ToString(), Interface.Number.Major, Interface.Number.Minor);
+		InterfaceArray.Add(MakeShared<FJsonValueString>(InterfaceName));
+	}
+
 	// Build ClassID → ClassName lookup from document dependencies
 	TMap<FGuid, FMetasoundFrontendClassName> ClassIdToName;
 	for (const FMetasoundFrontendClass& Dep : Document.Dependencies)
@@ -209,10 +229,19 @@ TSharedPtr<FJsonObject> FGetNodeLocationsCommand::Execute(
 	}
 
 	// Build vertex ID → pin name lookup for edge resolution
-	// VertexIDs are globally unique within a MetaSound document
+	// Also build NodeID → node name lookup for human-readable edges
 	TMap<FGuid, FString> VertexIdToPinName;
+	TMap<FGuid, FString> NodeIdToName;
 	for (const FMetasoundFrontendNode& Node : Graph.Nodes)
 	{
+		// Build display name for this node
+		FString NodeDisplayName = Node.Name.ToString();
+		if (const FMetasoundFrontendClassName* FoundName = ClassIdToName.Find(Node.ClassID))
+		{
+			NodeDisplayName = FoundName->Name.ToString();
+		}
+		NodeIdToName.Add(Node.GetID(), NodeDisplayName);
+
 		for (const FMetasoundFrontendVertex& Input : Node.Interface.Inputs)
 		{
 			VertexIdToPinName.Add(Input.VertexID, Input.Name.ToString());
@@ -279,31 +308,86 @@ TSharedPtr<FJsonObject> FGetNodeLocationsCommand::Execute(
 		NodeObj->SetNumberField(TEXT("y"), PosY);
 		NodeObj->SetBoolField(TEXT("has_position"), bHasPosition);
 
-		// List input pin names
+		// List input pins with data types and defaults
 		TArray<TSharedPtr<FJsonValue>> InputPins;
 		for (const FMetasoundFrontendVertex& Input : Node.Interface.Inputs)
 		{
-			InputPins.Add(MakeShared<FJsonValueString>(Input.Name.ToString()));
+			TSharedPtr<FJsonObject> PinObj = MakeShared<FJsonObject>();
+			PinObj->SetStringField(TEXT("name"), Input.Name.ToString());
+			PinObj->SetStringField(TEXT("type"), Input.TypeName.ToString());
+
+			// Extract default value from node input literals
+			for (const FMetasoundFrontendVertexLiteral& Literal : Node.InputLiterals)
+			{
+				if (Literal.VertexID == Input.VertexID)
+				{
+					const FMetasoundFrontendLiteral& Lit = Literal.Value;
+					FString DefaultStr;
+
+					float FloatVal;
+					int32 IntVal;
+					bool BoolVal;
+					FString StringVal;
+
+					if (Lit.TryGet(FloatVal))
+					{
+						DefaultStr = FString::SanitizeFloat(FloatVal);
+					}
+					else if (Lit.TryGet(IntVal))
+					{
+						DefaultStr = FString::FromInt(IntVal);
+					}
+					else if (Lit.TryGet(BoolVal))
+					{
+						DefaultStr = BoolVal ? TEXT("true") : TEXT("false");
+					}
+					else if (Lit.TryGet(StringVal))
+					{
+						DefaultStr = StringVal;
+					}
+
+					if (!DefaultStr.IsEmpty())
+					{
+						PinObj->SetStringField(TEXT("default"), DefaultStr);
+					}
+					break;
+				}
+			}
+
+			InputPins.Add(MakeShared<FJsonValueObject>(PinObj));
 		}
 		NodeObj->SetArrayField(TEXT("inputs"), InputPins);
 
-		// List output pin names
+		// List output pins with data types
 		TArray<TSharedPtr<FJsonValue>> OutputPins;
 		for (const FMetasoundFrontendVertex& Output : Node.Interface.Outputs)
 		{
-			OutputPins.Add(MakeShared<FJsonValueString>(Output.Name.ToString()));
+			TSharedPtr<FJsonObject> PinObj = MakeShared<FJsonObject>();
+			PinObj->SetStringField(TEXT("name"), Output.Name.ToString());
+			PinObj->SetStringField(TEXT("type"), Output.TypeName.ToString());
+			OutputPins.Add(MakeShared<FJsonValueObject>(PinObj));
 		}
 		NodeObj->SetArrayField(TEXT("outputs"), OutputPins);
 
 		NodeArray.Add(MakeShared<FJsonValueObject>(NodeObj));
 	}
 
-	// Read edges (connections) — resolve vertex GUIDs to pin names
+	// Read edges (connections) — resolve vertex GUIDs to pin names + node names
 	for (const FMetasoundFrontendEdge& Edge : Graph.Edges)
 	{
 		TSharedPtr<FJsonObject> EdgeObj = MakeShared<FJsonObject>();
 		EdgeObj->SetStringField(TEXT("from_node"), Edge.FromNodeID.ToString());
 		EdgeObj->SetStringField(TEXT("to_node"), Edge.ToNodeID.ToString());
+
+		// Add human-readable node names
+		if (FString* FromName = NodeIdToName.Find(Edge.FromNodeID))
+		{
+			EdgeObj->SetStringField(TEXT("from_node_name"), *FromName);
+		}
+		if (FString* ToName = NodeIdToName.Find(Edge.ToNodeID))
+		{
+			EdgeObj->SetStringField(TEXT("to_node_name"), *ToName);
+		}
 
 		// Resolve vertex IDs to human-readable pin names
 		FString* FromPinName = VertexIdToPinName.Find(Edge.FromVertexID);
@@ -320,6 +404,8 @@ TSharedPtr<FJsonObject> FGetNodeLocationsCommand::Execute(
 	TSharedPtr<FJsonObject> Response = AudioMCP::MakeOkResponse(
 		FString::Printf(TEXT("Read %d nodes, %d edges from '%s'"),
 			NodeArray.Num(), EdgeArray.Num(), *AssetPath));
+	Response->SetStringField(TEXT("asset_type"), AssetType);
+	Response->SetArrayField(TEXT("interfaces"), InterfaceArray);
 	Response->SetArrayField(TEXT("nodes"), NodeArray);
 	Response->SetArrayField(TEXT("edges"), EdgeArray);
 	Response->SetStringField(TEXT("asset_path"), AssetPath);
@@ -448,7 +534,7 @@ TSharedPtr<FJsonObject> FScanBlueprintCommand::Execute(
 			else if (UK2Node_CustomEvent* CustomEvent = Cast<UK2Node_CustomEvent>(Node))
 			{
 				NodeType = TEXT("CustomEvent");
-				EventName = CustomEvent->CustomFunctionName;
+				EventName = CustomEvent->CustomFunctionName.ToString();
 				bNodeAudioRelevant = AudioMCP::IsAudioRelevant(EventName);
 			}
 			else if (UK2Node_Event* EventNode = Cast<UK2Node_Event>(Node))

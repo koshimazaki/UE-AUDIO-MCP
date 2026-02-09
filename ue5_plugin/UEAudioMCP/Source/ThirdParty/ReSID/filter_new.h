@@ -1936,6 +1936,8 @@ int Filter::solve_integrate_8580(int dt, int vi, int& vx, int& vc, model_filter_
 #endif // RESID_INLINING || defined(RESID_FILTER_CC)
 
 // Include implementation for constructor, set_chip_model, etc.
+#ifndef RESID_HEADER_ONLY
 #include "filter_new_impl.h"
+#endif
 
 #endif // not __FILTER_NEW_H__

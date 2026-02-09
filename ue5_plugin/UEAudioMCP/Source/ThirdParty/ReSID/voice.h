@@ -27,6 +27,9 @@
 #include "wave.h"
 #include "envelope.h"
 
+// Forward declaration for MetaSounds friend access
+namespace Metasound { class FSIDVoiceOperator; }
+
 class Voice
 {
 public:
@@ -56,6 +59,7 @@ protected:
 int freezedEnvelope;
 
 friend class SID16;
+friend class Metasound::FSIDVoiceOperator;
 };
 
 
@@ -124,6 +128,8 @@ sound_sample Voice::output( int w )
 #endif // RESID_INLINING || defined(__VOICE_CC__)
 
 // Include implementation (header-only build)
+#ifndef RESID_HEADER_ONLY
 #include "voice_impl.h"
+#endif
 
 #endif // not __VOICE_H__

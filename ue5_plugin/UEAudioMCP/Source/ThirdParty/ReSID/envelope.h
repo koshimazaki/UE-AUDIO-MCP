@@ -451,6 +451,8 @@ void EnvelopeGenerator::set_exponential_counter()
 #endif // RESID_INLINING || defined(__ENVELOPE_CC__)
 
 // Include implementation (header-only build)
+#ifndef RESID_HEADER_ONLY
 #include "envelope_impl.h"
+#endif
 
 #endif // not __ENVELOPE_H__

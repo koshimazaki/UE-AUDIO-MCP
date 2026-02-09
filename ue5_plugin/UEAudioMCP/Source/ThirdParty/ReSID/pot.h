@@ -29,6 +29,8 @@ public:
 };
 
 // Include implementation (header-only build)
+#ifndef RESID_HEADER_ONLY
 #include "pot_impl.h"
+#endif
 
 #endif

@@ -12,8 +12,10 @@
 #include "MetasoundAudioBuffer.h"
 #include "MetasoundOperatorSettings.h"
 #include "MetasoundDataTypeRegistrationMacro.h"
+#include "MetasoundFacade.h"
 #include "MetasoundVertex.h"
 
+#define RESID_HEADER_ONLY
 THIRD_PARTY_INCLUDES_START
 #include "siddefs.h"
 #include "spline.h"
@@ -82,7 +84,7 @@ namespace Metasound
 			const FInputVertexInterfaceData& InputData = InParams.InputData;
 			using namespace SIDFilterNodeNames;
 
-			FAudioBufferReadRef AudioIn   = InputData.GetOrConstructDataReadReference<FAudioBuffer>(METASOUND_GET_PARAM_NAME(InAudio), InParams.OperatorSettings);
+			FAudioBufferReadRef AudioIn   = InputData.GetOrCreateDefaultDataReadReference<FAudioBuffer>(METASOUND_GET_PARAM_NAME(InAudio), InParams.OperatorSettings);
 			FFloatReadRef CutoffIn        = InputData.GetOrCreateDefaultDataReadReference<float>(METASOUND_GET_PARAM_NAME(InCutoff), InParams.OperatorSettings);
 			FFloatReadRef ResonanceIn     = InputData.GetOrCreateDefaultDataReadReference<float>(METASOUND_GET_PARAM_NAME(InResonance), InParams.OperatorSettings);
 			FEnumSIDFilterModeReadRef ModeIn = InputData.GetOrCreateDefaultDataReadReference<FEnumSIDFilterMode>(METASOUND_GET_PARAM_NAME(InMode), InParams.OperatorSettings);
@@ -242,14 +244,7 @@ namespace Metasound
 		float CycleAccumulator = 0.0f;
 	};
 
-	class FSIDFilterNode : public FNodeFacade
-	{
-	public:
-		FSIDFilterNode(const FNodeInitData& InitData)
-			: FNodeFacade(InitData.InstanceName, InitData.InstanceID, FSIDFilterOperator::GetNodeInfo())
-		{
-		}
-	};
+	using FSIDFilterNode = TNodeFacade<FSIDFilterOperator>;
 
 	METASOUND_REGISTER_NODE(FSIDFilterNode)
 }

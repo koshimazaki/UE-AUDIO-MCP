@@ -11,8 +11,10 @@
 #include "MetasoundPrimitives.h"
 #include "MetasoundAudioBuffer.h"
 #include "MetasoundOperatorSettings.h"
+#include "MetasoundFacade.h"
 #include "MetasoundVertex.h"
 
+#define RESID_HEADER_ONLY
 THIRD_PARTY_INCLUDES_START
 #include "siddefs.h"
 #include "wave.h"
@@ -203,14 +205,7 @@ namespace Metasound
 		float CycleAccumulator = 0.0f;
 	};
 
-	class FSIDOscillatorNode : public FNodeFacade
-	{
-	public:
-		FSIDOscillatorNode(const FNodeInitData& InitData)
-			: FNodeFacade(InitData.InstanceName, InitData.InstanceID, FSIDOscillatorOperator::GetNodeInfo())
-		{
-		}
-	};
+	using FSIDOscillatorNode = TNodeFacade<FSIDOscillatorOperator>;
 
 	METASOUND_REGISTER_NODE(FSIDOscillatorNode)
 }

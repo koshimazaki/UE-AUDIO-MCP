@@ -12,8 +12,10 @@
 #include "MetasoundAudioBuffer.h"
 #include "MetasoundOperatorSettings.h"
 #include "MetasoundTrigger.h"
+#include "MetasoundFacade.h"
 #include "MetasoundVertex.h"
 
+#define RESID_HEADER_ONLY
 THIRD_PARTY_INCLUDES_START
 #include "siddefs.h"
 #include "envelope.h"
@@ -79,7 +81,7 @@ namespace Metasound
 			const FInputVertexInterfaceData& InputData = InParams.InputData;
 			using namespace SIDEnvelopeNodeNames;
 
-			FTriggerReadRef GateIn    = InputData.GetOrConstructDataReadReference<FTrigger>(METASOUND_GET_PARAM_NAME(InGate), InParams.OperatorSettings);
+			FTriggerReadRef GateIn    = InputData.GetOrCreateDefaultDataReadReference<FTrigger>(METASOUND_GET_PARAM_NAME(InGate), InParams.OperatorSettings);
 			FInt32ReadRef AttackIn    = InputData.GetOrCreateDefaultDataReadReference<int32>(METASOUND_GET_PARAM_NAME(InAttack), InParams.OperatorSettings);
 			FInt32ReadRef DecayIn     = InputData.GetOrCreateDefaultDataReadReference<int32>(METASOUND_GET_PARAM_NAME(InDecay), InParams.OperatorSettings);
 			FInt32ReadRef SustainIn   = InputData.GetOrCreateDefaultDataReadReference<int32>(METASOUND_GET_PARAM_NAME(InSustain), InParams.OperatorSettings);
@@ -212,14 +214,7 @@ namespace Metasound
 		bool bGateOn = false;
 	};
 
-	class FSIDEnvelopeNode : public FNodeFacade
-	{
-	public:
-		FSIDEnvelopeNode(const FNodeInitData& InitData)
-			: FNodeFacade(InitData.InstanceName, InitData.InstanceID, FSIDEnvelopeOperator::GetNodeInfo())
-		{
-		}
-	};
+	using FSIDEnvelopeNode = TNodeFacade<FSIDEnvelopeOperator>;
 
 	METASOUND_REGISTER_NODE(FSIDEnvelopeNode)
 }

@@ -6,6 +6,8 @@
 // MetaSounds enum registration for SID types
 // ============================================================================
 
+#define LOCTEXT_NAMESPACE "SIDMetaSoundNodes"
+
 DEFINE_METASOUND_ENUM_BEGIN(ESIDWaveform, FEnumSIDWaveform, "SIDWaveform")
 	DEFINE_METASOUND_ENUM_ENTRY(ESIDWaveform::Triangle,    "TriangleDescription",  "Triangle",     "TriangleTT",     "Smooth, hollow tone"),
 	DEFINE_METASOUND_ENUM_ENTRY(ESIDWaveform::Sawtooth,    "SawtoothDescription",  "Sawtooth",     "SawtoothTT",     "Bright, buzzy tone"),
@@ -31,3 +33,5 @@ DEFINE_METASOUND_ENUM_BEGIN(ESIDChipModel, FEnumSIDChipModel, "SIDChipModel")
 	DEFINE_METASOUND_ENUM_ENTRY(ESIDChipModel::MOS6581, "MOS6581Description", "MOS 6581", "MOS6581TT", "Classic C64 - warm non-linear analog filter"),
 	DEFINE_METASOUND_ENUM_ENTRY(ESIDChipModel::MOS8580, "MOS8580Description", "MOS 8580", "MOS8580TT", "C64C/C128 - cleaner linear filter"),
 DEFINE_METASOUND_ENUM_END()
+
+#undef LOCTEXT_NAMESPACE

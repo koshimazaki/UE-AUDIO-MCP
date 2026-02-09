@@ -12,8 +12,10 @@
 #include "MetasoundAudioBuffer.h"
 #include "MetasoundOperatorSettings.h"
 #include "MetasoundTrigger.h"
+#include "MetasoundFacade.h"
 #include "MetasoundVertex.h"
 
+#define RESID_HEADER_ONLY
 THIRD_PARTY_INCLUDES_START
 #include "siddefs.h"
 #include "voice.h"
@@ -87,7 +89,7 @@ namespace Metasound
 			const FInputVertexInterfaceData& InputData = InParams.InputData;
 			using namespace SIDVoiceNodeNames;
 
-			FTriggerReadRef GateIn = InputData.GetOrConstructDataReadReference<FTrigger>(METASOUND_GET_PARAM_NAME(InGate), InParams.OperatorSettings);
+			FTriggerReadRef GateIn = InputData.GetOrCreateDefaultDataReadReference<FTrigger>(METASOUND_GET_PARAM_NAME(InGate), InParams.OperatorSettings);
 			FFloatReadRef FreqIn   = InputData.GetOrCreateDefaultDataReadReference<float>(METASOUND_GET_PARAM_NAME(InFrequency), InParams.OperatorSettings);
 			FFloatReadRef PWIn     = InputData.GetOrCreateDefaultDataReadReference<float>(METASOUND_GET_PARAM_NAME(InPulseWidth), InParams.OperatorSettings);
 			FEnumSIDWaveformReadRef WaveIn = InputData.GetOrCreateDefaultDataReadReference<FEnumSIDWaveform>(METASOUND_GET_PARAM_NAME(InWaveform), InParams.OperatorSettings);
@@ -271,14 +273,7 @@ namespace Metasound
 		bool bGateOn = false;
 	};
 
-	class FSIDVoiceNode : public FNodeFacade
-	{
-	public:
-		FSIDVoiceNode(const FNodeInitData& InitData)
-			: FNodeFacade(InitData.InstanceName, InitData.InstanceID, FSIDVoiceOperator::GetNodeInfo())
-		{
-		}
-	};
+	using FSIDVoiceNode = TNodeFacade<FSIDVoiceOperator>;
 
 	METASOUND_REGISTER_NODE(FSIDVoiceNode)
 }

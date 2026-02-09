@@ -662,6 +662,8 @@ short WaveformGenerator::output()
 
 // Include implementation (header-only build)
 // Note: Wavetables are in model_wave.h (precomputed)
+#ifndef RESID_HEADER_ONLY
 #include "wave_impl.h"
+#endif
 
 #endif // not RESID_WAVE_H

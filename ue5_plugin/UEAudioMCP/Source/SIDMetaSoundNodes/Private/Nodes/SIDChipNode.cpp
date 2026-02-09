@@ -12,6 +12,7 @@
 #include "MetasoundAudioBuffer.h"
 #include "MetasoundOperatorSettings.h"
 #include "MetasoundTrigger.h"
+#include "MetasoundFacade.h"
 #include "MetasoundVertex.h"
 
 // Provide VERSION string before including reSID
@@ -19,6 +20,7 @@
 #define VERSION "SIDKIT-UE5-1.0"
 #endif
 
+#define RESID_HEADER_ONLY
 THIRD_PARTY_INCLUDES_START
 #include "siddefs.h"
 #include "sid.h"
@@ -155,7 +157,7 @@ namespace Metasound
 			using namespace SIDChipNodeNames;
 
 			// Voice 1
-			FTriggerReadRef Gate1 = InputData.GetOrConstructDataReadReference<FTrigger>(METASOUND_GET_PARAM_NAME(InGate1), InParams.OperatorSettings);
+			FTriggerReadRef Gate1 = InputData.GetOrCreateDefaultDataReadReference<FTrigger>(METASOUND_GET_PARAM_NAME(InGate1), InParams.OperatorSettings);
 			FFloatReadRef Freq1   = InputData.GetOrCreateDefaultDataReadReference<float>(METASOUND_GET_PARAM_NAME(InFreq1), InParams.OperatorSettings);
 			FFloatReadRef PW1     = InputData.GetOrCreateDefaultDataReadReference<float>(METASOUND_GET_PARAM_NAME(InPW1), InParams.OperatorSettings);
 			FEnumSIDWaveformReadRef Wave1 = InputData.GetOrCreateDefaultDataReadReference<FEnumSIDWaveform>(METASOUND_GET_PARAM_NAME(InWave1), InParams.OperatorSettings);
@@ -164,7 +166,7 @@ namespace Metasound
 			FInt32ReadRef S1 = InputData.GetOrCreateDefaultDataReadReference<int32>(METASOUND_GET_PARAM_NAME(InS1), InParams.OperatorSettings);
 			FInt32ReadRef R1 = InputData.GetOrCreateDefaultDataReadReference<int32>(METASOUND_GET_PARAM_NAME(InR1), InParams.OperatorSettings);
 			// Voice 2
-			FTriggerReadRef Gate2 = InputData.GetOrConstructDataReadReference<FTrigger>(METASOUND_GET_PARAM_NAME(InGate2), InParams.OperatorSettings);
+			FTriggerReadRef Gate2 = InputData.GetOrCreateDefaultDataReadReference<FTrigger>(METASOUND_GET_PARAM_NAME(InGate2), InParams.OperatorSettings);
 			FFloatReadRef Freq2   = InputData.GetOrCreateDefaultDataReadReference<float>(METASOUND_GET_PARAM_NAME(InFreq2), InParams.OperatorSettings);
 			FFloatReadRef PW2     = InputData.GetOrCreateDefaultDataReadReference<float>(METASOUND_GET_PARAM_NAME(InPW2), InParams.OperatorSettings);
 			FEnumSIDWaveformReadRef Wave2 = InputData.GetOrCreateDefaultDataReadReference<FEnumSIDWaveform>(METASOUND_GET_PARAM_NAME(InWave2), InParams.OperatorSettings);
@@ -173,7 +175,7 @@ namespace Metasound
 			FInt32ReadRef S2 = InputData.GetOrCreateDefaultDataReadReference<int32>(METASOUND_GET_PARAM_NAME(InS2), InParams.OperatorSettings);
 			FInt32ReadRef R2 = InputData.GetOrCreateDefaultDataReadReference<int32>(METASOUND_GET_PARAM_NAME(InR2), InParams.OperatorSettings);
 			// Voice 3
-			FTriggerReadRef Gate3 = InputData.GetOrConstructDataReadReference<FTrigger>(METASOUND_GET_PARAM_NAME(InGate3), InParams.OperatorSettings);
+			FTriggerReadRef Gate3 = InputData.GetOrCreateDefaultDataReadReference<FTrigger>(METASOUND_GET_PARAM_NAME(InGate3), InParams.OperatorSettings);
 			FFloatReadRef Freq3   = InputData.GetOrCreateDefaultDataReadReference<float>(METASOUND_GET_PARAM_NAME(InFreq3), InParams.OperatorSettings);
 			FFloatReadRef PW3     = InputData.GetOrCreateDefaultDataReadReference<float>(METASOUND_GET_PARAM_NAME(InPW3), InParams.OperatorSettings);
 			FEnumSIDWaveformReadRef Wave3 = InputData.GetOrCreateDefaultDataReadReference<FEnumSIDWaveform>(METASOUND_GET_PARAM_NAME(InWave3), InParams.OperatorSettings);
@@ -479,14 +481,7 @@ namespace Metasound
 		bool bGateOn[3] = {false, false, false};
 	};
 
-	class FSIDChipNode : public FNodeFacade
-	{
-	public:
-		FSIDChipNode(const FNodeInitData& InitData)
-			: FNodeFacade(InitData.InstanceName, InitData.InstanceID, FSIDChipOperator::GetNodeInfo())
-		{
-		}
-	};
+	using FSIDChipNode = TNodeFacade<FSIDChipOperator>;
 
 	METASOUND_REGISTER_NODE(FSIDChipNode)
 }

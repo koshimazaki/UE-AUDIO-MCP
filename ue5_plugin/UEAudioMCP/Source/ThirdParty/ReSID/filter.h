@@ -595,6 +595,8 @@ sound_sample Filter::output()
 #endif // RESID_INLINING || defined(__FILTER_CC__)
 
 // Include implementation (header-only build)
+#ifndef RESID_HEADER_ONLY
 #include "filter_impl.h"
+#endif
 
 #endif // not __FILTER_H__

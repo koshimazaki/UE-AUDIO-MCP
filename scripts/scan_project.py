@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
-"""Batch scan all Blueprints in a UE5 project for audio-relevant nodes.
+"""Comprehensive UE5 project audio scanner.
 
-Connects to the UE5 AudioMCP plugin via TCP, lists all Blueprint assets,
-deep-scans each one, and saves aggregated results. Optionally imports
-findings into the knowledge DB with TF-IDF embeddings.
+Connects to the UE5 AudioMCP plugin via TCP and exports:
+- All Blueprint nodes (with audio-relevant ones highlighted)
+- All MetaSounds patches/sources with full graph data (nodes + connections)
+- All audio assets (SoundWave, SoundCue, etc.)
+- Cross-references: which Blueprints trigger/link to which MetaSounds
 
 Usage:
-    python scripts/scan_project.py
+    python scripts/scan_project.py --full-export
+    python scripts/scan_project.py --full-export --import-db --rebuild-embeddings
+    python scripts/scan_project.py --audio-only --include-pins
     python scripts/scan_project.py --path /Game/Blueprints
-    python scripts/scan_project.py --audio-only --import-db
-    python scripts/scan_project.py --scan-audio-assets
-    python scripts/scan_project.py --project MyGame --import-db --rebuild-embeddings
 """
 
 from __future__ import annotations
@@ -53,18 +54,66 @@ def send_command(sock: socket.socket, command: dict) -> dict:
     return json.loads(raw_body.decode("utf-8"))
 
 
+class TCPConnection:
+    """Auto-reconnecting TCP connection to the UE5 plugin."""
+
+    def __init__(self, host: str, port: int, timeout: float = TIMEOUT):
+        self.host = host
+        self.port = port
+        self.timeout = timeout
+        self._sock: socket.socket | None = None
+
+    def _connect(self):
+        if self._sock:
+            try:
+                self._sock.close()
+            except OSError:
+                pass
+        self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._sock.settimeout(self.timeout)
+        self._sock.connect((self.host, self.port))
+
+    def send(self, command: dict, retries: int = 3) -> dict:
+        """Send command with auto-reconnect on connection errors."""
+        for attempt in range(retries + 1):
+            if self._sock is None:
+                try:
+                    self._connect()
+                except (OSError, ConnectionError):
+                    if attempt < retries:
+                        time.sleep(1.0 + attempt)
+                        continue
+                    raise
+            try:
+                return send_command(self._sock, command)
+            except (ConnectionError, OSError, BrokenPipeError):
+                self._sock = None
+                if attempt < retries:
+                    time.sleep(1.0 + attempt)
+                else:
+                    raise
+
+    def close(self):
+        if self._sock:
+            try:
+                self._sock.close()
+            except OSError:
+                pass
+            self._sock = None
+
+
 # ---------------------------------------------------------------------------
 # Scan operations
 # ---------------------------------------------------------------------------
 
 def list_assets(
-    sock: socket.socket,
+    conn: "TCPConnection",
     class_filter: str = "Blueprint",
     path: str = "/Game/",
     limit: int = 5000,
 ) -> list[dict]:
     """List all assets of a given class under a path."""
-    resp = send_command(sock, {
+    resp = conn.send({
         "action": "list_assets",
         "class_filter": class_filter,
         "path": path,
@@ -77,18 +126,112 @@ def list_assets(
 
 
 def scan_blueprint(
-    sock: socket.socket,
+    conn: "TCPConnection",
     asset_path: str,
     audio_only: bool = False,
     include_pins: bool = False,
 ) -> dict:
     """Deep-scan a single Blueprint."""
-    return send_command(sock, {
+    return conn.send({
         "action": "scan_blueprint",
         "asset_path": asset_path,
         "audio_only": audio_only,
         "include_pins": include_pins,
     })
+
+
+def get_node_locations(conn: "TCPConnection", asset_path: str) -> dict:
+    """Read MetaSounds graph structure (nodes + connections) from a saved asset."""
+    return conn.send({
+        "action": "get_node_locations",
+        "asset_path": asset_path,
+    })
+
+
+def extract_cross_references(
+    bp_scan_results: list[dict],
+    ms_paths: list[str],
+) -> dict:
+    """Extract cross-references between Blueprints and MetaSounds/audio assets.
+
+    Scans BP node data for references to MetaSounds assets, Sound assets,
+    and audio-related function calls that trigger playback.
+    """
+    AUDIO_PLAY_FUNCTIONS = {
+        "PlaySound2D", "PlaySoundAtLocation", "SpawnSoundAtLocation",
+        "SpawnSound2D", "PlayDialogue2D", "PlayDialogueAtLocation",
+        "SpawnDialogue2D", "SpawnDialogueAtLocation",
+    }
+    AUDIO_KEYWORDS = {"MetaSound", "Sound", "Audio", "Ak", "Wwise", "PostEvent"}
+
+    bp_to_metasound = []
+    bp_to_sound = []
+    audio_triggers = []
+
+    # Build a set of MS asset names for matching
+    ms_names = set()
+    for p in ms_paths:
+        # "/Game/Audio/MySynth.MySynth" → "MySynth"
+        name = p.rsplit(".", 1)[-1] if "." in p else p.rsplit("/", 1)[-1]
+        ms_names.add(name.lower())
+
+    for bp in bp_scan_results:
+        if bp.get("status") != "ok":
+            continue
+        bp_path = bp.get("asset_path", "")
+        bp_name = bp.get("blueprint_name", "")
+
+        for graph in bp.get("graphs", []):
+            for node in graph.get("nodes", []):
+                node_type = node.get("type", "")
+                fn_name = node.get("function_name", "")
+                fn_class = node.get("function_class", "")
+                title = node.get("title", "")
+
+                # Detect playback triggers
+                if fn_name in AUDIO_PLAY_FUNCTIONS:
+                    audio_triggers.append({
+                        "bp_path": bp_path,
+                        "bp_name": bp_name,
+                        "function": fn_name,
+                        "class": fn_class,
+                        "graph": graph.get("name", ""),
+                    })
+
+                # Detect MetaSounds references via function class or title
+                text_to_check = f"{fn_name} {fn_class} {title}".lower()
+                if "metasound" in text_to_check:
+                    bp_to_metasound.append({
+                        "bp_path": bp_path,
+                        "bp_name": bp_name,
+                        "reference": fn_name or title,
+                        "class": fn_class,
+                        "node_type": node_type,
+                    })
+
+                # Detect Sound asset references
+                if any(kw.lower() in text_to_check for kw in AUDIO_KEYWORDS):
+                    if node.get("audio_relevant"):
+                        bp_to_sound.append({
+                            "bp_path": bp_path,
+                            "bp_name": bp_name,
+                            "reference": fn_name or title,
+                            "class": fn_class,
+                            "node_type": node_type,
+                            "audio_relevant": True,
+                        })
+
+    return {
+        "bp_to_metasound": bp_to_metasound,
+        "bp_to_sound": bp_to_sound,
+        "audio_triggers": audio_triggers,
+        "summary": {
+            "bps_referencing_metasounds": len(set(r["bp_name"] for r in bp_to_metasound)),
+            "bps_with_audio_playback": len(set(t["bp_name"] for t in audio_triggers)),
+            "total_audio_references": len(bp_to_sound),
+            "total_playback_triggers": len(audio_triggers),
+        },
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -202,10 +345,10 @@ def _rebuild_embeddings(db, project_name: str) -> dict:
         })
 
     # WAAPI functions
-    for fn in db._fetch("SELECT name, namespace, description FROM waapi_functions"):
+    for fn in db._fetch("SELECT uri, namespace, description FROM waapi_functions"):
         entries.append({
-            "name": f"waapi:{fn['name']}",
-            "text": f"{fn['name']} {fn.get('namespace', '')} {fn.get('description', '')}",
+            "name": f"waapi:{fn['uri']}",
+            "text": f"{fn['uri']} {fn.get('namespace', '')} {fn.get('description', '')}",
         })
 
     # Project Blueprints
@@ -246,18 +389,20 @@ def _rebuild_embeddings(db, project_name: str) -> dict:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Batch scan UE5 project Blueprints for audio-relevant nodes"
+        description="Comprehensive UE5 project audio scanner"
     )
     parser.add_argument("--host", default=DEFAULT_HOST)
     parser.add_argument("--port", type=int, default=DEFAULT_PORT)
     parser.add_argument("--path", default="/Game/",
                         help="Asset path prefix to scan (default: /Game/)")
     parser.add_argument("--audio-only", action="store_true",
-                        help="Only include audio-relevant nodes in scan results")
+                        help="Only include audio-relevant nodes in BP scan results")
     parser.add_argument("--include-pins", action="store_true",
                         help="Include full pin details per node")
     parser.add_argument("--scan-audio-assets", action="store_true",
-                        help="Also scan MetaSounds, SoundWaves, SoundCues")
+                        help="Also list MetaSounds, SoundWaves, SoundCues")
+    parser.add_argument("--full-export", action="store_true",
+                        help="Full export: all nodes, pins, audio assets, MS graphs, cross-refs")
     parser.add_argument("--output", "-o", default=None,
                         help="Output JSON file (default: project_scan.json)")
     parser.add_argument("--project", "-p", default=None,
@@ -268,16 +413,22 @@ def main():
                         help="Rebuild TF-IDF embeddings after import")
     args = parser.parse_args()
 
+    # --full-export enables everything
+    if args.full_export:
+        args.include_pins = True
+        args.scan_audio_assets = True
+
     # --- Connect ---
     print("=" * 60)
     print("AudioMCP Project Scanner")
     print(f"Connecting to {args.host}:{args.port}...")
+    if args.full_export:
+        print("Mode: FULL EXPORT (all nodes + MS graphs + cross-refs)")
     print("=" * 60)
 
+    conn = TCPConnection(args.host, args.port)
     try:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(TIMEOUT)
-        sock.connect((args.host, args.port))
+        conn._connect()
     except (OSError, ConnectionError) as e:
         print(f"\nFAILED to connect: {e}")
         print("Make sure UE5 Editor is running with UEAudioMCP plugin enabled.")
@@ -285,22 +436,32 @@ def main():
 
     try:
         # --- Ping to get project info ---
-        ping = send_command(sock, {"action": "ping"})
+        ping = conn.send({"action": "ping"})
         project_name = args.project or ping.get("project", "UnknownProject")
-        print(f"Connected to: {ping.get('engine', '?')} {ping.get('version', '?')}")
+        engine_ver = f"{ping.get('engine', '?')} {ping.get('version', '?')}"
+        features = ping.get("features", [])
+        print(f"Connected to: {engine_ver}")
         print(f"Project: {project_name}")
+        print(f"Features: {', '.join(features)}")
         print()
 
-        results = {"project": project_name, "scan_time": time.strftime("%Y-%m-%d %H:%M:%S")}
+        results = {
+            "project": project_name,
+            "engine": engine_ver,
+            "features": features,
+            "scan_time": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "scan_mode": "full_export" if args.full_export else "standard",
+        }
 
         # --- Phase 1: List Blueprints ---
-        print("[1/3] Listing Blueprint assets...")
-        bp_assets = list_assets(sock, "Blueprint", args.path)
+        phase_total = 5 if args.full_export else 3
+        print(f"[1/{phase_total}] Listing Blueprint assets...")
+        bp_assets = list_assets(conn, "Blueprint", args.path)
         print(f"  Found {len(bp_assets)} Blueprint assets under {args.path}")
         results["blueprint_count"] = len(bp_assets)
 
-        # --- Phase 2: Scan each Blueprint ---
-        print(f"\n[2/3] Scanning {len(bp_assets)} Blueprints...")
+        # --- Phase 2: Scan each Blueprint (ALL nodes, not audio-only for full export) ---
+        print(f"\n[2/{phase_total}] Scanning {len(bp_assets)} Blueprints...")
         scan_results = []
         audio_count = 0
         errors = 0
@@ -314,37 +475,98 @@ def main():
             bar = "\u2588" * bar_done + "\u2591" * (25 - bar_done)
             print(f"\r  {bar} {pct:5.1f}% ({i+1}/{len(bp_assets)}) {name:<40s}", end="", flush=True)
 
-            result = scan_blueprint(sock, path, args.audio_only, args.include_pins)
-            if result.get("status") == "ok":
-                scan_results.append(result)
-                if result.get("audio_summary", {}).get("has_audio"):
-                    audio_count += 1
-            else:
+            try:
+                result = scan_blueprint(conn, path, args.audio_only, args.include_pins)
+                if result.get("status") == "ok":
+                    scan_results.append(result)
+                    if result.get("audio_summary", {}).get("has_audio"):
+                        audio_count += 1
+                else:
+                    errors += 1
+                    scan_results.append({"status": "error", "path": path, "message": result.get("message", "")})
+            except (ConnectionError, OSError) as e:
                 errors += 1
-                scan_results.append({"status": "error", "path": path, "message": result.get("message", "")})
+                scan_results.append({"status": "error", "path": path, "message": str(e)})
 
-        elapsed = time.time() - t0
+        elapsed_bp = time.time() - t0
         print(f"\r  {'':80s}")  # Clear progress line
-        print(f"  Scanned {len(bp_assets)} BPs in {elapsed:.1f}s "
+        print(f"  Scanned {len(bp_assets)} BPs in {elapsed_bp:.1f}s "
               f"({audio_count} audio-relevant, {errors} errors)")
 
         results["blueprints"] = scan_results
         results["audio_relevant_count"] = audio_count
         results["error_count"] = errors
 
-        # --- Phase 2b: Audio assets (optional) ---
+        # --- Phase 3: Audio assets + MetaSounds graph reading ---
+        all_ms_paths = []
         if args.scan_audio_assets:
-            print("\n[2b] Scanning audio assets...")
+            print(f"\n[3/{phase_total}] Listing & scanning audio assets...")
             audio_assets = {}
-            for cls in ["MetaSoundSource", "MetaSoundPatch", "SoundWave", "SoundCue"]:
-                assets = list_assets(sock, cls, args.path)
-                audio_assets[cls] = [a["path"] for a in assets]
-                print(f"  {cls}: {len(assets)}")
+            for cls in ["MetaSoundSource", "MetaSoundPatch", "SoundWave", "SoundCue",
+                         "SoundAttenuation", "SoundClass", "SoundMix", "ReverbEffect"]:
+                assets = list_assets(conn, cls, args.path)
+                audio_assets[cls] = [{"path": a["path"], "name": a["name"]} for a in assets]
+                if assets:
+                    print(f"  {cls}: {len(assets)}")
+                if cls in ("MetaSoundSource", "MetaSoundPatch"):
+                    all_ms_paths.extend(a["path"] for a in assets)
             results["audio_assets"] = audio_assets
 
-        # --- Phase 3: Save results ---
+            # Read MetaSounds graph structures
+            if all_ms_paths:
+                print(f"\n  Reading {len(all_ms_paths)} MetaSounds graph structures...")
+                ms_graphs = []
+                ms_errors = 0
+                for i, ms_path in enumerate(all_ms_paths):
+                    ms_name = ms_path.rsplit(".", 1)[-1] if "." in ms_path else ms_path.rsplit("/", 1)[-1]
+                    pct = (i + 1) / len(all_ms_paths) * 100
+                    bar_done = int(pct / 4)
+                    bar = "\u2588" * bar_done + "\u2591" * (25 - bar_done)
+                    print(f"\r  {bar} {pct:5.1f}% ({i+1}/{len(all_ms_paths)}) {ms_name:<40s}", end="", flush=True)
+
+                    resp = get_node_locations(conn, ms_path)
+                    if resp.get("status") == "ok":
+                        ms_graphs.append({
+                            "path": ms_path,
+                            "name": ms_name,
+                            "nodes": resp.get("nodes", []),
+                            "edges": resp.get("edges", []),
+                            "node_count": len(resp.get("nodes", [])),
+                            "edge_count": len(resp.get("edges", [])),
+                        })
+                    else:
+                        ms_errors += 1
+                        ms_graphs.append({
+                            "path": ms_path,
+                            "name": ms_name,
+                            "status": "error",
+                            "message": resp.get("message", ""),
+                        })
+
+                print(f"\r  {'':80s}")
+                ok_count = len(all_ms_paths) - ms_errors
+                total_ms_nodes = sum(g.get("node_count", 0) for g in ms_graphs)
+                total_ms_edges = sum(g.get("edge_count", 0) for g in ms_graphs)
+                print(f"  Read {ok_count} MetaSounds graphs "
+                      f"({total_ms_nodes} nodes, {total_ms_edges} edges, {ms_errors} errors)")
+                results["metasounds_graphs"] = ms_graphs
+        else:
+            print(f"\n[3/{phase_total}] Skipping audio assets (use --scan-audio-assets or --full-export)")
+
+        # --- Phase 4: Cross-references ---
+        if args.full_export:
+            print(f"\n[4/{phase_total}] Extracting cross-references...")
+            xrefs = extract_cross_references(scan_results, all_ms_paths)
+            results["cross_references"] = xrefs
+            xsum = xrefs["summary"]
+            print(f"  BPs referencing MetaSounds: {xsum['bps_referencing_metasounds']}")
+            print(f"  BPs with audio playback:    {xsum['bps_with_audio_playback']}")
+            print(f"  Total audio references:     {xsum['total_audio_references']}")
+            print(f"  Total playback triggers:    {xsum['total_playback_triggers']}")
+
+        # --- Phase 5: Save results ---
         output_file = args.output or "project_scan.json"
-        print(f"\n[3/3] Saving results to {output_file}...")
+        print(f"\n[{phase_total}/{phase_total}] Saving results to {output_file}...")
         with open(output_file, "w") as f:
             json.dump(results, f, indent=2)
         file_size = os.path.getsize(output_file)
@@ -367,16 +589,25 @@ def main():
                     print(f"  Embeddings: {emb.get('reason', 'skipped')}")
 
         # --- Summary ---
+        elapsed_total = time.time() - t0
         print("\n" + "=" * 60)
         print("SCAN SUMMARY")
         print("=" * 60)
         print(f"  Project:          {project_name}")
+        print(f"  Engine:           {engine_ver}")
         print(f"  Blueprints:       {len(bp_assets)}")
         print(f"  Audio-relevant:   {audio_count}")
         total_nodes = sum(r.get("total_nodes", 0) for r in scan_results if r.get("status") == "ok")
-        print(f"  Total nodes:      {total_nodes}")
+        print(f"  Total BP nodes:   {total_nodes}")
+        if "metasounds_graphs" in results:
+            ms_count = len([g for g in results["metasounds_graphs"] if "nodes" in g])
+            print(f"  MetaSounds:       {ms_count} graphs")
+        if "audio_assets" in results:
+            for cls, items in results["audio_assets"].items():
+                if items:
+                    print(f"  {cls + ':':20s}{len(items)}")
         print(f"  Errors:           {errors}")
-        print(f"  Scan time:        {elapsed:.1f}s")
+        print(f"  Scan time:        {elapsed_total:.1f}s")
         print(f"  Output:           {output_file}")
 
         # Print audio-relevant BPs
@@ -390,8 +621,16 @@ def main():
                     funcs = ", ".join(audio.get("audio_functions", [])[:5])
                     print(f"    {r['blueprint_name']:<35s} [{audio['audio_node_count']} nodes] {funcs}")
 
+        # Print MetaSounds graphs
+        if "metasounds_graphs" in results:
+            graphs_ok = [g for g in results["metasounds_graphs"] if "nodes" in g]
+            if graphs_ok:
+                print(f"\n  MetaSounds Graphs:")
+                for g in graphs_ok:
+                    print(f"    {g['name']:<35s} [{g['node_count']} nodes, {g['edge_count']} edges]")
+
     finally:
-        sock.close()
+        conn.close()
 
 
 if __name__ == "__main__":
