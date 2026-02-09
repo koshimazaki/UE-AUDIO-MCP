@@ -2,7 +2,9 @@
 
 **AI-driven game audio pipelines -- from natural language to Wwise + MetaSounds + Blueprints.**
 
-One MCP server. Three audio engines. 52 tools. Complete audio systems from a single prompt.
+One MCP server. Three audio engines. 52 tools. 22K+ Blueprint nodes. Optimised for **Unreal Engine 5.7** and **Wwise 2024**.
+
+Complete audio systems from a single prompt.
 
 > "Build weather-responsive ambient with rain, wind, and clear states that crossfade based on intensity"
 >
@@ -33,7 +35,7 @@ Each layer is a different tool, different specialist, different iteration cycle.
                     +---------------------------+
                     |      UE Audio MCP         |
                     |      52 tools             |
-                    |      24K+ knowledge       |
+                    |      22K+ knowledge       |
                     +---------------------------+
                             |
               +-------------+-------------------+
@@ -95,7 +97,7 @@ C64 chiptune plays      ->    ReSID SID Chip node    ->   Music bus, stereo mix
 | UE5 Connection | 3 | Connect, status, info |
 | Orchestration | 2 | `build_audio_system` + `build_aaa_project` |
 
-### Knowledge Base -- 26K+ Entries
+### Knowledge Base -- 22K+ Entries
 
 Structured data + semantic search (TF-IDF + cosine similarity) across the full UE5 audio API surface:
 
@@ -224,6 +226,17 @@ Creates bus hierarchy, work units, events, MetaSounds sources, and Blueprint wir
 
 ## Quick Start
 
+### Requirements
+
+| Component | Version | Notes |
+|-----------|---------|-------|
+| Unreal Engine | **5.7.2+** | MetaSounds Builder API (experimental since 5.4) |
+| Wwise | **2024.1+** | WAAPI enabled (Project Settings > Wwise > Enable WAAPI) |
+| Python | 3.10+ | MCP server runtime |
+| Wwise Authoring | Running | WAAPI WebSocket on localhost:8080 (66 functions) |
+
+### Install
+
 ```bash
 git clone https://github.com/koshimazaki/UE5-WWISE.git
 cd UE5-WWISE
@@ -231,9 +244,6 @@ pip install -e ".[dev]"
 
 # Run MCP server
 ue-audio-mcp
-
-# Run tests
-pytest tests/ -v
 ```
 
 ### MCP Client Config
@@ -256,7 +266,7 @@ Works without Wwise or UE5 running -- knowledge base, templates, and offline mod
 1. Copy `ue5_plugin/UEAudioMCP/` to your project's `Plugins/` folder
 2. Enable **UEAudioMCP** in the plugin manager (Editor module, TCP server)
 3. Enable **SIDMetaSoundNodes** (Runtime module, SID chip nodes)
-4. Rebuild the project -- SID nodes appear under "ReSID SIDKIT Edition" category
+4. Rebuild -- SID nodes appear under "ReSID SIDKIT Edition" category in MetaSounds editor
 
 ---
 
@@ -279,7 +289,7 @@ Total                 43,200 lines   207 files
 
 ```
 Phase 1: Wwise MCP Server        Done    20 tools, WAAPI bridge
-Phase 2: Knowledge Base           Done    26K+ entries, semantic search, 144 MS nodes
+Phase 2: Knowledge Base           Done    22K+ entries, semantic search, 144 MS nodes
 Phase 3: UE5 Plugin + Tools       Done    C++ plugin (24 cmds), 22 tools, TCP protocol
 Phase 4: Orchestration            Done    11 patterns, AAA project, 3-mode auto-detection
 Phase 5: ReSID SIDKIT Edition     Done    5 custom C++ MetaSounds nodes, 3 templates
