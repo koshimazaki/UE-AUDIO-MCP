@@ -12,19 +12,6 @@ Complete audio systems from a single prompt.
 
 ---
 
-## Why This Exists
-
-Game audio systems take weeks to build manually. A weather ambient system needs:
-- MetaSounds patches for rain, wind, clear (procedural DSP)
-- Blueprint logic reading weather state, setting parameters
-- Wwise bus hierarchy, RTPC curves, state groups, spatial mixing
-- AudioLink routing procedural audio into the mix pipeline
-- Everything wired together with consistent naming
-
-Each layer is a different tool, different specialist, different iteration cycle. This MCP server automates the plumbing so sound designers focus on the sound.
-
----
-
 ## Architecture
 
 ```
