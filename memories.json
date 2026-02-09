@@ -859,7 +859,24 @@
       "lastAccessed": "2026-02-09T02:52:31.384Z",
       "lastVerified": "2026-02-09T02:52:31.384Z",
       "status": "fresh"
+    },
+    {
+      "id": "mem_1770607670823_7pqg7346z",
+      "content": "Code review of Blueprint Scanner + Editor Menu feature completed 2026-02-09.\n\nKey findings:\n- BUG: UK2Node_Event in scan_blueprint (QueryCommands.cpp line 478-481) does NOT check IsAudioRelevant — audio-named events like \"OnAudioFinished\" won't be tagged\n- ISSUE: Duplicated audio keyword lists in QueryCommands.cpp and AudioMCPEditorMenu.cpp — will drift\n- ISSUE: OnScanProject scans fewer node types than FScanBlueprintCommand (missing Variable, Macro, Cast, Event audio check)\n- ISSUE: UEAudioMCPModule.h header says \"11 commands\" but there are 24\n- WARNING: scan_project.py uses private db._conn.commit() and db._fetch()\n- All 26 blueprint tests pass\n- Command count verified: exactly 24 commands registered\n- Wire protocol matches between Python and C++ (4-byte big-endian + UTF-8 JSON)",
+      "type": "warning",
+      "tags": [
+        "warning",
+        "python",
+        "code-review",
+        "blueprint-scanner",
+        "ue5-plugin"
+      ],
+      "timestamp": "2026-02-09T03:27:50.819Z",
+      "accessCount": 0,
+      "lastAccessed": "2026-02-09T03:27:50.819Z",
+      "lastVerified": "2026-02-09T03:27:50.819Z",
+      "status": "fresh"
     }
   ],
-  "lastUpdated": "2026-02-09T02:52:31.384Z"
+  "lastUpdated": "2026-02-09T03:27:50.819Z"
 }

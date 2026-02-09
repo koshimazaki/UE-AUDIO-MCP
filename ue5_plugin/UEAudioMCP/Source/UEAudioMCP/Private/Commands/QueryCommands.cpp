@@ -330,31 +330,7 @@ TSharedPtr<FJsonObject> FGetNodeLocationsCommand::Execute(
 // scan_blueprint — deep-scan Blueprint graph nodes for function calls & audio
 // ---------------------------------------------------------------------------
 
-namespace
-{
-	/** Check if a function or class name is audio-related. */
-	bool IsAudioRelevant(const FString& Name)
-	{
-		static const TCHAR* Keywords[] = {
-			TEXT("Sound"), TEXT("Audio"), TEXT("Ak"), TEXT("Wwise"),
-			TEXT("MetaSound"), TEXT("Reverb"), TEXT("SoundMix"),
-			TEXT("Dialogue"), TEXT("RTPC"), TEXT("Occlusion"),
-			TEXT("Attenuation"), TEXT("PostEvent"), TEXT("SetSwitch"),
-			TEXT("SetState"), TEXT("Submix"), TEXT("Modulation"),
-			TEXT("SoundClass"), TEXT("SoundCue"), TEXT("Listener"),
-			TEXT("Spatialization"), TEXT("AudioVolume"),
-		};
-
-		for (const TCHAR* Keyword : Keywords)
-		{
-			if (Name.Contains(Keyword, ESearchCase::IgnoreCase))
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-}
+// Audio relevance check now lives in AudioMCPTypes.h → AudioMCP::IsAudioRelevant()
 
 TSharedPtr<FJsonObject> FScanBlueprintCommand::Execute(
 	const TSharedPtr<FJsonObject>& Params,
@@ -463,7 +439,7 @@ TSharedPtr<FJsonObject> FScanBlueprintCommand::Execute(
 					FuncClass = TargetFunc->GetOwnerClass()->GetName();
 				}
 
-				bNodeAudioRelevant = IsAudioRelevant(FuncName) || IsAudioRelevant(FuncClass);
+				bNodeAudioRelevant = AudioMCP::IsAudioRelevant(FuncName) || AudioMCP::IsAudioRelevant(FuncClass);
 				if (bNodeAudioRelevant && !AudioFunctions.Contains(FuncName))
 				{
 					AudioFunctions.Add(FuncName);
@@ -473,36 +449,38 @@ TSharedPtr<FJsonObject> FScanBlueprintCommand::Execute(
 			{
 				NodeType = TEXT("CustomEvent");
 				EventName = CustomEvent->CustomFunctionName;
-				bNodeAudioRelevant = IsAudioRelevant(EventName);
+				bNodeAudioRelevant = AudioMCP::IsAudioRelevant(EventName);
 			}
 			else if (UK2Node_Event* EventNode = Cast<UK2Node_Event>(Node))
 			{
 				NodeType = TEXT("Event");
 				EventName = EventNode->EventReference.GetMemberName().ToString();
+				bNodeAudioRelevant = AudioMCP::IsAudioRelevant(EventName);
 			}
 			else if (UK2Node_VariableGet* VarGet = Cast<UK2Node_VariableGet>(Node))
 			{
 				NodeType = TEXT("VariableGet");
 				VarName = VarGet->GetVarName().ToString();
-				bNodeAudioRelevant = IsAudioRelevant(VarName);
+				bNodeAudioRelevant = AudioMCP::IsAudioRelevant(VarName);
 			}
 			else if (UK2Node_VariableSet* VarSet = Cast<UK2Node_VariableSet>(Node))
 			{
 				NodeType = TEXT("VariableSet");
 				VarName = VarSet->GetVarName().ToString();
-				bNodeAudioRelevant = IsAudioRelevant(VarName);
+				bNodeAudioRelevant = AudioMCP::IsAudioRelevant(VarName);
 			}
 			else if (UK2Node_MacroInstance* Macro = Cast<UK2Node_MacroInstance>(Node))
 			{
 				NodeType = TEXT("MacroInstance");
 				UEdGraph* MacroGraph = Macro->GetMacroGraph();
 				MacroName = MacroGraph ? MacroGraph->GetName() : TEXT("Unknown");
+				bNodeAudioRelevant = AudioMCP::IsAudioRelevant(MacroName);
 			}
 			else if (UK2Node_DynamicCast* CastNode = Cast<UK2Node_DynamicCast>(Node))
 			{
 				NodeType = TEXT("Cast");
 				CastTarget = CastNode->TargetType ? CastNode->TargetType->GetName() : TEXT("Unknown");
-				bNodeAudioRelevant = IsAudioRelevant(CastTarget);
+				bNodeAudioRelevant = AudioMCP::IsAudioRelevant(CastTarget);
 			}
 			else
 			{

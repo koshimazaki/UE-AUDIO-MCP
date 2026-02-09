@@ -11,12 +11,6 @@
 #include "HAL/PlatformProcess.h"
 #include "HAL/PlatformFileManager.h"
 #include "AssetRegistry/AssetRegistryModule.h"
-#include "Engine/Blueprint.h"
-#include "EdGraph/EdGraph.h"
-#include "EdGraph/EdGraphNode.h"
-#include "K2Node_CallFunction.h"
-#include "K2Node_Event.h"
-#include "K2Node_CustomEvent.h"
 #include "Dom/JsonObject.h"
 #include "Dom/JsonValue.h"
 #include "Serialization/JsonSerializer.h"
@@ -30,28 +24,10 @@
 
 DEFINE_LOG_CATEGORY_STATIC(LogAudioMCPMenu, Log, All);
 
-// Audio keyword check — same list as QueryCommands.cpp
+// Audio keyword check now uses AudioMCP::IsAudioRelevant() from AudioMCPTypes.h
+
 namespace
 {
-	bool IsAudioRelevantName(const FString& Name)
-	{
-		static const TCHAR* Keywords[] = {
-			TEXT("Sound"), TEXT("Audio"), TEXT("Ak"), TEXT("Wwise"),
-			TEXT("MetaSound"), TEXT("Reverb"), TEXT("SoundMix"),
-			TEXT("Dialogue"), TEXT("RTPC"), TEXT("Occlusion"),
-			TEXT("Attenuation"), TEXT("PostEvent"), TEXT("SetSwitch"),
-			TEXT("SetState"), TEXT("Submix"), TEXT("Modulation"),
-			TEXT("SoundClass"), TEXT("SoundCue"), TEXT("Listener"),
-			TEXT("Spatialization"), TEXT("AudioVolume"),
-		};
-		for (const TCHAR* Keyword : Keywords)
-		{
-			if (Name.Contains(Keyword, ESearchCase::IgnoreCase))
-				return true;
-		}
-		return false;
-	}
-
 	/** Get the Saved/AudioMCP/ directory, creating it if needed. */
 	FString GetOutputDir()
 	{
@@ -201,10 +177,13 @@ void FAudioMCPEditorMenu::OnScanProject()
 		return;
 	}
 
-	// 2. Scan each Blueprint with progress
+	// 2. Scan each Blueprint using FScanBlueprintCommand (full 7-node-type scan)
 	FScopedSlowTask SlowTask(Assets.Num(),
 		LOCTEXT("ScanningBPs", "Scanning Blueprints for audio..."));
 	SlowTask.MakeDialog(true);
+
+	FScanBlueprintCommand ScanCmd;
+	FAudioMCPBuilderManager DummyManager;
 
 	TArray<TSharedPtr<FJsonValue>> ResultsArray;
 	int32 AudioBPs = 0;
@@ -217,73 +196,28 @@ void FAudioMCPEditorMenu::OnScanProject()
 			FText::FromString(AssetData.AssetName.ToString()));
 		if (SlowTask.ShouldCancel()) break;
 
-		FString AssetPath = AssetData.GetObjectPathString();
-		UObject* Loaded = AssetData.GetAsset();
-		UBlueprint* BP = Cast<UBlueprint>(Loaded);
-		if (!BP)
+		TSharedPtr<FJsonObject> Params = MakeShared<FJsonObject>();
+		Params->SetStringField(TEXT("asset_path"), AssetData.GetObjectPathString());
+		Params->SetBoolField(TEXT("audio_only"), false);
+		Params->SetBoolField(TEXT("include_pins"), false);
+
+		TSharedPtr<FJsonObject> Result = ScanCmd.Execute(Params, DummyManager);
+
+		if (Result->GetStringField(TEXT("status")) != TEXT("ok"))
 		{
 			Errors++;
 			continue;
 		}
 
-		// Quick-scan: count audio nodes across all graphs
+		// Extract audio summary from scan result
+		const TSharedPtr<FJsonObject>* AudioSummaryPtr = nullptr;
 		int32 AudioNodeCount = 0;
-		TArray<FString> AudioFunctions;
-		int32 TotalNodes = 0;
-
-		auto ScanGraphs = [&](const TArray<UEdGraph*>& Graphs)
+		if (Result->TryGetObjectField(TEXT("audio_summary"), AudioSummaryPtr))
 		{
-			for (UEdGraph* Graph : Graphs)
-			{
-				if (!Graph) continue;
-				for (UEdGraphNode* Node : Graph->Nodes)
-				{
-					if (!Node) continue;
-					TotalNodes++;
-					if (UK2Node_CallFunction* CallNode = Cast<UK2Node_CallFunction>(Node))
-					{
-						FString FuncName = CallNode->FunctionReference.GetMemberName().ToString();
-						FString FuncClass;
-						if (UFunction* Func = CallNode->GetTargetFunction())
-						{
-							if (Func->GetOwnerClass())
-								FuncClass = Func->GetOwnerClass()->GetName();
-						}
-						if (IsAudioRelevantName(FuncName) || IsAudioRelevantName(FuncClass))
-						{
-							AudioNodeCount++;
-							if (!AudioFunctions.Contains(FuncName))
-								AudioFunctions.Add(FuncName);
-						}
-					}
-					else if (UK2Node_CustomEvent* CE = Cast<UK2Node_CustomEvent>(Node))
-					{
-						if (IsAudioRelevantName(CE->CustomFunctionName))
-							AudioNodeCount++;
-					}
-				}
-			}
-		};
+			AudioNodeCount = static_cast<int32>((*AudioSummaryPtr)->GetNumberField(TEXT("audio_node_count")));
+		}
 
-		ScanGraphs(BP->UbergraphPages);
-		ScanGraphs(BP->FunctionGraphs);
-
-		// Build result entry
-		TSharedPtr<FJsonObject> Entry = MakeShared<FJsonObject>();
-		Entry->SetStringField(TEXT("name"), BP->GetName());
-		Entry->SetStringField(TEXT("path"), AssetPath);
-		Entry->SetStringField(TEXT("parent_class"),
-			BP->ParentClass ? BP->ParentClass->GetName() : TEXT("None"));
-		Entry->SetNumberField(TEXT("total_nodes"), TotalNodes);
-		Entry->SetNumberField(TEXT("audio_nodes"), AudioNodeCount);
-		Entry->SetBoolField(TEXT("has_audio"), AudioNodeCount > 0);
-
-		TArray<TSharedPtr<FJsonValue>> FuncArr;
-		for (const FString& F : AudioFunctions)
-			FuncArr.Add(MakeShared<FJsonValueString>(F));
-		Entry->SetArrayField(TEXT("audio_functions"), FuncArr);
-
-		ResultsArray.Add(MakeShared<FJsonValueObject>(Entry));
+		ResultsArray.Add(MakeShared<FJsonValueObject>(Result));
 
 		if (AudioNodeCount > 0)
 		{
@@ -359,11 +293,21 @@ void FAudioMCPEditorMenu::OnScanSelected()
 		Params->SetBoolField(TEXT("include_pins"), true);
 
 		TSharedPtr<FJsonObject> Result = ScanCmd.Execute(Params, DummyManager);
-		ResultsArray.Add(MakeShared<FJsonValueObject>(Result));
 
-		FString BPName = Result->GetStringField(TEXT("blueprint_name"));
-		int32 Nodes = static_cast<int32>(Result->GetNumberField(TEXT("total_nodes")));
-		UE_LOG(LogAudioMCPMenu, Log, TEXT("Scanned %s: %d nodes"), *BPName, Nodes);
+		if (Result->GetStringField(TEXT("status")) == TEXT("ok"))
+		{
+			ResultsArray.Add(MakeShared<FJsonValueObject>(Result));
+
+			FString BPName = Result->GetStringField(TEXT("blueprint_name"));
+			int32 Nodes = static_cast<int32>(Result->GetNumberField(TEXT("total_nodes")));
+			UE_LOG(LogAudioMCPMenu, Log, TEXT("Scanned %s: %d nodes"), *BPName, Nodes);
+		}
+		else
+		{
+			UE_LOG(LogAudioMCPMenu, Warning, TEXT("Failed to scan %s: %s"),
+				*Asset.GetObjectPathString(),
+				*Result->GetStringField(TEXT("message")));
+		}
 	}
 
 	// Save
@@ -491,8 +435,11 @@ FString FAudioMCPEditorMenu::SaveResultJson(
 	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&JsonString);
 	FJsonSerializer::Serialize(Json.ToSharedRef(), Writer);
 
-	FFileHelper::SaveStringToFile(JsonString, *FullPath,
-		FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM);
+	if (!FFileHelper::SaveStringToFile(JsonString, *FullPath,
+		FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM))
+	{
+		UE_LOG(LogAudioMCPMenu, Error, TEXT("Failed to write %s"), *FullPath);
+	}
 
 	return FullPath;
 }

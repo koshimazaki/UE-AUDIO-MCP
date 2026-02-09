@@ -52,4 +52,28 @@ namespace AudioMCP
 		Obj->SetStringField(TEXT("message"), Message);
 		return Obj;
 	}
+
+	/** Shared list of audio-relevant keywords for Blueprint scanning.
+	 *  Used by QueryCommands.cpp and AudioMCPEditorMenu.cpp — single source of truth.
+	 */
+	inline bool IsAudioRelevant(const FString& Name)
+	{
+		static const TCHAR* Keywords[] = {
+			TEXT("Sound"), TEXT("Audio"), TEXT("Ak"), TEXT("Wwise"),
+			TEXT("MetaSound"), TEXT("Reverb"), TEXT("SoundMix"),
+			TEXT("Dialogue"), TEXT("RTPC"), TEXT("Occlusion"),
+			TEXT("Attenuation"), TEXT("PostEvent"), TEXT("SetSwitch"),
+			TEXT("SetState"), TEXT("Submix"), TEXT("Modulation"),
+			TEXT("SoundClass"), TEXT("SoundCue"), TEXT("Listener"),
+			TEXT("Spatialization"), TEXT("AudioVolume"),
+		};
+		for (const TCHAR* Keyword : Keywords)
+		{
+			if (Name.Contains(Keyword, ESearchCase::IgnoreCase))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
 }

@@ -158,7 +158,7 @@ def bp_list_categories(source: str = "all") -> str:
 def bp_list_assets(
     class_filter: str = "Blueprint",
     path: str = "/Game/",
-    limit: int = 500,
+    limit: int = 5000,
 ) -> str:
     """List project assets by class type via the UE5 plugin.
 
@@ -171,7 +171,7 @@ def bp_list_assets(
     Args:
         class_filter: Asset class name — Blueprint, MetaSoundSource, SoundWave, etc.
         path: Path prefix to search under (default: /Game/)
-        limit: Max results to return (default: 500)
+        limit: Max results to return (default: 5000)
     """
     conn = get_ue5_connection()
     try:
