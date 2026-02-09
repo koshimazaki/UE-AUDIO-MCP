@@ -46,7 +46,7 @@ Each layer is a different tool, different specialist, different iteration cycle.
              |               |                   |
              v               v                   v
      +----------------+ +---------------------------+
-     | Wwise App      | | UE5 C++ Plugin            |
+     | Wwise App      | | UE5 C++ Plugin             |
      | WAAPI :8080    | | TCP:9877 (24 commands)     |
      +----------------+ | MetaSounds Builder API     |
                         | Blueprint Graph Scanner    |
