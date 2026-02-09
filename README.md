@@ -14,9 +14,9 @@
 
 One MCP server. Three audio engines. 53 tools. 22K+ Blueprint nodes. Optimised for **Unreal Engine 5.7** and **Wwise 2024**.
 
-> "Create a footsteps sound setup for my character -- use MetaSounds noise and filter in the patch, Wwise SwitchContainer for surfaces, Blueprint trigger on anim notify"
+> "Create a footsteps sound setup for my character -- use MetaSounds noise and filter in the patch, Blueprint trigger on anim notify"
 >
-> MCP generates the MetaSounds DSP graph (noise -> filter -> AD envelope), creates the Wwise hierarchy with surface switches, and outputs Blueprint wiring for the animation trigger.
+> MCP generates the MetaSounds DSP graph (noise -> filter -> AD envelope) and outputs Blueprint wiring for the animation trigger.
 
 ### Install
 
