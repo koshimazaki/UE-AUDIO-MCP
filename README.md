@@ -237,7 +237,7 @@ Creates bus hierarchy, work units, events, MetaSounds sources, and Blueprint wir
 | Component | Version | Notes |
 |-----------|---------|-------|
 | Unreal Engine | **5.7.2+** | MetaSounds Builder API (experimental since 5.4) |
-| Wwise | **2024.1+** | WAAPI enabled (Project Settings > Wwise > Enable WAAPI) |
+| Wwise | **2025.1.4+** | WAAPI enabled (Project Settings > Wwise > Enable WAAPI) |
 | Python | 3.10+ | MCP server runtime |
 | Wwise Authoring | Running | WAAPI WebSocket on localhost:8080 (66 functions) |
 
