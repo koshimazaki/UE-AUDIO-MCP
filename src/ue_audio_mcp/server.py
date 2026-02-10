@@ -57,6 +57,7 @@ import ue_audio_mcp.tools.ms_builder  # noqa: E402, F401
 import ue_audio_mcp.tools.blueprints  # noqa: E402, F401
 import ue_audio_mcp.tools.variables  # noqa: E402, F401
 import ue_audio_mcp.tools.presets  # noqa: E402, F401
+import ue_audio_mcp.tools.bp_builder  # noqa: E402, F401
 import ue_audio_mcp.tools.systems  # noqa: E402, F401
 
 

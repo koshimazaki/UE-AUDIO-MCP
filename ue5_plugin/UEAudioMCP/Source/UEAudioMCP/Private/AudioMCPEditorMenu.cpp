@@ -511,7 +511,7 @@ void FAudioMCPEditorMenu::OnShowStatus()
 		TEXT("Audio MCP TCP Server\n"
 			 "Port: %d\n"
 			 "Project: %s\n"
-			 "Commands: 25"),
+			 "Commands: 33"),
 		AudioMCP::DEFAULT_PORT,
 		FApp::GetProjectName());
 

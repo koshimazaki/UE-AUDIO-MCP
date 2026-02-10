@@ -12,6 +12,8 @@
 #include "Commands/VariableCommands.h"
 #include "Commands/PresetCommands.h"
 #include "Commands/QueryCommands.h"
+#include "Commands/BPBuilderCommands.h"
+#include "AudioMCPBlueprintManager.h"
 #include "AudioMCPEditorMenu.h"
 #include "Modules/ModuleManager.h"
 
@@ -23,6 +25,8 @@ void FUEAudioMCPModule::StartupModule()
 
 	// Create subsystems in dependency order
 	BuilderManager = MakeUnique<FAudioMCPBuilderManager>();
+	BlueprintManager = MakeUnique<FAudioMCPBlueprintManager>();
+	FAudioMCPBlueprintManager::SetInstance(BlueprintManager.Get());
 	Dispatcher = MakeUnique<FAudioMCPCommandDispatcher>(BuilderManager.Get());
 
 	RegisterCommands();
@@ -31,7 +35,7 @@ void FUEAudioMCPModule::StartupModule()
 	if (TcpServer->StartListening(AudioMCP::DEFAULT_PORT))
 	{
 		UE_LOG(LogAudioMCPModule, Log,
-			TEXT("UE Audio MCP ready — listening on port %d (25 commands registered)"),
+			TEXT("UE Audio MCP ready — listening on port %d (33 commands registered)"),
 			AudioMCP::DEFAULT_PORT);
 	}
 	else
@@ -65,6 +69,8 @@ void FUEAudioMCPModule::ShutdownModule()
 	}
 
 	Dispatcher.Reset();
+	FAudioMCPBlueprintManager::SetInstance(nullptr);
+	BlueprintManager.Reset();
 	BuilderManager.Reset();
 
 	UE_LOG(LogAudioMCPModule, Log, TEXT("UE Audio MCP plugin shut down"));
@@ -147,6 +153,22 @@ void FUEAudioMCPModule::RegisterCommands()
 	// 26. Focused audio Blueprint export with edges
 	Dispatcher->RegisterCommand(TEXT("export_audio_blueprint"),
 		MakeShared<FExportAudioBlueprintCommand>());
+
+	// 27-33. Blueprint Builder commands
+	Dispatcher->RegisterCommand(TEXT("bp_open_blueprint"),
+		MakeShared<FBPOpenBlueprintCommand>());
+	Dispatcher->RegisterCommand(TEXT("bp_add_node"),
+		MakeShared<FBPAddNodeCommand>());
+	Dispatcher->RegisterCommand(TEXT("bp_connect_pins"),
+		MakeShared<FBPConnectPinsCommand>());
+	Dispatcher->RegisterCommand(TEXT("bp_set_pin_default"),
+		MakeShared<FBPSetPinDefaultCommand>());
+	Dispatcher->RegisterCommand(TEXT("bp_compile"),
+		MakeShared<FBPCompileCommand>());
+	Dispatcher->RegisterCommand(TEXT("bp_register_existing_node"),
+		MakeShared<FBPRegisterExistingNodeCommand>());
+	Dispatcher->RegisterCommand(TEXT("bp_list_pins"),
+		MakeShared<FBPListPinsCommand>());
 }
 
 IMPLEMENT_MODULE(FUEAudioMCPModule, UEAudioMCP)

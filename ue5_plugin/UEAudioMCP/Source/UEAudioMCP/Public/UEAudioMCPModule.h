@@ -8,10 +8,11 @@
 class FAudioMCPTcpServer;
 class FAudioMCPCommandDispatcher;
 class FAudioMCPBuilderManager;
+class FAudioMCPBlueprintManager;
 
 /**
  * Editor module that starts the Audio MCP TCP server on load.
- * Creates the builder manager, registers all 25 commands,
+ * Creates the builder manager, registers all 33 commands,
  * and starts listening on port 9877.
  */
 class FUEAudioMCPModule : public IModuleInterface
@@ -30,6 +31,7 @@ private:
 	void RegisterCommands();
 
 	TUniquePtr<FAudioMCPBuilderManager> BuilderManager;
+	TUniquePtr<FAudioMCPBlueprintManager> BlueprintManager;
 	TUniquePtr<FAudioMCPCommandDispatcher> Dispatcher;
 	TUniquePtr<FAudioMCPTcpServer> TcpServer;
 };
