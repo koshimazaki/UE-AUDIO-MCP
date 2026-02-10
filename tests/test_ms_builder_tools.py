@@ -6,6 +6,11 @@ import copy
 import json
 import os
 
+from ue_audio_mcp.knowledge.metasound_nodes import (
+    CLASS_NAME_TO_DISPLAY,
+    class_name_to_display,
+    infer_class_type,
+)
 from ue_audio_mcp.tools.ms_builder import (
     ms_add_node,
     ms_audition,
@@ -439,3 +444,189 @@ def test_inline_convert_variable_class_types():
     types = {n["node_type"] for n in template["nodes"]}
     assert "__variable_get__" in types
     assert "__variable_set__" in types
+
+
+# -- CLASS_NAME_TO_DISPLAY shared dict tests ---------------------------------
+
+def test_class_name_to_display_exact():
+    """Exact dict lookups should work for all entries."""
+    assert class_name_to_display("UE::Sine::Audio") == "Sine"
+    assert class_name_to_display("UE::AD Envelope::Audio") == "AD Envelope (Audio)"
+    assert class_name_to_display("AudioMixer::Audio Mixer (Mono, 2)::None") == "Audio Mixer (Mono, 2)"
+    assert class_name_to_display("Convert::Float::Int32") == "Float To Int"
+    assert class_name_to_display("Convert::Int32::Float") == "Int To Float"
+
+
+def test_class_name_to_display_fuzzy():
+    """Fuzzy fallback should match by Name part from METASOUND_NODES."""
+    # "Compressor" is registered — fuzzy via name_part
+    assert class_name_to_display("SomeNamespace::Compressor::SomeVariant") == "Compressor"
+
+
+def test_class_name_to_display_case_insensitive():
+    """Case-insensitive fallback for nodes not in explicit dict."""
+    # "BPM To Seconds" is registered — try case-insensitive
+    result = class_name_to_display("CustomNS::bpm to seconds::None")
+    assert result == "BPM To Seconds"
+
+
+def test_class_name_to_display_unknown():
+    """Unknown class names should return None."""
+    assert class_name_to_display("Unknown::NotANode::None") is None
+    assert class_name_to_display("") is None
+
+
+# -- infer_class_type tests --------------------------------------------------
+
+def test_infer_class_type_input():
+    assert infer_class_type("Input::OnPlay") == "Input"
+
+
+def test_infer_class_type_output():
+    assert infer_class_type("Output::OutMono") == "Output"
+
+
+def test_infer_class_type_variable_accessor():
+    assert infer_class_type("VariableAccessor::MyCutoff") == "VariableAccessor"
+
+
+def test_infer_class_type_variable_mutator():
+    assert infer_class_type("VariableMutator::MyCutoff") == "VariableMutator"
+
+
+def test_infer_class_type_external():
+    assert infer_class_type("UE::Sine::Audio") == "External"
+    assert infer_class_type("") == "External"
+
+
+# -- _inline_convert with inferred class_type --------------------------------
+
+def test_inline_convert_infer_class_type_from_class_name():
+    """When class_type is missing, it should be inferred from class_name prefix."""
+    export = {
+        "status": "ok",
+        "asset_path": "/Game/Audio/InferTest",
+        "asset_type": "Source",
+        "interfaces": [],
+        "graph_inputs": [],
+        "graph_outputs": [],
+        "variables": [],
+        "nodes": [
+            {
+                "node_id": "guid-input-play",
+                "class_name": "Input::OnPlay",
+                "name": "OnPlay",
+                # No class_type field — should be inferred as "Input"
+                "x": -400, "y": 0,
+                "inputs": [], "outputs": [{"name": "OnPlay", "type": "Trigger"}],
+            },
+            {
+                "node_id": "guid-output-mono",
+                "class_name": "Output::OutMono",
+                "name": "Out Mono",
+                # No class_type field — should be inferred as "Output"
+                "x": 400, "y": 0,
+                "inputs": [{"name": "Out Mono", "type": "Audio"}], "outputs": [],
+            },
+            {
+                "node_id": "guid-sine",
+                "class_name": "UE::Sine::Audio",
+                "name": "Sine",
+                # No class_type field — should be inferred as "External"
+                "x": 0, "y": 0,
+                "inputs": [{"name": "Frequency", "type": "Float", "default": 440.0}],
+                "outputs": [{"name": "Audio", "type": "Audio"}],
+            },
+        ],
+        "edges": [
+            {"from_node": "guid-sine", "from_pin": "Audio", "to_node": "guid-output-mono", "to_pin": "Out Mono"},
+        ],
+    }
+    template = _inline_convert(export)
+    assert template["name"] == "InferTest"
+    # Only the Sine node should be in nodes (Input/Output become __graph__)
+    assert len(template["nodes"]) == 1
+    assert template["nodes"][0]["node_type"] == "Sine"
+    # Edge should use __graph__ for the output node
+    assert len(template["connections"]) == 1
+    assert template["connections"][0]["to_node"] == "__graph__"
+
+
+def test_inline_convert_class_name_dict_resolves_audio_mixer():
+    """AudioMixer namespace nodes should resolve via CLASS_NAME_TO_DISPLAY."""
+    export = copy.deepcopy(MOCK_EXPORT_RESPONSE)
+    export["nodes"].append({
+        "node_id": "guid-mixer",
+        "class_name": "AudioMixer::Audio Mixer (Mono, 2)::None",
+        "name": "Audio Mixer (Mono, 2)",
+        "class_type": "External",
+        "x": 100, "y": 100,
+        "inputs": [{"name": "In 0", "type": "Audio"}],
+        "outputs": [{"name": "Out", "type": "Audio"}],
+    })
+    template = _inline_convert(export)
+    mixer_nodes = [n for n in template["nodes"] if "Audio Mixer" in n["node_type"]]
+    assert len(mixer_nodes) == 1
+    assert mixer_nodes[0]["node_type"] == "Audio Mixer (Mono, 2)"
+
+
+def test_inline_convert_skip_init_variable_nodes():
+    """InitVariable (class_type=Variable) nodes should be skipped entirely."""
+    export = copy.deepcopy(MOCK_EXPORT_RESPONSE)
+    export["nodes"].append({
+        "node_id": "guid-initvar",
+        "class_name": "InitVariable::MyCutoff",
+        "name": "MyCutoff",
+        "class_type": "Variable",
+        "x": 0, "y": 500,
+        "inputs": [], "outputs": [],
+    })
+    # Add an edge from initvar to sine (should be skipped)
+    export["edges"].append({
+        "from_node": "guid-initvar", "from_pin": "Value",
+        "to_node": "guid-sine", "to_pin": "Frequency",
+    })
+    template = _inline_convert(export)
+    # InitVariable should not appear in nodes
+    node_types = {n["node_type"] for n in template["nodes"]}
+    assert "InitVariable::MyCutoff" not in node_types
+    # Edge involving __skip__ should be dropped
+    skip_edges = [c for c in template["connections"]
+                  if "initvar" in c.get("from_node", "") or "initvar" in c.get("to_node", "")]
+    assert len(skip_edges) == 0
+
+
+# -- bp_export_audio tests ---------------------------------------------------
+
+def test_bp_export_audio(ue5_conn, mock_ue5_plugin):
+    from ue_audio_mcp.tools.blueprints import bp_export_audio
+    mock_ue5_plugin.set_response("export_audio_blueprint", {
+        "status": "ok",
+        "asset_path": "/Game/Blueprints/BP_Test",
+        "blueprint_name": "BP_Test",
+        "audio_nodes": 3,
+        "total_nodes": 7,
+        "nodes": [],
+        "edges": [],
+    })
+    result = json.loads(bp_export_audio("/Game/Blueprints/BP_Test"))
+    assert result["status"] == "ok"
+    assert result["blueprint_name"] == "BP_Test"
+    assert mock_ue5_plugin.commands[-1]["action"] == "export_audio_blueprint"
+
+
+def test_bp_export_audio_empty_path(ue5_conn):
+    from ue_audio_mcp.tools.blueprints import bp_export_audio
+    result = json.loads(bp_export_audio(""))
+    assert result["status"] == "error"
+    assert "empty" in result["message"]
+
+
+def test_bp_export_audio_not_connected():
+    import ue_audio_mcp.ue5_connection as ue5_module
+    from ue_audio_mcp.tools.blueprints import bp_export_audio
+    ue5_module._connection = None
+    result = json.loads(bp_export_audio("/Game/Blueprints/BP_Test"))
+    assert result["status"] == "error"
+    assert "Not connected" in result["message"]
+    ue5_module._connection = None

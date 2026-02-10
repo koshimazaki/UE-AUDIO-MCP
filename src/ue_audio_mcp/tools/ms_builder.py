@@ -13,7 +13,12 @@ from ue_audio_mcp.knowledge.graph_schema import (
     graph_to_builder_commands,
     validate_graph,
 )
-from ue_audio_mcp.knowledge.metasound_nodes import METASOUND_NODES
+from ue_audio_mcp.knowledge.metasound_nodes import (
+    METASOUND_NODES,
+    CLASS_NAME_TO_DISPLAY,
+    class_name_to_display,
+    infer_class_type,
+)
 from ue_audio_mcp.server import mcp
 from ue_audio_mcp.tools.utils import _error, _ok
 from ue_audio_mcp.ue5_connection import get_ue5_connection
@@ -330,11 +335,13 @@ def ms_export_graph(asset_path: str, convert_to_template: bool = False) -> str:
 
 
 def _inline_convert(export_data: dict) -> dict:
-    """Minimal inline export-to-template conversion (no scripts dependency)."""
+    """Convert export JSON to template format using shared CLASS_NAME_TO_DISPLAY.
+
+    Handles missing class_type by inferring from class_name prefix.
+    """
     import re
 
     asset_path = export_data.get("asset_path", "")
-    # Extract name: /Game/Audio/MySound.MySound -> MySound
     raw_name = asset_path.rstrip("/").split("/")[-1]
     asset_name = raw_name.split(".")[-1] if "." in raw_name else raw_name
 
@@ -370,8 +377,11 @@ def _inline_convert(export_data: dict) -> dict:
 
     for i, node in enumerate(export_data.get("nodes", [])):
         nid = node.get("node_id", "")
-        ct = node.get("class_type", "External")
+        class_name = node.get("class_name", "")
         name = node.get("name", "node_{}".format(i))
+
+        # Infer class_type if missing (older get_node_locations format)
+        ct = node.get("class_type") or infer_class_type(class_name)
 
         if ct == "Input":
             input_nodes[nid] = name
@@ -381,10 +391,13 @@ def _inline_convert(export_data: dict) -> dict:
             output_nodes[nid] = name
             guid_to_short[nid] = "__graph__"
             continue
+        if ct == "Variable":
+            # InitVariable nodes are internal — skip
+            guid_to_short[nid] = "__skip__"
+            continue
 
         short = re.sub(r"[^a-zA-Z0-9\s]", "", name).strip().lower()
         short = re.sub(r"\s+", "_", short) or "node_{}".format(i)
-        # Deduplicate: sine, sine_2, sine_3, ...
         base = short
         counter = 2
         while short in used_ids:
@@ -393,9 +406,7 @@ def _inline_convert(export_data: dict) -> dict:
         used_ids.add(short)
         guid_to_short[nid] = short
 
-        # Determine node_type from class_name
-        class_name = node.get("class_name", "")
-        node_type = class_name  # fallback to raw class name
+        # Determine node_type: dict first, then fuzzy, then raw class_name
         if ct == "VariableAccessor":
             node_type = "__variable_get__"
         elif ct == "VariableMutator":
@@ -403,14 +414,8 @@ def _inline_convert(export_data: dict) -> dict:
         elif ct == "VariableDeferred":
             node_type = "__variable_get_delayed__"
         else:
-            parts = class_name.split("::")
-            if len(parts) >= 2:
-                n = parts[1].strip()
-                v = parts[2].strip() if len(parts) >= 3 else ""
-                if n in METASOUND_NODES:
-                    node_type = n
-                elif v and "{} ({})".format(n, v) in METASOUND_NODES:
-                    node_type = "{} ({})".format(n, v)
+            display = class_name_to_display(class_name)
+            node_type = display if display else class_name
 
         entry: dict = {"id": short, "node_type": node_type}
         x, y = node.get("x", 0), node.get("y", 0)
@@ -425,13 +430,15 @@ def _inline_convert(export_data: dict) -> dict:
             entry["defaults"] = defaults
         template["nodes"].append(entry)
 
-    # Edges
+    # Edges — skip connections involving __skip__ nodes
     template["connections"] = []
     for edge in export_data.get("edges", []):
         fg, tg = edge.get("from_node", ""), edge.get("to_node", "")
         fp, tp = edge.get("from_pin", ""), edge.get("to_pin", "")
         fs = guid_to_short.get(fg, fg)
         ts = guid_to_short.get(tg, tg)
+        if fs == "__skip__" or ts == "__skip__":
+            continue
         if fs == "__graph__" and fg in input_nodes:
             fp = input_nodes[fg]
         if ts == "__graph__" and tg in output_nodes:

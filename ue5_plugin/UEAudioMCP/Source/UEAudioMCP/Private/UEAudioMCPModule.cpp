@@ -143,6 +143,10 @@ void FUEAudioMCPModule::RegisterCommands()
 	// 25. Full MetaSound graph export
 	Dispatcher->RegisterCommand(TEXT("export_metasound"),
 		MakeShared<FExportMetaSoundCommand>());
+
+	// 26. Focused audio Blueprint export with edges
+	Dispatcher->RegisterCommand(TEXT("export_audio_blueprint"),
+		MakeShared<FExportAudioBlueprintCommand>());
 }
 
 IMPLEMENT_MODULE(FUEAudioMCPModule, UEAudioMCP)

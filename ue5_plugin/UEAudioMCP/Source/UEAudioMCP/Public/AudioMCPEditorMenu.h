@@ -28,6 +28,7 @@ private:
 	static void OnScanProject();
 	static void OnScanSelected();
 	static void OnExportMetaSounds();
+	static void OnExportAudioBlueprints();
 	static void OnOpenResultsFolder();
 	static void OnShowStatus();
 

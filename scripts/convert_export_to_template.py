@@ -30,105 +30,12 @@ import sys
 # Add project root to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from ue_audio_mcp.knowledge.metasound_nodes import METASOUND_NODES
-
-
-# ---------------------------------------------------------------------------
-# Class name -> display name mapping (reverse of C++ NodeRegistry)
-# ---------------------------------------------------------------------------
-
-# Known class_name patterns -> display names (from AudioMCPNodeRegistry.h)
-CLASS_NAME_TO_DISPLAY: dict[str, str] = {
-    "UE::Sine::Audio": "Sine",
-    "UE::Saw::Audio": "Saw",
-    "UE::Square::Audio": "Square",
-    "UE::Triangle::Audio": "Triangle",
-    "UE::LFO::Audio": "LFO",
-    "UE::Noise::Audio": "Noise",
-    "UE::Wave Player::Mono": "Wave Player (Mono)",
-    "UE::Wave Player::Stereo": "Wave Player (Stereo)",
-    "UE::AD Envelope::Audio": "AD Envelope (Audio)",
-    "UE::AD Envelope::Float": "AD Envelope (Float)",
-    "UE::Decay Envelope::Audio": "Decay Envelope",
-    "UE::Compressor::Audio": "Compressor",
-    "UE::Ladder Filter::Audio": "Ladder Filter",
-    "UE::State Variable Filter::Audio": "State Variable Filter",
-    "UE::One-Pole Low Pass Filter::Audio": "One-Pole Low Pass Filter",
-    "UE::One-Pole High Pass Filter::Audio": "One-Pole High Pass Filter",
-    "UE::Biquad Filter::Audio": "Biquad Filter",
-    "UE::Bitcrusher::Audio": "BitCrusher",
-    "UE::Chorus::Audio": "Chorus",
-    "UE::Delay::Audio": "Delay (Audio)",
-    "UE::Delay::Time": "Delay (Time)",
-    "UE::Flanger::Audio": "Flanger (Effects)",
-    "UE::Phaser::Audio": "Phaser",
-    "UE::Stereo Delay::Audio": "Stereo Delay",
-    "UE::Freeverb::Stereo": "Freeverb (Stereo)",
-    "UE::Plate Reverb::Stereo": "Plate Reverb (Stereo)",
-    "UE::Add::Audio": "Add (Audio)",
-    "UE::Add::Float": "Add (Float)",
-    "UE::Add::Int32": "Add (Int32)",
-    "UE::Subtract::Audio": "Subtract (Audio)",
-    "UE::Subtract::Float": "Subtract (Float)",
-    "UE::Multiply::Audio": "Multiply (Audio)",
-    "UE::Multiply::Float": "Multiply (Float)",
-    "UE::Divide::Float": "Divide (Float)",
-    "UE::Modulo::Float": "Modulo (Float)",
-    "UE::Clamp::Audio": "Clamp (Audio)",
-    "UE::Clamp::Float": "Clamp (Float)",
-    "UE::Map Range::Float": "Map Range (Float)",
-    "UE::Mix Stereo::Audio": "Stereo Mixer",
-    "UE::Mono Mixer::Audio": "Mono Mixer",
-    "UE::Stereo Panner::Audio": "Stereo Panner",
-    "UE::ITD Panner::Audio": "ITD Panner",
-    "UE::Gain::Audio": "Gain",
-    "UE::MidiNoteToFrequency::Float": "MIDI To Frequency",
-    "UE::FrequencyToMidi::Float": "Frequency To MIDI",
-    "UE::SemitoneToFrequencyMultiplier::Float": "Semitone To Freq Multiplier",
-    "UE::BPM To Seconds::Float": "BPM To Seconds",
-    "UE::Trigger Repeat::Audio": "Trigger Repeat",
-    "UE::Trigger Counter::Audio": "Trigger Counter",
-    "UE::Trigger Route::Audio": "Trigger Route",
-    "UE::Trigger Sequence::Audio": "Trigger Sequence",
-    "UE::Random Get::Audio": "Random Get (Audio)",
-    "UE::Random Get::Float": "Random Get (Float)",
-    "UE::InterpTo::Float": "InterpTo (Float)",
-    "UE::InterpTo::Audio": "InterpTo (Audio)",
-    "UE::Crossfade::Audio": "Crossfade",
-    "UE::Ring Modulator::Audio": "Ring Modulator",
-    "UE::WaveShaper::Audio": "WaveShaper",
-    "UE::Envelope Follower::Audio": "Envelope Follower (Utility)",
-    "UE::Linear To Log Frequency::Float": "Linear To Log Frequency",
-    "UE::Trigger On Threshold::Audio": "Trigger On Threshold",
-    "UE::Send To Audio Bus::Audio": "Send To Audio Bus",
-}
-
-
-def class_name_to_display(class_name: str) -> str | None:
-    """Convert a UE class_name like 'UE::Sine::Audio' to display name 'Sine'.
-
-    Returns None if no mapping found.
-    """
-    if class_name in CLASS_NAME_TO_DISPLAY:
-        return CLASS_NAME_TO_DISPLAY[class_name]
-
-    # Try fuzzy: extract the Name part from Namespace::Name::Variant
-    parts = class_name.split("::")
-    if len(parts) >= 2:
-        name_part = parts[1].strip()
-        variant = parts[2].strip() if len(parts) >= 3 else ""
-
-        # Check direct name match
-        if name_part in METASOUND_NODES:
-            return name_part
-
-        # Check "Name (Variant)" pattern
-        if variant:
-            with_variant = f"{name_part} ({variant})"
-            if with_variant in METASOUND_NODES:
-                return with_variant
-
-    return None
+from ue_audio_mcp.knowledge.metasound_nodes import (
+    METASOUND_NODES,
+    CLASS_NAME_TO_DISPLAY,
+    class_name_to_display,
+    infer_class_type,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -199,7 +106,8 @@ def convert_export_to_template(export_data: dict) -> dict:
 
     for i, node in enumerate(nodes_raw):
         node_id = node.get("node_id", "")
-        class_type = node.get("class_type", "External")
+        class_name = node.get("class_name", "")
+        class_type = node.get("class_type") or infer_class_type(class_name)
         node_name = node.get("name", f"node_{i}")
 
         if class_type == "Input":
@@ -208,6 +116,8 @@ def convert_export_to_template(export_data: dict) -> dict:
         elif class_type == "Output":
             output_nodes[node_id] = node_name
             guid_to_short[node_id] = "__graph__"
+        elif class_type == "Variable":
+            guid_to_short[node_id] = "__skip__"
         else:
             short = _make_short_id(node_name, i, used_ids)
             guid_to_short[node_id] = short
@@ -262,7 +172,7 @@ def convert_export_to_template(export_data: dict) -> dict:
 
         template["nodes"].append(entry)
 
-    # Convert edges to template connections
+    # Convert edges to template connections (skip __skip__ nodes)
     template["connections"] = []
     edges = export_data.get("edges", [])
     for edge in edges:
@@ -273,6 +183,9 @@ def convert_export_to_template(export_data: dict) -> dict:
 
         from_short = guid_to_short.get(from_guid, from_guid)
         to_short = guid_to_short.get(to_guid, to_guid)
+
+        if from_short == "__skip__" or to_short == "__skip__":
+            continue
 
         # For Input nodes connecting to external nodes, the "from_pin"
         # should be the graph input name (which is the node name for Input class_type)

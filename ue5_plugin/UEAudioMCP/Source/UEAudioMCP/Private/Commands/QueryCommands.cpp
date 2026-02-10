@@ -674,6 +674,9 @@ TSharedPtr<FJsonObject> FScanBlueprintCommand::Execute(
 		UEdGraph* Graph = Entry.Graph;
 		TArray<TSharedPtr<FJsonValue>> NodesArray;
 
+		// Map NodeGuid -> index for edge building
+		TMap<FGuid, int32> NodeGuidToIndex;
+
 		for (UEdGraphNode* Node : Graph->Nodes)
 		{
 			if (!Node) continue;
@@ -755,9 +758,13 @@ TSharedPtr<FJsonObject> FScanBlueprintCommand::Execute(
 
 			// Build node JSON
 			TSharedPtr<FJsonObject> NodeObj = MakeShared<FJsonObject>();
+			NodeObj->SetStringField(TEXT("node_id"), Node->NodeGuid.ToString());
 			NodeObj->SetStringField(TEXT("type"), NodeType);
 			NodeObj->SetStringField(TEXT("title"),
 				Node->GetNodeTitle(ENodeTitleType::ListView).ToString());
+
+			// Track for edge building
+			NodeGuidToIndex.Add(Node->NodeGuid, NodesArray.Num());
 
 			if (!FuncName.IsEmpty())
 			{
@@ -831,6 +838,29 @@ TSharedPtr<FJsonObject> FScanBlueprintCommand::Execute(
 			NodesArray.Add(MakeShared<FJsonValueObject>(NodeObj));
 		}
 
+		// Build edges by walking output pins' LinkedTo arrays (output→input only to avoid duplicates)
+		TArray<TSharedPtr<FJsonValue>> EdgesArray;
+		for (UEdGraphNode* Node : Graph->Nodes)
+		{
+			if (!Node) continue;
+			for (const UEdGraphPin* Pin : Node->Pins)
+			{
+				if (!Pin || Pin->Direction != EEdGraphPinDirection::EGPD_Output) continue;
+				for (const UEdGraphPin* LinkedPin : Pin->LinkedTo)
+				{
+					if (!LinkedPin || !LinkedPin->GetOwningNode()) continue;
+
+					TSharedPtr<FJsonObject> EdgeObj = MakeShared<FJsonObject>();
+					EdgeObj->SetStringField(TEXT("from_node"), Node->NodeGuid.ToString());
+					EdgeObj->SetStringField(TEXT("from_pin"), Pin->PinName.ToString());
+					EdgeObj->SetStringField(TEXT("to_node"), LinkedPin->GetOwningNode()->NodeGuid.ToString());
+					EdgeObj->SetStringField(TEXT("to_pin"), LinkedPin->PinName.ToString());
+					EdgeObj->SetStringField(TEXT("pin_type"), Pin->PinType.PinCategory.ToString());
+					EdgesArray.Add(MakeShared<FJsonValueObject>(EdgeObj));
+				}
+			}
+		}
+
 		// Build graph JSON
 		TSharedPtr<FJsonObject> GraphObj = MakeShared<FJsonObject>();
 		GraphObj->SetStringField(TEXT("name"), Graph->GetName());
@@ -838,6 +868,8 @@ TSharedPtr<FJsonObject> FScanBlueprintCommand::Execute(
 		GraphObj->SetNumberField(TEXT("total_nodes"), Graph->Nodes.Num());
 		GraphObj->SetNumberField(TEXT("shown_nodes"), NodesArray.Num());
 		GraphObj->SetArrayField(TEXT("nodes"), NodesArray);
+		GraphObj->SetNumberField(TEXT("total_edges"), EdgesArray.Num());
+		GraphObj->SetArrayField(TEXT("edges"), EdgesArray);
 
 		GraphsArray.Add(MakeShared<FJsonValueObject>(GraphObj));
 	}
@@ -997,5 +1029,185 @@ TSharedPtr<FJsonObject> FListAssetsCommand::Execute(
 	{
 		Response->SetStringField(TEXT("class_filter"), ClassFilter);
 	}
+	return Response;
+}
+
+// ---------------------------------------------------------------------------
+// export_audio_blueprint — focused audio subgraph export with edges
+// ---------------------------------------------------------------------------
+
+TSharedPtr<FJsonObject> FExportAudioBlueprintCommand::Execute(
+	const TSharedPtr<FJsonObject>& Params,
+	FAudioMCPBuilderManager& BuilderManager)
+{
+	// --- 1. Extract & validate params ---
+	FString AssetPath;
+	if (!Params->TryGetStringField(TEXT("asset_path"), AssetPath))
+	{
+		return AudioMCP::MakeErrorResponse(TEXT("Missing required param 'asset_path'"));
+	}
+	if (!AssetPath.StartsWith(TEXT("/Game/")) && !AssetPath.StartsWith(TEXT("/Engine/")))
+	{
+		return AudioMCP::MakeErrorResponse(
+			FString::Printf(TEXT("Asset path must start with /Game/ or /Engine/ (got '%s')"), *AssetPath));
+	}
+	if (AssetPath.Contains(TEXT("..")))
+	{
+		return AudioMCP::MakeErrorResponse(TEXT("Asset path must not contain '..'"));
+	}
+
+	// --- 2. Load Blueprint ---
+	UObject* Asset = StaticLoadObject(UObject::StaticClass(), nullptr, *AssetPath);
+	if (!Asset)
+	{
+		return AudioMCP::MakeErrorResponse(
+			FString::Printf(TEXT("Could not load asset '%s'"), *AssetPath));
+	}
+	UBlueprint* BP = Cast<UBlueprint>(Asset);
+	if (!BP)
+	{
+		return AudioMCP::MakeErrorResponse(
+			FString::Printf(TEXT("Asset '%s' is not a Blueprint"), *AssetPath));
+	}
+
+	// --- 3. Collect all graphs ---
+	TArray<UEdGraph*> AllGraphs;
+	for (UEdGraph* G : BP->UbergraphPages) { if (G) AllGraphs.Add(G); }
+	for (UEdGraph* G : BP->FunctionGraphs) { if (G) AllGraphs.Add(G); }
+	for (UEdGraph* G : BP->MacroGraphs) { if (G) AllGraphs.Add(G); }
+
+	// --- 4. Find audio-relevant nodes + 1-hop neighbours ---
+	TSet<UEdGraphNode*> AudioNodes;
+	TSet<UEdGraphNode*> IncludedNodes;
+
+	for (UEdGraph* Graph : AllGraphs)
+	{
+		for (UEdGraphNode* Node : Graph->Nodes)
+		{
+			if (!Node) continue;
+			FString Title = Node->GetNodeTitle(ENodeTitleType::ListView).ToString();
+			if (AudioMCP::IsAudioRelevant(Title))
+			{
+				AudioNodes.Add(Node);
+			}
+			// Also check function name for CallFunction nodes
+			if (UK2Node_CallFunction* CallNode = Cast<UK2Node_CallFunction>(Node))
+			{
+				FString FuncName = CallNode->FunctionReference.GetMemberName().ToString();
+				if (AudioMCP::IsAudioRelevant(FuncName))
+				{
+					AudioNodes.Add(Node);
+				}
+			}
+		}
+	}
+
+	// Add audio nodes + 1-hop neighbours
+	for (UEdGraphNode* AudioNode : AudioNodes)
+	{
+		IncludedNodes.Add(AudioNode);
+		for (const UEdGraphPin* Pin : AudioNode->Pins)
+		{
+			if (!Pin) continue;
+			for (const UEdGraphPin* Linked : Pin->LinkedTo)
+			{
+				if (Linked && Linked->GetOwningNode())
+				{
+					IncludedNodes.Add(Linked->GetOwningNode());
+				}
+			}
+		}
+	}
+
+	// --- 5. Build nodes JSON ---
+	TArray<TSharedPtr<FJsonValue>> NodesArray;
+	TSet<FGuid> IncludedGuids;
+
+	for (UEdGraphNode* Node : IncludedNodes)
+	{
+		IncludedGuids.Add(Node->NodeGuid);
+
+		TSharedPtr<FJsonObject> NodeObj = MakeShared<FJsonObject>();
+		NodeObj->SetStringField(TEXT("node_id"), Node->NodeGuid.ToString());
+		NodeObj->SetStringField(TEXT("title"),
+			Node->GetNodeTitle(ENodeTitleType::ListView).ToString());
+		NodeObj->SetStringField(TEXT("class"), Node->GetClass()->GetName());
+		NodeObj->SetBoolField(TEXT("audio_relevant"), AudioNodes.Contains(Node));
+		NodeObj->SetNumberField(TEXT("x"), Node->NodePosX);
+		NodeObj->SetNumberField(TEXT("y"), Node->NodePosY);
+
+		if (!Node->NodeComment.IsEmpty())
+		{
+			NodeObj->SetStringField(TEXT("comment"), Node->NodeComment);
+		}
+
+		// Function name for CallFunction nodes
+		if (UK2Node_CallFunction* CallNode = Cast<UK2Node_CallFunction>(Node))
+		{
+			NodeObj->SetStringField(TEXT("function_name"),
+				CallNode->FunctionReference.GetMemberName().ToString());
+		}
+
+		// Pins
+		TArray<TSharedPtr<FJsonValue>> PinsArray;
+		for (const UEdGraphPin* Pin : Node->Pins)
+		{
+			if (!Pin) continue;
+			TSharedPtr<FJsonObject> PinObj = MakeShared<FJsonObject>();
+			PinObj->SetStringField(TEXT("name"), Pin->PinName.ToString());
+			PinObj->SetStringField(TEXT("direction"),
+				Pin->Direction == EEdGraphPinDirection::EGPD_Input
+					? TEXT("input") : TEXT("output"));
+			PinObj->SetStringField(TEXT("type"), Pin->PinType.PinCategory.ToString());
+			if (Pin->PinType.PinSubCategoryObject.IsValid())
+			{
+				PinObj->SetStringField(TEXT("sub_type"),
+					Pin->PinType.PinSubCategoryObject->GetName());
+			}
+			if (!Pin->DefaultValue.IsEmpty())
+			{
+				PinObj->SetStringField(TEXT("default"), Pin->DefaultValue);
+			}
+			PinObj->SetBoolField(TEXT("connected"), Pin->LinkedTo.Num() > 0);
+			PinsArray.Add(MakeShared<FJsonValueObject>(PinObj));
+		}
+		NodeObj->SetArrayField(TEXT("pins"), PinsArray);
+
+		NodesArray.Add(MakeShared<FJsonValueObject>(NodeObj));
+	}
+
+	// --- 6. Build edges (within included set only) ---
+	TArray<TSharedPtr<FJsonValue>> EdgesArray;
+	for (UEdGraphNode* Node : IncludedNodes)
+	{
+		for (const UEdGraphPin* Pin : Node->Pins)
+		{
+			if (!Pin || Pin->Direction != EEdGraphPinDirection::EGPD_Output) continue;
+			for (const UEdGraphPin* Linked : Pin->LinkedTo)
+			{
+				if (!Linked || !Linked->GetOwningNode()) continue;
+				if (!IncludedGuids.Contains(Linked->GetOwningNode()->NodeGuid)) continue;
+
+				TSharedPtr<FJsonObject> EdgeObj = MakeShared<FJsonObject>();
+				EdgeObj->SetStringField(TEXT("from_node"), Node->NodeGuid.ToString());
+				EdgeObj->SetStringField(TEXT("from_pin"), Pin->PinName.ToString());
+				EdgeObj->SetStringField(TEXT("to_node"), Linked->GetOwningNode()->NodeGuid.ToString());
+				EdgeObj->SetStringField(TEXT("to_pin"), Linked->PinName.ToString());
+				EdgeObj->SetStringField(TEXT("pin_type"), Pin->PinType.PinCategory.ToString());
+				EdgesArray.Add(MakeShared<FJsonValueObject>(EdgeObj));
+			}
+		}
+	}
+
+	// --- 7. Response ---
+	TSharedPtr<FJsonObject> Response = AudioMCP::MakeOkResponse(
+		FString::Printf(TEXT("Exported audio subgraph from '%s': %d nodes, %d edges"),
+			*BP->GetName(), NodesArray.Num(), EdgesArray.Num()));
+	Response->SetStringField(TEXT("asset_path"), AssetPath);
+	Response->SetStringField(TEXT("blueprint_name"), BP->GetName());
+	Response->SetNumberField(TEXT("audio_nodes"), AudioNodes.Num());
+	Response->SetNumberField(TEXT("total_nodes"), NodesArray.Num());
+	Response->SetArrayField(TEXT("nodes"), NodesArray);
+	Response->SetArrayField(TEXT("edges"), EdgesArray);
 	return Response;
 }

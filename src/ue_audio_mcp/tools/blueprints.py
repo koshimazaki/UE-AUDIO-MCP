@@ -227,6 +227,35 @@ def bp_scan_blueprint(
 
 
 @mcp.tool()
+def bp_export_audio(asset_path: str) -> str:
+    """Export the audio-relevant subgraph from a Blueprint with full edge wiring.
+
+    Returns only audio nodes + their 1-hop neighbours, with pin data and
+    connections between them. Useful for understanding how Blueprint events
+    drive MetaSounds/Wwise parameters.
+
+    Requires the UE5 C++ plugin to be running.
+
+    Args:
+        asset_path: Blueprint asset path (e.g. "/Game/Blueprints/BP_Character")
+    """
+    if not asset_path.strip():
+        return _error("asset_path cannot be empty")
+
+    conn = get_ue5_connection()
+    try:
+        result = conn.send_command({
+            "action": "export_audio_blueprint",
+            "asset_path": asset_path,
+        })
+        if result.get("status") == "error":
+            return _error(result.get("message", "export_audio_blueprint failed"))
+        return _ok(result)
+    except Exception as e:
+        return _error(str(e))
+
+
+@mcp.tool()
 def bp_call_function(function_name: str, args_json: str = "{}") -> str:
     """Execute a Blueprint function via the UE5 plugin.
 

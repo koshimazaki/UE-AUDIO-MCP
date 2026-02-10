@@ -835,13 +835,14 @@ _register(_node(
 
 _register(_node(
     "Trigger Filter", "Triggers",
-    "Passes or blocks triggers based on a boolean gate signal.",
+    "Passes or blocks triggers based on probability. Each incoming trigger has a chance "
+    "of passing through based on the Probability input (0.0 = never, 1.0 = always).",
     [_in("Trigger", "Trigger"),
      _in("Reset", "Trigger", required=False),
      _in("Seed", "Int32", required=False),
-     _in("Probability", "Float", required=False)],
-    [],
-    ["trigger", "filter", "gate", "pass", "block"],
+     _in("Probability", "Float", required=False, default=1.0)],
+    [_out("Out", "Trigger")],
+    ["trigger", "filter", "gate", "pass", "block", "probability"],
     complexity=1,
 ))
 
@@ -1183,6 +1184,18 @@ _register(_node(
 ))
 
 _register(_node(
+    "Audio Mixer (Mono, 2)", "Mix",
+    "2-input mono mixer — real UE5 node name. Mixes two mono signals with per-input gain.",
+    [_in("In 0", "Audio"),
+     _in("Gain 0", "Float", default=1.0),
+     _in("In 1", "Audio", required=False),
+     _in("Gain 1", "Float", required=False, default=1.0)],
+    [_out("Out", "Audio")],
+    ["mix", "mixer", "mono", "sum", "combine", "audio mixer"],
+    complexity=1,
+))
+
+_register(_node(
     "Audio Mixer (Stereo, 2)", "Mix",
     "2-input stereo mixer — real UE5 node name. Mixes two stereo pairs with per-input gain. "
     "Pin names use 'In N L/R' format. From Chris Payne Sound Pads project binary extraction.",
@@ -1317,6 +1330,16 @@ _register(_node(
     [_out("Scale Array Out", "Array"),
      _out("Value", "Float")],
     ["music", "scale", "notes", "array", "melody", "chord"],
+    complexity=2,
+))
+
+_register(_node(
+    "Musical Scale To Note Array", "Music",
+    "Generates a note array from a musical scale enum. Real UE5 node name from exports.",
+    [_in("Scale Degrees", "Enum", required=False),
+     _in("Chord Tones Only", "Bool", required=False, default=False)],
+    [_out("Scale Array Out", "Float[]")],
+    ["music", "scale", "notes", "array", "chord", "melody"],
     complexity=2,
 ))
 
@@ -1516,6 +1539,24 @@ _register(_node(
     [_in("Value", "Float")],
     [_out("Result", "Time")],
     ["convert", "type", "cast", "utility"],
+    complexity=1,
+))
+
+_register(_node(
+    "Float To Int", "General",
+    "Converts a Float value to Int32 (truncation).",
+    [_in("Value", "Float")],
+    [_out("Result", "Int32")],
+    ["convert", "float", "int", "cast", "utility"],
+    complexity=1,
+))
+
+_register(_node(
+    "Int To Float", "General",
+    "Converts an Int32 value to Float.",
+    [_in("Value", "Int32")],
+    [_out("Result", "Float")],
+    ["convert", "int", "float", "cast", "utility"],
     complexity=1,
 ))
 
@@ -2060,3 +2101,168 @@ def get_all_categories() -> dict[str, int]:
         cat = node["category"]
         counts[cat] = counts.get(cat, 0) + 1
     return dict(sorted(counts.items()))
+
+
+# ===================================================================
+# CLASS_NAME_TO_DISPLAY — reverse mapping from UE class names to
+# our display names.  Single source of truth used by:
+#   - scripts/convert_export_to_template.py
+#   - _inline_convert() in tools/ms_builder.py
+# ===================================================================
+
+CLASS_NAME_TO_DISPLAY: dict[str, str] = {
+    # --- Generators ---
+    "UE::Sine::Audio": "Sine",
+    "UE::Saw::Audio": "Saw",
+    "UE::Square::Audio": "Square",
+    "UE::Triangle::Audio": "Triangle",
+    "UE::LFO::Audio": "LFO",
+    "UE::Noise::Audio": "Noise",
+    # --- Wave Players ---
+    "UE::Wave Player::Mono": "Wave Player (Mono)",
+    "UE::Wave Player::Stereo": "Wave Player (Stereo)",
+    # --- Envelopes ---
+    "UE::AD Envelope::Audio": "AD Envelope (Audio)",
+    "UE::AD Envelope::Float": "AD Envelope (Float)",
+    "AD Envelope::AD Envelope::Audio": "AD Envelope",
+    "UE::Decay Envelope::Audio": "Decay Envelope",
+    # --- Dynamics ---
+    "UE::Compressor::Audio": "Compressor",
+    # --- Filters ---
+    "UE::Ladder Filter::Audio": "Ladder Filter",
+    "UE::State Variable Filter::Audio": "State Variable Filter",
+    "UE::One-Pole Low Pass Filter::Audio": "One-Pole Low Pass Filter",
+    "UE::One-Pole High Pass Filter::Audio": "One-Pole High Pass Filter",
+    "UE::Biquad Filter::Audio": "Biquad Filter",
+    "UE::Bitcrusher::Audio": "BitCrusher",
+    # --- Effects ---
+    "UE::Chorus::Audio": "Chorus",
+    "UE::Delay::Audio": "Delay (Audio)",
+    "UE::Delay::Time": "Delay (Time)",
+    "UE::Flanger::Audio": "Flanger (Effects)",
+    "UE::Phaser::Audio": "Phaser",
+    "UE::Stereo Delay::Audio": "Stereo Delay",
+    "UE::Freeverb::Stereo": "Freeverb (Stereo)",
+    "UE::Plate Reverb::Stereo": "Plate Reverb (Stereo)",
+    # --- Math ---
+    "UE::Add::Audio": "Add (Audio)",
+    "UE::Add::Float": "Add (Float)",
+    "UE::Add::Int32": "Add (Int32)",
+    "UE::Subtract::Audio": "Subtract (Audio)",
+    "UE::Subtract::Float": "Subtract (Float)",
+    "UE::Multiply::Audio": "Multiply (Audio)",
+    "UE::Multiply::Float": "Multiply (Float)",
+    "UE::Divide::Float": "Divide (Float)",
+    "UE::Modulo::Float": "Modulo (Float)",
+    "UE::Clamp::Audio": "Clamp (Audio)",
+    "UE::Clamp::Float": "Clamp (Float)",
+    "UE::Map Range::Float": "Map Range (Float)",
+    # --- Mix ---
+    "UE::Mix Stereo::Audio": "Stereo Mixer",
+    "UE::Mono Mixer::Audio": "Mono Mixer",
+    "AudioMixer::Audio Mixer (Mono, 2)::None": "Audio Mixer (Mono, 2)",
+    "AudioMixer::Audio Mixer (Stereo, 2)::None": "Audio Mixer (Stereo, 2)",
+    # --- Spatialization ---
+    "UE::Stereo Panner::Audio": "Stereo Panner",
+    "UE::ITD Panner::Audio": "ITD Panner",
+    # --- Gain ---
+    "UE::Gain::Audio": "Gain",
+    # --- Music ---
+    "UE::MidiNoteToFrequency::Float": "MIDI To Frequency",
+    "UE::FrequencyToMidi::Float": "Frequency To MIDI",
+    "UE::SemitoneToFrequencyMultiplier::Float": "Semitone To Freq Multiplier",
+    "UE::BPM To Seconds::Float": "BPM To Seconds",
+    "UE::BPMToSeconds::None": "BPM To Seconds",
+    "UE::MIDI To Frequency::Float": "MIDI To Frequency",
+    "UE::MIDI Note Quantizer::Audio": "MIDI Note Quantizer",
+    "UE::Musical Scale To Note Array::Audio": "Musical Scale To Note Array",
+    # --- Triggers ---
+    "UE::Trigger Repeat::Audio": "Trigger Repeat",
+    "UE::TriggerRepeat::None": "Trigger Repeat",
+    "UE::Trigger Counter::Audio": "Trigger Counter",
+    "UE::Trigger Counter::None": "Trigger Counter",
+    "UE::Trigger Route::Audio": "Trigger Route",
+    "UE::Trigger Sequence::Audio": "Trigger Sequence",
+    "UE::Trigger Filter::None": "Trigger Filter",
+    # --- Random ---
+    "UE::Random Get::Audio": "Random Get (Audio)",
+    "UE::Random Get::Float": "Random Get (Float)",
+    "UE::RandomInt32::None": "Random Int",
+    "UE::RandomFloat::None": "Random Float",
+    # --- Interpolation ---
+    "UE::InterpTo::Float": "InterpTo (Float)",
+    "UE::InterpTo::Audio": "InterpTo (Audio)",
+    # --- Effects (specific) ---
+    "UE::Crossfade::Audio": "Crossfade",
+    "UE::Ring Modulator::Audio": "Ring Modulator",
+    "UE::WaveShaper::Audio": "WaveShaper",
+    "UE::Envelope Follower::Audio": "Envelope Follower (Utility)",
+    "UE::Linear To Log Frequency::Float": "Linear To Log Frequency",
+    "UE::Trigger On Threshold::Audio": "Trigger On Threshold",
+    "UE::Send To Audio Bus::Audio": "Send To Audio Bus",
+    # --- Converters ---
+    "Convert::Float::Int32": "Float To Int",
+    "Convert::Int32::Float": "Int To Float",
+    "Convert::Float::Time": "Float To Time",
+    "Convert::Time::Float": "Time To Float",
+}
+
+
+def class_name_to_display(class_name: str) -> str | None:
+    """Convert a UE class_name like 'UE::Sine::Audio' to display name 'Sine'.
+
+    Lookup order:
+      1. Exact match in CLASS_NAME_TO_DISPLAY
+      2. Fuzzy: extract Name part, check METASOUND_NODES
+      3. Fuzzy with variant: "Name (Variant)" pattern
+      4. Case-insensitive scan of METASOUND_NODES keys
+
+    Returns None if no mapping found.
+    """
+    # 1. Exact dict lookup
+    if class_name in CLASS_NAME_TO_DISPLAY:
+        return CLASS_NAME_TO_DISPLAY[class_name]
+
+    # 2-3. Fuzzy from class_name parts
+    parts = class_name.split("::")
+    if len(parts) >= 2:
+        name_part = parts[1].strip()
+        variant = parts[2].strip() if len(parts) >= 3 else ""
+
+        # Direct name match
+        if name_part in METASOUND_NODES:
+            return name_part
+
+        # "Name (Variant)" pattern
+        if variant and variant != "None":
+            with_variant = f"{name_part} ({variant})"
+            if with_variant in METASOUND_NODES:
+                return with_variant
+
+        # 4. Case-insensitive scan (slower, last resort)
+        name_lower = name_part.lower()
+        for node_name in METASOUND_NODES:
+            if node_name.lower() == name_lower:
+                return node_name
+
+    return None
+
+
+def infer_class_type(class_name: str) -> str:
+    """Infer MetaSounds class_type from class_name prefix.
+
+    Used when export data lacks an explicit class_type field
+    (e.g. older get_node_locations format from scan_project.py).
+    """
+    if not class_name:
+        return "External"
+    prefix = class_name.split("::")[0] if "::" in class_name else class_name
+    _MAP = {
+        "Input": "Input",
+        "Output": "Output",
+        "InitVariable": "Variable",
+        "VariableAccessor": "VariableAccessor",
+        "VariableMutator": "VariableMutator",
+        "VariableDeferredAccessor": "VariableDeferred",
+    }
+    return _MAP.get(prefix, "External")
