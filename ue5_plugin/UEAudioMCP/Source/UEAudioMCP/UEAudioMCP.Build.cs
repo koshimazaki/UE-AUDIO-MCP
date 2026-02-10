@@ -28,8 +28,7 @@ public class UEAudioMCP : ModuleRules
 			"UnrealEd",
 			"AudioMixer",
 			"Slate",             // FSlateIcon, FUIAction — core Slate UI types
-			"SlateCore",         // FSlateNotificationManager — notification toasts
-			"EditorStyle",       // FAppStyle — editor icon style sets
+			"SlateCore",         // FSlateNotificationManager, FAppStyle — notification toasts & styles
 			"MetasoundEditor",   // UMetaSoundEditorSubsystem: BuildToAsset, SetNodeLocation
 			"BlueprintGraph",    // UK2Node_CallFunction, UK2Node_Event — Blueprint graph inspection
 			"ToolMenus",         // UToolMenus — editor menu bar integration

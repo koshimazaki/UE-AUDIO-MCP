@@ -438,17 +438,20 @@ TSharedPtr<FJsonObject> FExportMetaSoundCommand::Execute(
 
 	// --- Graph-level I/O ---
 	TArray<TSharedPtr<FJsonValue>> GraphInputsArray;
-	for (const FMetasoundFrontendClassInput& ClassInput : Document.RootGraph.Interface.Inputs)
+	for (const FMetasoundFrontendClassInput& ClassInput : Document.RootGraph.GetDefaultInterface().Inputs)
 	{
 		TSharedPtr<FJsonObject> InputObj = MakeShared<FJsonObject>();
 		InputObj->SetStringField(TEXT("name"), ClassInput.Name.ToString());
 		InputObj->SetStringField(TEXT("type"), ClassInput.TypeName.ToString());
-		QueryHelpers::SetLiteralOnJson(InputObj, TEXT("default"), ClassInput.Default);
+		if (const FMetasoundFrontendLiteral* DefaultLit = ClassInput.FindConstDefault(FGuid()))
+		{
+			QueryHelpers::SetLiteralOnJson(InputObj, TEXT("default"), *DefaultLit);
+		}
 		GraphInputsArray.Add(MakeShared<FJsonValueObject>(InputObj));
 	}
 
 	TArray<TSharedPtr<FJsonValue>> GraphOutputsArray;
-	for (const FMetasoundFrontendClassOutput& ClassOutput : Document.RootGraph.Interface.Outputs)
+	for (const FMetasoundFrontendClassOutput& ClassOutput : Document.RootGraph.GetDefaultInterface().Outputs)
 	{
 		TSharedPtr<FJsonObject> OutputObj = MakeShared<FJsonObject>();
 		OutputObj->SetStringField(TEXT("name"), ClassOutput.Name.ToString());

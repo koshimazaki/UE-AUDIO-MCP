@@ -26,7 +26,12 @@ FAudioMCPBuilderManager::FAudioMCPBuilderManager()
 
 FAudioMCPBuilderManager::~FAudioMCPBuilderManager()
 {
-	ResetState();
+	// During engine shutdown, UObject system may already be torn down.
+	// TStrongObjectPtr handles its own reference cleanup safely.
+	if (!IsEngineExitRequested())
+	{
+		ResetState();
+	}
 }
 
 void FAudioMCPBuilderManager::ResetState()
@@ -43,6 +48,14 @@ void FAudioMCPBuilderManager::ResetState()
 
 void FAudioMCPBuilderManager::StopAudition()
 {
+	if (IsEngineExitRequested())
+	{
+		// During shutdown, don't call Stop() — audio system is tearing down.
+		// Just release our strong reference so GC can collect it.
+		AuditionAudioComponent.Reset();
+		return;
+	}
+
 	if (AuditionAudioComponent.IsValid())
 	{
 		UAudioComponent* Comp = AuditionAudioComponent.Get();

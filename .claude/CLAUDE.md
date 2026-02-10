@@ -55,6 +55,15 @@ Handles: WAAPI calls, Wwise object hierarchy, RTPC curves, switch containers, bu
 - WaveAsset references require actual .wav files in project Content folder
 - Use `SetNodeLocation()` for editor visibility
 
+### UE 5.7 Breaking Changes (C++ Plugin)
+These break every major UE update — check first when compile fails:
+- **`Document.RootGraph.Interface`** → `Document.RootGraph.GetDefaultInterface()` (inputs/outputs access)
+- **`ClassInput.Default`** (removed) → `ClassInput.FindConstDefault(FGuid())` returns `FMetasoundFrontendLiteral*` (null if no default). `FGuid()` = default page.
+- **`FNodeFacade`** → `TNodeFacade<Op>` (templated in 5.7)
+- **`GetOrConstructDataReadReference`** → `GetOrCreateDefaultDataReadReference` (deprecated 5.6)
+- **`bEnableUndefinedIdentifierWarnings`** → `UndefinedIdentifierWarningLevel = WarningLevel.Off` (deprecated 5.5)
+- **`__attribute__((optimize))`** — Clang doesn't support it, wrap with `#if !defined(__clang__)`
+
 ### Code Standards
 - Python: FastMCP patterns, async where needed for WebSocket
 - C++: UE5 coding standards for plugin code (UCLASS, UPROPERTY, etc.)
