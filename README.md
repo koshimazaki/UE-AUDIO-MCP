@@ -97,17 +97,17 @@ C64 chiptune plays      ->    ReSID SID Chip node    ->   Music bus, stereo mix
 | Wwise Events | 4 | Events, RTPC curves, switch assign, attenuation |
 | Wwise Preview | 2 | Transport control, SoundBank generation |
 | Wwise Templates | 6 | One-call gunshot/footsteps/ambient/UI/weather + AAA setup |
-| MetaSounds Knowledge | 4 | Search 144 nodes, categories, semantic TF-IDF |
+| MetaSounds Knowledge | 4 | Search 144 nodes, categories, TF-IDF semantic search |
 | MetaSounds Graphs | 3 | Validate, to Builder API commands, from template |
 | MetaSounds Builder | 10 | Create source, add node, connect, set defaults, audition, presets |
 | MetaSounds Advanced | 5 | Variables, preset swap/morph, macro trigger |
-| Blueprint | 6 | Search 22K+ nodes, scan graphs, list assets, call function |
+| Blueprint | 6 | Search 22K+ nodes (keyword), scan graphs, list assets, call function |
 | UE5 Connection | 3 | Connect, status, info |
 | Orchestration | 2 | `build_audio_system` + `build_aaa_project` |
 
 ### Knowledge Base -- 22K+ Entries
 
-Structured data + semantic search (TF-IDF + cosine similarity) across the full UE5 audio API surface:
+Structured data with keyword search (22K+ Blueprint nodes) and TF-IDF semantic search (144 MetaSounds nodes, WAAPI, patterns):
 
 | Data | Entries | Source |
 |------|---------|--------|
@@ -121,9 +121,10 @@ Structured data + semantic search (TF-IDF + cosine similarity) across the full U
 | Wwise types & properties | 19 | Types, categories, default paths |
 | Audio patterns | 6 | Game audio design patterns |
 | UE4->UE5 conversion | 14 | Sound Cue -> MetaSounds migration map |
+| Cross-system pin mappings | 130 | BP ↔ MetaSounds ↔ Wwise wiring table |
 | **Project Blueprints** | **growing** | Scanned from Lyra, Stack-O-Bot, and user projects |
 
-The 22K+ Blueprint leaf nodes include full pin specs (inputs, outputs, types, descriptions) scraped directly from Epic's documentation SPA. The batch scanner (`scripts/scan_project.py`) imports scanned project Blueprints into the knowledge DB and rebuilds the TF-IDF index for semantic search across all sources.
+The 22K+ Blueprint leaf nodes include full pin specs (inputs, outputs, types, descriptions) scraped directly from Epic's documentation SPA. MetaSounds nodes, WAAPI functions, and audio patterns use TF-IDF + cosine similarity for semantic search. Blueprint nodes use SQL keyword matching. The batch scanner (`scripts/scan_project.py`) imports scanned project Blueprints into the knowledge DB.
 
 ### 61 Templates
 
@@ -282,7 +283,7 @@ Total                 43,200 lines   207 files
 
 ```
 Phase 1: Wwise MCP Server        Done    20 tools, WAAPI bridge
-Phase 2: Knowledge Base           Done    22K+ entries, semantic search, 144 MS nodes
+Phase 2: Knowledge Base           Done    22K+ entries, TF-IDF search (144 MS nodes), keyword search (22K BP)
 Phase 3: UE5 Plugin + Tools       Done    C++ plugin (25 cmds), 22 tools, TCP protocol
 Phase 4: Orchestration            Done    11 patterns, AAA project, 3-mode auto-detection
 Phase 5: ReSID SIDKIT Edition     Done    5 custom C++ MetaSounds nodes, 3 templates

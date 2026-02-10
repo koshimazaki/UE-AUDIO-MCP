@@ -31,6 +31,7 @@ def seed_database(db: KnowledgeDB) -> dict[str, int]:
     counts["audio_console_commands"] = _seed_console_commands(db)
     counts["spatialization_methods"] = _seed_spatialization(db)
     counts["attenuation_subsystems"] = _seed_attenuation(db)
+    counts["pin_mappings"] = _seed_pin_mappings(db)
 
     total = sum(counts.values())
     log.info("Seeded knowledge DB: %d total entries %s", total, counts)
@@ -309,3 +310,10 @@ def _seed_attenuation(db: KnowledgeDB) -> int:
                         if k not in ("description", "params")},
         })
     return len(ATTENUATION_SUBSYSTEMS)
+
+
+def _seed_pin_mappings(db: KnowledgeDB) -> int:
+    """Seed cross-system pin mappings (BP <-> MetaSounds <-> Wwise)."""
+    from ue_audio_mcp.knowledge.bp_ms_pin_mappings import PIN_MAPPINGS
+
+    return db.insert_pin_mappings_batch(PIN_MAPPINGS)

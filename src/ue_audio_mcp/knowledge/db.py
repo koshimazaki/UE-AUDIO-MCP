@@ -169,6 +169,19 @@ CREATE TABLE IF NOT EXISTS project_blueprints (
     refs        TEXT NOT NULL DEFAULT '[]',
     PRIMARY KEY (name, project)
 );
+
+CREATE TABLE IF NOT EXISTS pin_mappings (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    bp_function TEXT NOT NULL,
+    bp_pin      TEXT NOT NULL,
+    ms_node     TEXT NOT NULL DEFAULT '',
+    ms_pin      TEXT NOT NULL DEFAULT '',
+    data_type   TEXT NOT NULL,
+    direction   TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT ''
+);
+CREATE INDEX IF NOT EXISTS idx_pm_direction ON pin_mappings(direction);
+CREATE INDEX IF NOT EXISTS idx_pm_data_type ON pin_mappings(data_type);
 """
 
 
@@ -783,6 +796,80 @@ class KnowledgeDB:
             )
         return self._fetch("SELECT * FROM project_blueprints ORDER BY project, name")
 
+    # -- Pin mappings (cross-system wiring) --------------------------------
+
+    def insert_pin_mapping(self, m: dict) -> None:
+        self._conn.execute(
+            "INSERT INTO pin_mappings "
+            "(bp_function, bp_pin, ms_node, ms_pin, data_type, direction, description) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (
+                m["bp_function"],
+                m["bp_pin"],
+                m.get("ms_node", ""),
+                m.get("ms_pin", ""),
+                m["data_type"],
+                m["direction"],
+                m.get("description", ""),
+            ),
+        )
+        self._conn.commit()
+
+    def insert_pin_mappings_batch(self, mappings: list[dict]) -> int:
+        """Bulk-insert pin mappings. Returns count inserted."""
+        self._conn.executemany(
+            "INSERT INTO pin_mappings "
+            "(bp_function, bp_pin, ms_node, ms_pin, data_type, direction, description) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            [
+                (
+                    m["bp_function"], m["bp_pin"],
+                    m.get("ms_node", ""), m.get("ms_pin", ""),
+                    m["data_type"], m["direction"],
+                    m.get("description", ""),
+                )
+                for m in mappings
+            ],
+        )
+        self._conn.commit()
+        return len(mappings)
+
+    def query_pin_mappings(
+        self,
+        direction: str | None = None,
+        data_type: str | None = None,
+        query: str | None = None,
+    ) -> list[dict]:
+        """Search pin mappings by direction, data type, or free text."""
+        if query:
+            param = _like_param(query)
+            return self._fetch(
+                "SELECT * FROM pin_mappings "
+                "WHERE bp_function LIKE ? ESCAPE '\\' "
+                "OR ms_pin LIKE ? ESCAPE '\\' "
+                "OR description LIKE ? ESCAPE '\\' "
+                "ORDER BY direction, bp_function",
+                (param, param, param),
+            )
+        if direction and data_type:
+            return self._fetch(
+                "SELECT * FROM pin_mappings "
+                "WHERE direction = ? AND data_type = ? "
+                "ORDER BY bp_function",
+                (direction, data_type),
+            )
+        if direction:
+            return self._fetch(
+                "SELECT * FROM pin_mappings WHERE direction = ? ORDER BY bp_function",
+                (direction,),
+            )
+        if data_type:
+            return self._fetch(
+                "SELECT * FROM pin_mappings WHERE data_type = ? ORDER BY bp_function",
+                (data_type,),
+            )
+        return self._fetch("SELECT * FROM pin_mappings ORDER BY direction, bp_function")
+
     # -- Utility -----------------------------------------------------------
 
     def table_counts(self) -> dict[str, int]:
@@ -835,6 +922,9 @@ class KnowledgeDB:
             ).fetchone()["cnt"],
             "project_blueprints": self._conn.execute(
                 "SELECT COUNT(*) as cnt FROM project_blueprints"
+            ).fetchone()["cnt"],
+            "pin_mappings": self._conn.execute(
+                "SELECT COUNT(*) as cnt FROM pin_mappings"
             ).fetchone()["cnt"],
         }
 
