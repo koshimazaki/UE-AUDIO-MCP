@@ -43,6 +43,7 @@ project_scan.json
 .claude/plans/
 
 # Generated data
+exports/
 scripts/bp_*.json
 scripts/bp_*.backup
 scripts/ms_*.json
