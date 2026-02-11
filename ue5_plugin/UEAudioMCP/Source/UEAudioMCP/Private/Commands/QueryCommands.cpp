@@ -238,7 +238,7 @@ TSharedPtr<FJsonObject> FSetLiveUpdatesCommand::Execute(
 }
 
 // ---------------------------------------------------------------------------
-// list_node_classes
+// list_node_classes / list_metasound_nodes
 // ---------------------------------------------------------------------------
 
 TSharedPtr<FJsonObject> FListNodeClassesCommand::Execute(
@@ -254,8 +254,15 @@ TSharedPtr<FJsonObject> FListNodeClassesCommand::Execute(
 	double LimitVal;
 	if (Params->TryGetNumberField(TEXT("limit"), LimitVal))
 	{
-		Limit = FMath::Clamp(static_cast<int32>(LimitVal), 1, 5000);
+		Limit = FMath::Clamp(static_cast<int32>(LimitVal), 1, 10000);
 	}
+
+	// Optional flags
+	bool bIncludePins = true;
+	Params->TryGetBoolField(TEXT("include_pins"), bIncludePins);
+
+	bool bIncludeMetadata = false;
+	Params->TryGetBoolField(TEXT("include_metadata"), bIncludeMetadata);
 
 	Metasound::Frontend::ISearchEngine& SearchEngine = Metasound::Frontend::ISearchEngine::Get();
 	SearchEngine.Prime();
@@ -286,6 +293,79 @@ TSharedPtr<FJsonObject> FListNodeClassesCommand::Execute(
 			NodeObj->SetStringField(TEXT("namespace"), CN.Namespace.ToString());
 			NodeObj->SetStringField(TEXT("name"), CN.Name.ToString());
 			NodeObj->SetStringField(TEXT("variant"), CN.Variant.ToString());
+
+			// --- Pin serialization ---
+			if (bIncludePins)
+			{
+				TArray<TSharedPtr<FJsonValue>> InputPins;
+				for (const FMetasoundFrontendClassInput& Input : FrontendClass.Interface.Inputs)
+				{
+					TSharedPtr<FJsonObject> PinObj = MakeShared<FJsonObject>();
+					PinObj->SetStringField(TEXT("name"), Input.Name.ToString());
+					PinObj->SetStringField(TEXT("type"), Input.TypeName.ToString());
+
+					// Extract default if available
+					if (const FMetasoundFrontendLiteral* DefaultLit = Input.FindConstDefault(FGuid()))
+					{
+						QueryHelpers::SetLiteralOnJson(PinObj, TEXT("default"), *DefaultLit);
+					}
+
+					InputPins.Add(MakeShared<FJsonValueObject>(PinObj));
+				}
+				NodeObj->SetArrayField(TEXT("inputs"), InputPins);
+
+				TArray<TSharedPtr<FJsonValue>> OutputPins;
+				for (const FMetasoundFrontendClassOutput& Output : FrontendClass.Interface.Outputs)
+				{
+					TSharedPtr<FJsonObject> PinObj = MakeShared<FJsonObject>();
+					PinObj->SetStringField(TEXT("name"), Output.Name.ToString());
+					PinObj->SetStringField(TEXT("type"), Output.TypeName.ToString());
+					OutputPins.Add(MakeShared<FJsonValueObject>(PinObj));
+				}
+				NodeObj->SetArrayField(TEXT("outputs"), OutputPins);
+			}
+
+			// --- Optional metadata ---
+			if (bIncludeMetadata)
+			{
+				FString Description = Metadata.GetDescription().ToString();
+				if (!Description.IsEmpty())
+				{
+					NodeObj->SetStringField(TEXT("description"), Description);
+				}
+
+				FString Author = Metadata.GetAuthor().ToString();
+				if (!Author.IsEmpty())
+				{
+					NodeObj->SetStringField(TEXT("author"), Author);
+				}
+
+				// Category path from class info
+				FString CategoryHierarchy = Metadata.GetCategoryHierarchy().ToString();
+				if (!CategoryHierarchy.IsEmpty())
+				{
+					NodeObj->SetStringField(TEXT("category"), CategoryHierarchy);
+				}
+
+				// Keywords
+				TArray<FString> Keywords;
+				for (const FText& Keyword : Metadata.GetKeywords())
+				{
+					Keywords.Add(Keyword.ToString());
+				}
+				if (Keywords.Num() > 0)
+				{
+					TArray<TSharedPtr<FJsonValue>> KwArray;
+					for (const FString& Kw : Keywords)
+					{
+						KwArray.Add(MakeShared<FJsonValueString>(Kw));
+					}
+					NodeObj->SetArrayField(TEXT("keywords"), KwArray);
+				}
+
+				NodeObj->SetBoolField(TEXT("deprecated"), Metadata.GetIsDeprecated());
+			}
+
 			NodeArray.Add(MakeShared<FJsonValueObject>(NodeObj));
 		}
 	}

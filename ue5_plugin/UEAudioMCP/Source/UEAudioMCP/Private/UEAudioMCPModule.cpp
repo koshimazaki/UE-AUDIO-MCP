@@ -137,6 +137,8 @@ void FUEAudioMCPModule::RegisterCommands()
 		MakeShared<FSetLiveUpdatesCommand>());
 	Dispatcher->RegisterCommand(TEXT("list_node_classes"),
 		MakeShared<FListNodeClassesCommand>());
+	Dispatcher->RegisterCommand(TEXT("list_metasound_nodes"),
+		MakeShared<FListNodeClassesCommand>());
 	Dispatcher->RegisterCommand(TEXT("get_node_locations"),
 		MakeShared<FGetNodeLocationsCommand>());
 

@@ -334,6 +334,248 @@ def ms_export_graph(asset_path: str, convert_to_template: bool = False) -> str:
     return _ok(response)
 
 
+@mcp.tool()
+def ms_sync_from_engine(
+    update_db: bool = False,
+    filter: str = "",
+    limit: int = 5000,
+) -> str:
+    """Sync MetaSounds node catalogue from the running UE5 engine.
+
+    Calls the list_metasound_nodes command to get ALL registered node classes
+    with their complete pin specs directly from the engine registry. Updates
+    the in-memory METASOUND_NODES dict and optionally the SQLite DB.
+
+    Args:
+        update_db: If True, also upsert nodes into the SQLite knowledge DB
+        filter: Optional substring filter for node class names
+        limit: Max nodes to fetch (default 5000)
+
+    Returns:
+        JSON summary: total nodes, new nodes added, existing nodes updated, categories.
+    """
+    conn = get_ue5_connection()
+    try:
+        result = conn.send_command({
+            "action": "list_metasound_nodes",
+            "include_pins": True,
+            "include_metadata": True,
+            "filter": filter,
+            "limit": limit,
+        })
+    except Exception as e:
+        return _error(str(e))
+
+    if result.get("status") != "ok":
+        return _error(result.get("message", "list_metasound_nodes failed"))
+
+    engine_nodes = result.get("nodes", [])
+    if not engine_nodes:
+        return _ok({
+            "message": "No nodes returned from engine",
+            "total": 0, "new": 0, "updated": 0,
+        })
+
+    new_count = 0
+    updated_count = 0
+    categories: dict[str, int] = {}
+
+    for enode in engine_nodes:
+        node_def = _engine_node_to_nodedef(enode)
+        if node_def is None:
+            continue
+
+        cat = node_def["category"]
+        categories[cat] = categories.get(cat, 0) + 1
+        name = node_def["name"]
+
+        if name in METASOUND_NODES:
+            # Update existing: replace pins (engine is ground truth)
+            existing = METASOUND_NODES[name]
+            existing["inputs"] = node_def["inputs"]
+            existing["outputs"] = node_def["outputs"]
+            if node_def.get("description"):
+                existing["description"] = node_def["description"]
+            updated_count += 1
+        else:
+            METASOUND_NODES[name] = node_def
+            new_count += 1
+
+        # Update CLASS_NAME_TO_DISPLAY reverse mapping
+        class_name = enode.get("class_name", "")
+        if class_name and name and class_name not in CLASS_NAME_TO_DISPLAY:
+            CLASS_NAME_TO_DISPLAY[class_name] = name
+
+    # Optionally update SQLite
+    db_updated = 0
+    if update_db:
+        try:
+            from ue_audio_mcp.knowledge.db import get_db
+            db = get_db()
+            for enode in engine_nodes:
+                node_def = _engine_node_to_nodedef(enode)
+                if node_def:
+                    db.insert_node(node_def)
+                    db_updated += 1
+        except Exception as e:
+            log.warning("DB update failed: %s", e)
+
+    # Reset search index so it rebuilds with new nodes
+    try:
+        from ue_audio_mcp.tools.metasounds import _reset_search_index
+        _reset_search_index()
+    except Exception:
+        pass
+
+    return _ok({
+        "message": "Synced {} nodes from engine ({} new, {} updated)".format(
+            len(engine_nodes), new_count, updated_count
+        ),
+        "total": len(engine_nodes),
+        "new": new_count,
+        "updated": updated_count,
+        "db_updated": db_updated,
+        "categories": dict(sorted(categories.items())),
+        "catalogue_size": len(METASOUND_NODES),
+    })
+
+
+def _engine_node_to_nodedef(enode: dict) -> dict | None:
+    """Convert an engine node dict to our NodeDef format.
+
+    Returns None if the node cannot be mapped (e.g. missing name).
+    """
+    class_name = enode.get("class_name", "")
+    raw_name = enode.get("name", "")
+    variant = enode.get("variant", "")
+
+    if not raw_name:
+        return None
+
+    # Build display name: "Name" or "Name (Variant)" for non-None variants
+    if variant and variant != "None":
+        display_name = "{} ({})".format(raw_name, variant)
+    else:
+        display_name = raw_name
+
+    # Check if we already know this node by class_name lookup
+    existing_display = class_name_to_display(class_name)
+    if existing_display and existing_display in METASOUND_NODES:
+        display_name = existing_display
+
+    # Map category from engine metadata or infer from namespace
+    category = _infer_category(enode)
+
+    # Build pins
+    inputs = []
+    for pin in enode.get("inputs", []):
+        pin_type = _normalize_pin_type(pin.get("type", ""))
+        inp: dict = {"name": pin["name"], "type": pin_type, "required": True}
+        if "default" in pin and pin["default"] is not None:
+            inp["default"] = pin["default"]
+        inputs.append(inp)
+
+    outputs = []
+    for pin in enode.get("outputs", []):
+        pin_type = _normalize_pin_type(pin.get("type", ""))
+        outputs.append({"name": pin["name"], "type": pin_type})
+
+    # Description and tags
+    description = enode.get("description", "")
+    if not description:
+        description = "{} MetaSounds node.".format(display_name)
+
+    tags = []
+    for kw in enode.get("keywords", []):
+        tags.append(kw.lower())
+    if not tags:
+        tags = [raw_name.lower().replace(" ", "_")]
+
+    return {
+        "name": display_name,
+        "category": category,
+        "description": description,
+        "inputs": inputs,
+        "outputs": outputs,
+        "tags": tags,
+        "complexity": 1,
+        "class_name": class_name,
+    }
+
+
+def _normalize_pin_type(engine_type: str) -> str:
+    """Normalize engine pin type names to our catalogue format.
+
+    Examples: 'Audio' stays 'Audio', 'Enum:ENoiseType' → 'Enum',
+    'MetasoundFrontend:Trigger' → 'Trigger'.
+    """
+    if not engine_type:
+        return "Audio"
+    # Strip namespace prefixes
+    if ":" in engine_type:
+        parts = engine_type.split(":")
+        # Keep the last meaningful part
+        base = parts[-1].strip()
+        # Check if it's an enum
+        if "Enum" in engine_type or engine_type.startswith("E"):
+            return "Enum"
+        return base if base else engine_type
+    return engine_type
+
+
+# Map of known category keywords to our category names
+_CATEGORY_MAP = {
+    "generator": "Generators",
+    "oscillator": "Generators",
+    "wave player": "Generators",
+    "filter": "Filters",
+    "envelope": "Envelopes",
+    "dynamics": "Dynamics",
+    "effect": "Effects",
+    "delay": "Effects",
+    "reverb": "Effects",
+    "chorus": "Effects",
+    "math": "Math",
+    "arithmetic": "Math",
+    "mix": "Mix",
+    "mixer": "Mix",
+    "panner": "Spatialization",
+    "spatial": "Spatialization",
+    "trigger": "Triggers",
+    "music": "Music",
+    "midi": "Music",
+    "random": "Random",
+    "convert": "Converters",
+    "analysis": "Analysis",
+    "io": "IO",
+    "gain": "Gain",
+    "debug": "Debug",
+}
+
+
+def _infer_category(enode: dict) -> str:
+    """Infer a catalogue category from engine node metadata."""
+    # Try engine category field first
+    cat = enode.get("category", "")
+    if cat:
+        cat_lower = cat.lower()
+        for keyword, mapped in _CATEGORY_MAP.items():
+            if keyword in cat_lower:
+                return mapped
+        # Use the last segment of category hierarchy as-is
+        return cat.split("|")[-1].strip() if "|" in cat else cat
+
+    # Fall back to namespace/name heuristics
+    ns = enode.get("namespace", "").lower()
+    name = enode.get("name", "").lower()
+    combined = "{} {}".format(ns, name)
+    for keyword, mapped in _CATEGORY_MAP.items():
+        if keyword in combined:
+            return mapped
+
+    return "Other"
+
+
 def _inline_convert(export_data: dict) -> dict:
     """Convert export JSON to template format using shared CLASS_NAME_TO_DISPLAY.
 
