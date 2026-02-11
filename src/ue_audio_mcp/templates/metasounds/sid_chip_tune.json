@@ -7,55 +7,164 @@
     "UE.Source.Default"
   ],
   "inputs": [
-    {"name": "OnPlay", "type": "Trigger"},
-    {"name": "Lead Freq", "type": "Float", "default": 440.0, "description": "Lead voice frequency in Hz"},
-    {"name": "Bass Freq", "type": "Float", "default": 110.0, "description": "Bass voice frequency in Hz"},
-    {"name": "Lead PW", "type": "Float", "default": 0.4, "description": "Lead pulse width"},
-    {"name": "Filter Cutoff", "type": "Float", "default": 0.45, "description": "Global filter cutoff 0.0-1.0"},
-    {"name": "Filter Resonance", "type": "Float", "default": 0.3, "description": "Filter resonance 0.0-1.0"},
-    {"name": "Volume", "type": "Float", "default": 1.0, "description": "Master volume 0.0-1.0"}
+    {
+      "name": "OnPlay",
+      "type": "Trigger"
+    },
+    {
+      "name": "Lead Freq",
+      "type": "Float",
+      "default": 440.0,
+      "description": "Lead voice frequency in Hz"
+    },
+    {
+      "name": "Bass Freq",
+      "type": "Float",
+      "default": 110.0,
+      "description": "Bass voice frequency in Hz"
+    },
+    {
+      "name": "Lead PW",
+      "type": "Float",
+      "default": 0.4,
+      "description": "Lead pulse width"
+    },
+    {
+      "name": "Filter Cutoff",
+      "type": "Float",
+      "default": 0.45,
+      "description": "Global filter cutoff 0.0-1.0"
+    },
+    {
+      "name": "Filter Resonance",
+      "type": "Float",
+      "default": 0.3,
+      "description": "Filter resonance 0.0-1.0"
+    },
+    {
+      "name": "Volume",
+      "type": "Float",
+      "default": 1.0,
+      "description": "Master volume 0.0-1.0"
+    }
   ],
   "outputs": [
-    {"name": "Out Mono", "type": "Audio"},
-    {"name": "OnFinished", "type": "Trigger"}
+    {
+      "name": "Out Mono",
+      "type": "Audio"
+    },
+    {
+      "name": "OnFinished",
+      "type": "Trigger"
+    }
   ],
   "nodes": [
     {
       "id": "sid_chip",
       "node_type": "SID Chip",
-      "position": [0, 0],
+      "position": [
+        0,
+        0
+      ],
       "defaults": {
         "Wave 1": "Pulse",
-        "A 1": 0, "D 1": 8, "S 1": 6, "R 1": 5,
+        "A 1": 0,
+        "D 1": 8,
+        "S 1": 6,
+        "R 1": 5,
         "Wave 2": "Sawtooth",
-        "A 2": 0, "D 2": 10, "S 2": 8, "R 2": 4,
+        "A 2": 0,
+        "D 2": 10,
+        "S 2": 8,
+        "R 2": 4,
         "Wave 3": "Noise",
-        "A 3": 0, "D 3": 3, "S 3": 0, "R 3": 2,
+        "A 3": 0,
+        "D 3": 3,
+        "S 3": 0,
+        "R 3": 2,
         "Filter Routing": 7
       },
-      "comment": "Full SID chip — 3 voices, filter, all routed through LP filter"
+      "comment": "Full SID chip \u2014 3 voices, filter, all routed through LP filter"
     },
     {
       "id": "output_gain",
       "node_type": "Multiply (Audio by Float)",
-      "position": [600, 0],
+      "position": [
+        600,
+        0
+      ],
       "defaults": {
-        "B": 0.7
+        "AdditionalOperands": 0.7
       },
       "comment": "Output level trim to prevent clipping"
     }
   ],
   "connections": [
-    {"from_node": "__graph__", "from_pin": "OnPlay", "to_node": "sid_chip", "to_pin": "Gate 1"},
-    {"from_node": "__graph__", "from_pin": "OnPlay", "to_node": "sid_chip", "to_pin": "Gate 2"},
-    {"from_node": "__graph__", "from_pin": "OnPlay", "to_node": "sid_chip", "to_pin": "Gate 3"},
-    {"from_node": "__graph__", "from_pin": "Lead Freq", "to_node": "sid_chip", "to_pin": "Freq 1"},
-    {"from_node": "__graph__", "from_pin": "Bass Freq", "to_node": "sid_chip", "to_pin": "Freq 2"},
-    {"from_node": "__graph__", "from_pin": "Lead PW", "to_node": "sid_chip", "to_pin": "PW 1"},
-    {"from_node": "__graph__", "from_pin": "Filter Cutoff", "to_node": "sid_chip", "to_pin": "Filter Cutoff"},
-    {"from_node": "__graph__", "from_pin": "Filter Resonance", "to_node": "sid_chip", "to_pin": "Filter Resonance"},
-    {"from_node": "__graph__", "from_pin": "Volume", "to_node": "sid_chip", "to_pin": "Volume"},
-    {"from_node": "sid_chip", "from_pin": "Out", "to_node": "output_gain", "to_pin": "A"},
-    {"from_node": "output_gain", "from_pin": "Out", "to_node": "__graph__", "to_pin": "Out Mono"}
+    {
+      "from_node": "__graph__",
+      "from_pin": "OnPlay",
+      "to_node": "sid_chip",
+      "to_pin": "Gate 1"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "OnPlay",
+      "to_node": "sid_chip",
+      "to_pin": "Gate 2"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "OnPlay",
+      "to_node": "sid_chip",
+      "to_pin": "Gate 3"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Lead Freq",
+      "to_node": "sid_chip",
+      "to_pin": "Freq 1"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Bass Freq",
+      "to_node": "sid_chip",
+      "to_pin": "Freq 2"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Lead PW",
+      "to_node": "sid_chip",
+      "to_pin": "PW 1"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Filter Cutoff",
+      "to_node": "sid_chip",
+      "to_pin": "Filter Cutoff"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Filter Resonance",
+      "to_node": "sid_chip",
+      "to_pin": "Filter Resonance"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Volume",
+      "to_node": "sid_chip",
+      "to_pin": "Volume"
+    },
+    {
+      "from_node": "sid_chip",
+      "from_pin": "Out",
+      "to_node": "output_gain",
+      "to_pin": "PrimaryOperand"
+    },
+    {
+      "from_node": "output_gain",
+      "from_pin": "Out",
+      "to_node": "__graph__",
+      "to_pin": "Out Mono"
+    }
   ]
 }

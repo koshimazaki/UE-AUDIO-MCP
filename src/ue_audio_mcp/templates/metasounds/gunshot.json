@@ -102,7 +102,7 @@
       "from_node": "__graph__",
       "from_pin": "OnPlay",
       "to_node": "random_pitch",
-      "to_pin": "Trigger"
+      "to_pin": "Next"
     },
     {
       "from_node": "__graph__",
@@ -138,29 +138,29 @@
       "from_node": "wave_player",
       "from_pin": "Audio",
       "to_node": "amp_multiply",
-      "to_pin": "A"
+      "to_pin": "PrimaryOperand"
     },
     {
       "from_node": "adsr",
       "from_pin": "Envelope",
       "to_node": "amp_multiply",
-      "to_pin": "B"
+      "to_pin": "AdditionalOperands"
     },
     {
       "from_node": "amp_multiply",
-      "from_pin": "Result",
+      "from_pin": "Out",
       "to_node": "__graph__",
       "to_pin": "Out Mono"
     },
     {
       "from_node": "amp_multiply",
-      "from_pin": "Result",
+      "from_pin": "Out",
       "to_node": "__graph__",
       "to_pin": "Out Stereo L"
     },
     {
       "from_node": "amp_multiply",
-      "from_pin": "Result",
+      "from_pin": "Out",
       "to_node": "__graph__",
       "to_pin": "Out Stereo R"
     },

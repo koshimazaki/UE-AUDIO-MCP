@@ -95,7 +95,7 @@
         200
       ],
       "defaults": {
-        "Gain (dB)": 0.0,
+        "Gain": 0.0,
         "Type": "Band Pass"
       },
       "comment": "Band pass filter \u2014 cutoff driven by LFO, bandwidth by graph input"

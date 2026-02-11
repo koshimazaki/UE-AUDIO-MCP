@@ -7,103 +7,246 @@
     "UE.Source.Default"
   ],
   "inputs": [
-    {"name": "OnPlay", "type": "Trigger"},
-    {"name": "Frequency", "type": "Float", "default": 440.0, "description": "Lead frequency in Hz"},
-    {"name": "Detune", "type": "Float", "default": 3.0, "description": "Detune amount in Hz between oscillators"},
-    {"name": "Pulse Width", "type": "Float", "default": 0.35, "description": "Pulse width for oscillator 2"},
-    {"name": "Filter Cutoff", "type": "Float", "default": 0.6, "description": "Filter cutoff 0.0-1.0"},
-    {"name": "Resonance", "type": "Float", "default": 0.7, "description": "Filter resonance 0.0-1.0"},
-    {"name": "Res Boost", "type": "Float", "default": 0.5, "description": "Resonance boost — 1.0 for self-oscillation"}
+    {
+      "name": "OnPlay",
+      "type": "Trigger"
+    },
+    {
+      "name": "Frequency",
+      "type": "Float",
+      "default": 440.0,
+      "description": "Lead frequency in Hz"
+    },
+    {
+      "name": "Detune",
+      "type": "Float",
+      "default": 3.0,
+      "description": "Detune amount in Hz between oscillators"
+    },
+    {
+      "name": "Pulse Width",
+      "type": "Float",
+      "default": 0.35,
+      "description": "Pulse width for oscillator 2"
+    },
+    {
+      "name": "Filter Cutoff",
+      "type": "Float",
+      "default": 0.6,
+      "description": "Filter cutoff 0.0-1.0"
+    },
+    {
+      "name": "Resonance",
+      "type": "Float",
+      "default": 0.7,
+      "description": "Filter resonance 0.0-1.0"
+    },
+    {
+      "name": "Res Boost",
+      "type": "Float",
+      "default": 0.5,
+      "description": "Resonance boost \u2014 1.0 for self-oscillation"
+    }
   ],
   "outputs": [
-    {"name": "Out Mono", "type": "Audio"},
-    {"name": "OnFinished", "type": "Trigger"}
+    {
+      "name": "Out Mono",
+      "type": "Audio"
+    },
+    {
+      "name": "OnFinished",
+      "type": "Trigger"
+    }
   ],
   "nodes": [
     {
       "id": "osc1",
       "node_type": "SID Oscillator",
-      "position": [0, 0],
+      "position": [
+        0,
+        0
+      ],
       "defaults": {},
-      "comment": "Oscillator 1 — sawtooth, base frequency"
+      "comment": "Oscillator 1 \u2014 sawtooth, base frequency"
     },
     {
       "id": "osc2_freq",
       "node_type": "Add",
-      "position": [0, 200],
+      "position": [
+        0,
+        200
+      ],
       "defaults": {},
       "comment": "Add detune offset to base frequency"
     },
     {
       "id": "osc2",
       "node_type": "SID Oscillator",
-      "position": [300, 200],
+      "position": [
+        300,
+        200
+      ],
       "defaults": {
         "Waveform": "Pulse"
       },
-      "comment": "Oscillator 2 — pulse, detuned for unison thickness"
+      "comment": "Oscillator 2 \u2014 pulse, detuned for unison thickness"
     },
     {
       "id": "sid_env",
       "node_type": "SID Envelope",
-      "position": [0, 400],
+      "position": [
+        0,
+        400
+      ],
       "defaults": {
-        "Attack": 2,
-        "Decay": 6,
+        "Attack Time": 2,
+        "Decay Time": 6,
         "Sustain": 10,
-        "Release": 5
+        "Release Time": 5
       },
-      "comment": "ADSR envelope — moderate attack for lead expression"
+      "comment": "ADSR envelope \u2014 moderate attack for lead expression"
     },
     {
       "id": "mix",
       "node_type": "Add (Audio)",
-      "position": [600, 100],
+      "position": [
+        600,
+        100
+      ],
       "defaults": {},
       "comment": "Mix both oscillators"
     },
     {
       "id": "vca",
       "node_type": "Multiply (Audio by Float)",
-      "position": [600, 300],
+      "position": [
+        600,
+        300
+      ],
       "defaults": {},
       "comment": "Apply envelope to mixed oscillators"
     },
     {
       "id": "sid_filter",
       "node_type": "SID Filter",
-      "position": [900, 100],
+      "position": [
+        900,
+        100
+      ],
       "defaults": {
         "Mode": "BandPass"
       },
-      "comment": "SID filter in BP mode — resonant nasal lead character"
+      "comment": "SID filter in BP mode \u2014 resonant nasal lead character"
     },
     {
       "id": "output_gain",
       "node_type": "Multiply (Audio by Float)",
-      "position": [1200, 100],
+      "position": [
+        1200,
+        100
+      ],
       "defaults": {
-        "B": 0.6
+        "AdditionalOperands": 0.6
       },
       "comment": "Output level trim"
     }
   ],
   "connections": [
-    {"from_node": "__graph__", "from_pin": "OnPlay", "to_node": "sid_env", "to_pin": "Gate"},
-    {"from_node": "__graph__", "from_pin": "Frequency", "to_node": "osc1", "to_pin": "Frequency"},
-    {"from_node": "__graph__", "from_pin": "Frequency", "to_node": "osc2_freq", "to_pin": "A"},
-    {"from_node": "__graph__", "from_pin": "Detune", "to_node": "osc2_freq", "to_pin": "B"},
-    {"from_node": "osc2_freq", "from_pin": "Out", "to_node": "osc2", "to_pin": "Frequency"},
-    {"from_node": "__graph__", "from_pin": "Pulse Width", "to_node": "osc2", "to_pin": "Pulse Width"},
-    {"from_node": "osc1", "from_pin": "Out", "to_node": "mix", "to_pin": "A"},
-    {"from_node": "osc2", "from_pin": "Out", "to_node": "mix", "to_pin": "B"},
-    {"from_node": "mix", "from_pin": "Out", "to_node": "vca", "to_pin": "A"},
-    {"from_node": "sid_env", "from_pin": "Out", "to_node": "vca", "to_pin": "B"},
-    {"from_node": "vca", "from_pin": "Out", "to_node": "sid_filter", "to_pin": "In"},
-    {"from_node": "__graph__", "from_pin": "Filter Cutoff", "to_node": "sid_filter", "to_pin": "Cutoff"},
-    {"from_node": "__graph__", "from_pin": "Resonance", "to_node": "sid_filter", "to_pin": "Resonance"},
-    {"from_node": "__graph__", "from_pin": "Res Boost", "to_node": "sid_filter", "to_pin": "Res Boost"},
-    {"from_node": "sid_filter", "from_pin": "Out", "to_node": "output_gain", "to_pin": "A"},
-    {"from_node": "output_gain", "from_pin": "Out", "to_node": "__graph__", "to_pin": "Out Mono"}
+    {
+      "from_node": "__graph__",
+      "from_pin": "OnPlay",
+      "to_node": "sid_env",
+      "to_pin": "Gate"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Frequency",
+      "to_node": "osc1",
+      "to_pin": "Frequency"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Frequency",
+      "to_node": "osc2_freq",
+      "to_pin": "PrimaryOperand"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Detune",
+      "to_node": "osc2_freq",
+      "to_pin": "AdditionalOperands"
+    },
+    {
+      "from_node": "osc2_freq",
+      "from_pin": "Out",
+      "to_node": "osc2",
+      "to_pin": "Frequency"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Pulse Width",
+      "to_node": "osc2",
+      "to_pin": "Pulse Width"
+    },
+    {
+      "from_node": "osc1",
+      "from_pin": "Out",
+      "to_node": "mix",
+      "to_pin": "PrimaryOperand"
+    },
+    {
+      "from_node": "osc2",
+      "from_pin": "Out",
+      "to_node": "mix",
+      "to_pin": "AdditionalOperands"
+    },
+    {
+      "from_node": "mix",
+      "from_pin": "Out",
+      "to_node": "vca",
+      "to_pin": "PrimaryOperand"
+    },
+    {
+      "from_node": "sid_env",
+      "from_pin": "Out",
+      "to_node": "vca",
+      "to_pin": "AdditionalOperands"
+    },
+    {
+      "from_node": "vca",
+      "from_pin": "Out",
+      "to_node": "sid_filter",
+      "to_pin": "In"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Filter Cutoff",
+      "to_node": "sid_filter",
+      "to_pin": "Cutoff"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Resonance",
+      "to_node": "sid_filter",
+      "to_pin": "Resonance"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Res Boost",
+      "to_node": "sid_filter",
+      "to_pin": "Res Boost"
+    },
+    {
+      "from_node": "sid_filter",
+      "from_pin": "Out",
+      "to_node": "output_gain",
+      "to_pin": "PrimaryOperand"
+    },
+    {
+      "from_node": "output_gain",
+      "from_pin": "Out",
+      "to_node": "__graph__",
+      "to_pin": "Out Mono"
+    }
   ]
 }

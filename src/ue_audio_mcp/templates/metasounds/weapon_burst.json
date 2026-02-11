@@ -102,7 +102,7 @@
         200
       ],
       "defaults": {
-        "B": 3
+        "AdditionalOperands": 3
       },
       "comment": "When shot_counter.Count >= BurstCount, fires True to stop the repeater"
     },
@@ -204,13 +204,13 @@
       "from_node": "shot_counter",
       "from_pin": "Count",
       "to_node": "burst_compare",
-      "to_pin": "A"
+      "to_pin": "PrimaryOperand"
     },
     {
       "from_node": "__graph__",
       "from_pin": "BurstCount",
       "to_node": "burst_compare",
-      "to_pin": "B"
+      "to_pin": "AdditionalOperands"
     },
     {
       "from_node": "burst_repeat",

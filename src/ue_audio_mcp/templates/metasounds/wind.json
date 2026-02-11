@@ -85,7 +85,7 @@
         500
       ],
       "defaults": {
-        "B": 10.0
+        "AdditionalOperands": 10.0
       },
       "comment": "Scale PawnSpeed to frequency range"
     },
@@ -97,7 +97,7 @@
         500
       ],
       "defaults": {
-        "B": 200.0
+        "AdditionalOperands": 200.0
       },
       "comment": "Offset so idle speed still has some wind"
     },
@@ -143,17 +143,17 @@
       "from_node": "__graph__",
       "from_pin": "PawnSpeed",
       "to_node": "multiply",
-      "to_pin": "A"
+      "to_pin": "PrimaryOperand"
     },
     {
       "from_node": "multiply",
-      "from_pin": "Result",
+      "from_pin": "Out",
       "to_node": "add",
-      "to_pin": "A"
+      "to_pin": "PrimaryOperand"
     },
     {
       "from_node": "add",
-      "from_pin": "Result",
+      "from_pin": "Out",
       "to_node": "interp",
       "to_pin": "Current"
     },

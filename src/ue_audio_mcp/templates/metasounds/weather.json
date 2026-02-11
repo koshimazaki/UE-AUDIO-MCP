@@ -94,7 +94,7 @@
       ],
       "defaults": {
         "Bandwidth": 1.0,
-        "FilterType": "LPF"
+        "Type": "LPF"
       }
     },
     {
@@ -106,7 +106,7 @@
       ],
       "defaults": {
         "Bandwidth": 1.0,
-        "FilterType": "LPF"
+        "Type": "LPF"
       }
     }
   ],

@@ -120,7 +120,7 @@
         0
       ],
       "defaults": {
-        "FilterType": "LPF"
+        "Type": "LPF"
       }
     }
   ],

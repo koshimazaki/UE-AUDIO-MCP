@@ -361,7 +361,11 @@ bool FAudioMCPBlueprintManager::SetPinDefault(
 	}
 
 	const UEdGraphSchema_K2* Schema = GetDefault<UEdGraphSchema_K2>();
-	Schema->TrySetDefaultValue(*Pin, Value);
+	if (!Schema->TrySetDefaultValue(*Pin, Value))
+	{
+		OutError = FString::Printf(TEXT("Failed to set default value '%s' on pin '%s' of node '%s'"), *Value, *PinName, *NodeId);
+		return false;
+	}
 
 	UE_LOG(LogAudioMCPBP, Log, TEXT("Set %s.%s = %s"), *NodeId, *PinName, *Value);
 	return true;
@@ -383,12 +387,15 @@ bool FAudioMCPBlueprintManager::CompileBlueprint(
 	UBlueprint* BP = ActiveBlueprint.Get();
 	FKismetEditorUtilities::CompileBlueprint(BP, EBlueprintCompileOptions::None);
 
-	// Gather compiler results
-	for (const FCompilerResultsLog::TCompilerResultsLogItem& Entry : BP->CurrentMessageLog->Messages)
+	// Gather compiler results (CurrentMessageLog may be null after clean compile)
+	if (BP->CurrentMessageLog)
 	{
-		if (Entry.IsValid())
+		for (const FCompilerResultsLog::TCompilerResultsLogItem& Entry : BP->CurrentMessageLog->Messages)
 		{
-			OutMessages.Add(Entry->ToText().ToString());
+			if (Entry.IsValid())
+			{
+				OutMessages.Add(Entry->ToText().ToString());
+			}
 		}
 	}
 

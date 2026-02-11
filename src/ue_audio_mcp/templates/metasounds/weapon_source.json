@@ -95,7 +95,7 @@
         600
       ],
       "defaults": {
-        "B": 0,
+        "AdditionalOperands": 0,
         "Type": "Equals"
       },
       "comment": "RoomSize == 0 means outdoor \u2014 only then do we play distance tails"
@@ -183,7 +183,7 @@
       "from_node": "__graph__",
       "from_pin": "RoomSize",
       "to_node": "outdoor_gate",
-      "to_pin": "A"
+      "to_pin": "PrimaryOperand"
     },
     {
       "from_node": "outdoor_gate",

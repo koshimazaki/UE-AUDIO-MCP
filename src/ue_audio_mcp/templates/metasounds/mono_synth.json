@@ -242,7 +242,7 @@
         400
       ],
       "defaults": {
-        "Gain (dB)": 0.0,
+        "Gain": 0.0,
         "Type": "Low Pass"
       },
       "comment": "Low pass filter \u2014 cutoff swept by envelope, bandwidth controls resonance"

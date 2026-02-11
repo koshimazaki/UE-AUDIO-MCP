@@ -378,7 +378,7 @@
         200
       ],
       "defaults": {
-        "A": 1.0
+        "PrimaryOperand": 1.0
       },
       "comment": "1.0 - LFODepth + (LFO \u00d7 LFODepth) = amplitude modulation with depth control"
     },
@@ -408,7 +408,7 @@
         -100
       ],
       "defaults": {
-        "Delay Time": 0.25,
+        "Decay Time": 0.25,
         "Feedback": 0.3
       },
       "comment": "Temporal effect 1: delay (parallel send)"
@@ -477,13 +477,13 @@
       "from_node": "__graph__",
       "from_pin": "BaseFrequency",
       "to_node": "freq_sum",
-      "to_pin": "A"
+      "to_pin": "PrimaryOperand"
     },
     {
       "from_node": "__graph__",
       "from_pin": "FreqMod",
       "to_node": "freq_sum",
-      "to_pin": "B"
+      "to_pin": "AdditionalOperands"
     },
     {
       "from_node": "__graph__",
@@ -495,17 +495,17 @@
       "from_node": "__graph__",
       "from_pin": "VibratoDepth",
       "to_node": "vibrato_scale",
-      "to_pin": "B"
+      "to_pin": "AdditionalOperands"
     },
     {
       "from_node": "vibrato_lfo",
       "from_pin": "Out",
       "to_node": "vibrato_scale",
-      "to_pin": "A"
+      "to_pin": "PrimaryOperand"
     },
     {
       "from_node": "freq_sum",
-      "from_pin": "Result",
+      "from_pin": "Out",
       "to_node": "osc",
       "to_pin": "Frequency"
     },
@@ -567,7 +567,7 @@
       "from_node": "__graph__",
       "from_pin": "FilterCutoff",
       "to_node": "cutoff_sum",
-      "to_pin": "A"
+      "to_pin": "PrimaryOperand"
     },
     {
       "from_node": "__graph__",
@@ -589,21 +589,21 @@
     },
     {
       "from_node": "filter_env",
-      "from_pin": "Envelope",
+      "from_pin": "Out Envelope",
       "to_node": "filter_env_scale",
-      "to_pin": "A"
+      "to_pin": "PrimaryOperand"
     },
     {
       "from_node": "__graph__",
       "from_pin": "FilterEnvAmount",
       "to_node": "filter_env_scale",
-      "to_pin": "B"
+      "to_pin": "AdditionalOperands"
     },
     {
       "from_node": "filter_env_scale",
-      "from_pin": "Result",
+      "from_pin": "Out",
       "to_node": "cutoff_sum",
-      "to_pin": "B"
+      "to_pin": "AdditionalOperands"
     },
     {
       "from_node": "ringmod",
@@ -613,7 +613,7 @@
     },
     {
       "from_node": "cutoff_sum",
-      "from_pin": "Result",
+      "from_pin": "Out",
       "to_node": "svf",
       "to_pin": "Cutoff Frequency"
     },
@@ -637,7 +637,7 @@
     },
     {
       "from_node": "__graph__",
-      "from_pin": "FilterType",
+      "from_pin": "Type",
       "to_node": "filter_xfade_lp_bp",
       "to_pin": "Crossfade Value"
     },
@@ -655,7 +655,7 @@
     },
     {
       "from_node": "__graph__",
-      "from_pin": "FilterType",
+      "from_pin": "Type",
       "to_node": "filter_xfade_final",
       "to_pin": "Crossfade Value"
     },
@@ -693,13 +693,13 @@
       "from_node": "filter_xfade_final",
       "from_pin": "Out",
       "to_node": "amp_multiply",
-      "to_pin": "A"
+      "to_pin": "PrimaryOperand"
     },
     {
       "from_node": "amp_env",
       "from_pin": "Envelope",
       "to_node": "amp_multiply",
-      "to_pin": "B"
+      "to_pin": "AdditionalOperands"
     },
     {
       "from_node": "__graph__",
@@ -709,31 +709,31 @@
     },
     {
       "from_node": "amp_multiply",
-      "from_pin": "Result",
+      "from_pin": "Out",
       "to_node": "amp_lfo_multiply",
-      "to_pin": "A"
+      "to_pin": "PrimaryOperand"
     },
     {
       "from_node": "amp_lfo_multiply",
-      "from_pin": "Result",
+      "from_pin": "Out",
       "to_node": "delay_send",
       "to_pin": "In"
     },
     {
       "from_node": "amp_lfo_multiply",
-      "from_pin": "Result",
+      "from_pin": "Out",
       "to_node": "flanger_send",
       "to_pin": "In Audio"
     },
     {
       "from_node": "amp_lfo_multiply",
-      "from_pin": "Result",
+      "from_pin": "Out",
       "to_node": "reverb_send",
       "to_pin": "Audio"
     },
     {
       "from_node": "amp_lfo_multiply",
-      "from_pin": "Result",
+      "from_pin": "Out",
       "to_node": "effects_mixer",
       "to_pin": "In 0"
     },

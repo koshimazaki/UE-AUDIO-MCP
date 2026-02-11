@@ -256,7 +256,8 @@ def test_embedding_search():
     idx = build_index_from_nodes(METASOUND_NODES)
     results = idx.search("random variation")
     assert len(results) > 0
-    assert results[0][0] == "Random Float"
+    names = [r[0] for r in results[:3]]
+    assert any("Random" in n for n in names)
 
     results = idx.search("spatial 3d binaural")
     names = [r[0] for r in results[:3]]

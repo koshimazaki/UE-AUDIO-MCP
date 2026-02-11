@@ -99,7 +99,7 @@
         0
       ],
       "defaults": {
-        "B": 0.01
+        "AdditionalOperands": 0.01
       },
       "comment": "EndFadeOut + 0.01 safety offset for Layer A gate"
     },
@@ -169,7 +169,7 @@
         400
       ],
       "defaults": {
-        "B": 0.01
+        "AdditionalOperands": 0.01
       },
       "comment": "StartFadeIn - 0.01 safety offset for Layer B lower gate"
     },
@@ -193,7 +193,7 @@
         500
       ],
       "defaults": {
-        "B": 0.01
+        "AdditionalOperands": 0.01
       },
       "comment": "EndFadeOut + 0.01 safety offset for Layer B upper gate"
     },
@@ -295,7 +295,7 @@
         800
       ],
       "defaults": {
-        "B": 0.01
+        "AdditionalOperands": 0.01
       },
       "comment": "StartFadeIn - 0.01 safety offset for Layer C gate"
     },
@@ -412,23 +412,23 @@
       "from_node": "__graph__",
       "from_pin": "WaveAsset_A_EndFadeOut",
       "to_node": "gate_a_threshold",
-      "to_pin": "A"
+      "to_pin": "PrimaryOperand"
     },
     {
       "from_node": "__graph__",
       "from_pin": "InputParameter",
       "to_node": "gate_a",
-      "to_pin": "A"
+      "to_pin": "PrimaryOperand"
     },
     {
       "from_node": "gate_a_threshold",
-      "from_pin": "Result",
+      "from_pin": "Out",
       "to_node": "gate_a",
-      "to_pin": "B"
+      "to_pin": "AdditionalOperands"
     },
     {
       "from_node": "gate_a",
-      "from_pin": "Result",
+      "from_pin": "Out",
       "to_node": "trigger_filter_a",
       "to_pin": "Trigger"
     },
@@ -484,41 +484,41 @@
       "from_node": "__graph__",
       "from_pin": "WaveAsset_B_StartFadeIn",
       "to_node": "gate_b_low_offset",
-      "to_pin": "A"
+      "to_pin": "PrimaryOperand"
     },
     {
       "from_node": "__graph__",
       "from_pin": "InputParameter",
       "to_node": "gate_b_low",
-      "to_pin": "A"
+      "to_pin": "PrimaryOperand"
     },
     {
       "from_node": "gate_b_low_offset",
-      "from_pin": "Result",
+      "from_pin": "Out",
       "to_node": "gate_b_low",
-      "to_pin": "B"
+      "to_pin": "AdditionalOperands"
     },
     {
       "from_node": "__graph__",
       "from_pin": "WaveAsset_B_EndFadeOut",
       "to_node": "gate_b_high_offset",
-      "to_pin": "A"
+      "to_pin": "PrimaryOperand"
     },
     {
       "from_node": "__graph__",
       "from_pin": "InputParameter",
       "to_node": "gate_b_high",
-      "to_pin": "A"
+      "to_pin": "PrimaryOperand"
     },
     {
       "from_node": "gate_b_high_offset",
-      "from_pin": "Result",
+      "from_pin": "Out",
       "to_node": "gate_b_high",
-      "to_pin": "B"
+      "to_pin": "AdditionalOperands"
     },
     {
       "from_node": "gate_b_low",
-      "from_pin": "Result",
+      "from_pin": "Out",
       "to_node": "trigger_filter_b_low",
       "to_pin": "Trigger"
     },
@@ -530,7 +530,7 @@
     },
     {
       "from_node": "gate_b_high",
-      "from_pin": "Result",
+      "from_pin": "Out",
       "to_node": "trigger_filter_b_high",
       "to_pin": "Trigger"
     },
@@ -604,35 +604,35 @@
       "from_node": "gain_b_fadein",
       "from_pin": "Out Value",
       "to_node": "gain_b_bell",
-      "to_pin": "A"
+      "to_pin": "PrimaryOperand"
     },
     {
       "from_node": "gain_b_fadeout",
       "from_pin": "Out Value",
       "to_node": "gain_b_bell",
-      "to_pin": "B"
+      "to_pin": "AdditionalOperands"
     },
     {
       "from_node": "__graph__",
       "from_pin": "WaveAsset_C_StartFadeIn",
       "to_node": "gate_c_offset",
-      "to_pin": "A"
+      "to_pin": "PrimaryOperand"
     },
     {
       "from_node": "__graph__",
       "from_pin": "InputParameter",
       "to_node": "gate_c",
-      "to_pin": "A"
+      "to_pin": "PrimaryOperand"
     },
     {
       "from_node": "gate_c_offset",
-      "from_pin": "Result",
+      "from_pin": "Out",
       "to_node": "gate_c",
-      "to_pin": "B"
+      "to_pin": "AdditionalOperands"
     },
     {
       "from_node": "gate_c",
-      "from_pin": "Result",
+      "from_pin": "Out",
       "to_node": "trigger_filter_c",
       "to_pin": "Trigger"
     },
@@ -716,7 +716,7 @@
     },
     {
       "from_node": "gain_b_bell",
-      "from_pin": "Result",
+      "from_pin": "Out",
       "to_node": "stereo_mixer",
       "to_pin": "Gain 1"
     },

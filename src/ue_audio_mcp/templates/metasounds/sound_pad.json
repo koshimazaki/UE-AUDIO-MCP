@@ -196,17 +196,17 @@
       "from_node": "scale_lookup",
       "from_pin": "Element",
       "to_node": "note_add",
-      "to_pin": "A"
+      "to_pin": "PrimaryOperand"
     },
     {
       "from_node": "__graph__",
       "from_pin": "RootNote",
       "to_node": "note_add",
-      "to_pin": "B"
+      "to_pin": "AdditionalOperands"
     },
     {
       "from_node": "note_add",
-      "from_pin": "Result",
+      "from_pin": "Out",
       "to_node": "midi_to_freq",
       "to_pin": "MIDI In"
     },
@@ -226,13 +226,13 @@
       "from_node": "synth",
       "from_pin": "Audio",
       "to_node": "synth_gain",
-      "to_pin": "A"
+      "to_pin": "PrimaryOperand"
     },
     {
       "from_node": "env",
       "from_pin": "Out Envelope",
       "to_node": "synth_gain",
-      "to_pin": "B"
+      "to_pin": "AdditionalOperands"
     },
     {
       "from_node": "__graph__",

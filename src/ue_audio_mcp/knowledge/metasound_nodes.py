@@ -88,13 +88,14 @@ _register(_node(
 _register(_node(
     "Saw", "Generators",
     "Band-limited sawtooth oscillator.",
-    [_in("Frequency", "Float", default=440.0),
-     _in("Enabled", "Bool", default=True),
+    [_in("Enabled", "Bool", default=True),
      _in("Bi Polar", "Bool", required=False, default=False),
+     _in("Frequency", "Float", default=440.0),
      _in("Modulation", "Audio", required=False),
      _in("Sync", "Trigger", required=False),
      _in("Phase Offset", "Float", required=False, default=0.0),
-     _in("Glide", "Float", required=False, default=0.0)],
+     _in("Glide", "Float", required=False, default=0.0),
+     _in("Type", "Enum", required=False)],
     [_out("Audio", "Audio")],
     ["oscillator", "sawtooth", "saw", "synthesis", "subtractive", "bright", "fm"],
     complexity=1,
@@ -103,13 +104,14 @@ _register(_node(
 _register(_node(
     "Sine", "Generators",
     "Pure sine wave oscillator.",
-    [_in("Frequency", "Float", default=440.0),
-     _in("Enabled", "Bool", default=True),
+    [_in("Enabled", "Bool", default=True),
      _in("Bi Polar", "Bool", required=False, default=False),
+     _in("Frequency", "Float", default=440.0),
      _in("Modulation", "Audio", required=False),
      _in("Sync", "Trigger", required=False),
      _in("Phase Offset", "Float", required=False, default=0.0),
-     _in("Glide", "Float", required=False, default=0.0)],
+     _in("Glide", "Float", required=False, default=0.0),
+     _in("Type", "Enum", required=False)],
     [_out("Audio", "Audio")],
     ["oscillator", "sine", "synthesis", "pure", "tone", "fundamental", "fm"],
     complexity=1,
@@ -118,13 +120,14 @@ _register(_node(
 _register(_node(
     "Square", "Generators",
     "Band-limited square wave oscillator.",
-    [_in("Frequency", "Float", default=440.0),
-     _in("Enabled", "Bool", default=True),
+    [_in("Enabled", "Bool", default=True),
      _in("Bi Polar", "Bool", required=False, default=False),
+     _in("Frequency", "Float", default=440.0),
      _in("Modulation", "Audio", required=False),
      _in("Sync", "Trigger", required=False),
      _in("Phase Offset", "Float", required=False, default=0.0),
      _in("Glide", "Float", required=False, default=0.0),
+     _in("Type", "Enum", required=False),
      _in("Pulse Width", "Float", required=False, default=0.5)],
     [_out("Audio", "Audio")],
     ["oscillator", "square", "synthesis", "hollow", "pulse", "fm", "pwm"],
@@ -265,6 +268,17 @@ _register(_node(
     complexity=2,
 ))
 
+_register(_node(
+    "Noise", "Generators",
+    "Generic noise generator with selectable type (White, Pink, etc.). "
+    "Engine class: UE::Noise::Audio. Pin names verified from exports.",
+    [_in("Seed", "Int32", required=False, default=-1),
+     _in("Type", "Enum", required=False)],
+    [_out("Audio", "Audio")],
+    ["noise", "white", "pink", "generator", "broadband", "hiss"],
+    complexity=1,
+))
+
 
 # -------------------------------------------------------------------
 # Wave Players  (7 nodes)
@@ -338,18 +352,18 @@ del _ch, _desc, _outs, _cx
 
 _register(_node(
     "AD Envelope", "Envelopes",
-    "Attack-Decay envelope — real UE5 node name (no Audio/Float suffix in editor). "
-    "Outputs audio-rate envelope signal. Real pin names from Chris Payne Sound Pads binary: "
-    "On Trigger, Attack Time, Attack Curve, Decay Time, Decay Curve, Hard Reset, Looping → Out Envelope, On Done.",
-    [_in("Attack Time", "Time", default=0.01),
+    "Attack-Decay envelope — real UE5 node name. "
+    "Outputs audio-rate envelope signal. Pin names verified from engine exports.",
+    [_in("Trigger", "Trigger"),
+     _in("Attack Time", "Time", default=0.01),
+     _in("Decay Time", "Time", default=0.1),
      _in("Attack Curve", "Float", required=False, default=1.0),
      _in("Decay Curve", "Float", required=False, default=1.0),
      _in("Looping", "Bool", required=False, default=False),
-     _in("Trigger", "Trigger"),
-     _in("Delay Time", "Time", required=False)],
-    [_out("Out Envelope", "Audio"),
+     _in("Hard Reset", "Bool", required=False, default=False)],
+    [_out("On Trigger", "Trigger"),
      _out("On Done", "Trigger"),
-     _out("On Trigger", "Trigger")],
+     _out("Out Envelope", "Audio")],
     ["envelope", "AD", "attack", "decay", "percussive", "transient", "amplitude"],
     complexity=2,
 ))
@@ -357,14 +371,17 @@ _register(_node(
 _register(_node(
     "AD Envelope (Audio)", "Envelopes",
     "Attack-Decay envelope outputting audio-rate signal. "
-    "Legacy pin names — use 'AD Envelope' for real UE5 pin names.",
+    "Engine variant name: AD Envelope::AD Envelope::Audio. Pins verified from exports.",
     [_in("Trigger", "Trigger"),
-     _in("Attack", "Time", default=0.01),
-     _in("Decay", "Time", default=0.1),
-     _in("AttackCurve", "Float", required=False, default=1.0),
-     _in("DecayCurve", "Float", required=False, default=1.0)],
-    [_out("Envelope", "Audio"),
-     _out("OnDone", "Trigger")],
+     _in("Attack Time", "Time", default=0.01),
+     _in("Decay Time", "Time", default=0.1),
+     _in("Attack Curve", "Float", required=False, default=1.0),
+     _in("Decay Curve", "Float", required=False, default=1.0),
+     _in("Looping", "Bool", required=False, default=False),
+     _in("Hard Reset", "Bool", required=False, default=False)],
+    [_out("On Trigger", "Trigger"),
+     _out("On Done", "Trigger"),
+     _out("Out Envelope", "Audio")],
     ["envelope", "AD", "attack", "decay", "percussive", "transient", "amplitude"],
     complexity=2,
 ))
@@ -372,14 +389,17 @@ _register(_node(
 _register(_node(
     "AD Envelope (Float)", "Envelopes",
     "Attack-Decay envelope outputting block-rate float. "
-    "Legacy pin names — use 'AD Envelope' for real UE5 pin names.",
+    "Engine variant name: AD Envelope::AD Envelope::Float. Pins verified from exports.",
     [_in("Trigger", "Trigger"),
-     _in("Attack", "Time", default=0.01),
-     _in("Decay", "Time", default=0.1),
-     _in("AttackCurve", "Float", required=False, default=1.0),
-     _in("DecayCurve", "Float", required=False, default=1.0)],
-    [_out("Envelope", "Float"),
-     _out("OnDone", "Trigger")],
+     _in("Attack Time", "Time", default=0.01),
+     _in("Decay Time", "Time", default=0.1),
+     _in("Attack Curve", "Float", required=False, default=1.0),
+     _in("Decay Curve", "Float", required=False, default=1.0),
+     _in("Looping", "Bool", required=False, default=False),
+     _in("Hard Reset", "Bool", required=False, default=False)],
+    [_out("On Trigger", "Trigger"),
+     _out("On Done", "Trigger"),
+     _out("Out Envelope", "Float")],
     ["envelope", "AD", "attack", "decay", "percussive", "control"],
     complexity=2,
 ))
@@ -470,12 +490,13 @@ _register(_node(
 
 _register(_node(
     "Biquad Filter", "Filters",
-    "Versatile second-order filter with selectable type (LPF, HPF, BPF, Notch, etc.).",
-    [_in("Cutoff Frequency", "Float", default=1000.0),
+    "Versatile second-order filter with selectable type (LPF, HPF, BPF, Notch, etc.). "
+    "Pin names verified from engine exports.",
+    [_in("In", "Audio"),
+     _in("Cutoff Frequency", "Float", default=1000.0),
      _in("Bandwidth", "Float", default=1.0),
-     _in("FilterType", "Enum", default="LPF"),
-     _in("In", "Audio"),
-     _in("Gain (dB)", "Float", required=False)],
+     _in("Gain", "Float", required=False),
+     _in("Type", "Enum", default="LPF")],
     [_out("Out", "Audio")],
     ["filter", "biquad", "subtractive", "frequency", "EQ", "lowpass",
      "highpass", "bandpass", "notch", "underwater", "muffled"],
@@ -810,13 +831,16 @@ _register(_node(
 
 _register(_node(
     "Trigger Counter", "Triggers",
-    "Counts triggers up or down and exposes the current count.",
-    [_in("Reset", "Trigger", required=False),
-     _in("In", "Audio"),
+    "Counts triggers up or down and exposes the current count. "
+    "Pin names verified from engine exports.",
+    [_in("In", "Trigger"),
+     _in("Reset", "Trigger", required=False),
+     _in("Start Value", "Float", required=False, default=0.0),
+     _in("Step Size", "Float", required=False, default=1.0),
      _in("Reset Count", "Int32", required=False)],
-    [_out("Count", "Int32"),
-     _out("On Trigger", "Trigger"),
+    [_out("On Trigger", "Trigger"),
      _out("On Reset", "Trigger"),
+     _out("Count", "Int32"),
      _out("Value", "Float")],
     ["trigger", "counter", "count", "increment", "decrement"],
     complexity=2,
@@ -836,12 +860,13 @@ _register(_node(
 _register(_node(
     "Trigger Filter", "Triggers",
     "Passes or blocks triggers based on probability. Each incoming trigger has a chance "
-    "of passing through based on the Probability input (0.0 = never, 1.0 = always).",
+    "of passing through (Heads) or being blocked (Tails). Pin names verified from exports.",
     [_in("Trigger", "Trigger"),
      _in("Reset", "Trigger", required=False),
      _in("Seed", "Int32", required=False),
      _in("Probability", "Float", required=False, default=1.0)],
-    [_out("Out", "Trigger")],
+    [_out("Heads", "Trigger"),
+     _out("Tails", "Trigger")],
     ["trigger", "filter", "gate", "pass", "block", "probability"],
     complexity=1,
 ))
@@ -889,10 +914,12 @@ _register(_node(
 
 _register(_node(
     "Trigger Repeat", "Triggers",
-    "Repeats trigger at a regular interval (periodic timer).",
+    "Repeats trigger at a regular interval (periodic timer). "
+    "Engine class: UE::TriggerRepeat::None. Pin names verified from exports.",
     [_in("Start", "Trigger"),
      _in("Stop", "Trigger", required=False),
-     _in("Period", "Time", default=0.5)],
+     _in("Period", "Time", default=0.5),
+     _in("Num Repeats", "Int32", required=False, default=-1)],
     [_out("RepeatOut", "Trigger")],
     ["trigger", "repeat", "timer", "periodic", "interval", "clock", "metronome"],
     complexity=2,
@@ -1020,6 +1047,7 @@ _register(_node(
 # -------------------------------------------------------------------
 
 # Arithmetic operators -- support Float, Audio, and Int32 variants
+# Engine pin names verified from exports: PrimaryOperand, AdditionalOperands, Out
 for _op, _symbol, _desc in [
     ("Add", "+", "Adds two values (Float, Audio, or Int32)."),
     ("Subtract", "-", "Subtracts second value from first."),
@@ -1031,13 +1059,25 @@ for _op, _symbol, _desc in [
         _register(_node(
             f"{_op}{_suffix}", "Math",
             f"{_desc} Operates on {_type} data.",
-            [_in("A", _type), _in("B", _type, default=1 if _op == "Multiply" else 0)],
-            [_out("Result", _type)],
+            [_in("PrimaryOperand", _type),
+             _in("AdditionalOperands", _type, default=1 if _op == "Multiply" else 0)],
+            [_out("Out", _type)],
             ["math", _op.lower(), _symbol, "arithmetic", _type.lower()],
             complexity=1,
         ))
 
 del _op, _symbol, _desc, _type, _suffix
+
+# Special variant: Multiply (Audio by Float) — mixes Audio input with Float gain
+_register(_node(
+    "Multiply (Audio by Float)", "Math",
+    "Multiplies audio signal by a float gain value. Common for volume/amplitude control.",
+    [_in("PrimaryOperand", "Audio"),
+     _in("AdditionalOperands", "Float", default=1.0)],
+    [_out("Out", "Audio")],
+    ["math", "multiply", "*", "arithmetic", "gain", "volume", "amplitude"],
+    complexity=1,
+))
 
 # Unary / utility math
 _register(_node(
@@ -1196,6 +1236,21 @@ _register(_node(
 ))
 
 _register(_node(
+    "Audio Mixer (Mono, 3)", "Mix",
+    "3-input mono mixer — real UE5 node name. Mixes three mono signals with per-input gain. "
+    "Engine class: AudioMixer::Audio Mixer (Mono, 3)::None. Pin names verified from exports.",
+    [_in("In 0", "Audio"),
+     _in("Gain 0", "Float", default=1.0),
+     _in("In 1", "Audio", required=False),
+     _in("Gain 1", "Float", required=False, default=1.0),
+     _in("In 2", "Audio", required=False),
+     _in("Gain 2", "Float", required=False, default=1.0)],
+    [_out("Out", "Audio")],
+    ["mix", "mixer", "mono", "sum", "combine", "audio mixer"],
+    complexity=1,
+))
+
+_register(_node(
     "Audio Mixer (Stereo, 2)", "Mix",
     "2-input stereo mixer — real UE5 node name. Mixes two stereo pairs with per-input gain. "
     "Pin names use 'In N L/R' format. From Chris Payne Sound Pads project binary extraction.",
@@ -1299,10 +1354,10 @@ _register(_node(
 
 _register(_node(
     "MIDI To Frequency", "Music",
-    "Converts a MIDI note number (Int32) to frequency in Hz (Float). "
-    "Real pin names from binary: MIDI In → Out Frequency. "
-    "Best practice: send MIDI ints from Blueprint, convert to Hz here inside MetaSounds.",
-    [_in("MIDI In", "Int32", default=69)],
+    "Converts a MIDI note number to frequency in Hz. "
+    "Engine class: UE::MIDI To Frequency::Float. Input is Float (supports fractional MIDI). "
+    "Best practice: send MIDI values from Blueprint, convert to Hz here inside MetaSounds.",
+    [_in("MIDI In", "Float", default=69.0)],
     [_out("Out Frequency", "Float")],
     ["music", "MIDI", "frequency", "convert", "note", "pitch", "Hz"],
     complexity=1,
@@ -1310,11 +1365,13 @@ _register(_node(
 
 _register(_node(
     "MIDI Note Quantizer", "Music",
-    "Quantizes a MIDI note number to the nearest note in a given scale.",
-    [_in("Root Note", "Int32", required=False, default=0),
-     _in("Note In", "Int32"),
-     _in("Scale Degrees", "Array")],
-    [_out("Note Out", "Int32")],
+    "Quantizes a MIDI note number to the nearest note in a given scale. "
+    "Engine class: UE::MIDI Note Quantizer::Audio. All pins are Float type.",
+    [_in("Note In", "Float"),
+     _in("Root Note", "Float", required=False, default=0.0),
+     _in("Scale Range In", "Float", required=False),
+     _in("Scale Degrees", "Float[]")],
+    [_out("Note Out", "Float")],
     ["music", "MIDI", "quantize", "scale", "snap", "tuning"],
     complexity=2,
 ))
@@ -1345,11 +1402,12 @@ _register(_node(
 
 _register(_node(
     "BPM To Seconds", "Music",
-    "Converts beats per minute to a time duration per beat in seconds.",
+    "Converts beats per minute to a time duration per beat in seconds. "
+    "Engine class: UE::BPMToSeconds::None. Output is Time type.",
     [_in("BPM", "Float", default=120.0),
-     _in("Beat Multiplier", "Float"),
-     _in("Division of Whole Note", "Enum")],
-    [_out("Seconds", "Float")],
+     _in("Beat Multiplier", "Float", default=1.0),
+     _in("Divisions of Whole Note", "Float", default=4.0)],
+    [_out("Seconds", "Time")],
     ["music", "BPM", "tempo", "beat", "time", "clock", "rhythm"],
     complexity=1,
 ))
@@ -1373,26 +1431,32 @@ _register(_node(
 
 _register(_node(
     "Random Float", "Random",
-    "Generates a random float within a range when triggered.",
-    [_in("Trigger", "Trigger"),
+    "Generates a random float within a range when triggered. "
+    "Engine class: UE::RandomFloat::None. Pin names verified from exports.",
+    [_in("Next", "Trigger"),
+     _in("Reset", "Trigger", required=False),
+     _in("Seed", "Int32", required=False, default=-1),
      _in("Min", "Float", default=0.0),
-     _in("Max", "Float", default=1.0),
-     _in("Seed", "Int32", required=False, default=-1)],
-    [_out("Value", "Float"),
-     _out("Trigger", "Trigger")],
+     _in("Max", "Float", default=1.0)],
+    [_out("On Next", "Trigger"),
+     _out("On Reset", "Trigger"),
+     _out("Value", "Float")],
     ["random", "float", "variation", "procedural", "range", "jitter"],
     complexity=1,
 ))
 
 _register(_node(
     "Random Int", "Random",
-    "Generates a random integer within a range when triggered.",
-    [_in("Trigger", "Trigger"),
+    "Generates a random integer within a range when triggered. "
+    "Engine class: UE::RandomInt32::None. Pin names verified from exports.",
+    [_in("Next", "Trigger"),
+     _in("Reset", "Trigger", required=False),
+     _in("Seed", "Int32", required=False, default=-1),
      _in("Min", "Int32", default=0),
-     _in("Max", "Int32", default=10),
-     _in("Seed", "Int32", required=False, default=-1)],
-    [_out("Value", "Int32"),
-     _out("Trigger", "Trigger")],
+     _in("Max", "Int32", default=10)],
+    [_out("On Next", "Trigger"),
+     _out("On Reset", "Trigger"),
+     _out("Value", "Int32")],
     ["random", "int", "integer", "variation", "procedural", "range"],
     complexity=1,
 ))
@@ -1539,6 +1603,16 @@ _register(_node(
     [_in("Value", "Float")],
     [_out("Result", "Time")],
     ["convert", "type", "cast", "utility"],
+    complexity=1,
+))
+
+_register(_node(
+    "Audio To Float", "General",
+    "Converts an audio-rate signal to a block-rate float value. "
+    "Engine class: UE::ConversionAudioToFloat::None. Pin names verified from exports.",
+    [_in("In", "Audio")],
+    [_out("Out", "Float")],
+    ["convert", "audio", "float", "rate", "block", "sample"],
     complexity=1,
 ))
 

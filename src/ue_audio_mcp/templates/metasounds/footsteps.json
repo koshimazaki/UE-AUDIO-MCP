@@ -79,8 +79,8 @@
         200
       ],
       "defaults": {
-        "Attack": 0.005,
-        "Decay": 0.15
+        "Attack Time": 0.005,
+        "Decay Time": 0.15
       }
     },
     {
@@ -150,17 +150,17 @@
       "from_node": "wave_player",
       "from_pin": "Audio",
       "to_node": "amp_multiply",
-      "to_pin": "A"
+      "to_pin": "PrimaryOperand"
     },
     {
       "from_node": "ad_env",
-      "from_pin": "Envelope",
+      "from_pin": "Out Envelope",
       "to_node": "amp_multiply",
-      "to_pin": "B"
+      "to_pin": "AdditionalOperands"
     },
     {
       "from_node": "amp_multiply",
-      "from_pin": "Result",
+      "from_pin": "Out",
       "to_node": "lowpass",
       "to_pin": "In"
     },
@@ -184,7 +184,7 @@
     },
     {
       "from_node": "ad_env",
-      "from_pin": "OnDone",
+      "from_pin": "On Done",
       "to_node": "__graph__",
       "to_pin": "OnFinished"
     }
