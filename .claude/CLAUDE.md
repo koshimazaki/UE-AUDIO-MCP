@@ -15,9 +15,9 @@ MCP server for game audio — generating complete Wwise + MetaSounds + Blueprint
 |-----------|-----------|-------|
 | MCP Server | Python (FastMCP) | Main server, stdio transport |
 | Wwise Bridge | `waapi-client` | Official Audiokinetic Python lib, WebSocket :8080 |
-| UE5 Bridge | C++ plugin + TCP (port 9877) | JSON command protocol, 25 commands |
-| Knowledge | Local SQLite + TF-IDF | 144 nodes, 22K+ BP entries, semantic search |
-| Templates | Parameterised JSON | 22 MetaSounds + 30 Blueprint + 6 Wwise |
+| UE5 Bridge | C++ plugin + TCP (port 9877) | JSON command protocol, 35 commands |
+| Knowledge | Local SQLite + TF-IDF | 178 nodes, 643 verified entries, semantic search |
+| Templates | Parameterised JSON | 25 MetaSounds + 30 Blueprint + 6 Wwise |
 
 ## Key APIs
 - **WAAPI**: 87 functions, WAMP/WebSocket on :8080, HTTP on :8090. Wwise MUST be running.
@@ -78,24 +78,45 @@ src/ue_audio_mcp/
 ├── connection.py          → WaapiConnection + UE5PluginConnection singletons
 ├── tools/
 │   ├── wwise_*.py         → WAAPI tool implementations (20 tools)
-│   ├── ms_*.py            → MetaSounds tools (knowledge + builder, 18 tools)
-│   ├── bp_*.py            → Blueprint tools (6 tools)
+│   ├── ms_*.py            → MetaSounds tools (knowledge + builder + sync, 19 tools)
+│   ├── bp_*.py            → Blueprint tools (builder + knowledge + sync, 15 tools)
 │   └── systems.py         → Orchestrator (build_audio_system, build_aaa_project)
 ├── knowledge/
 │   ├── db.py              → SQLite knowledge DB (9 tables, singleton)
 │   ├── embeddings.py      → TF-IDF + cosine similarity search
 │   ├── wwise_types.py     → Object types, properties, defaults
-│   ├── metasound_nodes.py → 144 nodes, 798 pins, 20 categories
+│   ├── metasound_nodes.py → 178 nodes, 23 categories, 128 class_name mappings
 │   └── tutorials.py       → Builder API catalogue, patterns, conversions
 ├── templates/
-│   ├── metasounds/        → 22 MS graph templates (JSON)
+│   ├── metasounds/        → 25 MS graph templates (JSON, 25/25 validated)
 │   ├── blueprints/        → 30 BP templates (JSON)
 │   └── wwise/             → 6 Wwise hierarchy templates (JSON)
 └── graph_schema.py        → Graph spec format + 7-stage validator
-ue5_plugin/UEAudioMCP/     → C++ plugin (25 commands, TCP:9877)
+ue5_plugin/UEAudioMCP/     → C++ plugin (35 commands, TCP:9877)
 ue5_plugin/SIDMetaSoundNodes/ → ReSID SID chip nodes (5 custom nodes)
+scripts/build_plugin.sh    → Sync source + compile via UBT
+scripts/sync_nodes_from_engine.py  → Sync 842 MS nodes from engine
+scripts/sync_bp_from_engine.py     → Sync 979 BP funcs from engine
+scripts/verify_templates.py        → 4-check template verification
 research/                  → 3 core reference docs (WAAPI, MetaSounds, MCP landscape)
-tests/                     → 332 tests across 20 files
+tests/                     → 432 tests across 20 files
+```
+
+## Build & Deploy
+```bash
+# Sync source + compile (UE Editor must be closed)
+./scripts/build_plugin.sh
+
+# Sync only (no compile — UE recompiles on open)
+./scripts/build_plugin.sh --sync-only
+
+# Clean build (stale intermediates)
+./scripts/build_plugin.sh --clean
+
+# Paths:
+#   Engine:  /Volumes/Koshi_T7/UN5.3/UE_5.7/
+#   Project: ~/Documents/Unreal Projects/UEIntroProject/
+#   Source:  ue5_plugin/UEAudioMCP/
 ```
 
 ## Common Patterns (6 Game Audio Systems)
@@ -112,4 +133,4 @@ tests/                     → 332 tests across 20 files
 - `/ue-agent` — Launch UE5 specialist for MetaSounds/Blueprint/DSP tasks
 - `/wwise-agent` — Launch Wwise specialist for WAAPI/mixing/routing tasks
 - `/build-system` — Full pipeline audio system generator
-- `/mcp-plugin` — UE5 plugin TCP control (25 commands)
+- `/mcp-plugin` — UE5 plugin TCP control (35 commands)
