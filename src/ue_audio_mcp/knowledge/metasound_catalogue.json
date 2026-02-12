@@ -270,37 +270,48 @@
         {
           "name": "Attack Time",
           "type": "Time",
-          "required": true
+          "required": true,
+          "default": 0.009999999776482582
         },
         {
-          "name": "Delay Time",
+          "name": "Decay Time",
           "type": "Time",
-          "required": true
+          "default": 0.20000000298023224
         },
         {
           "name": "Sustain Level",
           "type": "Float",
-          "required": true
+          "required": true,
+          "default": 0.5
         },
         {
           "name": "Release Time",
           "type": "Time",
-          "required": true
+          "required": true,
+          "default": 1
         },
         {
           "name": "Attack Curve",
           "type": "Float",
-          "required": true
+          "required": true,
+          "default": 1
         },
         {
           "name": "Decay Curve",
           "type": "Float",
-          "required": true
+          "required": true,
+          "default": 1
         },
         {
           "name": "Release Curve",
           "type": "Float",
-          "required": true
+          "required": true,
+          "default": 1
+        },
+        {
+          "name": "Hard Reset",
+          "type": "Bool",
+          "default": false
         }
       ],
       "outputs": [
@@ -355,43 +366,51 @@
         },
         {
           "name": "Attack Time",
-          "type": "Float",
-          "required": false
+          "type": "Time",
+          "required": false,
+          "default": 0.009999999776482582
         },
         {
           "name": "Decay Time",
-          "type": "Float",
-          "required": false
+          "type": "Time",
+          "required": false,
+          "default": 0.20000000298023224
         },
         {
           "name": "Sustain Level",
           "type": "Float",
-          "required": false
+          "required": false,
+          "default": 0.5
         },
         {
           "name": "Release Time",
-          "type": "Float",
-          "required": false
+          "type": "Time",
+          "required": false,
+          "default": 1
         },
         {
           "name": "Attack Curve",
           "type": "Float",
-          "required": false
+          "required": false,
+          "default": 1
         },
         {
           "name": "Decay Curve",
           "type": "Float",
-          "required": false
+          "required": false,
+          "default": 1
         },
         {
           "name": "Release Curve",
           "type": "Float",
-          "required": false
+          "required": false,
+          "default": 1
         },
         {
           "name": "Hard Reset",
           "type": "Bool",
-          "required": false
+          "required": false,
+          "default": false
         }
       ],
       "outputs": [
@@ -440,43 +459,78 @@
       "description": "Full ADSR envelope outputting block-rate float.",
       "inputs": [
         {
-          "name": "Trigger",
-          "type": "Trigger",
-          "required": true
+          "name": "Trigger Attack",
+          "type": "Trigger"
         },
         {
-          "name": "Attack",
+          "name": "Trigger Release",
+          "type": "Trigger"
+        },
+        {
+          "name": "Attack Time",
           "type": "Time",
-          "required": true,
-          "default": 0.01
+          "default": 0.009999999776482582
         },
         {
-          "name": "Decay",
+          "name": "Decay Time",
           "type": "Time",
-          "required": true,
-          "default": 0.1
+          "default": 0.20000000298023224
         },
         {
-          "name": "Sustain",
+          "name": "Sustain Level",
           "type": "Float",
-          "required": true,
-          "default": 0.7
+          "default": 0.5
         },
         {
-          "name": "Release",
+          "name": "Release Time",
           "type": "Time",
-          "required": true,
-          "default": 0.2
+          "default": 1
+        },
+        {
+          "name": "Attack Curve",
+          "type": "Float",
+          "default": 1
+        },
+        {
+          "name": "Decay Curve",
+          "type": "Float",
+          "default": 1
+        },
+        {
+          "name": "Release Curve",
+          "type": "Float",
+          "default": 1
+        },
+        {
+          "name": "Hard Reset",
+          "type": "Bool",
+          "default": false
         }
       ],
       "outputs": [
         {
-          "name": "Envelope",
-          "type": "Float"
+          "name": "On Attack Triggered",
+          "type": "Trigger"
         },
         {
-          "name": "OnDone",
+          "name": "On Decay Triggered",
           "type": "Trigger"
+        },
+        {
+          "name": "On Sustain Triggered",
+          "type": "Trigger"
+        },
+        {
+          "name": "On Release Triggered",
+          "type": "Trigger"
+        },
+        {
+          "name": "On Done",
+          "type": "Trigger"
+        },
+        {
+          "name": "Out Envelope",
+          "type": "Float"
         }
       ],
       "tags": [
@@ -498,15 +552,14 @@
       "description": "Returns the absolute value of a float.",
       "inputs": [
         {
-          "name": "Value",
-          "type": "Float",
-          "required": true
+          "name": "Input",
+          "type": "Audio"
         }
       ],
       "outputs": [
         {
-          "name": "Result",
-          "type": "Float"
+          "name": "Value",
+          "type": "Audio"
         }
       ],
       "tags": [
@@ -526,12 +579,12 @@
       "inputs": [
         {
           "name": "PrimaryOperand",
-          "type": "Float",
+          "type": "Audio",
           "required": true
         },
         {
           "name": "AdditionalOperands",
-          "type": "Float",
+          "type": "Audio",
           "required": true,
           "default": 0
         }
@@ -539,7 +592,7 @@
       "outputs": [
         {
           "name": "Out",
-          "type": "Float"
+          "type": "Audio"
         }
       ],
       "tags": [
@@ -664,32 +717,37 @@
         {
           "name": "Base Frequency",
           "type": "Float",
-          "required": true
+          "required": true,
+          "default": 440
         },
         {
           "name": "HarmonicMultipliers",
-          "type": "Array",
+          "type": "Float[]",
           "required": false
         },
         {
           "name": "Amplitudes",
-          "type": "Array",
+          "type": "Float[]",
           "required": false
         },
         {
           "name": "Phases",
-          "type": "Array",
+          "type": "Float[]",
           "required": false
         },
         {
           "name": "Pan Amounts",
-          "type": "Array",
+          "type": "Float[]",
           "required": false
         }
       ],
       "outputs": [
         {
-          "name": "Out Left / Right Audio",
+          "name": "Out Left Audio",
+          "type": "Audio"
+        },
+        {
+          "name": "Out Right Audio",
           "type": "Audio"
         }
       ],
@@ -710,14 +768,16 @@
       "description": "Concatenates two arrays into one.",
       "inputs": [
         {
-          "name": "Array A",
-          "type": "Float[]",
-          "required": true
+          "name": "Trigger",
+          "type": "Trigger"
         },
         {
-          "name": "Array B",
-          "type": "Float[]",
-          "required": true
+          "name": "Left Array",
+          "type": "Float[]"
+        },
+        {
+          "name": "Right Array",
+          "type": "Float[]"
         }
       ],
       "outputs": [
@@ -743,6 +803,10 @@
       "description": "Gets an element from an array at the specified index.",
       "inputs": [
         {
+          "name": "Trigger",
+          "type": "Trigger"
+        },
+        {
           "name": "Array",
           "type": "Float[]",
           "required": true
@@ -756,7 +820,7 @@
       ],
       "outputs": [
         {
-          "name": "Value",
+          "name": "Element",
           "type": "Float"
         }
       ],
@@ -835,6 +899,10 @@
       "description": "Sets an element in an array at the specified index.",
       "inputs": [
         {
+          "name": "Trigger",
+          "type": "Trigger"
+        },
+        {
           "name": "Array",
           "type": "Float[]",
           "required": true
@@ -873,14 +941,20 @@
       "description": "Returns array elements in random order without repeats until exhausted.",
       "inputs": [
         {
-          "name": "Trigger",
-          "type": "Trigger",
-          "required": true
+          "name": "Next",
+          "type": "Trigger"
         },
         {
-          "name": "Array",
-          "type": "WaveAsset[]",
-          "required": true
+          "name": "Shuffle",
+          "type": "Trigger"
+        },
+        {
+          "name": "Reset Seed",
+          "type": "Trigger"
+        },
+        {
+          "name": "In Array",
+          "type": "Float[]"
         },
         {
           "name": "Seed",
@@ -889,24 +963,32 @@
           "default": -1
         },
         {
-          "name": "AutoReset",
+          "name": "Auto Shuffle",
           "type": "Bool",
-          "required": false,
           "default": true
+        },
+        {
+          "name": "Enable Shared State",
+          "type": "Bool",
+          "default": false
         }
       ],
       "outputs": [
         {
-          "name": "Value",
-          "type": "WaveAsset"
-        },
-        {
-          "name": "Index",
-          "type": "Int32"
-        },
-        {
-          "name": "Trigger",
+          "name": "On Next",
           "type": "Trigger"
+        },
+        {
+          "name": "On Shuffle",
+          "type": "Trigger"
+        },
+        {
+          "name": "On Reset Seed",
+          "type": "Trigger"
+        },
+        {
+          "name": "Value",
+          "type": "Float"
         }
       ],
       "tags": [
@@ -926,6 +1008,10 @@
       "description": "Extracts a contiguous subset of elements from an array.",
       "inputs": [
         {
+          "name": "Trigger",
+          "type": "Trigger"
+        },
+        {
           "name": "Array",
           "type": "Float[]",
           "required": true
@@ -937,10 +1023,8 @@
           "default": 0
         },
         {
-          "name": "Count",
-          "type": "Int32",
-          "required": true,
-          "default": 1
+          "name": "End Index",
+          "type": "Int32"
         }
       ],
       "outputs": [
@@ -966,13 +1050,17 @@
       "inputs": [
         {
           "name": "Audio Bus",
-          "type": "WaveAsset",
+          "type": "AudioBusAsset",
           "required": false
         }
       ],
       "outputs": [
         {
-          "name": "Out X",
+          "name": "Out 0",
+          "type": "Audio"
+        },
+        {
+          "name": "Out 1",
           "type": "Audio"
         }
       ],
@@ -1575,6 +1663,11 @@
       "description": "Dynamic range compressor with threshold/ratio/knee, parallel mix (Wet/Dry), optional analog modeling, peak/RMS envelope modes, and upwards compression. At 30:1 ratio with low threshold acts as brick-wall limiter for vehicle/engine layers.",
       "inputs": [
         {
+          "name": "Bypass",
+          "type": "Bool",
+          "default": false
+        },
+        {
           "name": "Audio",
           "type": "Audio",
           "required": true
@@ -1583,37 +1676,37 @@
           "name": "Ratio",
           "type": "Float",
           "required": true,
-          "default": 4.0
+          "default": 1.5
         },
         {
           "name": "Threshold dB",
           "type": "Float",
           "required": true,
-          "default": -20.0
+          "default": -6
         },
         {
           "name": "Attack Time",
           "type": "Time",
           "required": true,
-          "default": 0.01
+          "default": 0.009999999776482582
         },
         {
           "name": "Release Time",
           "type": "Time",
           "required": true,
-          "default": 0.1
+          "default": 0.10000000149011612
         },
         {
           "name": "Lookahead Time",
           "type": "Time",
           "required": false,
-          "default": 0.01
+          "default": 0.009999999776482582
         },
         {
           "name": "Knee",
           "type": "Float",
           "required": false,
-          "default": 6.0
+          "default": 10
         },
         {
           "name": "Sidechain",
@@ -1624,13 +1717,13 @@
           "name": "Envelope Mode",
           "type": "Enum",
           "required": false,
-          "default": "Peak"
+          "default": 0
         },
         {
           "name": "Analog Mode",
           "type": "Bool",
           "required": false,
-          "default": false
+          "default": true
         },
         {
           "name": "Upwards Mode",
@@ -1642,7 +1735,7 @@
           "name": "Wet/Dry",
           "type": "Float",
           "required": false,
-          "default": 1.0
+          "default": 1
         }
       ],
       "outputs": [
@@ -1682,15 +1775,18 @@
           "required": true
         },
         {
-          "name": "Left / Right Array",
-          "type": "Array",
-          "required": true
+          "name": "Left Array",
+          "type": "Float[]"
+        },
+        {
+          "name": "Right Array",
+          "type": "Float[]"
         }
       ],
       "outputs": [
         {
           "name": "Array",
-          "type": "Array"
+          "type": "Float[]"
         }
       ],
       "tags": [
@@ -1706,15 +1802,14 @@
       "description": "Converts between compatible MetaSound data types.",
       "inputs": [
         {
-          "name": "Value",
-          "type": "Float",
-          "required": true
+          "name": "Float",
+          "type": "Float"
         }
       ],
       "outputs": [
         {
-          "name": "Result",
-          "type": "Time"
+          "name": "Bool",
+          "type": "Bool"
         }
       ],
       "tags": [
@@ -1837,38 +1932,43 @@
       "description": "Mono delay line with dry/wet mix.",
       "inputs": [
         {
-          "name": "Feedback",
-          "type": "Float",
-          "required": false,
-          "default": 0.3
-        },
-        {
           "name": "In",
           "type": "Audio",
           "required": true
         },
         {
           "name": "Delay Time",
-          "type": "Time",
+          "type": "Audio",
           "required": false,
-          "default": 0.5
+          "default": 1
         },
         {
           "name": "Dry Level",
           "type": "Float",
           "required": true,
-          "default": 1.0
+          "default": 0
         },
         {
           "name": "Wet Level",
           "type": "Float",
           "required": true,
-          "default": 1.0
+          "default": 1
+        },
+        {
+          "name": "Feedback",
+          "type": "Float",
+          "required": false,
+          "default": 0
         },
         {
           "name": "Max Delay Time",
           "type": "Time",
-          "required": false
+          "required": false,
+          "default": 5
+        },
+        {
+          "name": "Reset",
+          "type": "Trigger"
         }
       ],
       "outputs": [
@@ -2020,12 +2120,14 @@
         {
           "name": "Pitch Shift",
           "type": "Float",
-          "required": true
+          "required": true,
+          "default": 0
         },
         {
           "name": "Delay Length",
-          "type": "Time",
-          "required": true
+          "type": "Float",
+          "required": true,
+          "default": 30
         }
       ],
       "outputs": [
@@ -2056,13 +2158,15 @@
         },
         {
           "name": "Depth",
-          "type": "Float",
-          "required": false
+          "type": "Int32",
+          "required": false,
+          "default": 4
         },
         {
           "name": "Feedback",
           "type": "Float",
-          "required": false
+          "required": false,
+          "default": 0.7070000171661377
         }
       ],
       "outputs": [
@@ -2123,20 +2227,21 @@
       "inputs": [
         {
           "name": "PrimaryOperand",
-          "type": "Audio",
-          "required": true
+          "type": "Float",
+          "required": true,
+          "default": 1
         },
         {
           "name": "AdditionalOperands",
-          "type": "Audio",
+          "type": "Float",
           "required": true,
-          "default": 0
+          "default": 1
         }
       ],
       "outputs": [
         {
           "name": "Out",
-          "type": "Audio"
+          "type": "Float"
         }
       ],
       "tags": [
@@ -2229,15 +2334,9 @@
           "required": true
         },
         {
-          "name": "Cutoff Frequency",
+          "name": "Sidechain",
           "type": "Audio",
-          "required": true
-        },
-        {
-          "name": "Bandwidth",
-          "type": "Float",
-          "required": true,
-          "default": 1.0
+          "required": false
         },
         {
           "name": "FilterType",
@@ -2246,64 +2345,69 @@
           "default": "LPF"
         },
         {
-          "name": "Sidechain",
-          "type": "Audio",
-          "required": false
-        },
-        {
           "name": "Frequency",
           "type": "Float",
-          "required": true
+          "required": true,
+          "default": 1000
         },
         {
           "name": "Q",
           "type": "Float",
-          "required": true
+          "required": true,
+          "default": 1
         },
         {
           "name": "Threshold dB",
           "type": "Float",
-          "required": true
+          "required": true,
+          "default": -12
         },
         {
           "name": "Ratio",
           "type": "Float",
-          "required": true
+          "required": true,
+          "default": 4
         },
         {
           "name": "Knee",
           "type": "Float",
-          "required": true
+          "required": true,
+          "default": 12
         },
         {
           "name": "Range",
           "type": "Float",
-          "required": true
+          "required": true,
+          "default": -60
         },
         {
-          "name": "Gain (dB)",
+          "name": "Gain",
           "type": "Float",
-          "required": true
+          "default": 0
         },
         {
           "name": "AttackTime",
           "type": "Time",
-          "required": true
+          "required": true,
+          "default": 0.009999999776482582
         },
         {
           "name": "ReleaseTime",
           "type": "Time",
-          "required": true
+          "required": true,
+          "default": 0.10000000149011612
         },
         {
           "name": "EnvelopeMode",
           "type": "Enum",
-          "required": true
+          "required": true,
+          "default": 1
         },
         {
           "name": "AnalogMode",
-          "type": "Enum",
-          "required": true
+          "type": "Bool",
+          "required": true,
+          "default": true
         }
       ],
       "outputs": [
@@ -2330,6 +2434,11 @@
       "description": "Tracks the amplitude envelope of an incoming audio signal.",
       "inputs": [
         {
+          "name": "Enable",
+          "type": "Bool",
+          "default": true
+        },
+        {
           "name": "In",
           "type": "Audio",
           "required": true
@@ -2337,18 +2446,20 @@
         {
           "name": "Attack Time",
           "type": "Time",
-          "required": true
+          "required": true,
+          "default": 0.009999999776482582
         },
         {
           "name": "Release Time",
           "type": "Time",
-          "required": true
+          "required": true,
+          "default": 0.10000000149011612
         },
         {
           "name": "Peak Mode",
-          "type": "Bool",
+          "type": "Enum",
           "required": false,
-          "default": false
+          "default": 0
         }
       ],
       "outputs": [
@@ -2380,24 +2491,24 @@
       "inputs": [
         {
           "name": "WaveTable",
-          "type": "WaveAsset",
+          "type": "WaveTable",
           "required": false
         },
         {
-          "name": "Position",
+          "name": "Input",
           "type": "Float",
-          "required": true,
-          "default": 0.0
+          "default": 0
         },
         {
           "name": "Interpolation",
           "type": "Enum",
-          "required": false
+          "required": false,
+          "default": 1
         }
       ],
       "outputs": [
         {
-          "name": "Value",
+          "name": "Output",
           "type": "Float"
         }
       ],
@@ -2454,24 +2565,20 @@
         {
           "name": "Modulation Rate",
           "type": "Float",
-          "required": true
+          "required": true,
+          "default": 0.5
         },
         {
           "name": "Modulation Depth",
           "type": "Float",
-          "required": true
-        },
-        {
-          "name": "Feedback",
-          "type": "Float",
-          "required": false,
-          "default": 0.0
+          "required": true,
+          "default": 0.5
         },
         {
           "name": "Center Delay",
-          "type": "Time",
+          "type": "Float",
           "required": true,
-          "default": 0.002
+          "default": 0.5
         },
         {
           "name": "Mix Level",
@@ -2544,15 +2651,14 @@
       "description": "Converts a Float value to Int32 (truncation).",
       "inputs": [
         {
-          "name": "Value",
-          "type": "Float",
-          "required": true
+          "name": "Int32",
+          "type": "Int32"
         }
       ],
       "outputs": [
         {
-          "name": "Result",
-          "type": "Int32"
+          "name": "Float",
+          "type": "Float"
         }
       ],
       "tags": [
@@ -2632,7 +2738,7 @@
         },
         {
           "name": "Array",
-          "type": "Array",
+          "type": "Float[]",
           "required": true
         },
         {
@@ -2690,6 +2796,14 @@
         {
           "name": "Duration",
           "type": "Time"
+        },
+        {
+          "name": "Name",
+          "type": "String"
+        },
+        {
+          "name": "Path",
+          "type": "String"
         }
       ],
       "tags": [
@@ -2785,48 +2899,62 @@
         },
         {
           "name": "Grain Delay",
-          "type": "Time",
-          "required": true
+          "type": "Float",
+          "required": true,
+          "default": 128
         },
         {
           "name": "Grain Delay Range",
-          "type": "Time",
-          "required": false
+          "type": "Float",
+          "required": false,
+          "default": 0
         },
         {
           "name": "Grain Duration",
-          "type": "Time",
-          "required": true
+          "type": "Float",
+          "required": true,
+          "default": 128
         },
         {
           "name": "Grain Duration Range",
-          "type": "Time",
-          "required": false
+          "type": "Float",
+          "required": false,
+          "default": 0
         },
         {
           "name": "Pitch Shift",
           "type": "Float",
-          "required": true
+          "required": true,
+          "default": 0
         },
         {
           "name": "Pitch Shift Range",
           "type": "Float",
-          "required": false
+          "required": false,
+          "default": 0
         },
         {
           "name": "Grain Envelope",
           "type": "Enum",
-          "required": false
+          "required": false,
+          "default": 0
         },
         {
           "name": "Max Grain Count",
           "type": "Int32",
-          "required": false
+          "required": false,
+          "default": 16
         },
         {
           "name": "Feedback Amount",
           "type": "Float",
-          "required": true
+          "required": true,
+          "default": 0
+        },
+        {
+          "name": "Max Delay Time",
+          "type": "Time",
+          "default": 2
         }
       ],
       "outputs": [
@@ -2903,15 +3031,14 @@
       "description": "Converts an Int32 value to Float.",
       "inputs": [
         {
-          "name": "Value",
-          "type": "Int32",
-          "required": true
+          "name": "Float",
+          "type": "Float"
         }
       ],
       "outputs": [
         {
-          "name": "Result",
-          "type": "Float"
+          "name": "Int32",
+          "type": "Int32"
         }
       ],
       "tags": [
@@ -2998,27 +3125,21 @@
       "description": "Classic 4-pole ladder filter topology with resonance.",
       "inputs": [
         {
+          "name": "In",
+          "type": "Audio",
+          "required": true
+        },
+        {
           "name": "Cutoff Frequency",
           "type": "Float",
           "required": true,
-          "default": 1000.0
+          "default": 20000
         },
         {
           "name": "Resonance",
           "type": "Float",
           "required": true,
-          "default": 0.5
-        },
-        {
-          "name": "FilterType",
-          "type": "Enum",
-          "required": true,
-          "default": "LPF"
-        },
-        {
-          "name": "In",
-          "type": "Audio",
-          "required": true
+          "default": 1
         }
       ],
       "outputs": [
@@ -3053,22 +3174,26 @@
         {
           "name": "Input Gain dB",
           "type": "Float",
-          "required": false
+          "required": false,
+          "default": 0
         },
         {
           "name": "Threshold dB",
           "type": "Float",
-          "required": true
+          "required": true,
+          "default": 0
         },
         {
           "name": "Release Time",
           "type": "Time",
-          "required": true
+          "required": true,
+          "default": 0.10000000149011612
         },
         {
           "name": "Knee",
-          "type": "Float",
-          "required": false
+          "type": "Enum",
+          "required": false,
+          "default": 0
         }
       ],
       "outputs": [
@@ -3180,14 +3305,17 @@
       "description": "Computes the natural logarithm of a float.",
       "inputs": [
         {
-          "name": "Value",
-          "type": "Float",
-          "required": true
+          "name": "PrimaryOperand",
+          "type": "Float"
+        },
+        {
+          "name": "AdditionalOperands",
+          "type": "Float"
         }
       ],
       "outputs": [
         {
-          "name": "Result",
+          "name": "Out",
           "type": "Float"
         }
       ],
@@ -3207,15 +3335,16 @@
       "description": "Generates smooth random noise at low frequencies for organic modulation.",
       "inputs": [
         {
+          "name": "Rate",
+          "type": "Float",
+          "required": true,
+          "default": 5
+        },
+        {
           "name": "Seed",
           "type": "Int32",
           "required": false,
           "default": -1
-        },
-        {
-          "name": "Rate",
-          "type": "Float",
-          "required": true
         },
         {
           "name": "Reset Seed",
@@ -3230,33 +3359,38 @@
         {
           "name": "Interpolation",
           "type": "Enum",
-          "required": false
+          "required": false,
+          "default": 2
         },
         {
           "name": "Rate Jitter",
           "type": "Float",
-          "required": false
+          "required": false,
+          "default": 0
         },
         {
           "name": "Step Limit",
           "type": "Float",
-          "required": false
+          "required": false,
+          "default": 1
         },
         {
           "name": "Min Value",
           "type": "Float",
-          "required": false
+          "required": false,
+          "default": 0
         },
         {
           "name": "Max Value",
           "type": "Float",
-          "required": false
+          "required": false,
+          "default": 1
         }
       ],
       "outputs": [
         {
           "name": "Out",
-          "type": "Audio"
+          "type": "Float"
         },
         {
           "name": "Normalized",
@@ -3975,19 +4109,19 @@
       "inputs": [
         {
           "name": "A",
-          "type": "Float",
+          "type": "Audio",
           "required": true
         },
         {
           "name": "B",
-          "type": "Float",
+          "type": "Audio",
           "required": true
         }
       ],
       "outputs": [
         {
           "name": "Value",
-          "type": "Float"
+          "type": "Audio"
         }
       ],
       "tags": [
@@ -4007,14 +4141,18 @@
       "description": "The Mid-Side Decode node converts a stereo signal with mid and side channels to left and right channels.",
       "inputs": [
         {
-          "name": "In Mid / Side",
-          "type": "Float",
-          "required": true
+          "name": "In Left",
+          "type": "Audio"
+        },
+        {
+          "name": "In Right",
+          "type": "Audio"
         },
         {
           "name": "Spread Amount",
           "type": "Float",
-          "required": true
+          "required": true,
+          "default": 0.5
         },
         {
           "name": "Equal Power",
@@ -4025,7 +4163,11 @@
       ],
       "outputs": [
         {
-          "name": "Out Left / Right",
+          "name": "Out Mid",
+          "type": "Audio"
+        },
+        {
+          "name": "Out Side",
           "type": "Audio"
         }
       ],
@@ -4044,14 +4186,18 @@
       "description": "The Mid-Side Encode node converts a stereo signal with left and right channels to mid and side channels.",
       "inputs": [
         {
-          "name": "In Left / Right",
-          "type": "Float",
-          "required": true
+          "name": "In Mid",
+          "type": "Audio"
+        },
+        {
+          "name": "In Side",
+          "type": "Audio"
         },
         {
           "name": "Spread Amount",
           "type": "Float",
-          "required": true
+          "required": true,
+          "default": 0.5
         },
         {
           "name": "Equal Power",
@@ -4062,7 +4208,11 @@
       ],
       "outputs": [
         {
-          "name": "Out Mid / Side",
+          "name": "Out Left",
+          "type": "Audio"
+        },
+        {
+          "name": "Out Right",
           "type": "Audio"
         }
       ],
@@ -4081,35 +4231,31 @@
       "description": "Converts between stereo L/R and mid/side representation for width control.",
       "inputs": [
         {
-          "name": "Audio L",
-          "type": "Audio",
-          "required": true
+          "name": "In Mid",
+          "type": "Audio"
         },
         {
-          "name": "Audio R",
-          "type": "Audio",
-          "required": true
+          "name": "In Side",
+          "type": "Audio"
         },
         {
-          "name": "Mode",
-          "type": "Enum",
-          "required": true,
-          "default": "Encode"
-        },
-        {
-          "name": "Width",
+          "name": "Spread Amount",
           "type": "Float",
-          "required": false,
-          "default": 1.0
+          "default": 0.5
+        },
+        {
+          "name": "Equal Power",
+          "type": "Bool",
+          "default": false
         }
       ],
       "outputs": [
         {
-          "name": "Out A",
+          "name": "Out Left",
           "type": "Audio"
         },
         {
-          "name": "Out B",
+          "name": "Out Right",
           "type": "Audio"
         }
       ],
@@ -4134,19 +4280,19 @@
       "inputs": [
         {
           "name": "A",
-          "type": "Float",
+          "type": "Audio",
           "required": true
         },
         {
           "name": "B",
-          "type": "Float",
+          "type": "Audio",
           "required": true
         }
       ],
       "outputs": [
         {
           "name": "Value",
-          "type": "Float"
+          "type": "Audio"
         }
       ],
       "tags": [
@@ -4166,21 +4312,20 @@
       "description": "Returns the remainder of dividing A by B.",
       "inputs": [
         {
-          "name": "A",
-          "type": "Float",
-          "required": true
+          "name": "PrimaryOperand",
+          "type": "Int32",
+          "default": 1
         },
         {
-          "name": "B",
-          "type": "Float",
-          "required": true,
-          "default": 1.0
+          "name": "AdditionalOperands",
+          "type": "Int32",
+          "default": 1
         }
       ],
       "outputs": [
         {
-          "name": "Result",
-          "type": "Float"
+          "name": "Out",
+          "type": "Int32"
         }
       ],
       "tags": [
@@ -4203,9 +4348,59 @@
           "name": "In",
           "type": "Audio",
           "required": true
+        },
+        {
+          "name": "Filter Order",
+          "type": "Enum"
+        },
+        {
+          "name": "Phase Compensate",
+          "type": "Bool",
+          "default": true
+        },
+        {
+          "name": "Crossover 0",
+          "type": "Float",
+          "default": 500
+        },
+        {
+          "name": "Crossover 1",
+          "type": "Float",
+          "default": 1000
+        },
+        {
+          "name": "Crossover 2",
+          "type": "Float",
+          "default": 1500
+        },
+        {
+          "name": "Crossover 3",
+          "type": "Float",
+          "default": 2000
         }
       ],
-      "outputs": [],
+      "outputs": [
+        {
+          "name": "Band 0 Out",
+          "type": "Audio"
+        },
+        {
+          "name": "Band 1 Out",
+          "type": "Audio"
+        },
+        {
+          "name": "Band 2 Out",
+          "type": "Audio"
+        },
+        {
+          "name": "Band 3 Out",
+          "type": "Audio"
+        },
+        {
+          "name": "Band 4 Out",
+          "type": "Audio"
+        }
+      ],
       "tags": [
         "filter",
         "crossover",
@@ -4231,7 +4426,7 @@
           "name": "Gain 0",
           "type": "Float",
           "required": true,
-          "default": 1.0
+          "default": 1
         },
         {
           "name": "In 1",
@@ -4242,29 +4437,7 @@
           "name": "Gain 1",
           "type": "Float",
           "required": false,
-          "default": 1.0
-        },
-        {
-          "name": "In 2",
-          "type": "Audio",
-          "required": false
-        },
-        {
-          "name": "Gain 2",
-          "type": "Float",
-          "required": false,
-          "default": 1.0
-        },
-        {
-          "name": "In 3",
-          "type": "Audio",
-          "required": false
-        },
-        {
-          "name": "Gain 3",
-          "type": "Float",
-          "required": false,
-          "default": 1.0
+          "default": 1
         }
       ],
       "outputs": [
@@ -4292,12 +4465,12 @@
       "inputs": [
         {
           "name": "PrimaryOperand",
-          "type": "Float",
+          "type": "Audio",
           "required": true
         },
         {
           "name": "AdditionalOperands",
-          "type": "Float",
+          "type": "Audio",
           "required": true,
           "default": 1
         }
@@ -4305,7 +4478,7 @@
       "outputs": [
         {
           "name": "Out",
-          "type": "Float"
+          "type": "Audio"
         }
       ],
       "tags": [
@@ -4538,6 +4711,11 @@
           "type": "Int32",
           "required": false,
           "default": -1
+        },
+        {
+          "name": "Type",
+          "type": "Enum",
+          "default": 0
         }
       ],
       "outputs": [
@@ -4567,6 +4745,11 @@
           "type": "Int32",
           "required": false,
           "default": -1
+        },
+        {
+          "name": "Type",
+          "type": "Enum",
+          "default": 0
         }
       ],
       "outputs": [
@@ -4593,7 +4776,7 @@
       "inputs": [
         {
           "name": "Array",
-          "type": "Array",
+          "type": "Float[]",
           "required": true
         }
       ],
@@ -4688,36 +4871,43 @@
       "description": "Perlin-noise-based signal for smooth organic modulation.",
       "inputs": [
         {
-          "name": "Seed",
-          "type": "Int32",
-          "required": false,
-          "default": -1
-        },
-        {
           "name": "X",
-          "type": "Float",
+          "type": "Audio",
           "required": true
         },
         {
           "name": "Layers",
           "type": "Int32",
-          "required": false
+          "required": false,
+          "default": 1
+        },
+        {
+          "name": "Seed",
+          "type": "Float",
+          "required": false,
+          "default": -1
         },
         {
           "name": "Min Value",
           "type": "Float",
-          "required": false
+          "required": false,
+          "default": -1
         },
         {
           "name": "Max Value",
           "type": "Float",
-          "required": false
+          "required": false,
+          "default": 1
         }
       ],
       "outputs": [
         {
+          "name": "Output",
+          "type": "Audio"
+        },
+        {
           "name": "Normalized",
-          "type": "Float"
+          "type": "Audio"
         }
       ],
       "tags": [
@@ -4738,14 +4928,51 @@
       "description": "Plate reverb effect — simulates metal plate vibration for dense, smooth reverb tails. From TechAudioTools SFX Generator (Eric Buchholz). Used as one of three parallel temporal effects (Delay + Flanger + Plate Reverb) in the send effects section.",
       "inputs": [
         {
-          "name": "Audio",
-          "type": "Audio",
-          "required": true
+          "name": "Bypass",
+          "type": "Bool",
+          "default": false
         },
         {
-          "name": "Damping",
+          "name": "In Left",
+          "type": "Audio"
+        },
+        {
+          "name": "In Right",
+          "type": "Audio"
+        },
+        {
+          "name": "Dry Level",
           "type": "Float",
-          "required": true,
+          "default": 1
+        },
+        {
+          "name": "Wet Level",
+          "type": "Float",
+          "default": 1
+        },
+        {
+          "name": "Delay (ms)",
+          "type": "Float",
+          "default": 0
+        },
+        {
+          "name": "Gain (dB)",
+          "type": "Float",
+          "default": 0
+        },
+        {
+          "name": "Bandwidth",
+          "type": "Float",
+          "default": 0.5
+        },
+        {
+          "name": "Diffusion",
+          "type": "Float",
+          "default": 0.5
+        },
+        {
+          "name": "Dampening",
+          "type": "Float",
           "default": 0.5
         },
         {
@@ -4755,21 +4982,18 @@
           "default": 0.5
         },
         {
-          "name": "DryWet",
+          "name": "Density",
           "type": "Float",
-          "required": false,
           "default": 0.5
-        },
-        {
-          "name": "PreDelay",
-          "type": "Time",
-          "required": false,
-          "default": 0.02
         }
       ],
       "outputs": [
         {
-          "name": "Audio",
+          "name": "Out Left",
+          "type": "Audio"
+        },
+        {
+          "name": "Out Right",
           "type": "Audio"
         }
       ],
@@ -4811,13 +5035,48 @@
           "name": "Dry Level",
           "type": "Float",
           "required": false,
-          "default": 0.0
+          "default": 1
         },
         {
           "name": "Wet Level",
           "type": "Float",
           "required": false,
-          "default": 1.0
+          "default": 1
+        },
+        {
+          "name": "Delay (ms)",
+          "type": "Float",
+          "default": 0
+        },
+        {
+          "name": "Gain (dB)",
+          "type": "Float",
+          "default": 0
+        },
+        {
+          "name": "Bandwidth",
+          "type": "Float",
+          "default": 0.5
+        },
+        {
+          "name": "Diffusion",
+          "type": "Float",
+          "default": 0.5
+        },
+        {
+          "name": "Dampening",
+          "type": "Float",
+          "default": 0.5
+        },
+        {
+          "name": "Decay",
+          "type": "Float",
+          "default": 0.5
+        },
+        {
+          "name": "Density",
+          "type": "Float",
+          "default": 0.5
         }
       ],
       "outputs": [
@@ -4849,20 +5108,17 @@
       "description": "Raises base to the power of exponent.",
       "inputs": [
         {
-          "name": "Base",
-          "type": "Float",
-          "required": true
+          "name": "PrimaryOperand",
+          "type": "Float"
         },
         {
-          "name": "Exponent",
-          "type": "Float",
-          "required": true,
-          "default": 2.0
+          "name": "AdditionalOperands",
+          "type": "Float"
         }
       ],
       "outputs": [
         {
-          "name": "Result",
+          "name": "Out",
           "type": "Float"
         }
       ],
@@ -4895,7 +5151,7 @@
         },
         {
           "name": "Value To Log",
-          "type": "Trigger",
+          "type": "Float",
           "required": true
         }
       ],
@@ -4916,15 +5172,12 @@
       "description": "Generates a random boolean value when triggered.",
       "inputs": [
         {
-          "name": "Trigger",
-          "type": "Trigger",
-          "required": true
+          "name": "Next",
+          "type": "Trigger"
         },
         {
-          "name": "Probability",
-          "type": "Float",
-          "required": false,
-          "default": 0.5
+          "name": "Reset",
+          "type": "Trigger"
         },
         {
           "name": "Seed",
@@ -4935,12 +5188,16 @@
       ],
       "outputs": [
         {
-          "name": "Value",
-          "type": "Bool"
+          "name": "On Next",
+          "type": "Trigger"
         },
         {
-          "name": "Trigger",
+          "name": "On Reset",
           "type": "Trigger"
+        },
+        {
+          "name": "Value",
+          "type": "Bool"
         }
       ],
       "tags": [
@@ -5050,6 +5307,16 @@
           "type": "Int32",
           "required": false,
           "default": 1
+        },
+        {
+          "name": "Enable Shared State",
+          "type": "Bool",
+          "default": false
+        },
+        {
+          "name": "Shared State Behavior",
+          "type": "Enum",
+          "default": 1
         }
       ],
       "outputs": [
@@ -5064,6 +5331,10 @@
         {
           "name": "Value",
           "type": "WaveAsset"
+        },
+        {
+          "name": "Index",
+          "type": "Int32"
         }
       ],
       "tags": [
@@ -5144,37 +5415,44 @@
       "description": "Generates a random time duration within a range when triggered.",
       "inputs": [
         {
-          "name": "Trigger",
-          "type": "Trigger",
-          "required": true
+          "name": "Next",
+          "type": "Trigger"
         },
         {
-          "name": "Min",
-          "type": "Time",
-          "required": true,
-          "default": 0.1
-        },
-        {
-          "name": "Max",
-          "type": "Time",
-          "required": true,
-          "default": 1.0
+          "name": "Reset",
+          "type": "Trigger"
         },
         {
           "name": "Seed",
           "type": "Int32",
           "required": false,
           "default": -1
+        },
+        {
+          "name": "Min",
+          "type": "Time",
+          "required": true,
+          "default": 0
+        },
+        {
+          "name": "Max",
+          "type": "Time",
+          "required": true,
+          "default": 1
         }
       ],
       "outputs": [
         {
-          "name": "Value",
-          "type": "Time"
+          "name": "On Next",
+          "type": "Trigger"
         },
         {
-          "name": "Trigger",
+          "name": "On Reset",
           "type": "Trigger"
+        },
+        {
+          "name": "Value",
+          "type": "Time"
         }
       ],
       "tags": [
@@ -5195,26 +5473,17 @@
       "description": "Ring modulator -- multiplies audio by a modulation oscillator.",
       "inputs": [
         {
-          "name": "Audio",
-          "type": "Audio",
-          "required": true
+          "name": "In Carrier",
+          "type": "Audio"
         },
         {
-          "name": "ModFrequency",
-          "type": "Float",
-          "required": true,
-          "default": 440.0
-        },
-        {
-          "name": "DryWet",
-          "type": "Float",
-          "required": false,
-          "default": 1.0
+          "name": "In Modulator",
+          "type": "Audio"
         }
       ],
       "outputs": [
         {
-          "name": "Audio",
+          "name": "Out Audio",
           "type": "Audio"
         }
       ],
@@ -5833,40 +6102,21 @@
       "description": "Generates an array of MIDI note numbers or frequencies for a musical scale.",
       "inputs": [
         {
-          "name": "Root Note",
-          "type": "Int32",
-          "required": true,
-          "default": 60
-        },
-        {
           "name": "Scale Degrees",
-          "type": "Array",
-          "required": false
+          "type": "Enum",
+          "required": false,
+          "default": 0
         },
         {
-          "name": "Next",
-          "type": "Trigger",
-          "required": false
-        },
-        {
-          "name": "Reset",
-          "type": "Trigger",
-          "required": false
-        },
-        {
-          "name": "Seed",
-          "type": "Int32",
-          "required": false
+          "name": "Chord Tones Only",
+          "type": "Bool",
+          "default": false
         }
       ],
       "outputs": [
         {
           "name": "Scale Array Out",
-          "type": "Array"
-        },
-        {
-          "name": "Value",
-          "type": "Float"
+          "type": "Float[]"
         }
       ],
       "tags": [
@@ -5982,7 +6232,7 @@
         },
         {
           "name": "Array",
-          "type": "Array",
+          "type": "Float[]",
           "required": true
         },
         {
@@ -5999,7 +6249,7 @@
       "outputs": [
         {
           "name": "Array",
-          "type": "Array"
+          "type": "Float[]"
         }
       ],
       "tags": [
@@ -6048,7 +6298,7 @@
         },
         {
           "name": "Shuffle",
-          "type": "Array",
+          "type": "Trigger",
           "required": true
         },
         {
@@ -6058,23 +6308,24 @@
         },
         {
           "name": "In Array",
-          "type": "Array",
+          "type": "Float[]",
           "required": true
         },
         {
           "name": "Seed",
           "type": "Int32",
-          "required": true
+          "required": true,
+          "default": -1
         },
         {
           "name": "Auto Shuffle",
           "type": "Bool",
-          "required": true
+          "required": true,
+          "default": true
         },
         {
-          "name": "Enabled Shared State",
+          "name": "Enable Shared State",
           "type": "Bool",
-          "required": false,
           "default": false
         }
       ],
@@ -6314,8 +6565,87 @@
       "class_name": "BandSplitter::Band Splitter (Stereo, 5)::None",
       "category": "Filters",
       "description": "Splits stereo audio into low, mid, and high frequency bands (L+R pairs).",
-      "inputs": [],
-      "outputs": [],
+      "inputs": [
+        {
+          "name": "In L",
+          "type": "Audio"
+        },
+        {
+          "name": "In R",
+          "type": "Audio"
+        },
+        {
+          "name": "Filter Order",
+          "type": "Enum"
+        },
+        {
+          "name": "Phase Compensate",
+          "type": "Bool",
+          "default": true
+        },
+        {
+          "name": "Crossover 0",
+          "type": "Float",
+          "default": 500
+        },
+        {
+          "name": "Crossover 1",
+          "type": "Float",
+          "default": 1000
+        },
+        {
+          "name": "Crossover 2",
+          "type": "Float",
+          "default": 1500
+        },
+        {
+          "name": "Crossover 3",
+          "type": "Float",
+          "default": 2000
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Band 0 L",
+          "type": "Audio"
+        },
+        {
+          "name": "Band 0 R",
+          "type": "Audio"
+        },
+        {
+          "name": "Band 1 L",
+          "type": "Audio"
+        },
+        {
+          "name": "Band 1 R",
+          "type": "Audio"
+        },
+        {
+          "name": "Band 2 L",
+          "type": "Audio"
+        },
+        {
+          "name": "Band 2 R",
+          "type": "Audio"
+        },
+        {
+          "name": "Band 3 L",
+          "type": "Audio"
+        },
+        {
+          "name": "Band 3 R",
+          "type": "Audio"
+        },
+        {
+          "name": "Band 4 L",
+          "type": "Audio"
+        },
+        {
+          "name": "Band 4 R",
+          "type": "Audio"
+        }
+      ],
       "tags": [
         "filter",
         "crossover",
@@ -6344,38 +6674,49 @@
           "required": true
         },
         {
-          "name": "Feedback",
-          "type": "Float",
+          "name": "Delay Mode",
+          "type": "Enum",
           "required": false,
-          "default": 0.3
+          "default": 2
         },
         {
           "name": "Delay Time",
           "type": "Time",
-          "required": false
-        },
-        {
-          "name": "Delay Mode",
-          "type": "Enum",
           "required": false,
-          "default": "Normal"
+          "default": 1
         },
         {
           "name": "Delay Ratio",
           "type": "Float",
           "required": false,
-          "default": 1.0
+          "default": 0.10000000149011612
         },
         {
           "name": "Dry Level",
           "type": "Float",
           "required": true,
-          "default": 1.0
+          "default": 0
         },
         {
           "name": "Wet Level",
           "type": "Float",
-          "required": true
+          "required": true,
+          "default": 1
+        },
+        {
+          "name": "Feedback",
+          "type": "Float",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "Max Delay Time",
+          "type": "Time",
+          "default": 2.5
+        },
+        {
+          "name": "Reset",
+          "type": "Trigger"
         }
       ],
       "outputs": [
@@ -6419,7 +6760,7 @@
           "name": "Gain 0",
           "type": "Float",
           "required": true,
-          "default": 1.0
+          "default": 1
         },
         {
           "name": "In 1 L",
@@ -6435,39 +6776,7 @@
           "name": "Gain 1",
           "type": "Float",
           "required": false,
-          "default": 1.0
-        },
-        {
-          "name": "In 2 L",
-          "type": "Audio",
-          "required": false
-        },
-        {
-          "name": "In 2 R",
-          "type": "Audio",
-          "required": false
-        },
-        {
-          "name": "Gain 2",
-          "type": "Float",
-          "required": false,
-          "default": 1.0
-        },
-        {
-          "name": "In 3 L",
-          "type": "Audio",
-          "required": false
-        },
-        {
-          "name": "In 3 R",
-          "type": "Audio",
-          "required": false
-        },
-        {
-          "name": "Gain 3",
-          "type": "Float",
-          "required": false,
-          "default": 1.0
+          "default": 1
         }
       ],
       "outputs": [
@@ -6505,10 +6814,25 @@
         {
           "name": "Pan Amount",
           "type": "Float",
-          "required": true
+          "required": true,
+          "default": 0
+        },
+        {
+          "name": "Panning Law",
+          "type": "Enum",
+          "default": 0
         }
       ],
-      "outputs": [],
+      "outputs": [
+        {
+          "name": "Out Left",
+          "type": "Audio"
+        },
+        {
+          "name": "Out Right",
+          "type": "Audio"
+        }
+      ],
       "tags": [
         "spatial",
         "pan",
@@ -6534,19 +6858,22 @@
         },
         {
           "name": "Array",
-          "type": "Array",
+          "type": "Float[]",
           "required": true
         },
         {
-          "name": "Start / End Index",
-          "type": "Float",
-          "required": true
+          "name": "Start Index",
+          "type": "Int32"
+        },
+        {
+          "name": "End Index",
+          "type": "Int32"
         }
       ],
       "outputs": [
         {
           "name": "Array",
-          "type": "Array"
+          "type": "Float[]"
         }
       ],
       "tags": [
@@ -6563,12 +6890,12 @@
       "inputs": [
         {
           "name": "PrimaryOperand",
-          "type": "Float",
+          "type": "Audio",
           "required": true
         },
         {
           "name": "AdditionalOperands",
-          "type": "Float",
+          "type": "Audio",
           "required": true,
           "default": 0
         }
@@ -6576,7 +6903,7 @@
       "outputs": [
         {
           "name": "Out",
-          "type": "Float"
+          "type": "Audio"
         }
       ],
       "tags": [
@@ -6705,12 +7032,6 @@
           "default": true
         },
         {
-          "name": "Type",
-          "type": "Enum",
-          "required": false,
-          "default": "Saw"
-        },
-        {
           "name": "Limit Output",
           "type": "Bool",
           "required": true,
@@ -6720,13 +7041,13 @@
           "name": "Voices",
           "type": "Int32",
           "required": false,
-          "default": 16
+          "default": 3
         },
         {
           "name": "Frequency",
           "type": "Float",
           "required": true,
-          "default": 440.0
+          "default": 440
         },
         {
           "name": "Modulation",
@@ -6743,19 +7064,19 @@
           "name": "Entropy",
           "type": "Float",
           "required": false,
-          "default": 0.0
+          "default": 0
         },
         {
           "name": "Blend",
           "type": "Float",
           "required": false,
-          "default": 0.0
+          "default": 0
         },
         {
           "name": "Glide",
           "type": "Float",
           "required": false,
-          "default": 0.0
+          "default": 0
         },
         {
           "name": "Pulse Width",
@@ -6764,9 +7085,10 @@
           "default": 0.5
         },
         {
-          "name": "Width",
-          "type": "Float",
-          "required": false
+          "name": "Type",
+          "type": "Enum",
+          "required": false,
+          "default": "Saw"
         }
       ],
       "outputs": [
@@ -6825,12 +7147,6 @@
       "description": "Band-limited triangle wave oscillator.",
       "inputs": [
         {
-          "name": "Frequency",
-          "type": "Float",
-          "required": true,
-          "default": 440.0
-        },
-        {
           "name": "Enabled",
           "type": "Bool",
           "required": true,
@@ -6840,7 +7156,13 @@
           "name": "Bi Polar",
           "type": "Bool",
           "required": false,
-          "default": false
+          "default": true
+        },
+        {
+          "name": "Frequency",
+          "type": "Float",
+          "required": true,
+          "default": 440
         },
         {
           "name": "Modulation",
@@ -6856,13 +7178,17 @@
           "name": "Phase Offset",
           "type": "Float",
           "required": false,
-          "default": 0.0
+          "default": 0
         },
         {
           "name": "Glide",
           "type": "Float",
           "required": false,
-          "default": 0.0
+          "default": 0
+        },
+        {
+          "name": "Type",
+          "type": "Enum"
         }
       ],
       "outputs": [
@@ -6887,11 +7213,24 @@
       "class_name": "TriggerAccumulator::Trigger Accumulate (2)::None",
       "category": "Triggers",
       "description": "Counts incoming triggers and fires output when count reaches threshold.",
-      "inputs": [],
+      "inputs": [
+        {
+          "name": "In 0",
+          "type": "Trigger"
+        },
+        {
+          "name": "In 1",
+          "type": "Trigger"
+        },
+        {
+          "name": "Auto Reset",
+          "type": "Bool"
+        }
+      ],
       "outputs": [
         {
           "name": "Out",
-          "type": "Audio"
+          "type": "Trigger"
         }
       ],
       "tags": [
@@ -6911,29 +7250,17 @@
       "description": "Fires output when any of its input triggers fire.",
       "inputs": [
         {
-          "name": "Trigger 0",
-          "type": "Trigger",
-          "required": true
+          "name": "In 0",
+          "type": "Trigger"
         },
         {
-          "name": "Trigger 1",
-          "type": "Trigger",
-          "required": true
-        },
-        {
-          "name": "Trigger 2",
-          "type": "Trigger",
-          "required": false
-        },
-        {
-          "name": "Trigger 3",
-          "type": "Trigger",
-          "required": false
+          "name": "In 1",
+          "type": "Trigger"
         }
       ],
       "outputs": [
         {
-          "name": "Trigger",
+          "name": "Out",
           "type": "Trigger"
         }
       ],
@@ -7231,25 +7558,26 @@
       "description": "Delays a trigger by a specified time duration.",
       "inputs": [
         {
+          "name": "In",
+          "type": "Trigger",
+          "required": true
+        },
+        {
           "name": "Reset",
           "type": "Trigger",
           "required": false
         },
         {
-          "name": "In",
-          "type": "Audio",
-          "required": true
-        },
-        {
           "name": "Delay Time",
           "type": "Time",
-          "required": true
+          "required": true,
+          "default": 1
         }
       ],
       "outputs": [
         {
           "name": "Out",
-          "type": "Audio"
+          "type": "Trigger"
         }
       ],
       "tags": [
@@ -7546,39 +7874,30 @@
       "description": "Routes trigger to one of N outputs based on an integer index.",
       "inputs": [
         {
-          "name": "Trigger",
-          "type": "Trigger",
-          "required": true
+          "name": "Set 0",
+          "type": "Trigger"
         },
         {
-          "name": "Index",
-          "type": "Int32",
-          "required": true,
-          "default": 0
+          "name": "Value 0",
+          "type": "Audio"
         },
         {
-          "name": "NumOutputs",
-          "type": "Int32",
-          "required": true,
-          "default": 2
+          "name": "Set 1",
+          "type": "Trigger"
+        },
+        {
+          "name": "Value 1",
+          "type": "Audio"
         }
       ],
       "outputs": [
         {
-          "name": "Trigger 0",
+          "name": "On Set",
           "type": "Trigger"
         },
         {
-          "name": "Trigger 1",
-          "type": "Trigger"
-        },
-        {
-          "name": "Trigger 2",
-          "type": "Trigger"
-        },
-        {
-          "name": "Trigger 3",
-          "type": "Trigger"
+          "name": "Value",
+          "type": "Audio"
         }
       ],
       "tags": [
@@ -7645,19 +7964,24 @@
       "inputs": [
         {
           "name": "In",
-          "type": "Audio",
+          "type": "Trigger",
           "required": true
         },
         {
           "name": "Index",
           "type": "Int32",
-          "required": true
+          "required": true,
+          "default": 1
         }
       ],
       "outputs": [
         {
-          "name": "Out X",
-          "type": "Audio"
+          "name": "Out 0",
+          "type": "Trigger"
+        },
+        {
+          "name": "Out 1",
+          "type": "Trigger"
         }
       ],
       "tags": [
@@ -7688,7 +8012,7 @@
           "name": "Loop",
           "type": "Bool",
           "required": false,
-          "default": false
+          "default": true
         }
       ],
       "outputs": [
@@ -7698,10 +8022,6 @@
         },
         {
           "name": "Out 1",
-          "type": "Trigger"
-        },
-        {
-          "name": "Out 2",
           "type": "Trigger"
         }
       ],
@@ -7724,56 +8044,27 @@
       "description": "The Trigger Toggle node toggles a Bool value on or off.",
       "inputs": [
         {
-          "name": "On / Off",
-          "type": "Trigger",
-          "required": true
+          "name": "On",
+          "type": "Trigger"
+        },
+        {
+          "name": "Off",
+          "type": "Trigger"
         },
         {
           "name": "Init",
-          "type": "Float",
-          "required": true
-        },
-        {
-          "name": "Set",
-          "type": "Trigger",
-          "required": true
-        },
-        {
-          "name": "Reset",
-          "type": "Trigger",
-          "required": false
-        },
-        {
-          "name": "Init Value",
-          "type": "Float",
-          "required": true
-        },
-        {
-          "name": "Target Value",
-          "type": "Trigger",
+          "type": "Bool",
           "required": true
         }
       ],
       "outputs": [
         {
           "name": "Out",
-          "type": "Audio"
+          "type": "Trigger"
         },
         {
           "name": "Value",
-          "type": "Float"
-        },
-        {
-          "name": "On Set",
-          "type": "Trigger"
-        },
-        {
-          "name": "On Reset",
-          "type": "Trigger"
-        },
-        {
-          "name": "Output Value",
-          "type": "Float"
+          "type": "Bool"
         }
       ],
       "tags": [
@@ -7808,12 +8099,14 @@
         {
           "name": "Start Time",
           "type": "Time",
-          "required": false
+          "required": false,
+          "default": 0
         },
         {
           "name": "Pitch Shift",
           "type": "Float",
-          "required": false
+          "required": false,
+          "default": 0
         },
         {
           "name": "Loop",
@@ -7824,329 +8117,19 @@
         {
           "name": "Loop Start",
           "type": "Time",
-          "required": false
-        },
-        {
-          "name": "Loop Duration",
-          "type": "Time",
-          "required": false
-        }
-      ],
-      "outputs": [
-        {
-          "name": "On Play",
-          "type": "Trigger"
-        },
-        {
-          "name": "On Finished",
-          "type": "Trigger"
-        },
-        {
-          "name": "On Nearly Finished",
-          "type": "Trigger"
-        },
-        {
-          "name": "On Looped",
-          "type": "Trigger"
-        },
-        {
-          "name": "On Cue Point",
-          "type": "Trigger"
-        },
-        {
-          "name": "Cue Point ID",
-          "type": "Int32"
-        },
-        {
-          "name": "Cue Point Label",
-          "type": "String"
-        },
-        {
-          "name": "Loop Percent",
-          "type": "Float"
-        },
-        {
-          "name": "Playback Location",
-          "type": "Float"
-        },
-        {
-          "name": "Out Mono",
-          "type": "Audio"
-        }
-      ],
-      "tags": [
-        "wave",
-        "player",
-        "general"
-      ],
-      "complexity": 2
-    },
-    {
-      "name": "Wave Player (5.1)",
-      "class_name": "UE::Wave Player::5dot1",
-      "category": "Wave Players",
-      "description": "5.1 surround wave file player.",
-      "inputs": [
-        {
-          "name": "Play",
-          "type": "Trigger",
-          "required": false
-        },
-        {
-          "name": "Stop",
-          "type": "Trigger",
-          "required": false
-        },
-        {
-          "name": "Wave Asset",
-          "type": "WaveAsset",
-          "required": true
-        },
-        {
-          "name": "Start Time",
-          "type": "Time",
-          "required": false
-        },
-        {
-          "name": "Pitch Shift",
-          "type": "Float",
-          "required": false
-        },
-        {
-          "name": "Loop",
-          "type": "Bool",
-          "required": true,
-          "default": true
-        },
-        {
-          "name": "Loop Start",
-          "type": "Time",
-          "required": false
+          "required": false,
+          "default": 0
         },
         {
           "name": "Loop Duration",
           "type": "Time",
           "required": false,
-          "default": -1.0
+          "default": -1
         },
         {
           "name": "Maintain Audio Sync",
           "type": "Bool",
-          "required": false
-        }
-      ],
-      "outputs": [
-        {
-          "name": "Audio FL",
-          "type": "Audio"
-        },
-        {
-          "name": "Audio FR",
-          "type": "Audio"
-        },
-        {
-          "name": "Audio FC",
-          "type": "Audio"
-        },
-        {
-          "name": "Audio LFE",
-          "type": "Audio"
-        },
-        {
-          "name": "Audio SL",
-          "type": "Audio"
-        },
-        {
-          "name": "Audio SR",
-          "type": "Audio"
-        },
-        {
-          "name": "OnFinished",
-          "type": "Trigger"
-        },
-        {
-          "name": "OnLooped",
-          "type": "Trigger"
-        },
-        {
-          "name": "OnNearlyFinished",
-          "type": "Trigger"
-        }
-      ],
-      "tags": [
-        "wave",
-        "player",
-        "sample",
-        "playback",
-        "5.1",
-        "loop"
-      ],
-      "complexity": 3,
-      "mcp_notes": "Sample playback node. Wire WaveAsset from graph input, trigger Play from Blueprint. Use Mono for 3D, Stereo for music/ambience."
-    },
-    {
-      "name": "Wave Player (7.1)",
-      "class_name": "UE::Wave Player::7dot1",
-      "category": "Wave Players",
-      "description": "7.1 surround wave file player.",
-      "inputs": [
-        {
-          "name": "Play",
-          "type": "Trigger",
-          "required": false
-        },
-        {
-          "name": "Stop",
-          "type": "Trigger",
-          "required": false
-        },
-        {
-          "name": "Wave Asset",
-          "type": "WaveAsset",
-          "required": true
-        },
-        {
-          "name": "Start Time",
-          "type": "Time",
-          "required": false
-        },
-        {
-          "name": "Pitch Shift",
-          "type": "Float",
-          "required": false
-        },
-        {
-          "name": "Loop",
-          "type": "Bool",
-          "required": true,
-          "default": true
-        },
-        {
-          "name": "Loop Start",
-          "type": "Time",
-          "required": false
-        },
-        {
-          "name": "Loop Duration",
-          "type": "Time",
-          "required": false,
-          "default": -1.0
-        },
-        {
-          "name": "Maintain Audio Sync",
-          "type": "Bool",
-          "required": false
-        }
-      ],
-      "outputs": [
-        {
-          "name": "Audio FL",
-          "type": "Audio"
-        },
-        {
-          "name": "Audio FR",
-          "type": "Audio"
-        },
-        {
-          "name": "Audio FC",
-          "type": "Audio"
-        },
-        {
-          "name": "Audio LFE",
-          "type": "Audio"
-        },
-        {
-          "name": "Audio SL",
-          "type": "Audio"
-        },
-        {
-          "name": "Audio SR",
-          "type": "Audio"
-        },
-        {
-          "name": "Audio BL",
-          "type": "Audio"
-        },
-        {
-          "name": "Audio BR",
-          "type": "Audio"
-        },
-        {
-          "name": "OnFinished",
-          "type": "Trigger"
-        },
-        {
-          "name": "OnLooped",
-          "type": "Trigger"
-        },
-        {
-          "name": "OnNearlyFinished",
-          "type": "Trigger"
-        }
-      ],
-      "tags": [
-        "wave",
-        "player",
-        "sample",
-        "playback",
-        "7.1",
-        "loop"
-      ],
-      "complexity": 3,
-      "mcp_notes": "Sample playback node. Wire WaveAsset from graph input, trigger Play from Blueprint. Use Mono for 3D, Stereo for music/ambience."
-    },
-    {
-      "name": "Wave Player (Mono)",
-      "class_name": "UE::Wave Player::Mono",
-      "category": "Wave Players",
-      "description": "Mono wave file player with pitch shift, looping, and trigger outputs.",
-      "inputs": [
-        {
-          "name": "Play",
-          "type": "Trigger",
-          "required": false
-        },
-        {
-          "name": "Stop",
-          "type": "Trigger",
-          "required": false
-        },
-        {
-          "name": "Wave Asset",
-          "type": "WaveAsset",
-          "required": true
-        },
-        {
-          "name": "Start Time",
-          "type": "Time",
-          "required": false
-        },
-        {
-          "name": "Pitch Shift",
-          "type": "Float",
-          "required": false
-        },
-        {
-          "name": "Loop",
-          "type": "Bool",
-          "required": true,
-          "default": true
-        },
-        {
-          "name": "Loop Start",
-          "type": "Time",
-          "required": false
-        },
-        {
-          "name": "Loop Duration",
-          "type": "Time",
-          "required": false,
-          "default": -1.0
-        },
-        {
-          "name": "Maintain Audio Sync",
-          "type": "Bool",
-          "required": false
+          "default": false
         }
       ],
       "outputs": [
@@ -8188,7 +8171,396 @@
         },
         {
           "name": "Playback Time",
+          "type": "Time"
+        },
+        {
+          "name": "Out Mono",
+          "type": "Audio"
+        }
+      ],
+      "tags": [
+        "wave",
+        "player",
+        "general"
+      ],
+      "complexity": 2
+    },
+    {
+      "name": "Wave Player (5.1)",
+      "class_name": "UE::Wave Player::5dot1",
+      "category": "Wave Players",
+      "description": "5.1 surround wave file player.",
+      "inputs": [
+        {
+          "name": "Play",
+          "type": "Trigger",
+          "required": false
+        },
+        {
+          "name": "Stop",
+          "type": "Trigger",
+          "required": false
+        },
+        {
+          "name": "Wave Asset",
+          "type": "WaveAsset",
+          "required": true
+        },
+        {
+          "name": "Start Time",
+          "type": "Time",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "Pitch Shift",
+          "type": "Float",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "Loop",
+          "type": "Bool",
+          "required": true,
+          "default": false
+        },
+        {
+          "name": "Loop Start",
+          "type": "Time",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "Loop Duration",
+          "type": "Time",
+          "required": false,
+          "default": -1
+        },
+        {
+          "name": "Maintain Audio Sync",
+          "type": "Bool",
+          "required": false,
+          "default": false
+        }
+      ],
+      "outputs": [
+        {
+          "name": "On Play",
+          "type": "Trigger"
+        },
+        {
+          "name": "On Finished",
+          "type": "Trigger"
+        },
+        {
+          "name": "On Nearly Finished",
+          "type": "Trigger"
+        },
+        {
+          "name": "On Looped",
+          "type": "Trigger"
+        },
+        {
+          "name": "On Cue Point",
+          "type": "Trigger"
+        },
+        {
+          "name": "Cue Point ID",
+          "type": "Int32"
+        },
+        {
+          "name": "Cue Point Label",
+          "type": "String"
+        },
+        {
+          "name": "Loop Percent",
           "type": "Float"
+        },
+        {
+          "name": "Playback Location",
+          "type": "Float"
+        },
+        {
+          "name": "Playback Time",
+          "type": "Time"
+        },
+        {
+          "name": "Out Front Left",
+          "type": "Audio"
+        },
+        {
+          "name": "Out Front Right",
+          "type": "Audio"
+        },
+        {
+          "name": "Out Front Center",
+          "type": "Audio"
+        },
+        {
+          "name": "Out Low Frequency",
+          "type": "Audio"
+        },
+        {
+          "name": "Out Side Left",
+          "type": "Audio"
+        },
+        {
+          "name": "Out Side Right",
+          "type": "Audio"
+        }
+      ],
+      "tags": [
+        "wave",
+        "player",
+        "sample",
+        "playback",
+        "5.1",
+        "loop"
+      ],
+      "complexity": 3,
+      "mcp_notes": "Sample playback node. Wire WaveAsset from graph input, trigger Play from Blueprint. Use Mono for 3D, Stereo for music/ambience."
+    },
+    {
+      "name": "Wave Player (7.1)",
+      "class_name": "UE::Wave Player::7dot1",
+      "category": "Wave Players",
+      "description": "7.1 surround wave file player.",
+      "inputs": [
+        {
+          "name": "Play",
+          "type": "Trigger",
+          "required": false
+        },
+        {
+          "name": "Stop",
+          "type": "Trigger",
+          "required": false
+        },
+        {
+          "name": "Wave Asset",
+          "type": "WaveAsset",
+          "required": true
+        },
+        {
+          "name": "Start Time",
+          "type": "Time",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "Pitch Shift",
+          "type": "Float",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "Loop",
+          "type": "Bool",
+          "required": true,
+          "default": false
+        },
+        {
+          "name": "Loop Start",
+          "type": "Time",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "Loop Duration",
+          "type": "Time",
+          "required": false,
+          "default": -1
+        },
+        {
+          "name": "Maintain Audio Sync",
+          "type": "Bool",
+          "required": false,
+          "default": false
+        }
+      ],
+      "outputs": [
+        {
+          "name": "On Play",
+          "type": "Trigger"
+        },
+        {
+          "name": "On Finished",
+          "type": "Trigger"
+        },
+        {
+          "name": "On Nearly Finished",
+          "type": "Trigger"
+        },
+        {
+          "name": "On Looped",
+          "type": "Trigger"
+        },
+        {
+          "name": "On Cue Point",
+          "type": "Trigger"
+        },
+        {
+          "name": "Cue Point ID",
+          "type": "Int32"
+        },
+        {
+          "name": "Cue Point Label",
+          "type": "String"
+        },
+        {
+          "name": "Loop Percent",
+          "type": "Float"
+        },
+        {
+          "name": "Playback Location",
+          "type": "Float"
+        },
+        {
+          "name": "Playback Time",
+          "type": "Time"
+        },
+        {
+          "name": "Out Front Left",
+          "type": "Audio"
+        },
+        {
+          "name": "Out Front Right",
+          "type": "Audio"
+        },
+        {
+          "name": "Out Front Center",
+          "type": "Audio"
+        },
+        {
+          "name": "Out Low Frequency",
+          "type": "Audio"
+        },
+        {
+          "name": "Out Side Left",
+          "type": "Audio"
+        },
+        {
+          "name": "Out Side Right",
+          "type": "Audio"
+        },
+        {
+          "name": "Out Back Left",
+          "type": "Audio"
+        },
+        {
+          "name": "Out Back Right",
+          "type": "Audio"
+        }
+      ],
+      "tags": [
+        "wave",
+        "player",
+        "sample",
+        "playback",
+        "7.1",
+        "loop"
+      ],
+      "complexity": 3,
+      "mcp_notes": "Sample playback node. Wire WaveAsset from graph input, trigger Play from Blueprint. Use Mono for 3D, Stereo for music/ambience."
+    },
+    {
+      "name": "Wave Player (Mono)",
+      "class_name": "UE::Wave Player::Mono",
+      "category": "Wave Players",
+      "description": "Mono wave file player with pitch shift, looping, and trigger outputs.",
+      "inputs": [
+        {
+          "name": "Play",
+          "type": "Trigger",
+          "required": false
+        },
+        {
+          "name": "Stop",
+          "type": "Trigger",
+          "required": false
+        },
+        {
+          "name": "Wave Asset",
+          "type": "WaveAsset",
+          "required": true
+        },
+        {
+          "name": "Start Time",
+          "type": "Time",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "Pitch Shift",
+          "type": "Float",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "Loop",
+          "type": "Bool",
+          "required": true,
+          "default": false
+        },
+        {
+          "name": "Loop Start",
+          "type": "Time",
+          "required": false,
+          "default": 0
+        },
+        {
+          "name": "Loop Duration",
+          "type": "Time",
+          "required": false,
+          "default": -1
+        },
+        {
+          "name": "Maintain Audio Sync",
+          "type": "Bool",
+          "required": false,
+          "default": false
+        }
+      ],
+      "outputs": [
+        {
+          "name": "On Play",
+          "type": "Trigger"
+        },
+        {
+          "name": "On Finished",
+          "type": "Trigger"
+        },
+        {
+          "name": "On Nearly Finished",
+          "type": "Trigger"
+        },
+        {
+          "name": "On Looped",
+          "type": "Trigger"
+        },
+        {
+          "name": "On Cue Point",
+          "type": "Trigger"
+        },
+        {
+          "name": "Cue Point ID",
+          "type": "Int32"
+        },
+        {
+          "name": "Cue Point Label",
+          "type": "String"
+        },
+        {
+          "name": "Loop Percent",
+          "type": "Float"
+        },
+        {
+          "name": "Playback Location",
+          "type": "Float"
+        },
+        {
+          "name": "Playback Time",
+          "type": "Time"
         },
         {
           "name": "Out Mono",
@@ -8230,64 +8602,96 @@
         {
           "name": "Start Time",
           "type": "Time",
-          "required": false
+          "required": false,
+          "default": 0
         },
         {
           "name": "Pitch Shift",
           "type": "Float",
-          "required": false
+          "required": false,
+          "default": 0
         },
         {
           "name": "Loop",
           "type": "Bool",
           "required": true,
-          "default": true
+          "default": false
         },
         {
           "name": "Loop Start",
           "type": "Time",
-          "required": false
+          "required": false,
+          "default": 0
         },
         {
           "name": "Loop Duration",
           "type": "Time",
           "required": false,
-          "default": -1.0
+          "default": -1
         },
         {
           "name": "Maintain Audio Sync",
           "type": "Bool",
-          "required": false
+          "required": false,
+          "default": false
         }
       ],
       "outputs": [
         {
-          "name": "Audio 0",
-          "type": "Audio"
-        },
-        {
-          "name": "Audio 1",
-          "type": "Audio"
-        },
-        {
-          "name": "Audio 2",
-          "type": "Audio"
-        },
-        {
-          "name": "Audio 3",
-          "type": "Audio"
-        },
-        {
-          "name": "OnFinished",
+          "name": "On Play",
           "type": "Trigger"
         },
         {
-          "name": "OnLooped",
+          "name": "On Finished",
           "type": "Trigger"
         },
         {
-          "name": "OnNearlyFinished",
+          "name": "On Nearly Finished",
           "type": "Trigger"
+        },
+        {
+          "name": "On Looped",
+          "type": "Trigger"
+        },
+        {
+          "name": "On Cue Point",
+          "type": "Trigger"
+        },
+        {
+          "name": "Cue Point ID",
+          "type": "Int32"
+        },
+        {
+          "name": "Cue Point Label",
+          "type": "String"
+        },
+        {
+          "name": "Loop Percent",
+          "type": "Float"
+        },
+        {
+          "name": "Playback Location",
+          "type": "Float"
+        },
+        {
+          "name": "Playback Time",
+          "type": "Time"
+        },
+        {
+          "name": "Out Front Left",
+          "type": "Audio"
+        },
+        {
+          "name": "Out Front Right",
+          "type": "Audio"
+        },
+        {
+          "name": "Out Side Left",
+          "type": "Audio"
+        },
+        {
+          "name": "Out Side Right",
+          "type": "Audio"
         }
       ],
       "tags": [
@@ -8423,26 +8827,34 @@
       "description": "Waveshaping distortion -- soft clipping to hard clipping based on amount.",
       "inputs": [
         {
-          "name": "Audio",
-          "type": "Audio",
-          "required": true
+          "name": "In",
+          "type": "Audio"
         },
         {
           "name": "Amount",
           "type": "Float",
           "required": true,
-          "default": 0.5
+          "default": 1
         },
         {
-          "name": "DryWet",
+          "name": "Bias",
           "type": "Float",
-          "required": false,
-          "default": 1.0
+          "default": 0
+        },
+        {
+          "name": "OutputGain",
+          "type": "Float",
+          "default": 1
+        },
+        {
+          "name": "Type",
+          "type": "Enum",
+          "default": 0
         }
       ],
       "outputs": [
         {
-          "name": "Audio",
+          "name": "Out",
           "type": "Audio"
         }
       ],
@@ -8466,7 +8878,8 @@
         {
           "name": "Filename Prefix",
           "type": "String",
-          "required": true
+          "required": true,
+          "default": "Output"
         },
         {
           "name": "Enabled",
@@ -8475,9 +8888,8 @@
           "default": true
         },
         {
-          "name": "In X",
-          "type": "Audio",
-          "required": false
+          "name": "In",
+          "type": "Audio"
         }
       ],
       "outputs": [],
@@ -8507,19 +8919,24 @@
           "name": "Amount",
           "type": "Float",
           "required": true,
-          "default": 0.0
+          "default": 1
         },
         {
           "name": "Bias",
           "type": "Float",
           "required": false,
-          "default": 0.0
+          "default": 0
         },
         {
           "name": "OutputGain",
           "type": "Float",
           "required": false,
-          "default": 1.0
+          "default": 1
+        },
+        {
+          "name": "Type",
+          "type": "Enum",
+          "default": 0
         }
       ],
       "outputs": [
@@ -8549,14 +8966,8 @@
       "inputs": [
         {
           "name": "WaveTable",
-          "type": "WaveAsset",
+          "type": "WaveTable",
           "required": true
-        },
-        {
-          "name": "Duration",
-          "type": "Time",
-          "required": true,
-          "default": 1.0
         },
         {
           "name": "Play",
@@ -8574,14 +8985,22 @@
           "required": false
         },
         {
+          "name": "Duration",
+          "type": "Time",
+          "required": true,
+          "default": 1
+        },
+        {
           "name": "Mode",
           "type": "Enum",
-          "required": true
+          "required": true,
+          "default": 0
         },
         {
           "name": "Interpolation",
           "type": "Enum",
-          "required": false
+          "required": false,
+          "default": 1
         }
       ],
       "outputs": [
@@ -8591,7 +9010,7 @@
         },
         {
           "name": "Out",
-          "type": "Audio"
+          "type": "Float"
         }
       ],
       "tags": [
@@ -8611,11 +9030,6 @@
       "description": "Oscillator that reads from a wavetable for arbitrary waveforms.",
       "inputs": [
         {
-          "name": "WaveTable",
-          "type": "WaveAsset",
-          "required": false
-        },
-        {
           "name": "Play",
           "type": "Trigger",
           "required": false
@@ -8626,9 +9040,9 @@
           "required": false
         },
         {
-          "name": "Freq",
-          "type": "Int32",
-          "required": true
+          "name": "WaveTable",
+          "type": "WaveTable",
+          "required": false
         },
         {
           "name": "Sync",
@@ -8636,9 +9050,14 @@
           "required": false
         },
         {
-          "name": "Phase Modulator",
-          "type": "Audio",
-          "required": false
+          "name": "Freq",
+          "type": "Float",
+          "required": true,
+          "default": 440
+        },
+        {
+          "name": "PhaseMod",
+          "type": "Audio"
         }
       ],
       "outputs": [
@@ -8678,9 +9097,8 @@
           "required": false
         },
         {
-          "name": "Bank",
-          "type": "WaveAsset",
-          "required": true
+          "name": "WaveTableBank",
+          "type": "WaveTableBankAsset"
         },
         {
           "name": "Index",
@@ -8688,24 +9106,28 @@
           "required": true
         },
         {
-          "name": "Pitch Shift",
+          "name": "PitchShift",
           "type": "Float",
-          "required": true
+          "default": 0
         },
         {
           "name": "Loop",
           "type": "Bool",
           "required": false,
           "default": false
+        },
+        {
+          "name": "PhaseMod",
+          "type": "Audio"
         }
       ],
       "outputs": [
         {
-          "name": "Mono Out",
+          "name": "MonoOut",
           "type": "Audio"
         },
         {
-          "name": "On Finished",
+          "name": "OnFinished",
           "type": "Trigger"
         }
       ],
