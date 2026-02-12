@@ -2,7 +2,7 @@
   "name": "SFX Generator",
   "asset_type": "Source",
   "author": "Eric Buchholz (TechAudioTools, Epic Games)",
-  "description": "Single-generator synthesizer for rapid SFX iteration from TechAudioTools. Signal flow: Switchable Waveform Generator (5 types) with frequency modulation \u2192 Spectral Effects (Wave Shaper \u2192 BitCrusher \u2192 Ring Modulator) \u2192 State Variable Filter (crossfade LP/BP/HP with envelope modulation) \u2192 Amplifier (ADSR \u00d7 LFO) \u2192 Temporal Effects (Delay + Flanger + Plate Reverb in parallel) \u2192 Output + Wave Writer + Envelope Follower. Designed for sci-fi and abstract sounds with full randomization support.",
+  "description": "Single-generator synthesizer for rapid SFX iteration from TechAudioTools. Signal flow: Switchable Waveform Generator (5 types) with frequency modulation → Spectral Effects (Wave Shaper → BitCrusher → Ring Modulator) → State Variable Filter (crossfade LP/BP/HP with envelope modulation) → Amplifier (ADSR × LFO) → Temporal Effects (Delay + Flanger + Plate Reverb in parallel) → Output + Wave Writer + Envelope Follower. Designed for sci-fi and abstract sounds with full randomization support.",
   "source_url": "https://dev.epicgames.com/community/learning/tutorials/ZMpq/unreal-engine-tech-audio-tools-content-documentation",
   "requires": [
     "TechAudioTools engine plugin enabled",
@@ -26,31 +26,31 @@
       "name": "FreqMod",
       "type": "Float",
       "default": 0.0,
-      "description": "Pitch slide amount \u2014 summed with vibrato for frequency modulation"
+      "description": "Pitch slide amount — summed with vibrato for frequency modulation"
     },
     {
       "name": "VibratoRate",
       "type": "Float",
       "default": 5.0,
-      "description": "Vibrato LFO rate \u2014 up to audio rate for FM synthesis"
+      "description": "Vibrato LFO rate — up to audio rate for FM synthesis"
     },
     {
       "name": "VibratoDepth",
       "type": "Float",
       "default": 0.0,
-      "description": "Vibrato depth \u2014 0 = off, higher = wider pitch wobble"
+      "description": "Vibrato depth — 0 = off, higher = wider pitch wobble"
     },
     {
       "name": "WaveShapeAmount",
       "type": "Float",
       "default": 0.0,
-      "description": "Wave shaper drive \u2014 0 = clean, 1 = soft clip / rounded pulse"
+      "description": "Wave shaper drive — 0 = clean, 1 = soft clip / rounded pulse"
     },
     {
       "name": "CrushSampleRate",
       "type": "Float",
       "default": 48000.0,
-      "description": "BitCrusher sample rate reduction \u2014 lower = more aliased"
+      "description": "BitCrusher sample rate reduction — lower = more aliased"
     },
     {
       "name": "RingModFreq",
@@ -62,7 +62,7 @@
       "name": "RingModEnvAttack",
       "type": "Time",
       "default": 0.01,
-      "description": "Ring mod envelope attack \u2014 modulates carrier frequency"
+      "description": "Ring mod envelope attack — modulates carrier frequency"
     },
     {
       "name": "RingModEnvDecay",
@@ -134,7 +134,7 @@
       "name": "AmpDuration",
       "type": "Time",
       "default": 1.0,
-      "description": "Overall sound duration \u2014 gates the ADSR and timing map"
+      "description": "Overall sound duration — gates the ADSR and timing map"
     },
     {
       "name": "LFORate",
@@ -170,7 +170,7 @@
       "name": "RecordEnabled",
       "type": "Bool",
       "default": false,
-      "description": "Arms Wave Writer \u2014 records wav on each play"
+      "description": "Arms Wave Writer — records wav on each play"
     },
     {
       "name": "FileName",
@@ -220,7 +220,7 @@
         "Voices": 1,
         "Type": "Saw"
       },
-      "comment": "Main tone generator \u2014 switchable waveform. Single voice for clean synth; add Voices for unison."
+      "comment": "Main tone generator — switchable waveform. Single voice for clean synth; add Voices for unison."
     },
     {
       "id": "vibrato_lfo",
@@ -234,7 +234,7 @@
         "Min Value": -1.0,
         "Max Value": 1.0
       },
-      "comment": "Vibrato/FM \u2014 goes up to audio rate for FM synthesis when VibratoRate is high"
+      "comment": "Vibrato/FM — goes up to audio rate for FM synthesis when VibratoRate is high"
     },
     {
       "id": "vibrato_scale",
@@ -243,7 +243,7 @@
         200,
         200
       ],
-      "comment": "VibratoLFO \u00d7 VibratoDepth = pitch modulation amount"
+      "comment": "VibratoLFO × VibratoDepth = pitch modulation amount"
     },
     {
       "id": "freq_sum",
@@ -261,7 +261,7 @@
         500,
         0
       ],
-      "comment": "Spectral effect 1: soft-clip to rounded pulse \u2014 balanced volume output"
+      "comment": "Spectral effect 1: soft-clip to rounded pulse — balanced volume output"
     },
     {
       "id": "bitcrusher",
@@ -273,7 +273,7 @@
       "defaults": {
         "Bit Depth": 16
       },
-      "comment": "Spectral effect 2: sample rate reduction only \u2014 harsh aliased spectra"
+      "comment": "Spectral effect 2: sample rate reduction only — harsh aliased spectra"
     },
     {
       "id": "ringmod",
@@ -300,7 +300,7 @@
         1100,
         0
       ],
-      "comment": "Multimode filter \u2014 LP/BP/HP outputs crossfaded by FilterType param (DJ-style)"
+      "comment": "Multimode filter — LP/BP/HP outputs crossfaded by FilterType param (DJ-style)"
     },
     {
       "id": "filter_xfade_lp_bp",
@@ -309,7 +309,7 @@
         1300,
         0
       ],
-      "comment": "Crossfade LP\u2194BP based on FilterType (0\u20130.5 range)"
+      "comment": "Crossfade LP↔BP based on FilterType (0–0.5 range)"
     },
     {
       "id": "filter_xfade_final",
@@ -318,7 +318,7 @@
         1500,
         0
       ],
-      "comment": "Crossfade (LP/BP blend)\u2194HP based on FilterType (0.5\u20131.0 range)"
+      "comment": "Crossfade (LP/BP blend)↔HP based on FilterType (0.5–1.0 range)"
     },
     {
       "id": "filter_env",
@@ -327,7 +327,7 @@
         900,
         200
       ],
-      "comment": "Filter envelope \u2014 modulates cutoff frequency over time"
+      "comment": "Filter envelope — modulates cutoff frequency over time"
     },
     {
       "id": "filter_env_scale",
@@ -336,7 +336,7 @@
         1000,
         200
       ],
-      "comment": "FilterEnv \u00d7 FilterEnvAmount = cutoff modulation"
+      "comment": "FilterEnv × FilterEnvAmount = cutoff modulation"
     },
     {
       "id": "cutoff_sum",
@@ -354,7 +354,7 @@
         1700,
         0
       ],
-      "comment": "Main amplitude envelope \u2014 shapes the overall sound dynamics"
+      "comment": "Main amplitude envelope — shapes the overall sound dynamics"
     },
     {
       "id": "amp_lfo",
@@ -368,7 +368,7 @@
         "Min Value": 0.0,
         "Max Value": 1.0
       },
-      "comment": "Unipolar amplitude modulation LFO \u2014 tremolo effect"
+      "comment": "Unipolar amplitude modulation LFO — tremolo effect"
     },
     {
       "id": "amp_lfo_mix",
@@ -380,7 +380,7 @@
       "defaults": {
         "PrimaryOperand": 1.0
       },
-      "comment": "1.0 - LFODepth + (LFO \u00d7 LFODepth) = amplitude modulation with depth control"
+      "comment": "1.0 - LFODepth + (LFO × LFODepth) = amplitude modulation with depth control"
     },
     {
       "id": "amp_multiply",
@@ -389,7 +389,7 @@
         1900,
         0
       ],
-      "comment": "Signal \u00d7 ADSR envelope = amplitude-shaped signal"
+      "comment": "Signal × ADSR envelope = amplitude-shaped signal"
     },
     {
       "id": "amp_lfo_multiply",
@@ -398,7 +398,7 @@
         2100,
         0
       ],
-      "comment": "Shaped signal \u00d7 LFO modulation = final amplitude"
+      "comment": "Shaped signal × LFO modulation = final amplitude"
     },
     {
       "id": "delay_send",
@@ -408,8 +408,10 @@
         -100
       ],
       "defaults": {
-        "Decay Time": 0.25,
-        "Feedback": 0.3
+        "Feedback": 0.3,
+        "Delay Time": 0.25,
+        "Dry Level": 1.0,
+        "Wet Level": 1.0
       },
       "comment": "Temporal effect 1: delay (parallel send)"
     },
@@ -423,7 +425,9 @@
       "defaults": {
         "Modulation Rate": 0.5,
         "Modulation Depth": 0.5,
-        "Feedback": 0.3
+        "Feedback": 0.3,
+        "Center Delay": 0.002,
+        "Mix Level": 0.5
       },
       "comment": "Temporal effect 2: multi-series flanger (parallel send)"
     },
@@ -469,7 +473,7 @@
         "Attack Time": 0.001,
         "Release Time": 0.05
       },
-      "comment": "Tracks output amplitude \u2014 determines when sound has fully completed (including effect tails)"
+      "comment": "Tracks output amplitude — determines when sound has fully completed (including effect tails)"
     }
   ],
   "connections": [
@@ -555,13 +559,13 @@
       "from_node": "__graph__",
       "from_pin": "RingModEnvAttack",
       "to_node": "ringmod_env",
-      "to_pin": "Attack"
+      "to_pin": "Attack Time"
     },
     {
       "from_node": "__graph__",
       "from_pin": "RingModEnvDecay",
       "to_node": "ringmod_env",
-      "to_pin": "Decay"
+      "to_pin": "Decay Time"
     },
     {
       "from_node": "__graph__",
@@ -579,13 +583,13 @@
       "from_node": "__graph__",
       "from_pin": "FilterEnvAttack",
       "to_node": "filter_env",
-      "to_pin": "Attack"
+      "to_pin": "Attack Time"
     },
     {
       "from_node": "__graph__",
       "from_pin": "FilterEnvDecay",
       "to_node": "filter_env",
-      "to_pin": "Decay"
+      "to_pin": "Decay Time"
     },
     {
       "from_node": "filter_env",
@@ -637,7 +641,7 @@
     },
     {
       "from_node": "__graph__",
-      "from_pin": "Type",
+      "from_pin": "FilterType",
       "to_node": "filter_xfade_lp_bp",
       "to_pin": "Crossfade Value"
     },
@@ -655,7 +659,7 @@
     },
     {
       "from_node": "__graph__",
-      "from_pin": "Type",
+      "from_pin": "FilterType",
       "to_node": "filter_xfade_final",
       "to_pin": "Crossfade Value"
     },
@@ -663,31 +667,31 @@
       "from_node": "__graph__",
       "from_pin": "OnPlay",
       "to_node": "amp_env",
-      "to_pin": "Trigger"
+      "to_pin": "Trigger Attack"
     },
     {
       "from_node": "__graph__",
       "from_pin": "AmpAttack",
       "to_node": "amp_env",
-      "to_pin": "Attack"
+      "to_pin": "Attack Time"
     },
     {
       "from_node": "__graph__",
       "from_pin": "AmpDecay",
       "to_node": "amp_env",
-      "to_pin": "Decay"
+      "to_pin": "Decay Time"
     },
     {
       "from_node": "__graph__",
       "from_pin": "AmpSustain",
       "to_node": "amp_env",
-      "to_pin": "Sustain"
+      "to_pin": "Sustain Level"
     },
     {
       "from_node": "__graph__",
       "from_pin": "AmpRelease",
       "to_node": "amp_env",
-      "to_pin": "Release"
+      "to_pin": "Release Time"
     },
     {
       "from_node": "filter_xfade_final",
@@ -697,7 +701,7 @@
     },
     {
       "from_node": "amp_env",
-      "from_pin": "Envelope",
+      "from_pin": "Out Envelope",
       "to_node": "amp_multiply",
       "to_pin": "AdditionalOperands"
     },
@@ -805,7 +809,7 @@
     },
     {
       "from_node": "amp_env",
-      "from_pin": "OnDone",
+      "from_pin": "On Done",
       "to_node": "__graph__",
       "to_pin": "OnFinished"
     },
@@ -822,5 +826,5 @@
       "to_pin": "Out Stereo R"
     }
   ],
-  "notes": "Key architecture patterns from TechAudioTools SFX Generator: (1) Single workhorse synth topology: Generator\u2192Spectral\u2192Filter\u2192Amp\u2192Effects. (2) Spectral effects in series (WaveShaper\u2192BitCrusher\u2192RingMod) for harmonic richness. (3) SVF crossfade filter acts like DJ filter \u2014 smooth LP\u2194BP\u2194HP transition. (4) Temporal effects processed in PARALLEL and mixed back (not series). (5) Envelope Follower on output detects when sound+tails have fully decayed. (6) Wave Writer captures output to wav for iteration. (7) All parameters designed for Preset Widget randomization \u2014 each has meaningful default and range. (8) Audio Buses can feed mid-graph data to analyzer widgets for real-time visualization."
+  "notes": "Key architecture patterns from TechAudioTools SFX Generator: (1) Single workhorse synth topology: Generator→Spectral→Filter→Amp→Effects. (2) Spectral effects in series (WaveShaper→BitCrusher→RingMod) for harmonic richness. (3) SVF crossfade filter acts like DJ filter — smooth LP↔BP↔HP transition. (4) Temporal effects processed in PARALLEL and mixed back (not series). (5) Envelope Follower on output detects when sound+tails have fully decayed. (6) Wave Writer captures output to wav for iteration. (7) All parameters designed for Preset Widget randomization — each has meaningful default and range. (8) Audio Buses can feed mid-graph data to analyzer widgets for real-time visualization."
 }

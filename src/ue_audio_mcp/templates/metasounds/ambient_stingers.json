@@ -4,21 +4,59 @@
   "description": "Multi-layer ambient system with trigger-box crossfades. Base ambient loop always plays at half volume. Additional layers (birds, bugs) loop silently until triggered, then smoothly fade in via InterpTo over 3 seconds. Trigger Route selects between gain 0 (off) and gain target (on).",
   "author": "Epic Games Community",
   "source_url": "https://dev.epicgames.com/community/learning/tutorials/ambient-sounds-metasound",
-  "interfaces": ["UE.Source.Default"],
+  "interfaces": [
+    "UE.Source.Default"
+  ],
   "inputs": [
-    {"name": "OnPlay", "type": "Trigger"},
-    {"name": "Birds", "type": "Trigger", "description": "Fired by trigger box overlap to fade in birds layer"},
-    {"name": "Bugs", "type": "Trigger", "description": "Fired by trigger box overlap to fade in bugs/insects layer"}
+    {
+      "name": "OnPlay",
+      "type": "Trigger"
+    },
+    {
+      "name": "Birds",
+      "type": "Trigger",
+      "description": "Fired by trigger box overlap to fade in birds layer"
+    },
+    {
+      "name": "Bugs",
+      "type": "Trigger",
+      "description": "Fired by trigger box overlap to fade in bugs/insects layer"
+    }
   ],
   "outputs": [
-    {"name": "Left Audio", "type": "Audio"},
-    {"name": "Right Audio", "type": "Audio"}
+    {
+      "name": "Left Audio",
+      "type": "Audio"
+    },
+    {
+      "name": "Right Audio",
+      "type": "Audio"
+    },
+    {
+      "name": "OnFinished",
+      "type": "Trigger"
+    },
+    {
+      "name": "Out Mono",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo L",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo R",
+      "type": "Audio"
+    }
   ],
   "nodes": [
     {
       "id": "wp_base",
-      "node_type": "Wave Player",
-      "position": [200, 0],
+      "node_type": "Wave Player (Stereo)",
+      "position": [
+        200,
+        0
+      ],
       "defaults": {
         "Wave Asset": "<Forest_Day_Base>",
         "Loop": true,
@@ -31,8 +69,11 @@
     },
     {
       "id": "wp_birds",
-      "node_type": "Wave Player",
-      "position": [200, 250],
+      "node_type": "Wave Player (Stereo)",
+      "position": [
+        200,
+        250
+      ],
       "defaults": {
         "Wave Asset": "<Birds>",
         "Loop": true
@@ -41,8 +82,11 @@
     },
     {
       "id": "wp_bugs",
-      "node_type": "Wave Player",
-      "position": [200, 500],
+      "node_type": "Wave Player (Stereo)",
+      "position": [
+        200,
+        500
+      ],
       "defaults": {
         "Wave Asset": "<Insects>",
         "Loop": true
@@ -52,7 +96,10 @@
     {
       "id": "route_birds",
       "node_type": "Trigger Route (Float, 2)",
-      "position": [200, 750],
+      "position": [
+        200,
+        750
+      ],
       "defaults": {
         "Value 0": 0.0,
         "Value 1": 5.0
@@ -62,14 +109,22 @@
     {
       "id": "interp_birds",
       "node_type": "InterpTo",
-      "position": [500, 750],
-      "defaults": {"Interp Time": 3.0},
+      "position": [
+        500,
+        750
+      ],
+      "defaults": {
+        "Interp Time": 3.0
+      },
       "comment": "Smooth 3-second crossfade for birds gain"
     },
     {
       "id": "route_bugs",
       "node_type": "Trigger Route (Float, 2)",
-      "position": [200, 900],
+      "position": [
+        200,
+        900
+      ],
       "defaults": {
         "Value 0": 0.0,
         "Value 1": 5.0
@@ -79,14 +134,22 @@
     {
       "id": "interp_bugs",
       "node_type": "InterpTo",
-      "position": [500, 900],
-      "defaults": {"Interp Time": 3.0},
+      "position": [
+        500,
+        900
+      ],
+      "defaults": {
+        "Interp Time": 3.0
+      },
       "comment": "Smooth 3-second crossfade for bugs gain"
     },
     {
       "id": "stereo_mixer",
-      "node_type": "Stereo Mixer (3)",
-      "position": [800, 300],
+      "node_type": "Audio Mixer (Stereo, 3)",
+      "position": [
+        800,
+        300
+      ],
       "defaults": {
         "Gain 0": 0.5,
         "Gain 1": 0.0,
@@ -96,22 +159,131 @@
     }
   ],
   "connections": [
-    {"from_node": "__graph__", "from_pin": "OnPlay", "to_node": "wp_base", "to_pin": "Play"},
-    {"from_node": "__graph__", "from_pin": "Birds", "to_node": "wp_birds", "to_pin": "Play"},
-    {"from_node": "__graph__", "from_pin": "Birds", "to_node": "route_birds", "to_pin": "Set 1"},
-    {"from_node": "__graph__", "from_pin": "Bugs", "to_node": "wp_bugs", "to_pin": "Play"},
-    {"from_node": "__graph__", "from_pin": "Bugs", "to_node": "route_bugs", "to_pin": "Set 1"},
-    {"from_node": "route_birds", "from_pin": "Value", "to_node": "interp_birds", "to_pin": "Target"},
-    {"from_node": "route_bugs", "from_pin": "Value", "to_node": "interp_bugs", "to_pin": "Target"},
-    {"from_node": "wp_base", "from_pin": "Out Left", "to_node": "stereo_mixer", "to_pin": "In 0 L"},
-    {"from_node": "wp_base", "from_pin": "Out Right", "to_node": "stereo_mixer", "to_pin": "In 0 R"},
-    {"from_node": "wp_birds", "from_pin": "Out Left", "to_node": "stereo_mixer", "to_pin": "In 1 L"},
-    {"from_node": "wp_birds", "from_pin": "Out Right", "to_node": "stereo_mixer", "to_pin": "In 1 R"},
-    {"from_node": "wp_bugs", "from_pin": "Out Left", "to_node": "stereo_mixer", "to_pin": "In 2 L"},
-    {"from_node": "wp_bugs", "from_pin": "Out Right", "to_node": "stereo_mixer", "to_pin": "In 2 R"},
-    {"from_node": "interp_birds", "from_pin": "Value", "to_node": "stereo_mixer", "to_pin": "Gain 1"},
-    {"from_node": "interp_bugs", "from_pin": "Value", "to_node": "stereo_mixer", "to_pin": "Gain 2"},
-    {"from_node": "stereo_mixer", "from_pin": "Out L", "to_node": "__graph__", "to_pin": "Left Audio"},
-    {"from_node": "stereo_mixer", "from_pin": "Out R", "to_node": "__graph__", "to_pin": "Right Audio"}
+    {
+      "from_node": "__graph__",
+      "from_pin": "OnPlay",
+      "to_node": "wp_base",
+      "to_pin": "Play"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Birds",
+      "to_node": "wp_birds",
+      "to_pin": "Play"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Birds",
+      "to_node": "route_birds",
+      "to_pin": "Set 1"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Bugs",
+      "to_node": "wp_bugs",
+      "to_pin": "Play"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Bugs",
+      "to_node": "route_bugs",
+      "to_pin": "Set 1"
+    },
+    {
+      "from_node": "route_birds",
+      "from_pin": "Value",
+      "to_node": "interp_birds",
+      "to_pin": "Target"
+    },
+    {
+      "from_node": "route_bugs",
+      "from_pin": "Value",
+      "to_node": "interp_bugs",
+      "to_pin": "Target"
+    },
+    {
+      "from_node": "wp_base",
+      "from_pin": "Out Left",
+      "to_node": "stereo_mixer",
+      "to_pin": "In 0 L"
+    },
+    {
+      "from_node": "wp_base",
+      "from_pin": "Out Right",
+      "to_node": "stereo_mixer",
+      "to_pin": "In 0 R"
+    },
+    {
+      "from_node": "wp_birds",
+      "from_pin": "Out Left",
+      "to_node": "stereo_mixer",
+      "to_pin": "In 1 L"
+    },
+    {
+      "from_node": "wp_birds",
+      "from_pin": "Out Right",
+      "to_node": "stereo_mixer",
+      "to_pin": "In 1 R"
+    },
+    {
+      "from_node": "wp_bugs",
+      "from_pin": "Out Left",
+      "to_node": "stereo_mixer",
+      "to_pin": "In 2 L"
+    },
+    {
+      "from_node": "wp_bugs",
+      "from_pin": "Out Right",
+      "to_node": "stereo_mixer",
+      "to_pin": "In 2 R"
+    },
+    {
+      "from_node": "interp_birds",
+      "from_pin": "Value",
+      "to_node": "stereo_mixer",
+      "to_pin": "Gain 1"
+    },
+    {
+      "from_node": "interp_bugs",
+      "from_pin": "Value",
+      "to_node": "stereo_mixer",
+      "to_pin": "Gain 2"
+    },
+    {
+      "from_node": "stereo_mixer",
+      "from_pin": "Out L",
+      "to_node": "__graph__",
+      "to_pin": "Left Audio"
+    },
+    {
+      "from_node": "stereo_mixer",
+      "from_pin": "Out R",
+      "to_node": "__graph__",
+      "to_pin": "Right Audio"
+    },
+    {
+      "from_node": "stereo_mixer",
+      "from_pin": "Out L",
+      "to_node": "__graph__",
+      "to_pin": "Out Mono"
+    },
+    {
+      "from_node": "stereo_mixer",
+      "from_pin": "Out L",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo L"
+    },
+    {
+      "from_node": "stereo_mixer",
+      "from_pin": "Out R",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo R"
+    },
+    {
+      "from_node": "wp_base",
+      "from_pin": "On Finished",
+      "to_node": "__graph__",
+      "to_pin": "OnFinished"
+    }
   ]
 }

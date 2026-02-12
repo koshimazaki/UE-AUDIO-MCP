@@ -20,10 +20,7 @@ import sys
 # Ensure package is importable when running from repo root
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from ue_audio_mcp.knowledge.metasound_nodes import (
-    CLASS_NAME_TO_DISPLAY,
-    METASOUND_NODES,
-)
+from ue_audio_mcp.knowledge.metasound_nodes import METASOUND_NODES
 from ue_audio_mcp.knowledge.blueprint_audio import BLUEPRINT_AUDIO_FUNCTIONS
 
 
@@ -87,23 +84,14 @@ _MS_NODE_NOTES: dict[str, str] = {
 }
 
 
-def _reverse_class_name_map() -> dict[str, str]:
-    """Build display_name -> class_name mapping (first match wins)."""
-    rev: dict[str, str] = {}
-    for cn, dn in CLASS_NAME_TO_DISPLAY.items():
-        if dn not in rev:
-            rev[dn] = cn
-    return rev
-
 
 def export_metasound_catalogue() -> str:
     """Export MetaSounds catalogue to JSON. Returns path."""
-    display_to_class = _reverse_class_name_map()
-
     nodes = []
     for name, node in sorted(METASOUND_NODES.items()):
         entry = {
             "name": name,
+            "class_name": node.get("class_name", ""),
             "category": node["category"],
             "description": node["description"],
             "inputs": node["inputs"],
@@ -111,10 +99,6 @@ def export_metasound_catalogue() -> str:
             "tags": node["tags"],
             "complexity": node.get("complexity", 1),
         }
-        # Add class_name if we have a mapping
-        cn = display_to_class.get(name)
-        if cn:
-            entry["class_name"] = cn
 
         # Add MCP notes: node-specific first, then category fallback
         note = _MS_NODE_NOTES.get(name) or _MS_CATEGORY_NOTES.get(node["category"])
@@ -144,10 +128,23 @@ def export_blueprint_catalogue() -> str:
 
     # -- Functions --
     functions = []
+    seen_bare: dict[str, str] = {}  # bare_name -> original composite key (collision guard)
     for name, func in sorted(BLUEPRINT_AUDIO_FUNCTIONS.items()):
+        # Strip class prefix: "AudioComponent.AdjustVolume" -> "AdjustVolume"
+        bare_name = name.split(".", 1)[-1] if "." in name else name
+        # Use original prefix as class_name (matches engine's UClass::GetName())
+        class_name = name.split(".", 1)[0] if "." in name else func["category"]
+
+        # Guard against bare-name collisions
+        if bare_name in seen_bare:
+            raise ValueError(
+                "Bare-name collision: '{}' from both '{}' and '{}'".format(
+                    bare_name, seen_bare[bare_name], name))
+        seen_bare[bare_name] = name
+
         entry = {
-            "name": name,
-            "class_name": func["category"],
+            "name": bare_name,
+            "class_name": class_name,
             "description": func["description"],
             "params": func.get("params", []),
             "returns": func.get("returns"),
@@ -205,19 +202,19 @@ def export_blueprint_catalogue() -> str:
         },
         "footsteps": {
             "description": "Surface-aware randomized footstep audio",
-            "bp_functions": ["PlaySoundAtLocation", "AudioComponent.SetIntParameter"],
+            "bp_functions": ["PlaySoundAtLocation", "SetIntParameter"],
             "ms_nodes": ["Trigger Route", "Wave Player (Mono)", "AD Envelope (Audio)", "One-Pole Low Pass Filter"],
             "wwise_flow": "SwitchContainer by surface > RandomSequence per surface",
         },
         "ambient": {
             "description": "Looping layered environmental audio with natural variation",
-            "bp_functions": ["SpawnSoundAtLocation", "AudioComponent.SetFloatParameter", "AudioComponent.AdjustVolume"],
+            "bp_functions": ["SpawnSoundAtLocation", "SetFloatParameter", "AdjustVolume"],
             "ms_nodes": ["Wave Player (Stereo)", "Trigger Repeat", "LFO", "Stereo Panner"],
             "wwise_flow": "BlendContainer > RTPC-driven layer volumes > zone triggers",
         },
         "spatial": {
             "description": "3D positioned audio with binaural rendering",
-            "bp_functions": ["SpawnSoundAttached", "AudioComponent.AdjustAttenuation"],
+            "bp_functions": ["SpawnSoundAttached", "AdjustAttenuation"],
             "ms_nodes": ["ITD Panner", "Stereo Panner"],
             "wwise_flow": "3D Spatialization > HRTF > distance attenuation",
         },
@@ -229,7 +226,7 @@ def export_blueprint_catalogue() -> str:
         },
         "weather_states": {
             "description": "Game state driven audio transitions",
-            "bp_functions": ["AudioComponent.SetFloatParameter", "AudioComponent.FadeIn", "AudioComponent.FadeOut"],
+            "bp_functions": ["SetFloatParameter", "FadeIn", "FadeOut"],
             "ms_nodes": ["Trigger Route", "Crossfade", "InterpTo", "Wave Player (Stereo)"],
             "wwise_flow": "StateGroup-driven SwitchContainer > crossfade transitions",
         },

@@ -155,37 +155,94 @@ def main():
     print("Connected: {} {} ({})".format(
         ping.get("engine", "?"), ping.get("version", "?"), ping.get("project", "?")))
 
-    # Fetch all nodes
-    print("Fetching node classes (limit={}, filter='{}')...".format(args.limit, args.filter))
+    # Fetch all nodes with pagination (C++ sorts by class name for deterministic order)
+    PAGE_SIZE = 100
+    MAX_PAGE_RETRIES = 5
     t0 = time.time()
-    result = send_command(sock, {
-        "action": "list_metasound_nodes",
-        "include_pins": True,
-        "include_metadata": True,
-        "filter": args.filter,
-        "limit": args.limit,
-    })
+    engine_nodes: list[dict] = []
+    offset = 0
+    total = None
+
+    while True:
+        sys.stdout.write("\r  Fetching nodes (offset={}, page_size={}, filter='{}')...".format(
+            offset, PAGE_SIZE, args.filter))
+        sys.stdout.flush()
+
+        page_retries = 0
+        result = None
+        while page_retries < MAX_PAGE_RETRIES:
+            try:
+                result = send_command(sock, {
+                    "action": "list_metasound_nodes",
+                    "include_pins": True,
+                    "include_metadata": True,
+                    "filter": args.filter,
+                    "limit": PAGE_SIZE,
+                    "offset": offset,
+                })
+                break  # success
+            except (OSError, ConnectionError):
+                page_retries += 1
+                delay = 0.5 * page_retries
+                sys.stderr.write("\n  Connection dropped, reconnecting ({}/{}, {:.1f}s)...\n".format(
+                    page_retries, MAX_PAGE_RETRIES, delay))
+                time.sleep(delay)
+                try:
+                    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    sock.settimeout(TIMEOUT)
+                    sock.connect((args.host, args.port))
+                except (OSError, ConnectionError) as e:
+                    if page_retries >= MAX_PAGE_RETRIES:
+                        sys.stderr.write("  FATAL: Cannot reconnect: {}\n".format(e))
+
+        if result is None:
+            sys.stderr.write("  Stopping after {} retries at offset {}. Got {} nodes.\n".format(
+                MAX_PAGE_RETRIES, offset, len(engine_nodes)))
+            break
+
+        if result.get("status") != "ok":
+            print("\nERROR: {}".format(result.get("message", "Unknown error")))
+            sys.exit(1)
+
+        page = result.get("nodes", [])
+        if total is None:
+            total = result.get("total", 0)
+        engine_nodes.extend(page)
+
+        if len(page) < PAGE_SIZE or len(engine_nodes) >= total:
+            break  # last page
+        offset += len(page)
+
     elapsed = time.time() - t0
-
     sock.close()
+    raw_count = len(engine_nodes)
+    print("\nReceived {} nodes ({} total) in {:.1f}s ({} pages)".format(
+        raw_count, total, elapsed, (raw_count + PAGE_SIZE - 1) // PAGE_SIZE))
 
-    if result.get("status") != "ok":
-        print("ERROR: {}".format(result.get("message", "Unknown error")))
-        sys.exit(1)
-
-    engine_nodes = result.get("nodes", [])
-    total = result.get("total", len(engine_nodes))
-    shown = result.get("shown", len(engine_nodes))
-    print("Received {} nodes ({} total matched) in {:.1f}s".format(shown, total, elapsed))
+    # Deduplicate by class_name (engine may return duplicates across pages)
+    seen_classes: set[str] = set()
+    unique_nodes: list[dict] = []
+    for node in engine_nodes:
+        cn = node.get("class_name", "")
+        if cn and cn not in seen_classes:
+            seen_classes.add(cn)
+            unique_nodes.append(node)
+        elif not cn:
+            unique_nodes.append(node)  # keep nodes without class_name
+    if raw_count != len(unique_nodes):
+        print("Deduplicated: {} -> {} unique nodes ({} duplicates removed)".format(
+            raw_count, len(unique_nodes), raw_count - len(unique_nodes)))
+    engine_nodes = unique_nodes
 
     # Save raw JSON
     if args.save_json:
         export_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "exports")
         os.makedirs(export_dir, exist_ok=True)
         export_path = os.path.join(export_dir, "all_metasound_nodes.json")
-        with open(export_path, "w") as f:
-            json.dump({"total": total, "shown": shown, "nodes": engine_nodes}, f, indent=2)
-        print("Saved raw JSON to {}".format(export_path))
+        with open(export_path, "w", encoding="utf-8") as f:
+            json.dump({"total": total, "shown": len(engine_nodes), "nodes": engine_nodes}, f, indent=2)
+        size_mb = os.path.getsize(export_path) / (1024 * 1024)
+        print("Saved JSON ({:.1f}MB): {}".format(size_mb, export_path))
 
     # Diff against current catalogue
     sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), "src"))
@@ -248,15 +305,14 @@ def main():
     # Update DB
     if args.update_db:
         try:
-            from ue_audio_mcp.knowledge.db import KnowledgeDB
-            db = KnowledgeDB()
+            from ue_audio_mcp.knowledge.db import get_knowledge_db
+            db = get_knowledge_db()
             count = 0
             for enode in engine_nodes:
                 node_def = _engine_node_to_nodedef(enode)
                 if node_def:
                     db.insert_node(node_def)
                     count += 1
-            db.close()
             print("SQLite DB updated: {} nodes upserted".format(count))
         except Exception as e:
             print("WARNING: DB update failed: {}".format(e))

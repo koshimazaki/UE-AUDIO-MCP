@@ -64,6 +64,18 @@
     {
       "name": "OnFinished",
       "type": "Trigger"
+    },
+    {
+      "name": "Out Mono",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo L",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo R",
+      "type": "Audio"
     }
   ],
   "nodes": [
@@ -132,7 +144,7 @@
         "Loop Start": 0.0,
         "Loop Duration": -1.0
       },
-      "comment": "Repulsor loop layer 0 \u2014 stereo playback"
+      "comment": "Repulsor loop layer 0 — stereo playback"
     },
     {
       "id": "repulsor_wp_1",
@@ -148,7 +160,7 @@
         "Loop Start": 0.0,
         "Loop Duration": -1.0
       },
-      "comment": "Repulsor loop layer 1 \u2014 offset start for variation"
+      "comment": "Repulsor loop layer 1 — offset start for variation"
     },
     {
       "id": "repulsor_wp_2",
@@ -162,7 +174,7 @@
         "Start Time": 0.0,
         "Pitch Shift": 0.0
       },
-      "comment": "Repulsor loop layer 2 \u2014 further offset for phasing"
+      "comment": "Repulsor loop layer 2 — further offset for phasing"
     },
     {
       "id": "repulsor_mixer",
@@ -176,7 +188,7 @@
         "Gain 1": 1.0,
         "Gain 2": 1.0
       },
-      "comment": "Combines 3 stereo repulsor layers \u2014 Stereo Mixer (3) in UE"
+      "comment": "Combines 3 stereo repulsor layers — Stereo Mixer (3) in UE"
     },
     {
       "id": "turbo_start_wp",
@@ -417,19 +429,19 @@
     },
     {
       "from_node": "turbo_start_wp",
-      "from_pin": "Audio",
+      "from_pin": "Out Mono",
       "to_node": "engine_mixer",
       "to_pin": "In 0"
     },
     {
       "from_node": "turbo_stop_wp",
-      "from_pin": "Audio",
+      "from_pin": "Out Mono",
       "to_node": "engine_mixer",
       "to_pin": "In 1"
     },
     {
       "from_node": "idle_wp",
-      "from_pin": "Audio",
+      "from_pin": "Out Mono",
       "to_node": "engine_mixer",
       "to_pin": "In 2"
     },
@@ -474,6 +486,24 @@
       "from_pin": "Out R",
       "to_node": "__graph__",
       "to_pin": "Out Right"
+    },
+    {
+      "from_node": "final_mixer",
+      "from_pin": "Out L",
+      "to_node": "__graph__",
+      "to_pin": "Out Mono"
+    },
+    {
+      "from_node": "final_mixer",
+      "from_pin": "Out L",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo L"
+    },
+    {
+      "from_node": "final_mixer",
+      "from_pin": "Out R",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo R"
     }
   ]
 }

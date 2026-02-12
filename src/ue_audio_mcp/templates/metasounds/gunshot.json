@@ -76,10 +76,10 @@
         200
       ],
       "defaults": {
-        "Attack": 0.001,
-        "Decay": 0.05,
-        "Sustain": 0.3,
-        "Release": 0.15
+        "Attack Time": 0.001,
+        "Decay Time": 0.05,
+        "Sustain Level": 0.3,
+        "Release Time": 0.15
       }
     },
     {
@@ -132,17 +132,17 @@
       "from_node": "random_get",
       "from_pin": "On Next",
       "to_node": "adsr",
-      "to_pin": "Trigger"
+      "to_pin": "Trigger Attack"
     },
     {
       "from_node": "wave_player",
-      "from_pin": "Audio",
+      "from_pin": "Out Mono",
       "to_node": "amp_multiply",
       "to_pin": "PrimaryOperand"
     },
     {
       "from_node": "adsr",
-      "from_pin": "Envelope",
+      "from_pin": "Out Envelope",
       "to_node": "amp_multiply",
       "to_pin": "AdditionalOperands"
     },
@@ -166,7 +166,7 @@
     },
     {
       "from_node": "adsr",
-      "from_pin": "OnDone",
+      "from_pin": "On Done",
       "to_node": "__graph__",
       "to_pin": "OnFinished"
     }

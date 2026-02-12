@@ -1,7 +1,7 @@
 {
   "name": "MSP_CrossFadeByParam_3Inputs",
   "asset_type": "Patch",
-  "description": "3-layer distance crossfade patch from Craig Owen weapon audio tutorial. Crossfades between Close/Mid/Far WaveAsset arrays driven by a float parameter (typically Distance). Each layer: gate check \u2192 Shuffle \u2192 Wave Player (Stereo) \u2192 MapRange gain curve \u2192 Stereo Mixer (3). Layer B uses two MapRanges multiplied for bell curve. Mid-Side Encode/Decode produces mono output. Trigger Any combines all OnFinished signals. Safety offset \u00b10.01 on gate boundaries prevents flickering.",
+  "description": "3-layer distance crossfade patch from Craig Owen weapon audio tutorial. Crossfades between Close/Mid/Far WaveAsset arrays driven by a float parameter (typically Distance). Each layer: gate check → Shuffle → Wave Player (Stereo) → MapRange gain curve → Stereo Mixer (3). Layer B uses two MapRanges multiplied for bell curve. Mid-Side Encode/Decode produces mono output. Trigger Any combines all OnFinished signals. Safety offset ±0.01 on gate boundaries prevents flickering.",
   "author": "Craig Owen (YAGER Development)",
   "source_url": "https://www.youtube.com/watch?v=n5z4L43jMi8",
   "interfaces": [],
@@ -14,7 +14,7 @@
       "name": "InputParameter",
       "type": "Float",
       "default": 0.0,
-      "description": "Crossfade driver \u2014 typically Distance (UE.Attenuation) in game units"
+      "description": "Crossfade driver — typically Distance (UE.Attenuation) in game units"
     },
     {
       "name": "WaveAsset_A",
@@ -105,15 +105,15 @@
     },
     {
       "id": "gate_a",
-      "node_type": "Float Compare",
+      "node_type": "Trigger Compare (Float)",
       "position": [
         200,
         0
       ],
       "defaults": {
-        "CompareOp": "LessThan"
+        "Type": "LessThan"
       },
-      "comment": "InputParam < EndFadeOut+0.01 \u2192 Layer A active"
+      "comment": "InputParam < EndFadeOut+0.01 → Layer A active"
     },
     {
       "id": "trigger_filter_a",
@@ -149,7 +149,7 @@
     },
     {
       "id": "gain_a",
-      "node_type": "Map Range",
+      "node_type": "Map Range (Float)",
       "position": [
         1000,
         0
@@ -159,7 +159,7 @@
         "Out Range B": 0.0,
         "Clamped": true
       },
-      "comment": "Layer A: gain 1\u21920 as InputParam goes StartFadeOut\u2192EndFadeOut"
+      "comment": "Layer A: gain 1→0 as InputParam goes StartFadeOut→EndFadeOut"
     },
     {
       "id": "gate_b_low_offset",
@@ -175,15 +175,15 @@
     },
     {
       "id": "gate_b_low",
-      "node_type": "Float Compare",
+      "node_type": "Trigger Compare (Float)",
       "position": [
         200,
         400
       ],
       "defaults": {
-        "CompareOp": "GreaterThan"
+        "Type": "GreaterThan"
       },
-      "comment": "InputParam > StartFadeIn-0.01 \u2192 Layer B lower bound met"
+      "comment": "InputParam > StartFadeIn-0.01 → Layer B lower bound met"
     },
     {
       "id": "gate_b_high_offset",
@@ -199,15 +199,15 @@
     },
     {
       "id": "gate_b_high",
-      "node_type": "Float Compare",
+      "node_type": "Trigger Compare (Float)",
       "position": [
         200,
         500
       ],
       "defaults": {
-        "CompareOp": "LessThan"
+        "Type": "LessThan"
       },
-      "comment": "InputParam < EndFadeOut+0.01 \u2192 Layer B upper bound met"
+      "comment": "InputParam < EndFadeOut+0.01 → Layer B upper bound met"
     },
     {
       "id": "trigger_filter_b_low",
@@ -225,7 +225,7 @@
         400,
         500
       ],
-      "comment": "Gate by upper bound \u2014 both must pass for Layer B to play"
+      "comment": "Gate by upper bound — both must pass for Layer B to play"
     },
     {
       "id": "shuffle_b",
@@ -252,7 +252,7 @@
     },
     {
       "id": "gain_b_fadein",
-      "node_type": "Map Range",
+      "node_type": "Map Range (Float)",
       "position": [
         1000,
         400
@@ -262,11 +262,11 @@
         "Out Range B": 1.0,
         "Clamped": true
       },
-      "comment": "Layer B fade-in: gain 0\u21921 as InputParam goes StartFadeIn\u2192EndFadeIn"
+      "comment": "Layer B fade-in: gain 0→1 as InputParam goes StartFadeIn→EndFadeIn"
     },
     {
       "id": "gain_b_fadeout",
-      "node_type": "Map Range",
+      "node_type": "Map Range (Float)",
       "position": [
         1000,
         500
@@ -276,7 +276,7 @@
         "Out Range B": 0.0,
         "Clamped": true
       },
-      "comment": "Layer B fade-out: gain 1\u21920 as InputParam goes StartFadeOut\u2192EndFadeOut"
+      "comment": "Layer B fade-out: gain 1→0 as InputParam goes StartFadeOut→EndFadeOut"
     },
     {
       "id": "gain_b_bell",
@@ -285,7 +285,7 @@
         1200,
         450
       ],
-      "comment": "Bell curve: fadein \u00d7 fadeout \u2014 peaks at 1.0 in the mid zone"
+      "comment": "Bell curve: fadein × fadeout — peaks at 1.0 in the mid zone"
     },
     {
       "id": "gate_c_offset",
@@ -301,15 +301,15 @@
     },
     {
       "id": "gate_c",
-      "node_type": "Float Compare",
+      "node_type": "Trigger Compare (Float)",
       "position": [
         200,
         800
       ],
       "defaults": {
-        "CompareOp": "GreaterThan"
+        "Type": "GreaterThan"
       },
-      "comment": "InputParam > StartFadeIn-0.01 \u2192 Layer C active"
+      "comment": "InputParam > StartFadeIn-0.01 → Layer C active"
     },
     {
       "id": "trigger_filter_c",
@@ -345,7 +345,7 @@
     },
     {
       "id": "gain_c",
-      "node_type": "Map Range",
+      "node_type": "Map Range (Float)",
       "position": [
         1000,
         800
@@ -355,7 +355,7 @@
         "Out Range B": 1.0,
         "Clamped": true
       },
-      "comment": "Layer C: gain 0\u21921 as InputParam goes StartFadeIn\u2192EndFadeIn"
+      "comment": "Layer C: gain 0→1 as InputParam goes StartFadeIn→EndFadeIn"
     },
     {
       "id": "stereo_mixer",
@@ -369,7 +369,7 @@
         "Gain 1": 1.0,
         "Gain 2": 1.0
       },
-      "comment": "Combines all 3 layers \u2014 gains driven by MapRange outputs"
+      "comment": "Combines all 3 layers — gains driven by MapRange outputs"
     },
     {
       "id": "ms_encode",
@@ -395,7 +395,7 @@
         "Mode": "Decode",
         "Width": 0.5
       },
-      "comment": "Decode back \u2014 Width=0.5 gives centered mono-compatible output"
+      "comment": "Decode back — Width=0.5 gives centered mono-compatible output"
     },
     {
       "id": "trigger_any",
@@ -418,17 +418,17 @@
       "from_node": "__graph__",
       "from_pin": "InputParameter",
       "to_node": "gate_a",
-      "to_pin": "PrimaryOperand"
+      "to_pin": "A"
     },
     {
       "from_node": "gate_a_threshold",
       "from_pin": "Out",
       "to_node": "gate_a",
-      "to_pin": "AdditionalOperands"
+      "to_pin": "B"
     },
     {
       "from_node": "gate_a",
-      "from_pin": "Out",
+      "from_pin": "True",
       "to_node": "trigger_filter_a",
       "to_pin": "Trigger"
     },
@@ -436,7 +436,7 @@
       "from_node": "__graph__",
       "from_pin": "TriggerStart",
       "to_node": "trigger_filter_a",
-      "to_pin": "Heads"
+      "to_pin": "Trigger"
     },
     {
       "from_node": "trigger_filter_a",
@@ -490,13 +490,13 @@
       "from_node": "__graph__",
       "from_pin": "InputParameter",
       "to_node": "gate_b_low",
-      "to_pin": "PrimaryOperand"
+      "to_pin": "A"
     },
     {
       "from_node": "gate_b_low_offset",
       "from_pin": "Out",
       "to_node": "gate_b_low",
-      "to_pin": "AdditionalOperands"
+      "to_pin": "B"
     },
     {
       "from_node": "__graph__",
@@ -508,17 +508,17 @@
       "from_node": "__graph__",
       "from_pin": "InputParameter",
       "to_node": "gate_b_high",
-      "to_pin": "PrimaryOperand"
+      "to_pin": "A"
     },
     {
       "from_node": "gate_b_high_offset",
       "from_pin": "Out",
       "to_node": "gate_b_high",
-      "to_pin": "AdditionalOperands"
+      "to_pin": "B"
     },
     {
       "from_node": "gate_b_low",
-      "from_pin": "Out",
+      "from_pin": "True",
       "to_node": "trigger_filter_b_low",
       "to_pin": "Trigger"
     },
@@ -526,11 +526,11 @@
       "from_node": "__graph__",
       "from_pin": "TriggerStart",
       "to_node": "trigger_filter_b_low",
-      "to_pin": "Heads"
+      "to_pin": "Trigger"
     },
     {
       "from_node": "gate_b_high",
-      "from_pin": "Out",
+      "from_pin": "True",
       "to_node": "trigger_filter_b_high",
       "to_pin": "Trigger"
     },
@@ -538,7 +538,7 @@
       "from_node": "trigger_filter_b_low",
       "from_pin": "Heads",
       "to_node": "trigger_filter_b_high",
-      "to_pin": "Heads"
+      "to_pin": "Trigger"
     },
     {
       "from_node": "trigger_filter_b_high",
@@ -622,17 +622,17 @@
       "from_node": "__graph__",
       "from_pin": "InputParameter",
       "to_node": "gate_c",
-      "to_pin": "PrimaryOperand"
+      "to_pin": "A"
     },
     {
       "from_node": "gate_c_offset",
       "from_pin": "Out",
       "to_node": "gate_c",
-      "to_pin": "AdditionalOperands"
+      "to_pin": "B"
     },
     {
       "from_node": "gate_c",
-      "from_pin": "Out",
+      "from_pin": "True",
       "to_node": "trigger_filter_c",
       "to_pin": "Trigger"
     },
@@ -640,7 +640,7 @@
       "from_node": "__graph__",
       "from_pin": "TriggerStart",
       "to_node": "trigger_filter_c",
-      "to_pin": "Heads"
+      "to_pin": "Trigger"
     },
     {
       "from_node": "trigger_filter_c",

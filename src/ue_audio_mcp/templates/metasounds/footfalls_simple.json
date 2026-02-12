@@ -25,6 +25,14 @@
     {
       "name": "OnFinished",
       "type": "Trigger"
+    },
+    {
+      "name": "Out Stereo L",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo R",
+      "type": "Audio"
     }
   ],
   "variables": [
@@ -75,9 +83,19 @@
         300
       ],
       "defaults": {
-        "StartClosed": true
+        "Start Closed": true
       },
-      "comment": "Prevents OnFinished until On Stop is called \u2014 allows graceful sound completion"
+      "comment": "Prevents OnFinished until On Stop is called — allows graceful sound completion"
+    },
+    {
+      "id": "var_footfalls",
+      "node_type": "__variable_get__",
+      "variable_name": "FootfallVariations",
+      "position": [
+        300,
+        200
+      ],
+      "defaults": {}
     }
   ],
   "connections": [
@@ -85,13 +103,13 @@
       "from_node": "__graph__",
       "from_pin": "OnPlay",
       "to_node": "trigger_repeat",
-      "to_pin": "Play"
+      "to_pin": "Start"
     },
     {
       "from_node": "trigger_repeat",
       "from_pin": "RepeatOut",
       "to_node": "random_get",
-      "to_pin": "On Next"
+      "to_pin": "Next"
     },
     {
       "from_node": "random_get",
@@ -100,8 +118,8 @@
       "to_pin": "Play"
     },
     {
-      "from_node": "__graph__",
-      "from_pin": "FootfallVariations",
+      "from_node": "var_footfalls",
+      "from_pin": "Value",
       "to_node": "random_get",
       "to_pin": "In Array"
     },
@@ -113,7 +131,7 @@
     },
     {
       "from_node": "wave_player",
-      "from_pin": "Out Left",
+      "from_pin": "Out Mono",
       "to_node": "__graph__",
       "to_pin": "Out Mono"
     },
@@ -134,6 +152,18 @@
       "from_pin": "Trigger Out",
       "to_node": "__graph__",
       "to_pin": "OnFinished"
+    },
+    {
+      "from_node": "wave_player",
+      "from_pin": "Out Mono",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo L"
+    },
+    {
+      "from_node": "wave_player",
+      "from_pin": "Out Mono",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo R"
     }
   ]
 }

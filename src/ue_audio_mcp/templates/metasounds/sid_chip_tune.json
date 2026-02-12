@@ -56,6 +56,14 @@
     {
       "name": "OnFinished",
       "type": "Trigger"
+    },
+    {
+      "name": "Out Stereo L",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo R",
+      "type": "Audio"
     }
   ],
   "nodes": [
@@ -84,7 +92,7 @@
         "R 3": 2,
         "Filter Routing": 7
       },
-      "comment": "Full SID chip \u2014 3 voices, filter, all routed through LP filter"
+      "comment": "Full SID chip — 3 voices, filter, all routed through LP filter"
     },
     {
       "id": "output_gain",
@@ -165,6 +173,18 @@
       "from_pin": "Out",
       "to_node": "__graph__",
       "to_pin": "Out Mono"
+    },
+    {
+      "from_node": "output_gain",
+      "from_pin": "Out",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo L"
+    },
+    {
+      "from_node": "output_gain",
+      "from_pin": "Out",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo R"
     }
   ]
 }

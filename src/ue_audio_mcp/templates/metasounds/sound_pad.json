@@ -2,7 +2,7 @@
   "name": "Sound Pad Source",
   "asset_type": "Source",
   "author": "Dr Chris Payne (ChrisPayne123)",
-  "description": "Dual-source sound pad from Chris Payne tutorial. Two parallel signal paths: (1) Synth path \u2014 ScaleDegree indexes into MajorScaleArray variable, adds RootNote offset, MIDI To Frequency converts to Hz, SuperOscillator generates tone, AD Envelope shapes amplitude. (2) Sample path \u2014 Wave Player plays AudioFile on trigger. Audio Mixer (Stereo, 2) combines both paths. Best practice: MIDI ints in Blueprint, Hz conversion inside MetaSounds.",
+  "description": "Dual-source sound pad from Chris Payne tutorial. Two parallel signal paths: (1) Synth path — ScaleDegree indexes into MajorScaleArray variable, adds RootNote offset, MIDI To Frequency converts to Hz, SuperOscillator generates tone, AD Envelope shapes amplitude. (2) Sample path — Wave Player plays AudioFile on trigger. Audio Mixer (Stereo, 2) combines both paths. Best practice: MIDI ints in Blueprint, Hz conversion inside MetaSounds.",
   "source_url": "https://dev.epicgames.com/community/learning/tutorials/opvv/unreal-engine-metasound-sound-pads",
   "interfaces": [
     "UE.Source.OneShot"
@@ -52,6 +52,18 @@
     {
       "name": "Out Right",
       "type": "Audio"
+    },
+    {
+      "name": "Out Mono",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo L",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo R",
+      "type": "Audio"
     }
   ],
   "nodes": [
@@ -80,7 +92,7 @@
         600,
         0
       ],
-      "comment": "Converts MIDI int to Hz float \u2014 the conversion boundary between BP and MS"
+      "comment": "Converts MIDI int to Hz float — the conversion boundary between BP and MS"
     },
     {
       "id": "synth",
@@ -104,7 +116,7 @@
     },
     {
       "id": "env",
-      "node_type": "AD Envelope",
+      "node_type": "AD Envelope (Float)",
       "position": [
         800,
         200
@@ -117,16 +129,16 @@
         "Hard Reset": false,
         "Looping": false
       },
-      "comment": "Shapes synth amplitude \u2014 short attack, medium decay for percussive pad hit"
+      "comment": "Shapes synth amplitude — short attack, medium decay for percussive pad hit"
     },
     {
       "id": "synth_gain",
-      "node_type": "Multiply",
+      "node_type": "Multiply (Audio)",
       "position": [
         1000,
         0
       ],
-      "comment": "Oscillator \u00d7 Envelope = shaped synth signal"
+      "comment": "Oscillator × Envelope = shaped synth signal"
     },
     {
       "id": "wave_player",
@@ -138,7 +150,7 @@
       "defaults": {
         "Loop": false
       },
-      "comment": "Sample playback path \u2014 plays AudioFile when triggered"
+      "comment": "Sample playback path — plays AudioFile when triggered"
     },
     {
       "id": "mixer",
@@ -161,6 +173,16 @@
         0
       ],
       "comment": "OnFinished when either synth envelope or sample completes"
+    },
+    {
+      "id": "var_scale",
+      "node_type": "__variable_get__",
+      "variable_name": "MajorScaleArray",
+      "position": [
+        0,
+        0
+      ],
+      "defaults": {}
     }
   ],
   "variables": [
@@ -187,7 +209,7 @@
       "to_pin": "Index"
     },
     {
-      "from_node": "__variable__",
+      "from_node": "var_scale",
       "from_pin": "MajorScaleArray",
       "to_node": "scale_lookup",
       "to_pin": "Array"
@@ -248,13 +270,13 @@
     },
     {
       "from_node": "synth_gain",
-      "from_pin": "Audio",
+      "from_pin": "Out",
       "to_node": "mixer",
       "to_pin": "In 0 L"
     },
     {
       "from_node": "synth_gain",
-      "from_pin": "Audio",
+      "from_pin": "Out",
       "to_node": "mixer",
       "to_pin": "In 0 R"
     },
@@ -299,6 +321,24 @@
       "from_pin": "Trigger",
       "to_node": "__graph__",
       "to_pin": "OnFinished"
+    },
+    {
+      "from_node": "mixer",
+      "from_pin": "Out L",
+      "to_node": "__graph__",
+      "to_pin": "Out Mono"
+    },
+    {
+      "from_node": "mixer",
+      "from_pin": "Out L",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo L"
+    },
+    {
+      "from_node": "mixer",
+      "from_pin": "Out R",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo R"
     }
   ]
 }

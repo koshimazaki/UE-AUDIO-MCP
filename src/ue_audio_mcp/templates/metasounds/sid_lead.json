@@ -45,7 +45,7 @@
       "name": "Res Boost",
       "type": "Float",
       "default": 0.5,
-      "description": "Resonance boost \u2014 1.0 for self-oscillation"
+      "description": "Resonance boost — 1.0 for self-oscillation"
     }
   ],
   "outputs": [
@@ -56,6 +56,14 @@
     {
       "name": "OnFinished",
       "type": "Trigger"
+    },
+    {
+      "name": "Out Stereo L",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo R",
+      "type": "Audio"
     }
   ],
   "nodes": [
@@ -67,7 +75,7 @@
         0
       ],
       "defaults": {},
-      "comment": "Oscillator 1 \u2014 sawtooth, base frequency"
+      "comment": "Oscillator 1 — sawtooth, base frequency"
     },
     {
       "id": "osc2_freq",
@@ -89,7 +97,7 @@
       "defaults": {
         "Waveform": "Pulse"
       },
-      "comment": "Oscillator 2 \u2014 pulse, detuned for unison thickness"
+      "comment": "Oscillator 2 — pulse, detuned for unison thickness"
     },
     {
       "id": "sid_env",
@@ -99,12 +107,12 @@
         400
       ],
       "defaults": {
-        "Attack Time": 2,
-        "Decay Time": 6,
         "Sustain": 10,
-        "Release Time": 5
+        "Attack": 2,
+        "Decay": 6,
+        "Release": 5
       },
-      "comment": "ADSR envelope \u2014 moderate attack for lead expression"
+      "comment": "ADSR envelope — moderate attack for lead expression"
     },
     {
       "id": "mix",
@@ -136,7 +144,7 @@
       "defaults": {
         "Mode": "BandPass"
       },
-      "comment": "SID filter in BP mode \u2014 resonant nasal lead character"
+      "comment": "SID filter in BP mode — resonant nasal lead character"
     },
     {
       "id": "output_gain",
@@ -247,6 +255,18 @@
       "from_pin": "Out",
       "to_node": "__graph__",
       "to_pin": "Out Mono"
+    },
+    {
+      "from_node": "output_gain",
+      "from_pin": "Out",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo L"
+    },
+    {
+      "from_node": "output_gain",
+      "from_pin": "Out",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo R"
     }
   ]
 }

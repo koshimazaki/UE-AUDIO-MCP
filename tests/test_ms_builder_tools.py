@@ -451,8 +451,8 @@ def test_inline_convert_variable_class_types():
 def test_class_name_to_display_exact():
     """Exact dict lookups should work for all entries."""
     assert class_name_to_display("UE::Sine::Audio") == "Sine"
-    assert class_name_to_display("UE::AD Envelope::Audio") == "AD Envelope (Audio)"
-    assert class_name_to_display("AudioMixer::Audio Mixer (Mono, 2)::None") == "Audio Mixer (Mono, 2)"
+    assert class_name_to_display("AD Envelope::AD Envelope::Audio") == "AD Envelope (Audio)"
+    assert class_name_to_display("AudioMixer::Audio Mixer (Mono, 2)::None") == "Mono Mixer"
     assert class_name_to_display("Convert::Float::Int32") == "Float To Int"
     assert class_name_to_display("Convert::Int32::Float") == "Int To Float"
 
@@ -565,9 +565,9 @@ def test_inline_convert_class_name_dict_resolves_audio_mixer():
         "outputs": [{"name": "Out", "type": "Audio"}],
     })
     template = _inline_convert(export)
-    mixer_nodes = [n for n in template["nodes"] if "Audio Mixer" in n["node_type"]]
+    mixer_nodes = [n for n in template["nodes"] if "Mixer" in n["node_type"]]
     assert len(mixer_nodes) == 1
-    assert mixer_nodes[0]["node_type"] == "Audio Mixer (Mono, 2)"
+    assert mixer_nodes[0]["node_type"] == "Mono Mixer"
 
 
 def test_inline_convert_skip_init_variable_nodes():

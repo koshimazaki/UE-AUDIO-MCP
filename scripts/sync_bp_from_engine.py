@@ -156,25 +156,48 @@ def _fetch_all_by_class(host: str, port: int, include_pins: bool = True) -> list
       2. For each class: list_blueprint_functions(class_filter=X, include_pins=True)
       3. Merge all results
     """
-    # Step 1: Get class list
+    # Step 1: Get class list (paginated — class list can be huge)
+    PAGE_SIZE = 2000  # class entries are tiny (~50 bytes each)
     sock = connect(host, port)
     ping = send_command(sock, {"action": "ping"})
     sys.stdout.write("Connected: {} {} ({})\n".format(
         ping.get("engine", "?"), ping.get("version", "?"), ping.get("project", "?")))
 
-    sys.stdout.write("Fetching class list...\n")
-    result = send_command(sock, {
-        "action": "list_blueprint_functions",
-        "list_classes_only": True,
-        "limit": 50000,
-    })
+    classes: list[dict] = []
+    offset = 0
+    while True:
+        sys.stdout.write("\r  Fetching class list (offset={})...".format(offset))
+        sys.stdout.flush()
+        try:
+            result = send_command(sock, {
+                "action": "list_blueprint_functions",
+                "list_classes_only": True,
+                "limit": PAGE_SIZE,
+                "offset": offset,
+            })
+        except (OSError, ConnectionError):
+            sys.stderr.write("\n  Connection dropped, reconnecting...\n")
+            try:
+                sock = reconnect(host, port)
+                continue
+            except ConnectionError as e:
+                sys.stderr.write("  FATAL: Cannot reconnect: {}\n".format(e))
+                sys.exit(1)
+
+        if result.get("status") != "ok":
+            sys.stderr.write("\nERROR: {}\n".format(result.get("message", "?")))
+            sys.exit(1)
+
+        page = result.get("classes", [])
+        classes.extend(page)
+        total_classes_matched = result.get("total_classes", 0)
+
+        if len(page) < PAGE_SIZE or len(classes) >= total_classes_matched:
+            break
+        offset += len(page)
+
     sock.close()
-
-    if result.get("status") != "ok":
-        sys.stderr.write("ERROR: {}\n".format(result.get("message", "?")))
-        sys.exit(1)
-
-    classes = result.get("classes", [])
+    sys.stdout.write("\n")
     total_classes = len(classes)
     total_expected = result.get("total_functions", 0)
     sys.stdout.write("Found {} classes with {} total functions\n".format(
@@ -240,35 +263,59 @@ def _fetch_single_shot(
     audio_only: bool, filter_str: str, class_filter: str,
     include_pins: bool, limit: int,
 ) -> tuple[list[dict], int]:
-    """Fetch functions in a single TCP call. Returns (funcs, total_matched)."""
+    """Fetch functions with auto-pagination. Returns (funcs, total_matched)."""
+    PAGE_SIZE = 100
     sock = connect(host, port)
     ping = send_command(sock, {"action": "ping"})
     sys.stdout.write("Connected: {} {} ({})\n".format(
         ping.get("engine", "?"), ping.get("version", "?"), ping.get("project", "?")))
 
-    sys.stdout.write("Fetching (limit={}, audio_only={}, filter='{}', class='{}')...\n".format(
-        limit, audio_only, filter_str, class_filter))
-    t0 = time.time()
-    result = send_command(sock, {
-        "action": "list_blueprint_functions",
-        "include_pins": include_pins,
-        "audio_only": audio_only,
-        "filter": filter_str,
-        "class_filter": class_filter,
-        "limit": limit,
-    })
-    elapsed = time.time() - t0
+    all_funcs: list[dict] = []
+    offset = 0
+    total = None
+
+    while True:
+        sys.stdout.write("\r  Fetching (offset={}, audio_only={}, filter='{}', class='{}')...".format(
+            offset, audio_only, filter_str, class_filter))
+        sys.stdout.flush()
+
+        try:
+            result = send_command(sock, {
+                "action": "list_blueprint_functions",
+                "include_pins": include_pins,
+                "audio_only": audio_only,
+                "filter": filter_str,
+                "class_filter": class_filter,
+                "limit": PAGE_SIZE,
+                "offset": offset,
+            })
+        except (OSError, ConnectionError):
+            sys.stderr.write("\n  Connection dropped, reconnecting...\n")
+            time.sleep(RECONNECT_DELAY)
+            try:
+                sock = reconnect(host, port)
+                continue  # retry same offset
+            except ConnectionError as e:
+                sys.stderr.write("  FATAL: Cannot reconnect: {}\n".format(e))
+                break
+
+        if result.get("status") != "ok":
+            sys.stderr.write("\nERROR: {}\n".format(result.get("message", "?")))
+            sys.exit(1)
+
+        page = result.get("functions", [])
+        if total is None:
+            total = result.get("total", 0)
+        all_funcs.extend(page)
+
+        if len(page) < PAGE_SIZE or len(all_funcs) >= min(total, limit):
+            break
+        offset += len(page)
+
     sock.close()
-
-    if result.get("status") != "ok":
-        sys.stderr.write("ERROR: {}\n".format(result.get("message", "?")))
-        sys.exit(1)
-
-    engine_funcs = result.get("functions", [])
-    total = result.get("total", len(engine_funcs))
-    sys.stdout.write("Received {} functions ({} total matched) in {:.1f}s\n".format(
-        len(engine_funcs), total, elapsed))
-    return engine_funcs, total
+    sys.stdout.write("\nReceived {} functions ({} total) in {} pages\n".format(
+        len(all_funcs), total, (len(all_funcs) + PAGE_SIZE - 1) // PAGE_SIZE))
+    return all_funcs, total or len(all_funcs)
 
 
 # ---------------------------------------------------------------------------
@@ -316,6 +363,20 @@ def main():
         )
 
     elapsed = time.time() - t0
+    raw_count = len(engine_funcs)
+
+    # Deduplicate by (class_name, name) — engine may return duplicates across pages
+    seen_keys: set[str] = set()
+    unique_funcs: list[dict] = []
+    for func in engine_funcs:
+        key = "{}.{}".format(func.get("class_name", ""), func.get("name", ""))
+        if key not in seen_keys:
+            seen_keys.add(key)
+            unique_funcs.append(func)
+    if raw_count != len(unique_funcs):
+        sys.stdout.write("Deduplicated: {} -> {} unique functions ({} duplicates removed)\n".format(
+            raw_count, len(unique_funcs), raw_count - len(unique_funcs)))
+    engine_funcs = unique_funcs
 
     # Class summary
     classes: dict[str, int] = {}
@@ -342,9 +403,10 @@ def main():
         sys.stdout.write("Saved JSON ({:.1f}MB): {}\n".format(size_mb, export_path))
 
     # --- Diff against current DB ---
+    db = None
     try:
-        from ue_audio_mcp.knowledge.db import KnowledgeDB
-        db = KnowledgeDB()
+        from ue_audio_mcp.knowledge.db import get_knowledge_db
+        db = get_knowledge_db()
         existing_rows = db.query_blueprint_scraped()
         existing = {row["name"]: row for row in existing_rows}
         for row in existing.values():
@@ -387,24 +449,28 @@ def main():
                 len(diff["pin_changes"]) - 30))
 
     if args.diff_only:
+        pass  # singleton DB, don't close
         sys.stdout.write("\n(diff-only mode, no updates applied)\n")
         return
 
     # --- Update DB ---
-    if args.update_db and db_available:
-        try:
-            from ue_audio_mcp.tools.bp_builder import _engine_func_to_bp_scraped
-            converted = []
-            for func in engine_funcs:
-                bp_entry = _engine_func_to_bp_scraped(func)
-                if bp_entry:
-                    converted.append(bp_entry)
-            db.insert_blueprint_scraped_batch(converted)
-            sys.stdout.write("\nSQLite DB updated: {} functions upserted\n".format(len(converted)))
-        except Exception as e:
-            sys.stderr.write("WARNING: DB update failed: {}\n".format(e))
-    elif args.update_db and not db_available:
-        sys.stderr.write("\nWARNING: Cannot update DB -- database not available\n")
+    try:
+        if args.update_db and db_available:
+            try:
+                from ue_audio_mcp.tools.bp_builder import _engine_func_to_bp_scraped
+                converted = []
+                for func in engine_funcs:
+                    bp_entry = _engine_func_to_bp_scraped(func)
+                    if bp_entry:
+                        converted.append(bp_entry)
+                db.insert_blueprint_scraped_batch(converted)
+                sys.stdout.write("\nSQLite DB updated: {} functions upserted\n".format(len(converted)))
+            except Exception as e:
+                sys.stderr.write("WARNING: DB update failed: {}\n".format(e))
+        elif args.update_db and not db_available:
+            sys.stderr.write("\nWARNING: Cannot update DB -- database not available\n")
+    finally:
+        pass  # singleton DB, don't close
 
 
 if __name__ == "__main__":

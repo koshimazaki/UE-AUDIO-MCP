@@ -7,6 +7,7 @@
 #include "MetasoundFrontendDocument.h"
 #include "MetasoundDocumentInterface.h"
 #include "MetasoundSource.h"
+#include "MetasoundFrontendNodeClassRegistry.h"
 #include "Dom/JsonObject.h"
 #include "Dom/JsonValue.h"
 
@@ -260,6 +261,14 @@ TSharedPtr<FJsonObject> FListNodeClassesCommand::Execute(
 		Limit = FMath::Clamp(static_cast<int32>(LimitVal), 1, 10000);
 	}
 
+	// Optional offset for pagination
+	int32 Offset = 0;
+	double OffsetVal;
+	if (Params->TryGetNumberField(TEXT("offset"), OffsetVal))
+	{
+		Offset = FMath::Max(0, static_cast<int32>(OffsetVal));
+	}
+
 	// Optional flags
 	bool bIncludePins = true;
 	Params->TryGetBoolField(TEXT("include_pins"), bIncludePins);
@@ -267,10 +276,62 @@ TSharedPtr<FJsonObject> FListNodeClassesCommand::Execute(
 	bool bIncludeMetadata = false;
 	Params->TryGetBoolField(TEXT("include_metadata"), bIncludeMetadata);
 
+	// Use INodeClassRegistry for full registry enumeration (not just project-used nodes),
+	// then look up full FMetasoundFrontendClass via ISearchEngine for pin data.
 	Metasound::Frontend::ISearchEngine& SearchEngine = Metasound::Frontend::ISearchEngine::Get();
 	SearchEngine.Prime();
 
-	TArray<FMetasoundFrontendClass> AllClasses = SearchEngine.FindAllClasses(false /* bInIncludeAllVersions */);
+	// Collect all classes: first from INodeClassRegistry (full registry), then
+	// supplement with ISearchEngine (which may have additional pin data).
+	TArray<FMetasoundFrontendClass> AllClasses;
+	TSet<FString> SeenClassNames;
+
+	// Phase 1: Iterate full node class registry
+	Metasound::Frontend::INodeClassRegistry& NodeRegistry = Metasound::Frontend::INodeClassRegistry::GetChecked();
+	NodeRegistry.IterateRegistry(
+		[&](const FMetasoundFrontendClass& InClass)
+		{
+			FString FullName = QueryHelpers::BuildFullClassName(InClass.Metadata.GetClassName());
+			if (!SeenClassNames.Contains(FullName))
+			{
+				SeenClassNames.Add(FullName);
+				AllClasses.Add(InClass);
+			}
+		},
+		EMetasoundFrontendClassType::External
+	);
+
+	// Phase 2: Also sweep ISearchEngine to catch any classes not in node registry
+	TArray<FMetasoundFrontendClass> SearchClasses = SearchEngine.FindAllClasses(false);
+	for (const FMetasoundFrontendClass& Cls : SearchClasses)
+	{
+		FString FullName = QueryHelpers::BuildFullClassName(Cls.Metadata.GetClassName());
+		if (!SeenClassNames.Contains(FullName))
+		{
+			SeenClassNames.Add(FullName);
+			AllClasses.Add(Cls);
+		}
+	}
+
+	// Sort by class name for deterministic pagination order
+	// Pre-compute keys to avoid repeated string construction during sort
+	TArray<TPair<FString, int32>> SortKeys;
+	SortKeys.Reserve(AllClasses.Num());
+	for (int32 i = 0; i < AllClasses.Num(); ++i)
+	{
+		SortKeys.Emplace(QueryHelpers::BuildFullClassName(AllClasses[i].Metadata.GetClassName()), i);
+	}
+	SortKeys.Sort([](const TPair<FString, int32>& A, const TPair<FString, int32>& B)
+	{
+		return A.Key < B.Key;
+	});
+	TArray<FMetasoundFrontendClass> Sorted;
+	Sorted.Reserve(AllClasses.Num());
+	for (const auto& Pair : SortKeys)
+	{
+		Sorted.Add(AllClasses[Pair.Value]);
+	}
+	AllClasses = MoveTemp(Sorted);
 
 	TArray<TSharedPtr<FJsonValue>> NodeArray;
 	int32 TotalMatched = 0;
@@ -288,6 +349,12 @@ TSharedPtr<FJsonObject> FListNodeClassesCommand::Execute(
 		}
 
 		TotalMatched++;
+
+		// Skip entries before offset
+		if (TotalMatched <= Offset)
+		{
+			continue;
+		}
 
 		if (NodeArray.Num() < Limit)
 		{
@@ -337,17 +404,23 @@ TSharedPtr<FJsonObject> FListNodeClassesCommand::Execute(
 					NodeObj->SetStringField(TEXT("description"), Description);
 				}
 
-				FString Author = Metadata.GetAuthor().ToString();
+				FString Author = Metadata.GetAuthor();
 				if (!Author.IsEmpty())
 				{
 					NodeObj->SetStringField(TEXT("author"), Author);
 				}
 
-				// Category path from class info
-				FString CategoryHierarchy = Metadata.GetCategoryHierarchy().ToString();
-				if (!CategoryHierarchy.IsEmpty())
+				// Category path from class info (UE 5.7: returns TArray<FText>)
+				const TArray<FText>& CatHierarchy = Metadata.GetCategoryHierarchy();
+				if (CatHierarchy.Num() > 0)
 				{
-					NodeObj->SetStringField(TEXT("category"), CategoryHierarchy);
+					FString CategoryPath;
+					for (int32 ci = 0; ci < CatHierarchy.Num(); ++ci)
+					{
+						if (ci > 0) CategoryPath += TEXT("|");
+						CategoryPath += CatHierarchy[ci].ToString();
+					}
+					NodeObj->SetStringField(TEXT("category"), CategoryPath);
 				}
 
 				// Keywords
@@ -378,6 +451,7 @@ TSharedPtr<FJsonObject> FListNodeClassesCommand::Execute(
 	Response->SetArrayField(TEXT("nodes"), NodeArray);
 	Response->SetNumberField(TEXT("total"), TotalMatched);
 	Response->SetNumberField(TEXT("shown"), NodeArray.Num());
+	Response->SetNumberField(TEXT("offset"), Offset);
 	return Response;
 }
 
@@ -1307,14 +1381,15 @@ namespace
 		if (!Prop) return TEXT("Unknown");
 
 		// Use GetCPPType for the canonical name, then simplify common cases
-		FString CPP = Prop->GetCPPType();
+		// Note: variable must NOT be named "CPP" — UE defines #define CPP 1 in CoreDefines.h
+		FString TypeStr = Prop->GetCPPType();
 
 		// Strip common prefixes for cleaner output
-		CPP.RemoveFromStart(TEXT("class "));
-		CPP.RemoveFromStart(TEXT("struct "));
-		CPP.RemoveFromStart(TEXT("enum "));
+		TypeStr.RemoveFromStart(TEXT("class "));
+		TypeStr.RemoveFromStart(TEXT("struct "));
+		TypeStr.RemoveFromStart(TEXT("enum "));
 
-		return CPP;
+		return TypeStr;
 	}
 }
 
@@ -1345,6 +1420,14 @@ TSharedPtr<FJsonObject> FListBlueprintFunctionsCommand::Execute(
 		Limit = FMath::Clamp(static_cast<int32>(LimitVal), 1, 50000);
 	}
 
+	// Optional offset for pagination
+	int32 Offset = 0;
+	double OffsetVal;
+	if (Params->TryGetNumberField(TEXT("offset"), OffsetVal))
+	{
+		Offset = FMath::Max(0, static_cast<int32>(OffsetVal));
+	}
+
 	// --- Class summary mode ---
 	if (bListClassesOnly)
 	{
@@ -1363,7 +1446,7 @@ TSharedPtr<FJsonObject> FListBlueprintFunctionsCommand::Execute(
 				continue;
 
 			int32 FuncCount = 0;
-			for (TFieldIterator<UFunction> FuncIt(Class, EFieldIterationFlags::ExcludeSuper); FuncIt; ++FuncIt)
+			for (TFieldIterator<UFunction> FuncIt(Class, EFieldIterationFlags::None); FuncIt; ++FuncIt)
 			{
 				if ((*FuncIt)->HasAnyFunctionFlags(FUNC_BlueprintCallable))
 					FuncCount++;
@@ -1416,7 +1499,7 @@ TSharedPtr<FJsonObject> FListBlueprintFunctionsCommand::Execute(
 		// Audio-only: skip non-audio classes (unless a function matches)
 		bool bClassAudioRelevant = AudioMCP::IsAudioRelevant(ClassName);
 
-		for (TFieldIterator<UFunction> FuncIt(Class, EFieldIterationFlags::ExcludeSuper); FuncIt; ++FuncIt)
+		for (TFieldIterator<UFunction> FuncIt(Class, EFieldIterationFlags::None); FuncIt; ++FuncIt)
 		{
 			UFunction* Func = *FuncIt;
 			if (!Func->HasAnyFunctionFlags(FUNC_BlueprintCallable))
@@ -1437,6 +1520,10 @@ TSharedPtr<FJsonObject> FListBlueprintFunctionsCommand::Execute(
 				continue;
 
 			TotalMatched++;
+
+			// Skip entries before offset
+			if (TotalMatched <= Offset)
+				continue;
 
 			if (FuncArray.Num() >= Limit)
 				continue; // keep counting total but stop emitting
@@ -1516,5 +1603,6 @@ TSharedPtr<FJsonObject> FListBlueprintFunctionsCommand::Execute(
 	Response->SetArrayField(TEXT("functions"), FuncArray);
 	Response->SetNumberField(TEXT("total"), TotalMatched);
 	Response->SetNumberField(TEXT("shown"), FuncArray.Num());
+	Response->SetNumberField(TEXT("offset"), Offset);
 	return Response;
 }

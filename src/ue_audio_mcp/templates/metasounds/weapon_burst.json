@@ -70,6 +70,18 @@
     {
       "name": "Out Right",
       "type": "Audio"
+    },
+    {
+      "name": "Out Mono",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo L",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo R",
+      "type": "Audio"
     }
   ],
   "nodes": [
@@ -102,7 +114,7 @@
         200
       ],
       "defaults": {
-        "AdditionalOperands": 3
+        "B": 3
       },
       "comment": "When shot_counter.Count >= BurstCount, fires True to stop the repeater"
     },
@@ -204,13 +216,13 @@
       "from_node": "shot_counter",
       "from_pin": "Count",
       "to_node": "burst_compare",
-      "to_pin": "PrimaryOperand"
+      "to_pin": "A"
     },
     {
       "from_node": "__graph__",
       "from_pin": "BurstCount",
       "to_node": "burst_compare",
-      "to_pin": "AdditionalOperands"
+      "to_pin": "B"
     },
     {
       "from_node": "burst_repeat",
@@ -367,6 +379,24 @@
       "from_pin": "Trigger",
       "to_node": "__graph__",
       "to_pin": "OnFinished"
+    },
+    {
+      "from_node": "stereo_mixer",
+      "from_pin": "Out L",
+      "to_node": "__graph__",
+      "to_pin": "Out Mono"
+    },
+    {
+      "from_node": "stereo_mixer",
+      "from_pin": "Out L",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo L"
+    },
+    {
+      "from_node": "stereo_mixer",
+      "from_pin": "Out R",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo R"
     }
   ]
 }

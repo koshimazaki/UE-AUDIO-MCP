@@ -43,10 +43,12 @@ def _node(
     outputs: list[Pin],
     tags: list[str],
     complexity: int = 1,
+    class_name: str = "",
 ) -> NodeDef:
     """Build a node definition dict."""
     return {
         "name": name,
+        "class_name": class_name,
         "category": category,
         "description": description,
         "inputs": inputs,
@@ -224,17 +226,19 @@ _register(_node(
 
 _register(_node(
     "Low-Frequency Oscillator", "Generators",
-    "LFO for modulation: sine, saw, square, triangle, sample-and-hold shapes.",
-    [_in("Frequency", "Float", default=1.0),
-     _in("Shape", "Enum", default="Sine"),
-     _in("Min Value", "Float", default=-1.0),
-     _in("Max Value", "Float", default=1.0),
-     _in("Phase Offset", "Float", required=False, default=0.0),
+    "LFO for modulation: sine, saw, square, triangle, sample-and-hold shapes. "
+    "Pin names verified from engine exports.",
+    [_in("Frequency", "Float"),
+     _in("Shape", "Enum", required=False),
+     _in("Min Value", "Float", required=False),
+     _in("Max Value", "Float", required=False),
      _in("Sync", "Trigger", required=False),
-     _in("Pulse Width", "Float", required=False, default=0.5)],
+     _in("Phase Offset", "Float", required=False),
+     _in("Pulse Width", "Float", required=False)],
     [_out("Out", "Float")],
     ["lfo", "modulation", "tremolo", "vibrato", "wobble", "sweep"],
     complexity=2,
+    class_name="UE::LFO::Audio",
 ))
 
 _register(_node(
@@ -277,6 +281,7 @@ _register(_node(
     [_out("Audio", "Audio")],
     ["noise", "white", "pink", "generator", "broadband", "hiss"],
     complexity=1,
+    class_name="UE::Noise::Audio",
 ))
 
 
@@ -285,26 +290,18 @@ _register(_node(
 # -------------------------------------------------------------------
 
 _WAVE_PLAYER_INPUTS: list[InputPin] = [
-    _in("Play", "Trigger"),
+    _in("Play", "Trigger", required=False),
     _in("Stop", "Trigger", required=False),
     _in("Wave Asset", "WaveAsset"),
-    _in("Start Time", "Time", required=False, default=0.0),
-    _in("Pitch Shift", "Float", required=False, default=0.0),
-    _in("Loop", "Bool", default=False),
-    _in("Loop Start", "Time", required=False, default=0.0),
+    _in("Start Time", "Time", required=False),
+    _in("Pitch Shift", "Float", required=False),
+    _in("Loop", "Bool", default=True),
+    _in("Loop Start", "Time", required=False),
     _in("Loop Duration", "Time", required=False, default=-1.0),
+    _in("Maintain Audio Sync", "Bool", required=False),
 ]
 
 _WAVE_PLAYER_OUTPUTS_MONO: list[Pin] = [
-    _out("Audio", "Audio"),
-    _out("On Finished", "Trigger"),
-    _out("On Looped", "Trigger"),
-    _out("On Nearly Finished", "Trigger"),
-]
-
-_WAVE_PLAYER_OUTPUTS_STEREO: list[Pin] = [
-    _out("Out Left", "Audio"),
-    _out("Out Right", "Audio"),
     _out("On Play", "Trigger"),
     _out("On Finished", "Trigger"),
     _out("On Nearly Finished", "Trigger"),
@@ -312,9 +309,25 @@ _WAVE_PLAYER_OUTPUTS_STEREO: list[Pin] = [
     _out("On Cue Point", "Trigger"),
     _out("Cue Point ID", "Int32"),
     _out("Cue Point Label", "String"),
-    _out("Loop Ratio", "Float"),
+    _out("Loop Percent", "Float"),
+    _out("Playback Location", "Float"),
+    _out("Playback Time", "Float"),
+    _out("Out Mono", "Audio"),
+]
+
+_WAVE_PLAYER_OUTPUTS_STEREO: list[Pin] = [
+    _out("On Play", "Trigger"),
+    _out("On Finished", "Trigger"),
+    _out("On Nearly Finished", "Trigger"),
+    _out("On Looped", "Trigger"),
+    _out("On Cue Point", "Trigger"),
+    _out("Cue Point ID", "Int32"),
+    _out("Cue Point Label", "String"),
+    _out("Loop Percent", "Float"),
     _out("Playback Location", "Float"),
     _out("Playback Time", "Time"),
+    _out("Out Left", "Audio"),
+    _out("Out Right", "Audio"),
 ]
 
 for _ch, _desc, _outs, _cx in [
@@ -384,6 +397,7 @@ _register(_node(
      _out("Out Envelope", "Audio")],
     ["envelope", "AD", "attack", "decay", "percussive", "transient", "amplitude"],
     complexity=2,
+    class_name="AD Envelope::AD Envelope::Audio",
 ))
 
 _register(_node(
@@ -406,16 +420,28 @@ _register(_node(
 
 _register(_node(
     "ADSR Envelope (Audio)", "Envelopes",
-    "Full ADSR envelope outputting audio-rate signal for sustained sounds.",
-    [_in("Trigger", "Trigger"),
-     _in("Attack", "Time", default=0.01),
-     _in("Decay", "Time", default=0.1),
-     _in("Sustain", "Float", default=0.7),
-     _in("Release", "Time", default=0.2)],
-    [_out("Envelope", "Audio"),
-     _out("OnDone", "Trigger")],
+    "Full ADSR envelope outputting audio-rate signal for sustained sounds. "
+    "Has separate Trigger Attack and Trigger Release inputs, NOT a single Trigger. "
+    "Pin names verified from engine exports.",
+    [_in("Trigger Attack", "Trigger", required=False),
+     _in("Trigger Release", "Trigger", required=False),
+     _in("Attack Time", "Float", required=False),
+     _in("Decay Time", "Float", required=False),
+     _in("Sustain Level", "Float", required=False),
+     _in("Release Time", "Float", required=False),
+     _in("Attack Curve", "Float", required=False),
+     _in("Decay Curve", "Float", required=False),
+     _in("Release Curve", "Float", required=False),
+     _in("Hard Reset", "Bool", required=False)],
+    [_out("On Attack Triggered", "Trigger"),
+     _out("On Decay Triggered", "Trigger"),
+     _out("On Sustain Triggered", "Trigger"),
+     _out("On Release Triggered", "Trigger"),
+     _out("On Done", "Trigger"),
+     _out("Out Envelope", "Audio")],
     ["envelope", "ADSR", "attack", "decay", "sustain", "release", "amplitude", "gate"],
     complexity=2,
+    class_name="ADSR Envelope::ADSR Envelope::Audio",
 ))
 
 _register(_node(
@@ -484,6 +510,19 @@ _register(_node(
 ))
 
 
+
+_register(_node(
+    "Crossfade (Audio, 2)", "Envelopes",
+    "Crossfades between two audio signals using control value (0-1).",
+    [_in("Crossfade Value", "Float"),
+     _in("In 0", "Audio"),
+     _in("In 1", "Audio")],
+    [_out("Out", "Audio")],
+    ["crossfade", "blend", "mix", "transition", "audio"],
+    complexity=1,
+))
+
+
 # -------------------------------------------------------------------
 # Filters  (10 nodes)
 # -------------------------------------------------------------------
@@ -493,14 +532,15 @@ _register(_node(
     "Versatile second-order filter with selectable type (LPF, HPF, BPF, Notch, etc.). "
     "Pin names verified from engine exports.",
     [_in("In", "Audio"),
-     _in("Cutoff Frequency", "Float", default=1000.0),
-     _in("Bandwidth", "Float", default=1.0),
+     _in("Cutoff Frequency", "Float"),
+     _in("Bandwidth", "Float"),
      _in("Gain", "Float", required=False),
-     _in("Type", "Enum", default="LPF")],
+     _in("Type", "Enum", required=False)],
     [_out("Out", "Audio")],
     ["filter", "biquad", "subtractive", "frequency", "EQ", "lowpass",
      "highpass", "bandpass", "notch", "underwater", "muffled"],
     complexity=2,
+    class_name="UE::Biquad Filter::Audio",
 ))
 
 _register(_node(
@@ -545,7 +585,7 @@ _register(_node(
     [_in("Cutoff Frequency", "Float", default=1000.0),
      _in("Resonance", "Float", default=0.5),
      _in("In", "Audio"),
-     _in("Band Stop Control", "Float")],
+     _in("Band Stop Control", "Float", default=0.0)],
     [_out("Band Pass", "Audio"),
      _out("Low Pass Filter", "Audio"),
      _out("High Pass Filter", "Audio"),
@@ -626,9 +666,9 @@ _register(_node(
     "Mono delay line with dry/wet mix.",
     [_in("Feedback", "Float", required=False, default=0.3),
      _in("In", "Audio"),
-     _in("Delay Time", "Time"),
-     _in("Dry Level", "Float"),
-     _in("Wet Level", "Float"),
+     _in("Delay Time", "Time", required=False, default=0.5),
+     _in("Dry Level", "Float", default=1.0),
+     _in("Wet Level", "Float", default=1.0),
      _in("Max Delay Time", "Time", required=False)],
     [_out("Out", "Audio")],
     ["delay", "echo", "time", "repeat", "feedback"],
@@ -644,7 +684,7 @@ _register(_node(
      _in("Delay Time", "Time", required=False),
      _in("Delay Mode", "Enum", required=False, default="Normal"),
      _in("Delay Ratio", "Float", required=False, default=1.0),
-     _in("Dry Level", "Float"),
+     _in("Dry Level", "Float", default=1.0),
      _in("Wet Level", "Float")],
     [_out("Out Left", "Audio"),
      _out("Out Right", "Audio")],
@@ -706,6 +746,23 @@ _register(_node(
     [_out("Out Audio", "Audio")],
     ["granular", "delay", "grain", "texture", "freeze", "glitch"],
     complexity=4,
+))
+
+
+
+_register(_node(
+    "Delay (Audio)", "Delays",
+    "Audio delay line with feedback and wet/dry mix control.",
+    [_in("In", "Audio"),
+     _in("Delay Time", "Time", default=1.0),
+     _in("Dry Level", "Float", default=0.0),
+     _in("Wet Level", "Float", default=1.0),
+     _in("Feedback", "Float", default=0.0),
+     _in("Max Delay Time", "Time", default=5.0),
+     _in("Reset", "Trigger", required=False)],
+    [_out("Out", "Audio")],
+    ["delay", "echo", "audio", "feedback", "time"],
+    complexity=2,
 ))
 
 
@@ -806,7 +863,7 @@ _register(_node(
 _register(_node(
     "Trigger Compare (Int32)", "Triggers",
     "Compares two Int32 values when triggered and fires True or False. Used for room/state selection.",
-    [_in("Compare", "Trigger"),
+    [_in("Compare", "Trigger", required=False),
      _in("A", "Int32"),
      _in("B", "Int32", default=0),
      _in("Type", "Enum", default="Equals")],
@@ -814,6 +871,29 @@ _register(_node(
      _out("False", "Trigger")],
     ["trigger", "compare", "int32", "equals", "switch", "condition", "gate"],
     complexity=2,
+))
+
+
+_register(_node(
+    "Trigger Compare (Float)", "Logic",
+    "Compares two float values and fires True or False trigger based on comparison type.",
+    [_in("Compare", "Trigger", required=False), _in("A", "Float"), _in("B", "Float"),
+     _in("Type", "Enum", required=False)],
+    [_out("True", "Trigger"), _out("False", "Trigger")],
+    ["compare", "logic", "trigger", "branch", "condition"],
+    complexity=1,
+    class_name="TriggerCompare::Clamp::Float",
+))
+
+_register(_node(
+    "Trigger Compare (Bool)", "Logic",
+    "Compares two boolean values and fires True or False trigger.",
+    [_in("Compare", "Trigger", required=False), _in("A", "Bool"), _in("B", "Bool"),
+     _in("Type", "Enum", required=False)],
+    [_out("True", "Trigger"), _out("False", "Trigger")],
+    ["compare", "logic", "trigger", "branch", "condition"],
+    complexity=1,
+    class_name="TriggerCompare::Clamp::Bool",
 ))
 
 _register(_node(
@@ -864,11 +944,12 @@ _register(_node(
     [_in("Trigger", "Trigger"),
      _in("Reset", "Trigger", required=False),
      _in("Seed", "Int32", required=False),
-     _in("Probability", "Float", required=False, default=1.0)],
+     _in("Probability", "Float", default=0.5)],
     [_out("Heads", "Trigger"),
      _out("Tails", "Trigger")],
     ["trigger", "filter", "gate", "pass", "block", "probability"],
     complexity=1,
+    class_name="UE::Trigger Filter::None",
 ))
 
 _register(_node(
@@ -916,7 +997,7 @@ _register(_node(
     "Trigger Repeat", "Triggers",
     "Repeats trigger at a regular interval (periodic timer). "
     "Engine class: UE::TriggerRepeat::None. Pin names verified from exports.",
-    [_in("Start", "Trigger"),
+    [_in("Start", "Trigger", required=False),
      _in("Stop", "Trigger", required=False),
      _in("Period", "Time", default=0.5),
      _in("Num Repeats", "Int32", required=False, default=-1)],
@@ -955,6 +1036,18 @@ _register(_node(
 ))
 
 
+
+_register(_node(
+    "Trigger Route (Float, 2)", "Routing",
+    "Routes float values to output based on trigger inputs. 2-input variant.",
+    [_in("Set 0", "Trigger", required=False), _in("Value 0", "Float"),
+     _in("Set 1", "Trigger"), _in("Value 1", "Float")],
+    [_out("On Set", "Trigger"), _out("Value", "Float")],
+    ["routing", "trigger", "switch", "select"],
+    complexity=1,
+    class_name="TriggerRoute::Trigger Route (Float, 2)::Float",
+))
+
 # -------------------------------------------------------------------
 # Arrays  (7 nodes)
 # -------------------------------------------------------------------
@@ -981,6 +1074,16 @@ _register(_node(
 ))
 
 _register(_node(
+    "Array Get (Int32)", "Arrays",
+    "Gets an element from an Int32 array by index.",
+    [_in("Index", "Int32"),
+     _in("Array", "Int32[]")],
+    [_out("Element", "Int32")],
+    ["array", "get", "index", "element", "int32"],
+    complexity=1,
+))
+
+_register(_node(
     "Array Num", "Arrays",
     "Returns the number of elements in an array.",
     [_in("Array", "Float[]")],
@@ -993,7 +1096,7 @@ _register(_node(
     "Random Get (WaveAssetArray)", "Arrays",
     "Gets a random element from a WaveAsset array, optionally weighted. "
     "No Repeats prevents consecutive duplicates. Enable Shared State syncs across instances.",
-    [_in("Next", "Trigger"),
+    [_in("Next", "Trigger", required=False),
      _in("Reset", "Trigger", required=False),
      _in("In Array", "WaveAsset[]"),
      _in("Weights", "Float[]", required=False),
@@ -1089,16 +1192,6 @@ _register(_node(
     complexity=1,
 ))
 
-_register(_node(
-    "Clamp", "Math",
-    "Clamps a float value between min and max bounds.",
-    [_in("Min", "Float", default=0.0),
-     _in("Max", "Float", default=1.0),
-     _in("In", "Float")],
-    [_out("Value", "Float")],
-    ["math", "clamp", "limit", "bound", "constrain"],
-    complexity=1,
-))
 
 _register(_node(
     "Log", "Math",
@@ -1129,19 +1222,6 @@ _register(_node(
     complexity=1,
 ))
 
-_register(_node(
-    "Map Range", "Math",
-    "Remaps a float from one range to another (linear interpolation).",
-    [_in("In", "Float"),
-     _in("In Range A", "Float", default=0.0),
-     _in("In Range B", "Float", default=1.0),
-     _in("Out Range A", "Float", default=0.0),
-     _in("Out Range B", "Float", default=1.0),
-     _in("Clamped", "Bool", required=False, default=True)],
-    [_out("Out Value", "Float")],
-    ["math", "map", "range", "rescale", "normalize", "remap", "lerp"],
-    complexity=1,
-))
 
 _register(_node(
     "Float Compare", "Math",
@@ -1181,24 +1261,155 @@ _register(_node(
     complexity=1,
 ))
 
+
 _register(_node(
-    "Linear To Log Frequency", "Math",
-    "Converts a linear frequency value to logarithmic scale.",
-    [_in("Linear Frequency", "Float")],
-    [_out("Log Frequency", "Float")],
-    ["math", "convert", "frequency", "linear", "log", "scale"],
+    "InterpTo", "Math",
+    "Smoothly interpolates from internal value toward target over time. "
+    "NO Current input — maintains state internally. Pin names verified from engine exports.",
+    [_in("Interp Time", "Time", required=False),
+     _in("Target", "Float", required=False)],
+    [_out("Value", "Float")],
+    ["math", "smooth", "interpolation", "transition", "lerp", "glide", "ease"],
+    complexity=2,
+    class_name="UE::InterpTo::Audio",
+))
+
+
+
+_register(_node(
+    "Clamp (Audio)", "Math",
+    "Clamps audio signal between min and max values.",
+    [_in("In", "Audio"),
+     _in("Min", "Audio"),
+     _in("Max", "Audio")],
+    [_out("Value", "Audio")],
+    ["math", "clamp", "limit", "audio"],
     complexity=1,
 ))
 
 _register(_node(
-    "InterpTo", "Math",
-    "Smoothly interpolates from current value toward target at a given speed.",
-    [_in("Current", "Float", required=False, default=0.0),
-     _in("Target", "Float"),
-     _in("Interp Time", "Time")],
+    "Clamp (Float)", "Math",
+    "Clamps float value between min and max.",
+    [_in("In", "Float"),
+     _in("Min", "Float"),
+     _in("Max", "Float")],
     [_out("Value", "Float")],
-    ["math", "smooth", "interpolation", "transition", "lerp", "glide", "ease"],
+    ["math", "clamp", "limit", "float"],
+    complexity=1,
+))
+
+_register(_node(
+    "Clamp (Int32)", "Math",
+    "Clamps integer value between min and max.",
+    [_in("In", "Int32"),
+     _in("Min", "Int32"),
+     _in("Max", "Int32")],
+    [_out("Value", "Int32")],
+    ["math", "clamp", "limit", "integer"],
+    complexity=1,
+))
+
+_register(_node(
+    "Map Range (Audio)", "Math",
+    "Maps audio signal from one range to another.",
+    [_in("In", "Audio"),
+     _in("In Range A", "Float", default=-1.0),
+     _in("In Range B", "Float", default=1.0),
+     _in("Out Range A", "Float", default=-1.0),
+     _in("Out Range B", "Float", default=1.0),
+     _in("Clamped", "Bool", default=True)],
+    [_out("Out Value", "Audio")],
+    ["math", "map", "range", "scale", "audio"],
     complexity=2,
+))
+
+_register(_node(
+    "Map Range (Float)", "Math",
+    "Maps float value from one range to another.",
+    [_in("In", "Float"),
+     _in("In Range A", "Float", default=0.0),
+     _in("In Range B", "Float", default=1.0),
+     _in("Out Range A", "Float", default=0.0),
+     _in("Out Range B", "Float", default=1.0),
+     _in("Clamped", "Bool", default=True)],
+    [_out("Out Value", "Float")],
+    ["math", "map", "range", "scale", "float"],
+    complexity=2,
+))
+
+_register(_node(
+    "Map Range (Int32)", "Math",
+    "Maps integer value from one range to another.",
+    [_in("In", "Int32"),
+     _in("In Range A", "Int32", default=0),
+     _in("In Range B", "Int32", default=100),
+     _in("Out Range A", "Int32", default=0),
+     _in("Out Range B", "Int32", default=100),
+     _in("Clamped", "Bool", default=True)],
+    [_out("Out Value", "Int32")],
+    ["math", "map", "range", "scale", "integer"],
+    complexity=2,
+))
+
+_register(_node(
+    "Add (Float)", "Math",
+    "Adds two float values.",
+    [_in("PrimaryOperand", "Float", default=0.0),
+     _in("AdditionalOperands", "Float", default=0.0)],
+    [_out("Out", "Float")],
+    ["math", "add", "plus", "sum", "float"],
+    complexity=1,
+))
+
+_register(_node(
+    "Subtract (Float)", "Math",
+    "Subtracts float values.",
+    [_in("PrimaryOperand", "Float", default=0.0),
+     _in("AdditionalOperands", "Float", default=0.0)],
+    [_out("Out", "Float")],
+    ["math", "subtract", "minus", "difference", "float"],
+    complexity=1,
+))
+
+_register(_node(
+    "Multiply (Float)", "Math",
+    "Multiplies two float values.",
+    [_in("PrimaryOperand", "Float", default=1.0),
+     _in("AdditionalOperands", "Float", default=1.0)],
+    [_out("Out", "Float")],
+    ["math", "multiply", "times", "product", "float"],
+    complexity=1,
+))
+
+_register(_node(
+    "Divide (Float)", "Math",
+    "Divides float values.",
+    [_in("PrimaryOperand", "Float", default=1.0),
+     _in("AdditionalOperands", "Float", default=1.0)],
+    [_out("Out", "Float")],
+    ["math", "divide", "quotient", "float"],
+    complexity=1,
+))
+
+_register(_node(
+    "InterpTo (Audio)", "Math",
+    "Interpolates towards target value over time. Same as InterpTo node. "
+    "Pin names verified from engine exports.",
+    [_in("Interp Time", "Time"),
+     _in("Target", "Float")],
+    [_out("Value", "Float")],
+    ["math", "interpolate", "smooth", "lerp", "audio"],
+    complexity=2,
+    class_name="UE::InterpTo::Audio",
+))
+
+_register(_node(
+    "Semitone To Freq Multiplier", "Math",
+    "Converts semitone offset to frequency multiplier.",
+    [_in("Semitones", "Float", default=0.0)],
+    [_out("Frequency Multiplier", "Float")],
+    ["math", "music", "pitch", "semitone", "frequency"],
+    complexity=1,
 ))
 
 
@@ -1251,6 +1462,22 @@ _register(_node(
 ))
 
 _register(_node(
+    "Audio Mixer (Mono, 4)", "Mix",
+    "4-input mono mixer with per-input gain. Pins: In 0..3, Gain 0..3, Out.",
+    [_in("In 0", "Audio"),
+     _in("Gain 0", "Float", default=1.0),
+     _in("In 1", "Audio", required=False),
+     _in("Gain 1", "Float", required=False, default=1.0),
+     _in("In 2", "Audio", required=False),
+     _in("Gain 2", "Float", required=False, default=1.0),
+     _in("In 3", "Audio", required=False),
+     _in("Gain 3", "Float", required=False, default=1.0)],
+    [_out("Out", "Audio")],
+    ["mix", "mixer", "mono", "sum", "combine", "audio mixer"],
+    complexity=1,
+))
+
+_register(_node(
     "Audio Mixer (Stereo, 2)", "Mix",
     "2-input stereo mixer — real UE5 node name. Mixes two stereo pairs with per-input gain. "
     "Pin names use 'In N L/R' format. From Chris Payne Sound Pads project binary extraction.",
@@ -1264,12 +1491,25 @@ _register(_node(
     complexity=2,
 ))
 
+
+_register(_node(
+    "Audio Mixer (Stereo, 3)", "Mix",
+    "Mixes 3 stereo audio inputs with individual gain controls.",
+    [_in("In 0 L", "Audio"), _in("In 0 R", "Audio"), _in("Gain 0", "Float", required=False, default=1.0),
+     _in("In 1 L", "Audio"), _in("In 1 R", "Audio"), _in("Gain 1", "Float", required=False, default=1.0),
+     _in("In 2 L", "Audio"), _in("In 2 R", "Audio"), _in("Gain 2", "Float", required=False, default=1.0)],
+    [_out("Out L", "Audio"), _out("Out R", "Audio")],
+    ["mixer", "stereo", "audio", "gain", "summing"],
+    complexity=1,
+    class_name="AudioMixer::Audio Mixer (Stereo, 3)::None",
+))
+
 _register(_node(
     "Stereo Mixer", "Mix",
     "Mixes N stereo audio input pairs into a single stereo output with per-input gain. "
     "Real UE5 pin names: In N L/R, Gain N (Lin), Out L/R. "
     "Variant suffix (N) sets input count: Stereo Mixer (2), (3), (4), (8).",
-    [_in("In 0 L", "Audio"), _in("In 0 R", "Audio"),
+    [_in("In 0 L", "Audio"), _in("In 0 R", "Audio", required=False),
      _in("Gain 0", "Float", default=1.0),
      _in("In 1 L", "Audio", required=False), _in("In 1 R", "Audio", required=False),
      _in("Gain 1", "Float", required=False, default=1.0),
@@ -1546,8 +1786,8 @@ _register(_node(
      _in("Modulation Rate", "Float"),
      _in("Modulation Depth", "Float"),
      _in("Feedback", "Float", required=False, default=0.0),
-     _in("Center Delay", "Time"),
-     _in("Mix Level", "Float")],
+     _in("Center Delay", "Time", default=0.002),
+     _in("Mix Level", "Float", default=0.5)],
     [_out("Out Audio", "Audio")],
     ["modulation", "chorus", "effect", "flanger", "sweep", "jet"],
     complexity=2,
@@ -1633,6 +1873,35 @@ _register(_node(
     ["convert", "int", "float", "cast", "utility"],
     complexity=1,
 ))
+
+_register(_node(
+    "Float To Time", "General",
+    "Converts float value to Time type.",
+    [_in("In", "Float")],
+    [_out("Out", "Time")],
+    ["convert", "float", "time", "type"],
+    complexity=1,
+))
+
+_register(_node(
+    "Time To Float", "General",
+    "Converts Time type to float value.",
+    [_in("In", "Time")],
+    [_out("Out", "Float")],
+    ["convert", "time", "float", "type"],
+    complexity=1,
+))
+
+_register(_node(
+    "Send (Audio)", "General",
+    "Sends audio to an external address via transmission system.",
+    [_in("Address", "Transmission:Address"),
+     _in("Audio", "Audio")],
+    [],
+    ["send", "external", "transmission", "output"],
+    complexity=2,
+))
+
 
 _register(_node(
     "Get Variable", "General",
@@ -1742,19 +2011,6 @@ _register(_node(
     complexity=2,
 ))
 
-_register(_node(
-    "BitCrusher", "Effects",
-    "Reduces sample rate and bit depth for lo-fi / aliased spectral effects. "
-    "Low Sample Rate creates aliasing. Low Bit Depth creates quantization noise. "
-    "From SFX Generator — used for harsh spectral output.",
-    [_in("Audio", "Audio"),
-     _in("Sample Rate", "Float", default=48000.0),
-     _in("Bit Depth", "Float", required=False, default=8.0)],
-    [_out("Audio", "Audio")],
-    ["bitcrusher", "lofi", "alias", "retro", "downsample", "quantize",
-     "sfx", "spectral"],
-    complexity=2,
-))
 
 _register(_node(
     "Ring Modulator", "Effects",
@@ -2014,12 +2270,14 @@ _register(_node(
 _register(_node(
     "Wave Player", "General",
     "The Wave Player node is used to play a Sound Wave asset. There are multiple versions of this node in order to support several different channel configurations, such as Mono, Stereo, Quad (4.0), 5.1...",
-    [     _in("Wave Asset", "WaveAsset"),
-     _in("Start Time", "Time"),
-     _in("Pitch Shift", "Float"),
+    [     _in("Play", "Trigger", required=False),
+     _in("Stop", "Trigger", required=False),
+     _in("Wave Asset", "WaveAsset"),
+     _in("Start Time", "Time", required=False),
+     _in("Pitch Shift", "Float", required=False),
      _in("Loop", "Bool", required=False, default=False),
-     _in("Loop Start", "Time"),
-     _in("Loop Duration", "Time")],
+     _in("Loop Start", "Time", required=False),
+     _in("Loop Duration", "Time", required=False)],
     [     _out("On Play", "Trigger"),
      _out("On Finished", "Trigger"),
      _out("On Nearly Finished", "Trigger"),
@@ -2029,7 +2287,7 @@ _register(_node(
      _out("Cue Point Label", "String"),
      _out("Loop Percent", "Float"),
      _out("Playback Location", "Float"),
-     _out("Out X", "Audio")],
+     _out("Out Mono", "Audio")],
     ["wave", "player", "general"],
     complexity=2,
 ))
@@ -2190,16 +2448,13 @@ CLASS_NAME_TO_DISPLAY: dict[str, str] = {
     "UE::Saw::Audio": "Saw",
     "UE::Square::Audio": "Square",
     "UE::Triangle::Audio": "Triangle",
-    "UE::LFO::Audio": "LFO",
+    "UE::LFO::Audio": "Low-Frequency Oscillator",
     "UE::Noise::Audio": "Noise",
     # --- Wave Players ---
     "UE::Wave Player::Mono": "Wave Player (Mono)",
     "UE::Wave Player::Stereo": "Wave Player (Stereo)",
     # --- Envelopes ---
-    "UE::AD Envelope::Audio": "AD Envelope (Audio)",
-    "UE::AD Envelope::Float": "AD Envelope (Float)",
     "AD Envelope::AD Envelope::Audio": "AD Envelope",
-    "UE::Decay Envelope::Audio": "Decay Envelope",
     # --- Dynamics ---
     "UE::Compressor::Audio": "Compressor",
     # --- Filters ---
@@ -2208,15 +2463,10 @@ CLASS_NAME_TO_DISPLAY: dict[str, str] = {
     "UE::One-Pole Low Pass Filter::Audio": "One-Pole Low Pass Filter",
     "UE::One-Pole High Pass Filter::Audio": "One-Pole High Pass Filter",
     "UE::Biquad Filter::Audio": "Biquad Filter",
-    "UE::Bitcrusher::Audio": "BitCrusher",
+    "UE::Bitcrusher::Audio": "Bitcrusher",
     # --- Effects ---
-    "UE::Chorus::Audio": "Chorus",
     "UE::Delay::Audio": "Delay (Audio)",
-    "UE::Delay::Time": "Delay (Time)",
-    "UE::Flanger::Audio": "Flanger (Effects)",
-    "UE::Phaser::Audio": "Phaser",
     "UE::Stereo Delay::Audio": "Stereo Delay",
-    "UE::Freeverb::Stereo": "Freeverb (Stereo)",
     "UE::Plate Reverb::Stereo": "Plate Reverb (Stereo)",
     # --- Math ---
     "UE::Add::Audio": "Add (Audio)",
@@ -2227,59 +2477,199 @@ CLASS_NAME_TO_DISPLAY: dict[str, str] = {
     "UE::Multiply::Audio": "Multiply (Audio)",
     "UE::Multiply::Float": "Multiply (Float)",
     "UE::Divide::Float": "Divide (Float)",
-    "UE::Modulo::Float": "Modulo (Float)",
-    "UE::Clamp::Audio": "Clamp (Audio)",
-    "UE::Clamp::Float": "Clamp (Float)",
-    "UE::Map Range::Float": "Map Range (Float)",
     # --- Mix ---
-    "UE::Mix Stereo::Audio": "Stereo Mixer",
-    "UE::Mono Mixer::Audio": "Mono Mixer",
     "AudioMixer::Audio Mixer (Mono, 2)::None": "Audio Mixer (Mono, 2)",
     "AudioMixer::Audio Mixer (Stereo, 2)::None": "Audio Mixer (Stereo, 2)",
     # --- Spatialization ---
-    "UE::Stereo Panner::Audio": "Stereo Panner",
-    "UE::ITD Panner::Audio": "ITD Panner",
     # --- Gain ---
-    "UE::Gain::Audio": "Gain",
     # --- Music ---
-    "UE::MidiNoteToFrequency::Float": "MIDI To Frequency",
-    "UE::FrequencyToMidi::Float": "Frequency To MIDI",
-    "UE::SemitoneToFrequencyMultiplier::Float": "Semitone To Freq Multiplier",
-    "UE::BPM To Seconds::Float": "BPM To Seconds",
     "UE::BPMToSeconds::None": "BPM To Seconds",
     "UE::MIDI To Frequency::Float": "MIDI To Frequency",
     "UE::MIDI Note Quantizer::Audio": "MIDI Note Quantizer",
     "UE::Musical Scale To Note Array::Audio": "Musical Scale To Note Array",
     # --- Triggers ---
-    "UE::Trigger Repeat::Audio": "Trigger Repeat",
     "UE::TriggerRepeat::None": "Trigger Repeat",
-    "UE::Trigger Counter::Audio": "Trigger Counter",
     "UE::Trigger Counter::None": "Trigger Counter",
-    "UE::Trigger Route::Audio": "Trigger Route",
-    "UE::Trigger Sequence::Audio": "Trigger Sequence",
     "UE::Trigger Filter::None": "Trigger Filter",
     # --- Random ---
-    "UE::Random Get::Audio": "Random Get (Audio)",
-    "UE::Random Get::Float": "Random Get (Float)",
     "UE::RandomInt32::None": "Random Int",
     "UE::RandomFloat::None": "Random Float",
     # --- Interpolation ---
-    "UE::InterpTo::Float": "InterpTo (Float)",
     "UE::InterpTo::Audio": "InterpTo (Audio)",
     # --- Effects (specific) ---
-    "UE::Crossfade::Audio": "Crossfade",
-    "UE::Ring Modulator::Audio": "Ring Modulator",
     "UE::WaveShaper::Audio": "WaveShaper",
-    "UE::Envelope Follower::Audio": "Envelope Follower (Utility)",
-    "UE::Linear To Log Frequency::Float": "Linear To Log Frequency",
-    "UE::Trigger On Threshold::Audio": "Trigger On Threshold",
-    "UE::Send To Audio Bus::Audio": "Send To Audio Bus",
     # --- Converters ---
     "Convert::Float::Int32": "Float To Int",
     "Convert::Int32::Float": "Int To Float",
-    "Convert::Float::Time": "Float To Time",
-    "Convert::Time::Float": "Time To Float",
+    # --- Engine-verified additions (2026-02-12 audit) ---
+    # Fixed/corrected class_names (2026-02-12)
+    "AD Envelope::AD Envelope::Audio": "AD Envelope (Audio)",
+    "AD Envelope::AD Envelope::Float": "AD Envelope (Float)",
+    "Clamp::Clamp::Audio": "Clamp (Audio)",
+    "Clamp::Clamp::Float": "Clamp (Float)",
+    "Clamp::Clamp::Int32": "Clamp (Int32)",
+    "Crossfade::Trigger Route (Audio, 2)::Audio": "Crossfade (Audio, 2)",
+    "Delay::Delay::AudioBufferDelayTime": "Delay",
+    "MapRange::MapRange::Audio": "Map Range (Audio)",
+    "MapRange::MapRange::Float": "Map Range (Float)",
+    "MapRange::MapRange::Int32": "Map Range (Int32)",
+    "UE::ConversionFloatToTime::None": "Float To Time",
+    "UE::ConversionTimeToFloat::None": "Time To Float",
+    "UE::Semitone to Frequency Multiplier::Float": "Semitone To Freq Multiplier",
+    "Send::Audio::None": "Send (Audio)",
+    "TriggerRoute::Trigger Route (Audio, 2)::Audio": "Trigger Route",
+    "UE::Envelope Follower::None": "Envelope Follower",
+    "UE::Flanger::None": "Flanger",
+    "UE::ITD Panner::None": "ITD Panner",
+    "UE::Linear To Log Frequency::None": "Linear To Log Frequency",
+    "UE::Stereo Panner::None": "Stereo Panner",
+    "UE::Trigger Counter::None": "Trigger Counter",
+    "UE::TriggerRepeat::None": "Trigger Repeat",
+    "UE::TriggerOnThreshold::Audio": "Trigger On Threshold",
+    "UE::Trigger Sequence (2)::None": "Trigger Sequence",
+    "UE::Frequency to MIDI::Float": "Frequency To MIDI",
+    "UE::RingMod::Audio": "Ring Modulator",
+    "AudioMixer::Audio Mixer (Mono, 2)::None": "Mono Mixer",
+    "AudioMixer::Audio Mixer (Stereo, 2)::None": "Stereo Mixer",
+    # Generators
+    "UE::Additive Synth::None": "Additive Synth",
+    "UE::Perlin Noise (audio)::Audio": "Perlin Noise",
+    "UE::Lfo Frequency Noise::Audio": "Low Frequency Noise",
+    "UE::SuperOscillatorMono::Audio": "SuperOscillator",
+    # Wave Players
+    "UE::Wave Player::Quad": "Wave Player (Quad)",
+    "UE::Wave Player::5dot1": "Wave Player (5.1)",
+    "UE::Wave Player::7dot1": "Wave Player (7.1)",
+    "UE::WaveTablePlayer::None": "WaveTable Player",
+    "UE::WaveTableOscillator::None": "WaveTable Oscillator",
+    # Envelopes
+    "ADSR Envelope::ADSR Envelope::Audio": "ADSR Envelope",
+    "ADSR Envelope::ADSR Envelope::Float": "ADSR Envelope (Float)",
+    "UE::WaveTableEnvelope::None": "WaveTable Envelope",
+    "UE::WaveTableEvaluate::None": "Evaluate WaveTable",
+    "UE::Envelope Follower::None": "Envelope Follower",
+    # Delays
+    "UE::Delay Pitch Shift::Audio": "Delay Pitch Shift",
+    "UE::Diffuser::Audio": "Diffuser",
+    "UE::GrainDelayNode::Audio": "Grain Delay",
+    # Dynamics
+    "UE::Limiter::Audio": "Limiter",
+    "UE::Decibels to Linear Gain::Float": "Decibels to Linear Gain",
+    "UE::Linear Gain to Decibels::Float": "Linear Gain to Decibels",
+    # Filters
+    "UE::DynamicFilter::Audio": "Dynamic Filter",
+    "SampleAndHold::Sample And Hold::Audio": "Sample And Hold",
+    "BandSplitter::Band Splitter (Mono, 5)::None": "Mono Band Splitter",
+    "BandSplitter::Band Splitter (Stereo, 5)::None": "Stereo Band Splitter",
+    # Math
+    "AbsoluteValue::Abs::Audio": "Abs",
+    "UE::Subtract::Int32": "Subtract (Int32)",
+    "UE::Multiply::Audio by Float": "Multiply (Audio by Float)",
+    "UE::Multiply::Int32": "Multiply (Int32)",
+    "UE::Divide::Int32": "Divide (Int32)",
+    "Max::Max::Audio": "Max",
+    "Min::Min::Audio": "Min",
+    "UE::Power::Float": "Power",
+    "UE::Logarithm::Float": "Log",
+    "UE::Convert Filter Q To Bandwidth::None": "Filter Q To Bandwidth",
+    "Print Log::Print Log::Float": "Print Log",
+    # Mix
+    "AudioMixer::Audio Mixer (Mono, 3)::None": "Audio Mixer (Mono, 3)",
+    # Spatialization
+    "UE::Mid-Side Decode::Audio": "Mid-Side Decode",
+    "UE::Mid-Side Encode::Audio": "Mid-Side Encode",
+    # General
+    "UE::ConversionAudioToFloat::None": "Audio To Float",
+    "UE::RingMod::Audio": "Ring Mod",
+    "UE::Get Wave Duration:: ": "Get Wave Duration",
+    "UE::WaveWriter::Audio": "Wave Writer",
+    "UE::Audio Bus Reader (2)::None": "Audio Bus Reader",
+    "Convert::Bool::Float": "Convert",
+    # Music
+    "UE::Musical Scale To Note Array::Audio": "Scale to Note Array",
+    # Random
+    "UE::RandomBool::None": "Random Bool",
+    "UE::RandomTime::None": "Random Time",
+    "Array::Random Get::WaveAsset:Array": "Random Get (WaveAssetArray)",
+    # Triggers
+    "TriggerAccumulator::Trigger Accumulate (2)::None": "Trigger Accumulate",
+    "TriggerAny::Trigger Any (2)::None": "Trigger Any",
+    "UE::Trigger Control::None": "Trigger Control",
+    "UE::Trigger Delay::None": "Trigger Delay",
+    "UE::TriggerOnThreshold::Audio": "Trigger On Threshold (Audio)",
+    "UE::Trigger On Value Change::Float": "Trigger On Value Change",
+    "UE::Trigger Once::None": "Trigger Once",
+    "UE::Trigger Select (2)::None": "Trigger Select",
+    "UE::Trigger Toggle::None": "Trigger Toggle",
+    # Arrays
+    "Array::Concat::Float:Array": "Array Concatenate",
+    "Array::Get::Float:Array": "Array Get",
+    "Array::Num::Float:Array": "Array Num",
+    "Array::Set::Float:Array": "Array Set",
+    "Array::Shuffle::Float:Array": "Array Shuffle",
+    "Array::Subset::Float:Array": "Array Subset",
+    # Crossfade
+    "Crossfade::Trigger Route (Audio, 2)::Audio": "Crossfade (Audio, 2)",
+    "TriggerRoute::Trigger Route (Float, 2)::Float": "Trigger Route (Float, 2)",
+    "AudioMixer::Audio Mixer (Stereo, 3)::None": "Audio Mixer (Stereo, 3)",
+    "TriggerCompare::Clamp::Float": "Trigger Compare (Float)",
+    "TriggerCompare::Clamp::Bool": "Trigger Compare (Bool)",
 }
+
+# ===================================================================
+# DISPLAY_TO_CLASS — reverse mapping (display_name -> class_name)
+# Built once, used by export_catalogues.py and cross_reference.py.
+# ===================================================================
+
+DISPLAY_TO_CLASS: dict[str, str] = {}
+for _cn, _dn in CLASS_NAME_TO_DISPLAY.items():
+    if _dn not in DISPLAY_TO_CLASS:
+        DISPLAY_TO_CLASS[_dn] = _cn
+del _cn, _dn
+
+# Extra display->class entries for nodes whose class_name is already claimed
+# by another display name in CLASS_NAME_TO_DISPLAY (e.g. UE::Add::Audio
+# maps to "Add (Audio)" above, but catalogue also has bare "Add").
+_EXTRA_DISPLAY_TO_CLASS: dict[str, str] = {
+    "Add": "UE::Add::Audio",
+    "Subtract": "UE::Subtract::Audio",
+    "Multiply": "UE::Multiply::Audio",
+    "Divide": "UE::Divide::Float",
+    "Delay": "UE::Delay::Audio",
+    "InterpTo": "UE::InterpTo::Audio",
+    "Modulo": "UE::Modulo::Int32",
+    "Wave Player": "UE::Wave Player::Mono",
+    "Wave Shaper": "UE::WaveShaper::Audio",
+    "Plate Reverb": "UE::Plate Reverb::Stereo",
+    "Flanger": "UE::Flanger::None",
+    "Low-Frequency Oscillator": "UE::LFO::Audio",
+    "Bitcrusher": "UE::Bitcrusher::Audio",
+    # Nodes with same engine class but different display name
+    "ADSR Envelope (Audio)": "ADSR Envelope::ADSR Envelope::Audio",
+    "Noise (Pink)": "UE::Noise::Audio",
+    "Noise (White)": "UE::Noise::Audio",
+    "Divide (Audio)": "UE::Divide::Float",  # No Audio variant; closest is Float
+    "Mid-Side Encode/Decode": "UE::Mid-Side Encode::Audio",
+    # Duplicate catalogue name for same engine node
+    "Musical Scale To Note Array": "UE::Musical Scale To Note Array::Audio",
+    # Short array aliases (same engine node as Array X variants)
+    "Concatenate": "Array::Concat::Float:Array",
+    "Get": "Array::Get::Float:Array",
+    "Num": "Array::Num::Float:Array",
+    "Set": "Array::Set::Float:Array",
+    "Shuffle": "Array::Shuffle::Float:Array",
+    "Subset": "Array::Subset::Float:Array",
+}
+for _dn, _cn in _EXTRA_DISPLAY_TO_CLASS.items():
+    if _dn not in DISPLAY_TO_CLASS:
+        DISPLAY_TO_CLASS[_dn] = _cn
+del _dn, _cn
+
+# --- Backfill class_name into every METASOUND_NODES entry ---
+for _name, _node_def in METASOUND_NODES.items():
+    if not _node_def.get("class_name"):
+        _node_def["class_name"] = DISPLAY_TO_CLASS.get(_name, "")
+del _name, _node_def
 
 
 def class_name_to_display(class_name: str) -> str | None:

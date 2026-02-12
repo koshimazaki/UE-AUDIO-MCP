@@ -13,6 +13,7 @@
 #include "K2Node_VariableSet.h"
 #include "Kismet2/KismetEditorUtilities.h"
 #include "Kismet2/BlueprintEditorUtils.h"
+#include "Logging/TokenizedMessage.h"
 #include "Dom/JsonObject.h"
 #include "Dom/JsonValue.h"
 
@@ -361,11 +362,8 @@ bool FAudioMCPBlueprintManager::SetPinDefault(
 	}
 
 	const UEdGraphSchema_K2* Schema = GetDefault<UEdGraphSchema_K2>();
-	if (!Schema->TrySetDefaultValue(*Pin, Value))
-	{
-		OutError = FString::Printf(TEXT("Failed to set default value '%s' on pin '%s' of node '%s'"), *Value, *PinName, *NodeId);
-		return false;
-	}
+	// UE 5.7: TrySetDefaultValue returns void, not bool
+	Schema->TrySetDefaultValue(*Pin, Value);
 
 	UE_LOG(LogAudioMCPBP, Log, TEXT("Set %s.%s = %s"), *NodeId, *PinName, *Value);
 	return true;
@@ -390,12 +388,10 @@ bool FAudioMCPBlueprintManager::CompileBlueprint(
 	// Gather compiler results (CurrentMessageLog may be null after clean compile)
 	if (BP->CurrentMessageLog)
 	{
-		for (const FCompilerResultsLog::TCompilerResultsLogItem& Entry : BP->CurrentMessageLog->Messages)
+		// UE 5.7: Messages is TArray<TSharedRef<FTokenizedMessage>> directly
+		for (const TSharedRef<FTokenizedMessage>& Entry : BP->CurrentMessageLog->Messages)
 		{
-			if (Entry.IsValid())
-			{
-				OutMessages.Add(Entry->ToText().ToString());
-			}
+			OutMessages.Add(Entry->ToText().ToString());
 		}
 	}
 
@@ -495,7 +491,7 @@ bool FAudioMCPBlueprintManager::ListPins(
 		PinObj->SetBoolField(TEXT("connected"), Pin->LinkedTo.Num() > 0);
 
 		// Include sub-category (e.g., the class name for object pins)
-		if (!Pin->PinType.PinSubCategoryObject.IsNull())
+		if (Pin->PinType.PinSubCategoryObject != nullptr)
 		{
 			PinObj->SetStringField(TEXT("sub_type"),
 				Pin->PinType.PinSubCategoryObject->GetName());

@@ -50,6 +50,14 @@
     {
       "name": "OnFinished",
       "type": "Trigger"
+    },
+    {
+      "name": "Out Stereo L",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo R",
+      "type": "Audio"
     }
   ],
   "nodes": [
@@ -61,12 +69,12 @@
         0
       ],
       "defaults": {
-        "Attack Time": 0,
-        "Decay Time": 7,
         "Sustain": 5,
-        "Release Time": 4
+        "Attack": 0,
+        "Decay": 7,
+        "Release": 4
       },
-      "comment": "SID voice \u2014 pulse wave with short attack, medium decay for plucky bass"
+      "comment": "SID voice — pulse wave with short attack, medium decay for plucky bass"
     },
     {
       "id": "sid_envelope_mod",
@@ -76,16 +84,16 @@
         300
       ],
       "defaults": {
-        "Attack Time": 0,
-        "Decay Time": 9,
         "Sustain": 0,
-        "Release Time": 6
+        "Attack": 0,
+        "Decay": 9,
+        "Release": 6
       },
-      "comment": "Separate SID envelope for filter cutoff modulation \u2014 fast pluck"
+      "comment": "Separate SID envelope for filter cutoff modulation — fast pluck"
     },
     {
       "id": "map_range",
-      "node_type": "Map Range",
+      "node_type": "Map Range (Float)",
       "position": [
         300,
         300
@@ -107,7 +115,7 @@
       "defaults": {
         "Res Boost": 0.2
       },
-      "comment": "SID 6581 LP filter \u2014 non-linear analog warmth"
+      "comment": "SID 6581 LP filter — non-linear analog warmth"
     },
     {
       "id": "gain",
@@ -167,7 +175,7 @@
     },
     {
       "from_node": "map_range",
-      "from_pin": "Value",
+      "from_pin": "Out Value",
       "to_node": "sid_filter",
       "to_pin": "Cutoff"
     },
@@ -194,6 +202,18 @@
       "from_pin": "Out",
       "to_node": "__graph__",
       "to_pin": "Out Mono"
+    },
+    {
+      "from_node": "gain",
+      "from_pin": "Out",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo L"
+    },
+    {
+      "from_node": "gain",
+      "from_pin": "Out",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo R"
     }
   ]
 }

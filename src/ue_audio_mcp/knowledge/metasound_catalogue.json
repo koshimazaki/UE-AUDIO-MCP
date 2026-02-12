@@ -30,6 +30,7 @@
   "nodes": [
     {
       "name": "AD Envelope",
+      "class_name": "AD Envelope::AD Envelope::Audio",
       "category": "Envelopes",
       "description": "Attack-Decay envelope — real UE5 node name. Outputs audio-rate envelope signal. Pin names verified from engine exports.",
       "inputs": [
@@ -99,11 +100,11 @@
         "amplitude"
       ],
       "complexity": 2,
-      "class_name": "AD Envelope::AD Envelope::Audio",
       "mcp_notes": "Shape amplitude/parameter over time. Trigger pin connects to Blueprint events. Use Audio variant for audio-rate modulation, Float for control-rate."
     },
     {
       "name": "AD Envelope (Audio)",
+      "class_name": "UE::AD Envelope::Audio",
       "category": "Envelopes",
       "description": "Attack-Decay envelope outputting audio-rate signal. Engine variant name: AD Envelope::AD Envelope::Audio. Pins verified from exports.",
       "inputs": [
@@ -173,11 +174,11 @@
         "amplitude"
       ],
       "complexity": 2,
-      "class_name": "UE::AD Envelope::Audio",
       "mcp_notes": "Percussive envelope -- no sustain. Ideal for hits, transients. Trigger from BP events."
     },
     {
       "name": "AD Envelope (Float)",
+      "class_name": "UE::AD Envelope::Float",
       "category": "Envelopes",
       "description": "Attack-Decay envelope outputting block-rate float. Engine variant name: AD Envelope::AD Envelope::Float. Pins verified from exports.",
       "inputs": [
@@ -246,11 +247,11 @@
         "control"
       ],
       "complexity": 2,
-      "class_name": "UE::AD Envelope::Float",
       "mcp_notes": "Shape amplitude/parameter over time. Trigger pin connects to Blueprint events. Use Audio variant for audio-rate modulation, Float for control-rate."
     },
     {
       "name": "ADSR Envelope",
+      "class_name": "ADSR Envelope::ADSR Envelope::Audio",
       "category": "Envelopes",
       "description": "The ADSR Envelope node generates an attack-decay-sustain-release envelope value output when triggered. This node is similar to the AD Envelope node, but it requires a separate release trigger for t...",
       "inputs": [
@@ -336,6 +337,7 @@
     },
     {
       "name": "ADSR Envelope (Audio)",
+      "class_name": "ADSR Envelope::ADSR Envelope::Audio",
       "category": "Envelopes",
       "description": "Full ADSR envelope outputting audio-rate signal for sustained sounds.",
       "inputs": [
@@ -394,6 +396,7 @@
     },
     {
       "name": "ADSR Envelope (Float)",
+      "class_name": "ADSR Envelope::ADSR Envelope::Float",
       "category": "Envelopes",
       "description": "Full ADSR envelope outputting block-rate float.",
       "inputs": [
@@ -451,6 +454,7 @@
     },
     {
       "name": "Abs",
+      "class_name": "AbsoluteValue::Abs::Audio",
       "category": "Math",
       "description": "Returns the absolute value of a float.",
       "inputs": [
@@ -477,6 +481,7 @@
     },
     {
       "name": "Add",
+      "class_name": "UE::Add::Audio",
       "category": "Math",
       "description": "Adds two values (Float, Audio, or Int32). Operates on Float data.",
       "inputs": [
@@ -510,6 +515,7 @@
     },
     {
       "name": "Add (Audio)",
+      "class_name": "UE::Add::Audio",
       "category": "Math",
       "description": "Adds two values (Float, Audio, or Int32). Operates on Audio data.",
       "inputs": [
@@ -539,11 +545,11 @@
         "audio"
       ],
       "complexity": 1,
-      "class_name": "UE::Add::Audio",
       "mcp_notes": "Arithmetic on audio/float signals. Use Multiply for volume control, Add for mixing, MapRange for parameter scaling from BP values."
     },
     {
       "name": "Add (Int32)",
+      "class_name": "UE::Add::Int32",
       "category": "Math",
       "description": "Adds two values (Float, Audio, or Int32). Operates on Int32 data.",
       "inputs": [
@@ -573,11 +579,11 @@
         "int32"
       ],
       "complexity": 1,
-      "class_name": "UE::Add::Int32",
       "mcp_notes": "Arithmetic on audio/float signals. Use Multiply for volume control, Add for mixing, MapRange for parameter scaling from BP values."
     },
     {
       "name": "Additive Synth",
+      "class_name": "UE::Additive Synth::None",
       "category": "Generators",
       "description": "Generates audio from a bank of sine partials with controllable amplitudes.",
       "inputs": [
@@ -625,6 +631,7 @@
     },
     {
       "name": "Array Concatenate",
+      "class_name": "Array::Concat::Float:Array",
       "category": "Arrays",
       "description": "Concatenates two arrays into one.",
       "inputs": [
@@ -657,6 +664,7 @@
     },
     {
       "name": "Array Get",
+      "class_name": "Array::Get::Float:Array",
       "category": "Arrays",
       "description": "Gets an element from an array at the specified index.",
       "inputs": [
@@ -689,6 +697,7 @@
     },
     {
       "name": "Array Num",
+      "class_name": "Array::Num::Float:Array",
       "category": "Arrays",
       "description": "Returns the number of elements in an array.",
       "inputs": [
@@ -715,6 +724,7 @@
     },
     {
       "name": "Array Set",
+      "class_name": "Array::Set::Float:Array",
       "category": "Arrays",
       "description": "Sets an element in an array at the specified index.",
       "inputs": [
@@ -752,6 +762,7 @@
     },
     {
       "name": "Array Shuffle",
+      "class_name": "Array::Shuffle::Float:Array",
       "category": "Arrays",
       "description": "Returns array elements in random order without repeats until exhausted.",
       "inputs": [
@@ -804,6 +815,7 @@
     },
     {
       "name": "Array Subset",
+      "class_name": "Array::Subset::Float:Array",
       "category": "Arrays",
       "description": "Extracts a contiguous subset of elements from an array.",
       "inputs": [
@@ -842,6 +854,7 @@
     },
     {
       "name": "Audio Bus Reader",
+      "class_name": "UE::Audio Bus Reader (2)::None",
       "category": "External IO",
       "description": "Reads audio from a submix bus for routing or analysis.",
       "inputs": [
@@ -869,6 +882,7 @@
     },
     {
       "name": "Audio Mixer (Mono, 2)",
+      "class_name": "AudioMixer::Audio Mixer (Mono, 2)::None",
       "category": "Mix",
       "description": "2-input mono mixer — real UE5 node name. Mixes two mono signals with per-input gain.",
       "inputs": [
@@ -910,11 +924,11 @@
         "audio mixer"
       ],
       "complexity": 1,
-      "class_name": "AudioMixer::Audio Mixer (Mono, 2)::None",
       "mcp_notes": "Combine multiple audio streams. Use Stereo Mixer for L/R panning, Mono Mixer for summing layers before effects chain."
     },
     {
       "name": "Audio Mixer (Mono, 3)",
+      "class_name": "AudioMixer::Audio Mixer (Mono, 3)::None",
       "category": "Mix",
       "description": "3-input mono mixer — real UE5 node name. Mixes three mono signals with per-input gain. Engine class: AudioMixer::Audio Mixer (Mono, 3)::None. Pin names verified from exports.",
       "inputs": [
@@ -971,6 +985,7 @@
     },
     {
       "name": "Audio Mixer (Stereo, 2)",
+      "class_name": "AudioMixer::Audio Mixer (Stereo, 2)::None",
       "category": "Mix",
       "description": "2-input stereo mixer — real UE5 node name. Mixes two stereo pairs with per-input gain. Pin names use 'In N L/R' format. From Chris Payne Sound Pads project binary extraction.",
       "inputs": [
@@ -1026,11 +1041,11 @@
         "audio mixer"
       ],
       "complexity": 2,
-      "class_name": "AudioMixer::Audio Mixer (Stereo, 2)::None",
       "mcp_notes": "Combine multiple audio streams. Use Stereo Mixer for L/R panning, Mono Mixer for summing layers before effects chain."
     },
     {
       "name": "Audio To Float",
+      "class_name": "UE::ConversionAudioToFloat::None",
       "category": "General",
       "description": "Converts an audio-rate signal to a block-rate float value. Engine class: UE::ConversionAudioToFloat::None. Pin names verified from exports.",
       "inputs": [
@@ -1058,6 +1073,7 @@
     },
     {
       "name": "BPM To Seconds",
+      "class_name": "UE::BPM To Seconds::Float",
       "category": "Music",
       "description": "Converts beats per minute to a time duration per beat in seconds. Engine class: UE::BPMToSeconds::None. Output is Time type.",
       "inputs": [
@@ -1096,11 +1112,11 @@
         "rhythm"
       ],
       "complexity": 1,
-      "class_name": "UE::BPM To Seconds::Float",
       "mcp_notes": "MIDI/pitch utilities. Convert MIDI note numbers from BP Int32 params to Hz. Use BPM To Seconds for tempo-synced timing."
     },
     {
       "name": "Biquad Filter",
+      "class_name": "UE::Biquad Filter::Audio",
       "category": "Filters",
       "description": "Versatile second-order filter with selectable type (LPF, HPF, BPF, Notch, etc.). Pin names verified from engine exports.",
       "inputs": [
@@ -1153,11 +1169,11 @@
         "muffled"
       ],
       "complexity": 2,
-      "class_name": "UE::Biquad Filter::Audio",
       "mcp_notes": "Versatile 2nd-order filter. Wire Type+Frequency+Gain from BP for runtime EQ control."
     },
     {
       "name": "BitCrusher",
+      "class_name": "UE::Bitcrusher::Audio",
       "category": "Effects",
       "description": "Reduces sample rate and bit depth for lo-fi / aliased spectral effects. Low Sample Rate creates aliasing. Low Bit Depth creates quantization noise. From SFX Generator — used for harsh spectral output.",
       "inputs": [
@@ -1196,11 +1212,11 @@
         "spectral"
       ],
       "complexity": 2,
-      "class_name": "UE::Bitcrusher::Audio",
       "mcp_notes": "Chain after generators/filters. Expose mix/feedback params to Blueprint for runtime control. Route wet signal to Wwise via AudioLink."
     },
     {
       "name": "Bitcrusher",
+      "class_name": "UE::Bitcrusher::Audio",
       "category": "Filters",
       "description": "Reduces bit depth and/or sample rate for lo-fi distortion effects.",
       "inputs": [
@@ -1240,6 +1256,7 @@
     },
     {
       "name": "Clamp",
+      "class_name": "Clamp::Clamp::Audio",
       "category": "Math",
       "description": "Clamps a float value between min and max bounds.",
       "inputs": [
@@ -1279,6 +1296,7 @@
     },
     {
       "name": "Compressor",
+      "class_name": "UE::Compressor::Audio",
       "category": "Dynamics",
       "description": "Dynamic range compressor with threshold/ratio/knee, parallel mix (Wet/Dry), optional analog modeling, peak/RMS envelope modes, and upwards compression. At 30:1 ratio with low threshold acts as brick-wall limiter for vehicle/engine layers.",
       "inputs": [
@@ -1376,11 +1394,11 @@
         "engine"
       ],
       "complexity": 3,
-      "class_name": "UE::Compressor::Audio",
       "mcp_notes": "Dynamic range control. Place before output for loudness management."
     },
     {
       "name": "Concatenate",
+      "class_name": "Array::Concat::Float:Array",
       "category": "Array",
       "description": "The Concatenate node concatenates two arrays on a given trigger.",
       "inputs": [
@@ -1409,6 +1427,7 @@
     },
     {
       "name": "Convert",
+      "class_name": "Convert::Bool::Float",
       "category": "General",
       "description": "Converts between compatible MetaSound data types.",
       "inputs": [
@@ -1434,6 +1453,7 @@
     },
     {
       "name": "Crossfade",
+      "class_name": "UE::Crossfade::Audio",
       "category": "Envelopes",
       "description": "Crossfade between two audio signals using a 0-1 control value.",
       "inputs": [
@@ -1467,11 +1487,11 @@
         "morph"
       ],
       "complexity": 1,
-      "class_name": "UE::Crossfade::Audio",
       "mcp_notes": "Blend between two audio sources. Wire blend factor from BP for state transitions."
     },
     {
       "name": "Crossfade (Audio, 2)",
+      "class_name": "Crossfade::Trigger Route (Audio, 2)::Audio",
       "category": "Effects",
       "description": "Crossfades between two audio inputs based on a float value (0.0 = In 0, 1.0 = In 1). Used for wet/dry mixing on effects chains. From SFX Generator.",
       "inputs": [
@@ -1510,6 +1530,7 @@
     },
     {
       "name": "Decibels to Linear Gain",
+      "class_name": "UE::Decibels to Linear Gain::Float",
       "category": "Dynamics",
       "description": "Converts a decibel value to a linear gain multiplier.",
       "inputs": [
@@ -1537,6 +1558,7 @@
     },
     {
       "name": "Delay",
+      "class_name": "UE::Delay::Audio",
       "category": "Delays",
       "description": "Mono delay line with dry/wet mix.",
       "inputs": [
@@ -1589,6 +1611,7 @@
     },
     {
       "name": "Delay (Time)",
+      "class_name": "UE::Delay::Time",
       "category": "Effects",
       "description": "Audio delay effect with feedback. Delay Time in seconds, Dry Level controls direct signal, Feedback controls repeats. From SFX Generator temporal effects section.",
       "inputs": [
@@ -1641,11 +1664,11 @@
         "sfx"
       ],
       "complexity": 2,
-      "class_name": "UE::Delay::Time",
       "mcp_notes": "Chain after generators/filters. Expose mix/feedback params to Blueprint for runtime control. Route wet signal to Wwise via AudioLink."
     },
     {
       "name": "Delay Pitch Shift",
+      "class_name": "UE::Delay Pitch Shift::Audio",
       "category": "Delays",
       "description": "Pitch shifting via delay line manipulation (granular pitch shift).",
       "inputs": [
@@ -1682,6 +1705,7 @@
     },
     {
       "name": "Diffuser",
+      "class_name": "UE::Diffuser::Audio",
       "category": "Delays",
       "description": "Multi-tap diffusion network for reverb-like smearing of transients.",
       "inputs": [
@@ -1719,6 +1743,7 @@
     },
     {
       "name": "Divide",
+      "class_name": "UE::Divide::Float",
       "category": "Math",
       "description": "Divides first value by second. Operates on Float data.",
       "inputs": [
@@ -1752,6 +1777,7 @@
     },
     {
       "name": "Divide (Audio)",
+      "class_name": "UE::Divide::Float",
       "category": "Math",
       "description": "Divides first value by second. Operates on Audio data.",
       "inputs": [
@@ -1785,6 +1811,7 @@
     },
     {
       "name": "Divide (Int32)",
+      "class_name": "UE::Divide::Int32",
       "category": "Math",
       "description": "Divides first value by second. Operates on Int32 data.",
       "inputs": [
@@ -1818,6 +1845,7 @@
     },
     {
       "name": "Dynamic Filter",
+      "class_name": "UE::DynamicFilter::Audio",
       "category": "Filters",
       "description": "Biquad filter with audio-rate modulation of cutoff frequency.",
       "inputs": [
@@ -1923,6 +1951,7 @@
     },
     {
       "name": "Envelope Follower",
+      "class_name": "UE::Envelope Follower::None",
       "category": "Envelopes",
       "description": "Tracks the amplitude envelope of an incoming audio signal.",
       "inputs": [
@@ -1971,6 +2000,7 @@
     },
     {
       "name": "Evaluate WaveTable",
+      "class_name": "UE::WaveTableEvaluate::None",
       "category": "Envelopes",
       "description": "Looks up a wavetable value at a given position (0-1).",
       "inputs": [
@@ -2009,6 +2039,7 @@
     },
     {
       "name": "Filter Q To Bandwidth",
+      "class_name": "UE::Convert Filter Q To Bandwidth::None",
       "category": "Math",
       "description": "Converts filter Q factor to bandwidth value (octaves).",
       "inputs": [
@@ -2037,6 +2068,7 @@
     },
     {
       "name": "Flanger",
+      "class_name": "UE::Flanger::None",
       "category": "General",
       "description": "Flanger effect using modulated short delay line.",
       "inputs": [
@@ -2090,6 +2122,7 @@
     },
     {
       "name": "Float Compare",
+      "class_name": "",
       "category": "Math",
       "description": "Compares two float values and outputs a boolean. CompareOp: LessThan, GreaterThan, Equals, LessThanOrEqual, GreaterThanOrEqual.",
       "inputs": [
@@ -2130,6 +2163,7 @@
     },
     {
       "name": "Float To Int",
+      "class_name": "Convert::Float::Int32",
       "category": "General",
       "description": "Converts a Float value to Int32 (truncation).",
       "inputs": [
@@ -2152,11 +2186,11 @@
         "cast",
         "utility"
       ],
-      "complexity": 1,
-      "class_name": "Convert::Float::Int32"
+      "complexity": 1
     },
     {
       "name": "Frequency To MIDI",
+      "class_name": "UE::FrequencyToMidi::Float",
       "category": "Music",
       "description": "Converts a frequency in Hz to a MIDI note number.",
       "inputs": [
@@ -2181,11 +2215,11 @@
         "pitch"
       ],
       "complexity": 1,
-      "class_name": "UE::FrequencyToMidi::Float",
       "mcp_notes": "MIDI/pitch utilities. Convert MIDI note numbers from BP Int32 params to Hz. Use BPM To Seconds for tempo-synced timing."
     },
     {
       "name": "Get",
+      "class_name": "Array::Get::Float:Array",
       "category": "Array",
       "description": "The Get node retrieves an element from an array at the given index.",
       "inputs": [
@@ -2219,6 +2253,7 @@
     },
     {
       "name": "Get Variable",
+      "class_name": "",
       "category": "General",
       "description": "Reads the current value of a graph variable.",
       "inputs": [],
@@ -2239,6 +2274,7 @@
     },
     {
       "name": "Get Wave Duration",
+      "class_name": "UE::Get Wave Duration:: ",
       "category": "Debug",
       "description": "Returns the duration of a WaveAsset in seconds. Simpler alternative to Get Wave Info.",
       "inputs": [
@@ -2266,6 +2302,7 @@
     },
     {
       "name": "Get Wave Info",
+      "class_name": "",
       "category": "Debug",
       "description": "Extracts metadata from a WaveAsset: channel count, sample rate, duration.",
       "inputs": [
@@ -2298,6 +2335,7 @@
     },
     {
       "name": "Get WaveTable From Bank",
+      "class_name": "",
       "category": "General",
       "description": "Extracts a single wavetable from a wavetable bank asset by index.",
       "inputs": [
@@ -2329,6 +2367,7 @@
     },
     {
       "name": "Grain Delay",
+      "class_name": "UE::GrainDelayNode::Audio",
       "category": "Delays",
       "description": "Granular delay with grain size, density, and pitch shift controls.",
       "inputs": [
@@ -2406,6 +2445,7 @@
     },
     {
       "name": "ITD Panner",
+      "class_name": "UE::ITD Panner::Audio",
       "category": "Spatialization",
       "description": "Interaural Time Difference panner for binaural 3D audio on headphones.",
       "inputs": [
@@ -2452,11 +2492,11 @@
         "elevation"
       ],
       "complexity": 3,
-      "class_name": "UE::ITD Panner::Audio",
       "mcp_notes": "Binaural panner with interaural time difference. Wire Angle from BP actor azimuth."
     },
     {
       "name": "Int To Float",
+      "class_name": "Convert::Int32::Float",
       "category": "General",
       "description": "Converts an Int32 value to Float.",
       "inputs": [
@@ -2479,11 +2519,11 @@
         "cast",
         "utility"
       ],
-      "complexity": 1,
-      "class_name": "Convert::Int32::Float"
+      "complexity": 1
     },
     {
       "name": "InterpTo",
+      "class_name": "UE::InterpTo::Audio",
       "category": "Math",
       "description": "Smoothly interpolates from current value toward target at a given speed.",
       "inputs": [
@@ -2524,6 +2564,7 @@
     },
     {
       "name": "Ladder Filter",
+      "class_name": "UE::Ladder Filter::Audio",
       "category": "Filters",
       "description": "Classic 4-pole ladder filter topology with resonance.",
       "inputs": [
@@ -2567,11 +2608,11 @@
         "warm"
       ],
       "complexity": 3,
-      "class_name": "UE::Ladder Filter::Audio",
       "mcp_notes": "Resonant 4-pole filter. Classic synth sound. Wire cutoff from BP for filter sweeps."
     },
     {
       "name": "Limiter",
+      "class_name": "UE::Limiter::Audio",
       "category": "Dynamics",
       "description": "Hard limiter / brick-wall limiter preventing signal from exceeding threshold.",
       "inputs": [
@@ -2619,6 +2660,7 @@
     },
     {
       "name": "Linear Gain to Decibels",
+      "class_name": "UE::Linear Gain to Decibels::Float",
       "category": "Dynamics",
       "description": "Converts a linear gain multiplier to decibel value.",
       "inputs": [
@@ -2647,6 +2689,7 @@
     },
     {
       "name": "Linear To Log Frequency",
+      "class_name": "UE::Linear To Log Frequency::Float",
       "category": "Utility",
       "description": "Maps a normalized 0-1 value to a logarithmic frequency range (Hz). Min/Max Domain define input range, Min/Max Range define output Hz range. Essential for frequency knobs: linear knob → perceptually even pitch. From SFX Generator base frequency section.",
       "inputs": [
@@ -2699,11 +2742,11 @@
         "sfx"
       ],
       "complexity": 2,
-      "class_name": "UE::Linear To Log Frequency::Float",
       "mcp_notes": "Analysis and routing nodes. Envelope Follower for sidechain, Audio To Float for metering back to Blueprint."
     },
     {
       "name": "Log",
+      "class_name": "UE::Logarithm::Float",
       "category": "Math",
       "description": "Computes the natural logarithm of a float.",
       "inputs": [
@@ -2730,6 +2773,7 @@
     },
     {
       "name": "Low Frequency Noise",
+      "class_name": "UE::Lfo Frequency Noise::Audio",
       "category": "Generators",
       "description": "Generates smooth random noise at low frequencies for organic modulation.",
       "inputs": [
@@ -2803,6 +2847,7 @@
     },
     {
       "name": "Low-Frequency Oscillator",
+      "class_name": "UE::LFO::Audio",
       "category": "Generators",
       "description": "LFO for modulation: sine, saw, square, triangle, sample-and-hold shapes.",
       "inputs": [
@@ -2867,6 +2912,7 @@
     },
     {
       "name": "MIDI Note Quantizer",
+      "class_name": "UE::MIDI Note Quantizer::Audio",
       "category": "Music",
       "description": "Quantizes a MIDI note number to the nearest note in a given scale. Engine class: UE::MIDI Note Quantizer::Audio. All pins are Float type.",
       "inputs": [
@@ -2907,11 +2953,11 @@
         "tuning"
       ],
       "complexity": 2,
-      "class_name": "UE::MIDI Note Quantizer::Audio",
       "mcp_notes": "MIDI/pitch utilities. Convert MIDI note numbers from BP Int32 params to Hz. Use BPM To Seconds for tempo-synced timing."
     },
     {
       "name": "MIDI To Frequency",
+      "class_name": "UE::MidiNoteToFrequency::Float",
       "category": "Music",
       "description": "Converts a MIDI note number to frequency in Hz. Engine class: UE::MIDI To Frequency::Float. Input is Float (supports fractional MIDI). Best practice: send MIDI values from Blueprint, convert to Hz here inside MetaSounds.",
       "inputs": [
@@ -2938,11 +2984,11 @@
         "Hz"
       ],
       "complexity": 1,
-      "class_name": "UE::MidiNoteToFrequency::Float",
       "mcp_notes": "Convert MIDI note (Int32) to Hz (Float). Wire from BP for musical pitch control."
     },
     {
       "name": "MSP_CrossFadeByParam_3Inputs",
+      "class_name": "",
       "category": "Patches",
       "description": "3-layer distance crossfade patch. Each layer: Shuffle→WavePlayer→MapRange gain→StereoMixer. Includes optimization gates (only processes active layers) and Mid-Side mono output. From Craig Owen weapon audio tutorial.",
       "inputs": [
@@ -3054,6 +3100,7 @@
     },
     {
       "name": "MSP_HeightEQ_Node",
+      "class_name": "",
       "category": "Spatialization",
       "description": "Height-based EQ for 3D spatialization. Applies frequency shaping based on azimuth and elevation angles for realistic height perception. From Craig Owen tutorial.",
       "inputs": [
@@ -3096,6 +3143,7 @@
     },
     {
       "name": "MSP_RandomizationNode",
+      "class_name": "",
       "category": "Patches",
       "description": "Wave asset array player with per-shot pitch and volume randomization. Selects from WaveAsset array on each Next trigger, applies random pitch/volume offsets. Used for weapon burst round-robin layers. From Craig Owen weapon burst tutorial.",
       "inputs": [
@@ -3174,6 +3222,7 @@
     },
     {
       "name": "MSP_Switch_3Inputs",
+      "class_name": "",
       "category": "Patches",
       "description": "Hard switch between 3 WaveAsset array inputs based on an Int32 parameter (0/1/2). Used for room-size selection in weapon audio. Each input: Shuffle→WavePlayer→StereoMixer.",
       "inputs": [
@@ -3231,6 +3280,7 @@
     },
     {
       "name": "Map Range",
+      "class_name": "MapRange::MapRange::Audio",
       "category": "Math",
       "description": "Remaps a float from one range to another (linear interpolation).",
       "inputs": [
@@ -3290,6 +3340,7 @@
     },
     {
       "name": "Max",
+      "class_name": "Max::Max::Audio",
       "category": "Math",
       "description": "Returns the larger of two float values.",
       "inputs": [
@@ -3322,6 +3373,7 @@
     },
     {
       "name": "Mid-Side Decode",
+      "class_name": "UE::Mid-Side Decode::Audio",
       "category": "Spatialization",
       "description": "The Mid-Side Decode node converts a stereo signal with mid and side channels to left and right channels.",
       "inputs": [
@@ -3358,6 +3410,7 @@
     },
     {
       "name": "Mid-Side Encode",
+      "class_name": "UE::Mid-Side Encode::Audio",
       "category": "Spatialization",
       "description": "The Mid-Side Encode node converts a stereo signal with left and right channels to mid and side channels.",
       "inputs": [
@@ -3394,6 +3447,7 @@
     },
     {
       "name": "Mid-Side Encode/Decode",
+      "class_name": "UE::Mid-Side Encode::Audio",
       "category": "Spatialization",
       "description": "Converts between stereo L/R and mid/side representation for width control.",
       "inputs": [
@@ -3445,6 +3499,7 @@
     },
     {
       "name": "Min",
+      "class_name": "Min::Min::Audio",
       "category": "Math",
       "description": "Returns the smaller of two float values.",
       "inputs": [
@@ -3477,6 +3532,7 @@
     },
     {
       "name": "Modulo",
+      "class_name": "UE::Modulo::Int32",
       "category": "Math",
       "description": "Returns the remainder of dividing A by B.",
       "inputs": [
@@ -3510,6 +3566,7 @@
     },
     {
       "name": "Mono Band Splitter",
+      "class_name": "BandSplitter::Band Splitter (Mono, 5)::None",
       "category": "Filters",
       "description": "Splits mono audio into low, mid, and high frequency bands.",
       "inputs": [
@@ -3532,6 +3589,7 @@
     },
     {
       "name": "Mono Mixer",
+      "class_name": "UE::Mono Mixer::Audio",
       "category": "Mix",
       "description": "Mixes N mono audio inputs into a single mono output with per-input gain. Real UE5 pin names: In 0..N, Gain 0..N (Lin), Out.",
       "inputs": [
@@ -3595,11 +3653,11 @@
         "bus"
       ],
       "complexity": 1,
-      "class_name": "UE::Mono Mixer::Audio",
       "mcp_notes": "Combine multiple audio streams. Use Stereo Mixer for L/R panning, Mono Mixer for summing layers before effects chain."
     },
     {
       "name": "Multiply",
+      "class_name": "UE::Multiply::Audio",
       "category": "Math",
       "description": "Multiplies two values (commonly used for amplitude modulation). Operates on Float data.",
       "inputs": [
@@ -3633,6 +3691,7 @@
     },
     {
       "name": "Multiply (Audio by Float)",
+      "class_name": "UE::Multiply::Audio by Float",
       "category": "Math",
       "description": "Multiplies audio signal by a float gain value. Common for volume/amplitude control.",
       "inputs": [
@@ -3668,6 +3727,7 @@
     },
     {
       "name": "Multiply (Audio)",
+      "class_name": "UE::Multiply::Audio",
       "category": "Math",
       "description": "Multiplies two values (commonly used for amplitude modulation). Operates on Audio data.",
       "inputs": [
@@ -3697,11 +3757,11 @@
         "audio"
       ],
       "complexity": 1,
-      "class_name": "UE::Multiply::Audio",
       "mcp_notes": "Arithmetic on audio/float signals. Use Multiply for volume control, Add for mixing, MapRange for parameter scaling from BP values."
     },
     {
       "name": "Multiply (Int32)",
+      "class_name": "UE::Multiply::Int32",
       "category": "Math",
       "description": "Multiplies two values (commonly used for amplitude modulation). Operates on Int32 data.",
       "inputs": [
@@ -3735,6 +3795,7 @@
     },
     {
       "name": "Musical Scale To Note Array",
+      "class_name": "UE::Musical Scale To Note Array::Audio",
       "category": "Music",
       "description": "Generates a note array from a musical scale enum. Real UE5 node name from exports.",
       "inputs": [
@@ -3765,11 +3826,11 @@
         "melody"
       ],
       "complexity": 2,
-      "class_name": "UE::Musical Scale To Note Array::Audio",
       "mcp_notes": "MIDI/pitch utilities. Convert MIDI note numbers from BP Int32 params to Hz. Use BPM To Seconds for tempo-synced timing."
     },
     {
       "name": "Noise",
+      "class_name": "UE::Noise::Audio",
       "category": "Generators",
       "description": "Generic noise generator with selectable type (White, Pink, etc.). Engine class: UE::Noise::Audio. Pin names verified from exports.",
       "inputs": [
@@ -3800,11 +3861,11 @@
         "hiss"
       ],
       "complexity": 1,
-      "class_name": "UE::Noise::Audio",
       "mcp_notes": "Use as audio source in MetaSounds layer. Trigger from Blueprint events, expose Frequency as graph input for BP SetFloatParameter."
     },
     {
       "name": "Noise (Pink)",
+      "class_name": "UE::Noise::Audio",
       "category": "Generators",
       "description": "Pink noise generator (1/f spectrum, equal energy per octave).",
       "inputs": [
@@ -3833,6 +3894,7 @@
     },
     {
       "name": "Noise (White)",
+      "class_name": "UE::Noise::Audio",
       "category": "Generators",
       "description": "White noise generator (flat spectrum, equal energy per frequency).",
       "inputs": [
@@ -3861,6 +3923,7 @@
     },
     {
       "name": "Num",
+      "class_name": "Array::Num::Float:Array",
       "category": "Array",
       "description": "The Num node returns the number of elements in the given array.",
       "inputs": [
@@ -3884,6 +3947,7 @@
     },
     {
       "name": "One-Pole High Pass Filter",
+      "class_name": "UE::One-Pole High Pass Filter::Audio",
       "category": "Filters",
       "description": "Simple first-order high-pass filter -- removes low frequencies.",
       "inputs": [
@@ -3914,11 +3978,11 @@
         "DC block"
       ],
       "complexity": 1,
-      "class_name": "UE::One-Pole High Pass Filter::Audio",
       "mcp_notes": "Chain after generators. Wire cutoff/resonance from BP params via SetFloatParameter. Use Biquad for general EQ, Ladder for resonant synth."
     },
     {
       "name": "One-Pole Low Pass Filter",
+      "class_name": "UE::One-Pole Low Pass Filter::Audio",
       "category": "Filters",
       "description": "Simple first-order low-pass filter -- removes high frequencies.",
       "inputs": [
@@ -3951,11 +4015,11 @@
         "warm"
       ],
       "complexity": 1,
-      "class_name": "UE::One-Pole Low Pass Filter::Audio",
       "mcp_notes": "Chain after generators. Wire cutoff/resonance from BP params via SetFloatParameter. Use Biquad for general EQ, Ladder for resonant synth."
     },
     {
       "name": "Perlin Noise",
+      "class_name": "UE::Perlin Noise (audio)::Audio",
       "category": "Generators",
       "description": "Perlin-noise-based signal for smooth organic modulation.",
       "inputs": [
@@ -4005,6 +4069,7 @@
     },
     {
       "name": "Plate Reverb",
+      "class_name": "UE::Plate Reverb::Stereo",
       "category": "Delays",
       "description": "Plate reverb effect — simulates metal plate vibration for dense, smooth reverb tails. From TechAudioTools SFX Generator (Eric Buchholz). Used as one of three parallel temporal effects (Delay + Flanger + Plate Reverb) in the send effects section.",
       "inputs": [
@@ -4058,6 +4123,7 @@
     },
     {
       "name": "Plate Reverb (Stereo)",
+      "class_name": "UE::Plate Reverb::Stereo",
       "category": "Effects",
       "description": "Stereo plate reverb with bypass, separate dry/wet level controls. From SFX Generator temporal effects section.",
       "inputs": [
@@ -4110,11 +4176,11 @@
         "sfx"
       ],
       "complexity": 3,
-      "class_name": "UE::Plate Reverb::Stereo",
       "mcp_notes": "Chain after generators/filters. Expose mix/feedback params to Blueprint for runtime control. Route wet signal to Wwise via AudioLink."
     },
     {
       "name": "Power",
+      "class_name": "UE::Power::Float",
       "category": "Math",
       "description": "Raises base to the power of exponent.",
       "inputs": [
@@ -4148,6 +4214,7 @@
     },
     {
       "name": "Print Log",
+      "class_name": "Print Log::Print Log::Float",
       "category": "Debug",
       "description": "Prints a string to the output log when triggered.",
       "inputs": [
@@ -4180,6 +4247,7 @@
     },
     {
       "name": "Random Bool",
+      "class_name": "UE::RandomBool::None",
       "category": "Random",
       "description": "Generates a random boolean value when triggered.",
       "inputs": [
@@ -4223,6 +4291,7 @@
     },
     {
       "name": "Random Float",
+      "class_name": "UE::RandomFloat::None",
       "category": "Random",
       "description": "Generates a random float within a range when triggered. Engine class: UE::RandomFloat::None. Pin names verified from exports.",
       "inputs": [
@@ -4278,11 +4347,11 @@
         "jitter"
       ],
       "complexity": 1,
-      "class_name": "UE::RandomFloat::None",
       "mcp_notes": "Variation and randomization. Random Get for round-robin sample selection, Random Float for pitch/timing humanization."
     },
     {
       "name": "Random Get (WaveAssetArray)",
+      "class_name": "Array::Random Get::WaveAsset:Array",
       "category": "Arrays",
       "description": "Gets a random element from a WaveAsset array, optionally weighted. No Repeats prevents consecutive duplicates. Enable Shared State syncs across instances.",
       "inputs": [
@@ -4346,6 +4415,7 @@
     },
     {
       "name": "Random Int",
+      "class_name": "UE::RandomInt32::None",
       "category": "Random",
       "description": "Generates a random integer within a range when triggered. Engine class: UE::RandomInt32::None. Pin names verified from exports.",
       "inputs": [
@@ -4401,11 +4471,11 @@
         "range"
       ],
       "complexity": 1,
-      "class_name": "UE::RandomInt32::None",
       "mcp_notes": "Variation and randomization. Random Get for round-robin sample selection, Random Float for pitch/timing humanization."
     },
     {
       "name": "Random Time",
+      "class_name": "UE::RandomTime::None",
       "category": "Random",
       "description": "Generates a random time duration within a range when triggered.",
       "inputs": [
@@ -4456,6 +4526,7 @@
     },
     {
       "name": "Ring Mod",
+      "class_name": "UE::RingMod::Audio",
       "category": "General",
       "description": "Ring modulator -- multiplies audio by a modulation oscillator.",
       "inputs": [
@@ -4495,6 +4566,7 @@
     },
     {
       "name": "Ring Modulator",
+      "class_name": "UE::Ring Modulator::Audio",
       "category": "Effects",
       "description": "Ring modulation — multiplies input signal by a modulator oscillator. Built-in AD envelope controls modulator depth. Creates metallic, inharmonic tones. From SFX Generator — last in spectral effects chain.",
       "inputs": [
@@ -4526,11 +4598,11 @@
         "spectral"
       ],
       "complexity": 3,
-      "class_name": "UE::Ring Modulator::Audio",
       "mcp_notes": "Chain after generators/filters. Expose mix/feedback params to Blueprint for runtime control. Route wet signal to Wwise via AudioLink."
     },
     {
       "name": "SID Chip",
+      "class_name": "",
       "category": "ReSID SIDKIT Edition",
       "description": "Complete MOS 6581/8580 SID chip emulation. 3 voices with oscillator+envelope, analog filter, FM cross-modulation, and per-voice volume (SIDKIT extensions).",
       "inputs": [
@@ -4750,6 +4822,7 @@
     },
     {
       "name": "SID Envelope",
+      "class_name": "",
       "category": "ReSID SIDKIT Edition",
       "description": "MOS 6581/8580 ADSR envelope generator with non-linear exponential decay and authentic SID timing including the ADSR delay bug.",
       "inputs": [
@@ -4801,6 +4874,7 @@
     },
     {
       "name": "SID Filter",
+      "class_name": "",
       "category": "ReSID SIDKIT Edition",
       "description": "MOS 6581/8580 analog filter emulation. Route any audio through the SID chip's non-linear two-integrator-loop biquad filter with voltage-controlled resistor model.",
       "inputs": [
@@ -4859,6 +4933,7 @@
     },
     {
       "name": "SID Oscillator",
+      "class_name": "",
       "category": "ReSID SIDKIT Edition",
       "description": "MOS 6581/8580 waveform generator. 24-bit accumulator with saw, triangle, pulse, noise, and combined waveforms from actual C64 chip samples.",
       "inputs": [
@@ -4905,6 +4980,7 @@
     },
     {
       "name": "SID Voice",
+      "class_name": "",
       "category": "ReSID SIDKIT Edition",
       "description": "Complete SID voice: oscillator x envelope. Combines waveform generation with ADSR in a single node for quick patching.",
       "inputs": [
@@ -4981,6 +5057,7 @@
     },
     {
       "name": "Sample And Hold",
+      "class_name": "SampleAndHold::Sample And Hold::Audio",
       "category": "Filters",
       "description": "Samples the input signal value when triggered and holds it until next trigger.",
       "inputs": [
@@ -5017,6 +5094,7 @@
     },
     {
       "name": "Saw",
+      "class_name": "UE::Saw::Audio",
       "category": "Generators",
       "description": "Band-limited sawtooth oscillator.",
       "inputs": [
@@ -5082,11 +5160,11 @@
         "fm"
       ],
       "complexity": 1,
-      "class_name": "UE::Saw::Audio",
       "mcp_notes": "Bright subtractive synth source. Chain with filter for classic analog sound."
     },
     {
       "name": "Scale to Note Array",
+      "class_name": "UE::Musical Scale To Note Array::Audio",
       "category": "Music",
       "description": "Generates an array of MIDI note numbers or frequencies for a musical scale.",
       "inputs": [
@@ -5140,6 +5218,7 @@
     },
     {
       "name": "Send",
+      "class_name": "",
       "category": "General",
       "description": "Routes audio to a named bus or side-chain destination.",
       "inputs": [
@@ -5173,6 +5252,7 @@
     },
     {
       "name": "Set",
+      "class_name": "Array::Set::Float:Array",
       "category": "Array",
       "description": "The Set node sets the value of a specified index in a given array.",
       "inputs": [
@@ -5211,6 +5291,7 @@
     },
     {
       "name": "Set Variable",
+      "class_name": "",
       "category": "General",
       "description": "Writes a new value to a graph variable. Execute pin triggers the write.",
       "inputs": [
@@ -5237,6 +5318,7 @@
     },
     {
       "name": "Shuffle",
+      "class_name": "Array::Shuffle::Float:Array",
       "category": "Array",
       "description": "The Shuffle node outputs elements from a shuffled array.",
       "inputs": [
@@ -5303,6 +5385,7 @@
     },
     {
       "name": "Sine",
+      "class_name": "UE::Sine::Audio",
       "category": "Generators",
       "description": "Pure sine wave oscillator.",
       "inputs": [
@@ -5368,11 +5451,11 @@
         "fm"
       ],
       "complexity": 1,
-      "class_name": "UE::Sine::Audio",
       "mcp_notes": "Pure tone, ideal for UI beeps and FM carrier. Wire Frequency from BP SetFloatParameter."
     },
     {
       "name": "Square",
+      "class_name": "UE::Square::Audio",
       "category": "Generators",
       "description": "Band-limited square wave oscillator.",
       "inputs": [
@@ -5444,11 +5527,11 @@
         "pwm"
       ],
       "complexity": 1,
-      "class_name": "UE::Square::Audio",
       "mcp_notes": "Hollow synth tone. Pulse Width for PWM from BP param. Good for chiptune and bass."
     },
     {
       "name": "State Variable Filter",
+      "class_name": "UE::State Variable Filter::Audio",
       "category": "Filters",
       "description": "Simultaneous lowpass, highpass, bandpass, and notch outputs.",
       "inputs": [
@@ -5504,11 +5587,11 @@
         "notch"
       ],
       "complexity": 3,
-      "class_name": "UE::State Variable Filter::Audio",
       "mcp_notes": "Multi-mode filter (LP/HP/BP/Notch). Wire mode select from BP enum param."
     },
     {
       "name": "Stereo Band Splitter",
+      "class_name": "BandSplitter::Band Splitter (Stereo, 5)::None",
       "category": "Filters",
       "description": "Splits stereo audio into low, mid, and high frequency bands (L+R pairs).",
       "inputs": [],
@@ -5526,6 +5609,7 @@
     },
     {
       "name": "Stereo Delay",
+      "class_name": "UE::Stereo Delay::Audio",
       "category": "Delays",
       "description": "Stereo delay with independent L/R delay times and feedback.",
       "inputs": [
@@ -5592,11 +5676,11 @@
         "spatial"
       ],
       "complexity": 3,
-      "class_name": "UE::Stereo Delay::Audio",
       "mcp_notes": "Ping-pong delay. Use for stereo width on ambience/music layers."
     },
     {
       "name": "Stereo Mixer",
+      "class_name": "UE::Mix Stereo::Audio",
       "category": "Mix",
       "description": "Mixes N stereo audio input pairs into a single stereo output with per-input gain. Real UE5 pin names: In N L/R, Gain N (Lin), Out L/R. Variant suffix (N) sets input count: Stereo Mixer (2), (3), (4), (8).",
       "inputs": [
@@ -5684,11 +5768,11 @@
         "bus"
       ],
       "complexity": 2,
-      "class_name": "UE::Mix Stereo::Audio",
       "mcp_notes": "Combine multiple audio streams. Use Stereo Mixer for L/R panning, Mono Mixer for summing layers before effects chain."
     },
     {
       "name": "Stereo Panner",
+      "class_name": "UE::Stereo Panner::Audio",
       "category": "Spatialization",
       "description": "Simple stereo pan from left (-1) to right (+1) for speaker output.",
       "inputs": [
@@ -5714,11 +5798,11 @@
         "balance"
       ],
       "complexity": 1,
-      "class_name": "UE::Stereo Panner::Audio",
       "mcp_notes": "Simple L/R panning. Wire Pan from BP for positional audio."
     },
     {
       "name": "Subset",
+      "class_name": "Array::Subset::Float:Array",
       "category": "Array",
       "description": "The Subset node returns a subset of an input array.",
       "inputs": [
@@ -5752,6 +5836,7 @@
     },
     {
       "name": "Subtract",
+      "class_name": "UE::Subtract::Audio",
       "category": "Math",
       "description": "Subtracts second value from first. Operates on Float data.",
       "inputs": [
@@ -5785,6 +5870,7 @@
     },
     {
       "name": "Subtract (Audio)",
+      "class_name": "UE::Subtract::Audio",
       "category": "Math",
       "description": "Subtracts second value from first. Operates on Audio data.",
       "inputs": [
@@ -5814,11 +5900,11 @@
         "audio"
       ],
       "complexity": 1,
-      "class_name": "UE::Subtract::Audio",
       "mcp_notes": "Arithmetic on audio/float signals. Use Multiply for volume control, Add for mixing, MapRange for parameter scaling from BP values."
     },
     {
       "name": "Subtract (Int32)",
+      "class_name": "UE::Subtract::Int32",
       "category": "Math",
       "description": "Subtracts second value from first. Operates on Int32 data.",
       "inputs": [
@@ -5852,6 +5938,7 @@
     },
     {
       "name": "SuperOscillator",
+      "class_name": "UE::SuperOscillatorMono::Audio",
       "category": "Generators",
       "description": "Multi-voice oscillator with waveform type selection, detuning, glide, and pulse-width control. Mono variant. Voices stacks unison voices with Detune spread. Entropy adds random per-voice drift. Blend crossfades between voices. Glide adds portamento between pitch changes. Limit Output prevents clipping when stacking many voices. Type: Saw/Square/Sine/Triangle. Best practice: send MIDI ints from Blueprint, convert to Hz with MIDI To Frequency inside MetaSounds.",
       "inputs": [
@@ -5951,6 +6038,7 @@
     },
     {
       "name": "Triangle",
+      "class_name": "UE::Triangle::Audio",
       "category": "Generators",
       "description": "Band-limited triangle wave oscillator.",
       "inputs": [
@@ -6010,11 +6098,11 @@
         "fm"
       ],
       "complexity": 1,
-      "class_name": "UE::Triangle::Audio",
       "mcp_notes": "Use as audio source in MetaSounds layer. Trigger from Blueprint events, expose Frequency as graph input for BP SetFloatParameter."
     },
     {
       "name": "Trigger Accumulate",
+      "class_name": "TriggerAccumulator::Trigger Accumulate (2)::None",
       "category": "Triggers",
       "description": "Counts incoming triggers and fires output when count reaches threshold.",
       "inputs": [],
@@ -6036,6 +6124,7 @@
     },
     {
       "name": "Trigger Any",
+      "class_name": "TriggerAny::Trigger Any (2)::None",
       "category": "Triggers",
       "description": "Fires output when any of its input triggers fire.",
       "inputs": [
@@ -6078,6 +6167,7 @@
     },
     {
       "name": "Trigger Compare",
+      "class_name": "",
       "category": "Triggers",
       "description": "Compares a float value to a threshold and fires trigger when condition is met.",
       "inputs": [
@@ -6100,6 +6190,7 @@
     },
     {
       "name": "Trigger Compare (Int32)",
+      "class_name": "",
       "category": "Triggers",
       "description": "Compares two Int32 values when triggered and fires True or False. Used for room/state selection.",
       "inputs": [
@@ -6150,6 +6241,7 @@
     },
     {
       "name": "Trigger Control",
+      "class_name": "UE::Trigger Control::None",
       "category": "Triggers",
       "description": "Gates or enables trigger flow based on a boolean control input.",
       "inputs": [
@@ -6198,6 +6290,7 @@
     },
     {
       "name": "Trigger Counter",
+      "class_name": "UE::Trigger Counter::Audio",
       "category": "Triggers",
       "description": "Counts triggers up or down and exposes the current count. Pin names verified from engine exports.",
       "inputs": [
@@ -6255,11 +6348,11 @@
         "decrement"
       ],
       "complexity": 2,
-      "class_name": "UE::Trigger Counter::Audio",
       "mcp_notes": "Event routing and timing. Trigger Repeat for looping patterns, Trigger Route for surface-type switching from BP enums."
     },
     {
       "name": "Trigger Delay",
+      "class_name": "UE::Trigger Delay::None",
       "category": "Triggers",
       "description": "Delays a trigger by a specified time duration.",
       "inputs": [
@@ -6297,6 +6390,7 @@
     },
     {
       "name": "Trigger Filter",
+      "class_name": "UE::Trigger Filter::None",
       "category": "Triggers",
       "description": "Passes or blocks triggers based on probability. Each incoming trigger has a chance of passing through (Heads) or being blocked (Tails). Pin names verified from exports.",
       "inputs": [
@@ -6341,11 +6435,11 @@
         "probability"
       ],
       "complexity": 1,
-      "class_name": "UE::Trigger Filter::None",
       "mcp_notes": "Event routing and timing. Trigger Repeat for looping patterns, Trigger Route for surface-type switching from BP enums."
     },
     {
       "name": "Trigger On Threshold",
+      "class_name": "UE::Trigger On Threshold::Audio",
       "category": "Triggers",
       "description": "Fires trigger when a float value crosses a threshold (rising or falling).",
       "inputs": [
@@ -6375,11 +6469,11 @@
         "detect"
       ],
       "complexity": 2,
-      "class_name": "UE::Trigger On Threshold::Audio",
       "mcp_notes": "Event routing and timing. Trigger Repeat for looping patterns, Trigger Route for surface-type switching from BP enums."
     },
     {
       "name": "Trigger On Threshold (Audio)",
+      "class_name": "UE::TriggerOnThreshold::Audio",
       "category": "Utility",
       "description": "Fires a trigger when audio signal crosses a threshold. Type: Rising Edge or Falling Edge. Used with Envelope Follower to detect when a sound finishes (signal drops below threshold). From SFX Generator output section.",
       "inputs": [
@@ -6421,6 +6515,7 @@
     },
     {
       "name": "Trigger On Value Change",
+      "class_name": "UE::Trigger On Value Change::Float",
       "category": "Triggers",
       "description": "Fires trigger whenever the input value changes.",
       "inputs": [
@@ -6448,6 +6543,7 @@
     },
     {
       "name": "Trigger Once",
+      "class_name": "UE::Trigger Once::None",
       "category": "Triggers",
       "description": "Fires only on the first incoming trigger, ignores all subsequent ones.",
       "inputs": [
@@ -6486,6 +6582,7 @@
     },
     {
       "name": "Trigger Pipe",
+      "class_name": "",
       "category": "Triggers",
       "description": "Passes trigger through unchanged -- useful for debugging and routing.",
       "inputs": [
@@ -6523,6 +6620,7 @@
     },
     {
       "name": "Trigger Repeat",
+      "class_name": "UE::Trigger Repeat::Audio",
       "category": "Triggers",
       "description": "Repeats trigger at a regular interval (periodic timer). Engine class: UE::TriggerRepeat::None. Pin names verified from exports.",
       "inputs": [
@@ -6565,11 +6663,11 @@
         "metronome"
       ],
       "complexity": 2,
-      "class_name": "UE::Trigger Repeat::Audio",
       "mcp_notes": "Looping trigger generator. Use for rhythmic patterns, ambient loops."
     },
     {
       "name": "Trigger Route",
+      "class_name": "UE::Trigger Route::Audio",
       "category": "Triggers",
       "description": "Routes trigger to one of N outputs based on an integer index.",
       "inputs": [
@@ -6618,11 +6716,11 @@
         "demux"
       ],
       "complexity": 2,
-      "class_name": "UE::Trigger Route::Audio",
       "mcp_notes": "Route triggers by index. Use for surface-type switching (footsteps) from BP Int32."
     },
     {
       "name": "Trigger Select",
+      "class_name": "UE::Trigger Select (2)::None",
       "category": "Triggers",
       "description": "The Trigger Select node passes triggers through to the currently selected output trigger. This node has multiple versions for different input counts (between 2 and 8).",
       "inputs": [
@@ -6653,6 +6751,7 @@
     },
     {
       "name": "Trigger Sequence",
+      "class_name": "UE::Trigger Sequence::Audio",
       "category": "Triggers",
       "description": "Fires output triggers in sequential round-robin order (0, 1, 2, ...). When Loop is enabled, wraps back to Out 0 after the last output. Used for cycling through weapon shot layers.",
       "inputs": [
@@ -6697,11 +6796,11 @@
         "rotate"
       ],
       "complexity": 2,
-      "class_name": "UE::Trigger Sequence::Audio",
       "mcp_notes": "Event routing and timing. Trigger Repeat for looping patterns, Trigger Route for surface-type switching from BP enums."
     },
     {
       "name": "Trigger Toggle",
+      "class_name": "UE::Trigger Toggle::None",
       "category": "Triggers",
       "description": "The Trigger Toggle node toggles a Bool value on or off.",
       "inputs": [
@@ -6768,6 +6867,7 @@
     },
     {
       "name": "Wave Player",
+      "class_name": "UE::Wave Player::Mono",
       "category": "General",
       "description": "The Wave Player node is used to play a Sound Wave asset. There are multiple versions of this node in order to support several different channel configurations, such as Mono, Stereo, Quad (4.0), 5.1...",
       "inputs": [
@@ -6854,6 +6954,7 @@
     },
     {
       "name": "Wave Player (5.1)",
+      "class_name": "UE::Wave Player::5dot1",
       "category": "Wave Players",
       "description": "5.1 surround wave file player.",
       "inputs": [
@@ -6954,6 +7055,7 @@
     },
     {
       "name": "Wave Player (7.1)",
+      "class_name": "UE::Wave Player::7dot1",
       "category": "Wave Players",
       "description": "7.1 surround wave file player.",
       "inputs": [
@@ -7062,6 +7164,7 @@
     },
     {
       "name": "Wave Player (Mono)",
+      "class_name": "UE::Wave Player::Mono",
       "category": "Wave Players",
       "description": "Mono wave file player with pitch shift, looping, and trigger outputs.",
       "inputs": [
@@ -7138,11 +7241,11 @@
         "loop"
       ],
       "complexity": 1,
-      "class_name": "UE::Wave Player::Mono",
       "mcp_notes": "Primary sample player. Use for one-shot SFX (gunshots, footsteps). Mono for 3D spatialization."
     },
     {
       "name": "Wave Player (Quad)",
+      "class_name": "UE::Wave Player::Quad",
       "category": "Wave Players",
       "description": "Quad (4-channel) wave file player.",
       "inputs": [
@@ -7235,6 +7338,7 @@
     },
     {
       "name": "Wave Player (Stereo)",
+      "class_name": "UE::Wave Player::Stereo",
       "category": "Wave Players",
       "description": "Stereo wave file player with L/R outputs and looping.",
       "inputs": [
@@ -7343,11 +7447,11 @@
         "loop"
       ],
       "complexity": 1,
-      "class_name": "UE::Wave Player::Stereo",
       "mcp_notes": "Stereo sample player. Use for music, ambience. Not spatializable -- use for non-positional audio."
     },
     {
       "name": "Wave Shaper",
+      "class_name": "UE::WaveShaper::Audio",
       "category": "General",
       "description": "Waveshaping distortion -- soft clipping to hard clipping based on amount.",
       "inputs": [
@@ -7388,6 +7492,7 @@
     },
     {
       "name": "Wave Writer",
+      "class_name": "UE::WaveWriter::Audio",
       "category": "External IO",
       "description": "Records audio to a WAV file on disk.",
       "inputs": [
@@ -7422,6 +7527,7 @@
     },
     {
       "name": "WaveShaper",
+      "class_name": "UE::WaveShaper::Audio",
       "category": "Effects",
       "description": "Waveshaping distortion with configurable curve type. Amount controls drive, Bias shifts DC offset, OutputGain compensates volume. Type: Sine, HardClip, SoftClip, Tanh. From SFX Generator — first in spectral effects chain.",
       "inputs": [
@@ -7466,11 +7572,11 @@
         "spectral"
       ],
       "complexity": 2,
-      "class_name": "UE::WaveShaper::Audio",
       "mcp_notes": "Chain after generators/filters. Expose mix/feedback params to Blueprint for runtime control. Route wet signal to Wwise via AudioLink."
     },
     {
       "name": "WaveTable Envelope",
+      "class_name": "UE::WaveTableEnvelope::None",
       "category": "Envelopes",
       "description": "Envelope shaped by a wavetable for arbitrary envelope curves.",
       "inputs": [
@@ -7533,6 +7639,7 @@
     },
     {
       "name": "WaveTable Oscillator",
+      "class_name": "UE::WaveTableOscillator::None",
       "category": "Generators",
       "description": "Oscillator that reads from a wavetable for arbitrary waveforms.",
       "inputs": [
@@ -7584,6 +7691,7 @@
     },
     {
       "name": "WaveTable Player",
+      "class_name": "UE::WaveTablePlayer::None",
       "category": "Generators",
       "description": "Plays a wavetable at a given position for single-cycle waveform use.",
       "inputs": [

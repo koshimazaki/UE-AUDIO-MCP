@@ -6,7 +6,7 @@
   },
   "functions": [
     {
-      "name": "AudioComponent.AdjustAttenuation",
+      "name": "AdjustAttenuation",
       "class_name": "AudioComponent",
       "description": "Modify attenuation settings on audio component instance.",
       "params": [
@@ -24,7 +24,7 @@
       ]
     },
     {
-      "name": "AudioComponent.AdjustVolume",
+      "name": "AdjustVolume",
       "class_name": "AudioComponent",
       "description": "Adjust volume over time with fade curve.",
       "params": [
@@ -51,7 +51,7 @@
       ]
     },
     {
-      "name": "AudioComponent.FadeIn",
+      "name": "FadeIn",
       "class_name": "AudioComponent",
       "description": "Play sound with volume fade in over duration.",
       "params": [
@@ -85,7 +85,7 @@
       ]
     },
     {
-      "name": "AudioComponent.FadeOut",
+      "name": "FadeOut",
       "class_name": "AudioComponent",
       "description": "Fade out volume over duration then stop.",
       "params": [
@@ -113,7 +113,7 @@
       ]
     },
     {
-      "name": "AudioComponent.GetPlaybackPercentage",
+      "name": "GetPlaybackPercentage",
       "class_name": "AudioComponent",
       "description": "Returns playback progress as percentage (0-100).",
       "params": [],
@@ -125,7 +125,7 @@
       ]
     },
     {
-      "name": "AudioComponent.GetPlaybackTime",
+      "name": "GetPlaybackTime",
       "class_name": "AudioComponent",
       "description": "Returns current playback time in seconds.",
       "params": [],
@@ -137,7 +137,7 @@
       ]
     },
     {
-      "name": "AudioComponent.IsPlaying",
+      "name": "IsPlaying",
       "class_name": "AudioComponent",
       "description": "Returns whether audio is currently playing.",
       "params": [],
@@ -149,7 +149,7 @@
       ]
     },
     {
-      "name": "AudioComponent.Pause",
+      "name": "Pause",
       "class_name": "AudioComponent",
       "description": "Pause audio playback, can be resumed.",
       "params": [],
@@ -160,7 +160,7 @@
       ]
     },
     {
-      "name": "AudioComponent.Play",
+      "name": "Play",
       "class_name": "AudioComponent",
       "description": "Start audio playback from specified time.",
       "params": [
@@ -179,7 +179,7 @@
       ]
     },
     {
-      "name": "AudioComponent.PlayQuantized",
+      "name": "PlayQuantized",
       "class_name": "AudioComponent",
       "description": "Start playback on quantization boundary with Quartz clock.",
       "params": [
@@ -227,7 +227,7 @@
       ]
     },
     {
-      "name": "AudioComponent.SetBoolParameter",
+      "name": "SetBoolParameter",
       "class_name": "AudioComponent",
       "description": "Set a bool parameter on the sound instance.",
       "params": [
@@ -248,7 +248,7 @@
       ]
     },
     {
-      "name": "AudioComponent.SetFloatParameter",
+      "name": "SetFloatParameter",
       "class_name": "AudioComponent",
       "description": "Set a float parameter on the sound instance.",
       "params": [
@@ -270,7 +270,7 @@
       ]
     },
     {
-      "name": "AudioComponent.SetIntParameter",
+      "name": "SetIntParameter",
       "class_name": "AudioComponent",
       "description": "Set an integer parameter on the sound instance.",
       "params": [
@@ -291,7 +291,7 @@
       ]
     },
     {
-      "name": "AudioComponent.SetLowPassFilterFrequency",
+      "name": "SetLowPassFilterFrequency",
       "class_name": "AudioComponent",
       "description": "Set low-pass filter cutoff frequency in Hz.",
       "params": [
@@ -309,7 +309,7 @@
       ]
     },
     {
-      "name": "AudioComponent.SetPaused",
+      "name": "SetPaused",
       "class_name": "AudioComponent",
       "description": "Set pause state explicitly.",
       "params": [
@@ -326,7 +326,7 @@
       ]
     },
     {
-      "name": "AudioComponent.SetPitchMultiplier",
+      "name": "SetPitchMultiplier",
       "class_name": "AudioComponent",
       "description": "Set pitch multiplier for the audio component.",
       "params": [
@@ -343,7 +343,7 @@
       ]
     },
     {
-      "name": "AudioComponent.SetSound",
+      "name": "SetSound",
       "class_name": "AudioComponent",
       "description": "Set the sound asset to be played by this component.",
       "params": [
@@ -361,7 +361,7 @@
       ]
     },
     {
-      "name": "AudioComponent.SetSourceBusSendPostEffect",
+      "name": "SetSourceBusSendPostEffect",
       "class_name": "AudioComponent",
       "description": "Set audio send to source bus post-effect.",
       "params": [
@@ -383,7 +383,7 @@
       ]
     },
     {
-      "name": "AudioComponent.SetSourceBusSendPreEffect",
+      "name": "SetSourceBusSendPreEffect",
       "class_name": "AudioComponent",
       "description": "Set audio send to source bus pre-effect.",
       "params": [
@@ -405,7 +405,7 @@
       ]
     },
     {
-      "name": "AudioComponent.SetSubmixSend",
+      "name": "SetSubmixSend",
       "class_name": "AudioComponent",
       "description": "Set send level to a specified submix.",
       "params": [
@@ -427,7 +427,7 @@
       ]
     },
     {
-      "name": "AudioComponent.SetUISound",
+      "name": "SetUISound",
       "class_name": "AudioComponent",
       "description": "Mark sound as UI sound (non-spatial, unaffected by pause).",
       "params": [
@@ -444,7 +444,7 @@
       ]
     },
     {
-      "name": "AudioComponent.SetVolumeMultiplier",
+      "name": "SetVolumeMultiplier",
       "class_name": "AudioComponent",
       "description": "Set volume multiplier for the audio component.",
       "params": [
@@ -461,7 +461,7 @@
       ]
     },
     {
-      "name": "AudioComponent.SetWaveParameter",
+      "name": "SetWaveParameter",
       "class_name": "AudioComponent",
       "description": "Set a wave parameter (SoundCue compatibility).",
       "params": [
@@ -482,7 +482,7 @@
       ]
     },
     {
-      "name": "AudioComponent.Stop",
+      "name": "Stop",
       "class_name": "AudioComponent",
       "description": "Stop audio playback immediately.",
       "params": [],
@@ -494,7 +494,7 @@
       ]
     },
     {
-      "name": "AudioComponent.StopDelayed",
+      "name": "StopDelayed",
       "class_name": "AudioComponent",
       "description": "Stop audio after delay in seconds.",
       "params": [
@@ -511,7 +511,7 @@
       ]
     },
     {
-      "name": "AudioVolume.SetEnabled",
+      "name": "SetEnabled",
       "class_name": "AudioVolume",
       "description": "Enable or disable an audio volume.",
       "params": [
@@ -529,7 +529,7 @@
       ]
     },
     {
-      "name": "AudioVolume.SetInteriorSettings",
+      "name": "SetInteriorSettings",
       "class_name": "AudioVolume",
       "description": "Set interior settings (volume, LPF) for audio volume.",
       "params": [
@@ -547,7 +547,7 @@
       ]
     },
     {
-      "name": "AudioVolume.SetReverbSettings",
+      "name": "SetReverbSettings",
       "class_name": "AudioVolume",
       "description": "Set reverb settings for audio volume at runtime.",
       "params": [
@@ -832,8 +832,8 @@
       ]
     },
     {
-      "name": "QuartzClock.PauseClock",
-      "class_name": "Quartz",
+      "name": "PauseClock",
+      "class_name": "QuartzClock",
       "description": "Pause a Quartz clock.",
       "params": [
         {
@@ -849,8 +849,8 @@
       ]
     },
     {
-      "name": "QuartzClock.ResumeClock",
-      "class_name": "Quartz",
+      "name": "ResumeClock",
+      "class_name": "QuartzClock",
       "description": "Resume a paused Quartz clock.",
       "params": [
         {
@@ -866,8 +866,8 @@
       ]
     },
     {
-      "name": "QuartzClock.SetBeatsPerMinute",
-      "class_name": "Quartz",
+      "name": "SetBeatsPerMinute",
+      "class_name": "QuartzClock",
       "description": "Change BPM on quantization boundary.",
       "params": [
         {
@@ -896,8 +896,8 @@
       ]
     },
     {
-      "name": "QuartzClock.SetTicksPerSecond",
-      "class_name": "Quartz",
+      "name": "SetTicksPerSecond",
+      "class_name": "QuartzClock",
       "description": "Change clock tick rate on quantization boundary.",
       "params": [
         {
@@ -926,8 +926,8 @@
       ]
     },
     {
-      "name": "QuartzClock.StartClock",
-      "class_name": "Quartz",
+      "name": "StartClock",
+      "class_name": "QuartzClock",
       "description": "Start a Quartz clock metronome.",
       "params": [
         {
@@ -944,8 +944,8 @@
       ]
     },
     {
-      "name": "QuartzClock.StopClock",
-      "class_name": "Quartz",
+      "name": "StopClock",
+      "class_name": "QuartzClock",
       "description": "Stop a Quartz clock.",
       "params": [
         {
@@ -966,8 +966,8 @@
       ]
     },
     {
-      "name": "QuartzClock.SubscribeToAllQuantizationEvents",
-      "class_name": "Quartz",
+      "name": "SubscribeToAllQuantizationEvents",
+      "class_name": "QuartzClock",
       "description": "Subscribe to all quantization event types.",
       "params": [
         {
@@ -988,8 +988,8 @@
       ]
     },
     {
-      "name": "QuartzClock.SubscribeToQuantizationEvent",
-      "class_name": "Quartz",
+      "name": "SubscribeToQuantizationEvent",
+      "class_name": "QuartzClock",
       "description": "Subscribe to quantization events (bars, beats) for gameplay sync.",
       "params": [
         {
@@ -1016,8 +1016,8 @@
       ]
     },
     {
-      "name": "QuartzSubsystem.CreateNewClock",
-      "class_name": "Quartz",
+      "name": "CreateNewClock",
+      "class_name": "QuartzSubsystem",
       "description": "Create a new Quartz clock for sample-accurate scheduling.",
       "params": [
         {
@@ -1049,8 +1049,8 @@
       ]
     },
     {
-      "name": "QuartzSubsystem.DoesClockExist",
-      "class_name": "Quartz",
+      "name": "DoesClockExist",
+      "class_name": "QuartzSubsystem",
       "description": "Check if a named Quartz clock exists.",
       "params": [
         {
@@ -1665,7 +1665,7 @@
       "description": "Surface-aware randomized footstep audio",
       "bp_functions": [
         "PlaySoundAtLocation",
-        "AudioComponent.SetIntParameter"
+        "SetIntParameter"
       ],
       "ms_nodes": [
         "Trigger Route",
@@ -1679,8 +1679,8 @@
       "description": "Looping layered environmental audio with natural variation",
       "bp_functions": [
         "SpawnSoundAtLocation",
-        "AudioComponent.SetFloatParameter",
-        "AudioComponent.AdjustVolume"
+        "SetFloatParameter",
+        "AdjustVolume"
       ],
       "ms_nodes": [
         "Wave Player (Stereo)",
@@ -1694,7 +1694,7 @@
       "description": "3D positioned audio with binaural rendering",
       "bp_functions": [
         "SpawnSoundAttached",
-        "AudioComponent.AdjustAttenuation"
+        "AdjustAttenuation"
       ],
       "ms_nodes": [
         "ITD Panner",
@@ -1718,9 +1718,9 @@
     "weather_states": {
       "description": "Game state driven audio transitions",
       "bp_functions": [
-        "AudioComponent.SetFloatParameter",
-        "AudioComponent.FadeIn",
-        "AudioComponent.FadeOut"
+        "SetFloatParameter",
+        "FadeIn",
+        "FadeOut"
       ],
       "ms_nodes": [
         "Trigger Route",

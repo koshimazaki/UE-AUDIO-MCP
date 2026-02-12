@@ -85,7 +85,7 @@
       "defaults": {
         "InputParameter": 0
       },
-      "comment": "Selects room impulse by RoomSize (0\u2192A=small, 1\u2192B=medium, 2\u2192C=large). Output feeds Stereo Mixer slot 0."
+      "comment": "Selects room impulse by RoomSize (0→A=small, 1→B=medium, 2→C=large). Output feeds Stereo Mixer slot 0."
     },
     {
       "id": "outdoor_gate",
@@ -95,10 +95,10 @@
         600
       ],
       "defaults": {
-        "AdditionalOperands": 0,
-        "Type": "Equals"
+        "Type": "Equals",
+        "B": 0
       },
-      "comment": "RoomSize == 0 means outdoor \u2014 only then do we play distance tails"
+      "comment": "RoomSize == 0 means outdoor — only then do we play distance tails"
     },
     {
       "id": "tail_crossfade",
@@ -183,7 +183,7 @@
       "from_node": "__graph__",
       "from_pin": "RoomSize",
       "to_node": "outdoor_gate",
-      "to_pin": "PrimaryOperand"
+      "to_pin": "A"
     },
     {
       "from_node": "outdoor_gate",

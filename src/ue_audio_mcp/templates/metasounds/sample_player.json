@@ -1,7 +1,7 @@
 {
   "name": "Sample Player",
   "asset_type": "Source",
-  "description": "Minimal stereo wave player with exposed loop controls. Loop Start and Loop Duration are graph inputs with float sliders for real-time scrubbing. Loop Duration -1.0 loops the whole file. The simplest possible MetaSound Source \u2014 single file playback with variation via start point and loop region.",
+  "description": "Minimal stereo wave player with exposed loop controls. Loop Start and Loop Duration are graph inputs with float sliders for real-time scrubbing. Loop Duration -1.0 loops the whole file. The simplest possible MetaSound Source — single file playback with variation via start point and loop region.",
   "interfaces": [
     "UE.Source.Default"
   ],
@@ -16,14 +16,14 @@
     },
     {
       "name": "Loop Start",
-      "type": "Float",
+      "type": "Time",
       "default": 0.0,
       "widget": "slider",
-      "description": "Start point of loop region in seconds \u2014 scrub to find clean loop points"
+      "description": "Start point of loop region in seconds — scrub to find clean loop points"
     },
     {
       "name": "Loop Duration",
-      "type": "Float",
+      "type": "Time",
       "default": -1.0,
       "widget": "slider",
       "description": "Duration of loop in seconds. Negative value loops the whole wave file."
@@ -41,12 +41,24 @@
     {
       "name": "Out Right",
       "type": "Audio"
+    },
+    {
+      "name": "Out Mono",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo L",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo R",
+      "type": "Audio"
     }
   ],
   "nodes": [
     {
       "id": "wave_player",
-      "node_type": "Wave Player",
+      "node_type": "Wave Player (Stereo)",
       "position": [
         300,
         0
@@ -100,6 +112,24 @@
       "from_pin": "Out Right",
       "to_node": "__graph__",
       "to_pin": "Out Right"
+    },
+    {
+      "from_node": "wave_player",
+      "from_pin": "Out Left",
+      "to_node": "__graph__",
+      "to_pin": "Out Mono"
+    },
+    {
+      "from_node": "wave_player",
+      "from_pin": "Out Left",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo L"
+    },
+    {
+      "from_node": "wave_player",
+      "from_pin": "Out Right",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo R"
     }
   ]
 }

@@ -148,7 +148,7 @@
     },
     {
       "from_node": "wave_player",
-      "from_pin": "Audio",
+      "from_pin": "Out Mono",
       "to_node": "amp_multiply",
       "to_pin": "PrimaryOperand"
     },
