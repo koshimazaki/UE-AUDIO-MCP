@@ -36,6 +36,7 @@ TIMEOUT = 120.0
 HEADER_SIZE = 4
 RECONNECT_DELAY = 0.5
 MAX_RECONNECT_RETRIES = 3
+MAX_TOTAL_RETRIES = 20  # cap total retries across all pages to prevent infinite loops
 
 
 def _recv_exact(sock: socket.socket, size: int) -> bytes:
@@ -165,6 +166,7 @@ def _fetch_all_by_class(host: str, port: int, include_pins: bool = True) -> list
 
     classes: list[dict] = []
     offset = 0
+    total_retries = 0
     while True:
         sys.stdout.write("\r  Fetching class list (offset={})...".format(offset))
         sys.stdout.flush()
@@ -176,7 +178,13 @@ def _fetch_all_by_class(host: str, port: int, include_pins: bool = True) -> list
                 "offset": offset,
             })
         except (OSError, ConnectionError):
-            sys.stderr.write("\n  Connection dropped, reconnecting...\n")
+            total_retries += 1
+            if total_retries >= MAX_TOTAL_RETRIES:
+                sys.stderr.write("\n  FATAL: Max total retries ({}) exceeded. Got {} classes so far.\n".format(
+                    MAX_TOTAL_RETRIES, len(classes)))
+                break
+            sys.stderr.write("\n  Connection dropped, reconnecting ({}/{})...\n".format(
+                total_retries, MAX_TOTAL_RETRIES))
             try:
                 sock = reconnect(host, port)
                 continue
@@ -273,6 +281,7 @@ def _fetch_single_shot(
     all_funcs: list[dict] = []
     offset = 0
     total = None
+    total_retries = 0
 
     while True:
         sys.stdout.write("\r  Fetching (offset={}, audio_only={}, filter='{}', class='{}')...".format(
@@ -290,8 +299,14 @@ def _fetch_single_shot(
                 "offset": offset,
             })
         except (OSError, ConnectionError):
-            sys.stderr.write("\n  Connection dropped, reconnecting...\n")
-            time.sleep(RECONNECT_DELAY)
+            total_retries += 1
+            if total_retries >= MAX_TOTAL_RETRIES:
+                sys.stderr.write("\n  FATAL: Max total retries ({}) exceeded at offset {}. Got {} funcs.\n".format(
+                    MAX_TOTAL_RETRIES, offset, len(all_funcs)))
+                break
+            sys.stderr.write("\n  Connection dropped, reconnecting ({}/{})...\n".format(
+                total_retries, MAX_TOTAL_RETRIES))
+            time.sleep(RECONNECT_DELAY * total_retries)
             try:
                 sock = reconnect(host, port)
                 continue  # retry same offset

@@ -24,6 +24,8 @@ import sys
 # Ensure package is importable when running from repo root
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), "src"))
 
+from ue_audio_mcp.knowledge.node_schema import normalize_pin_type
+
 
 # ---------------------------------------------------------------------------
 # MetaSounds cross-reference
@@ -101,11 +103,11 @@ def cross_ref_metasounds(engine_json_path: str | None = None) -> dict:
             enode = engine_by_class[cn]
             matched.append({"name": name, "class_name": cn})
 
-            # Compare pins
-            cat_inputs = {p["name"]: p.get("type", "") for p in node.get("inputs", [])}
-            eng_inputs = {p["name"]: p.get("type", "") for p in enode.get("inputs", [])}
-            cat_outputs = {p["name"]: p.get("type", "") for p in node.get("outputs", [])}
-            eng_outputs = {p["name"]: p.get("type", "") for p in enode.get("outputs", [])}
+            # Compare pins (normalize types so Float:Array vs Float[] etc. don't mismatch)
+            cat_inputs = {p["name"]: normalize_pin_type(p.get("type", "")) for p in node.get("inputs", [])}
+            eng_inputs = {p["name"]: normalize_pin_type(p.get("type", "")) for p in enode.get("inputs", [])}
+            cat_outputs = {p["name"]: normalize_pin_type(p.get("type", "")) for p in node.get("outputs", [])}
+            eng_outputs = {p["name"]: normalize_pin_type(p.get("type", "")) for p in enode.get("outputs", [])}
 
             changes = []
             for pn in sorted(set(eng_inputs) - set(cat_inputs)):

@@ -84,10 +84,13 @@ if $BUILD; then
     echo "  Project: $PROJECT_FILE"
     echo ""
 
-    # UBT builds the entire editor target which includes all enabled plugins
-    "$UBT" UnrealEditor Mac Development \
+    # Build project-specific editor target (NOT generic UnrealEditor).
+    # UE 5.7 UBT has action graph conflicts when building generic UnrealEditor
+    # with a project — both UnrealEditor and ProjectEditor targets compile
+    # plugin modules to the same output dir with different PCH prerequisites.
+    PROJECT_NAME=$(basename "$PROJECT_FILE" .uproject)
+    "$UBT" "${PROJECT_NAME}Editor" Mac Development \
         -Project="$PROJECT_FILE" \
-        -TargetType=Editor \
         2>&1 | tee /tmp/ue_plugin_build.log
 
     BUILD_EXIT=$?
