@@ -269,21 +269,6 @@ Creates bus hierarchy, work units, events, MetaSounds sources, and Blueprint wir
 
 ---
 
-## Project Stats
-
-```
-Python (src/)         14,000+ lines  45+ files
-C++ Plugin             7,000+ lines  38 files
-ReSID ThirdParty      17,300 lines   37 files
-Scripts                5,000+ lines  15 files
-Templates             61 files       (25 MetaSounds + 30 Blueprint + 6 Wwise)
-Tests                  3,800+ lines  20 files   (432 passing)
-                     --------
-Total                 47,000+ lines  216+ files
-```
-
----
-
 ## Development Status
 
 ```
