@@ -12,7 +12,7 @@
 
 **AI-driven game audio pipelines -- from natural language to Wwise + MetaSounds + Blueprints.**
 
-One MCP server. Three audio engines. 53 tools. 22K+ Blueprint nodes. Optimised for **Unreal Engine 5.7** and **Wwise 2024**.
+One MCP server. Three audio engines. 63 tools. 178 engine-verified MetaSounds nodes. Optimised for **Unreal Engine 5.7** and **Wwise 2024**.
 
 > "Create a footsteps sound setup for my character -- use MetaSounds noise and filter in the patch, Blueprint trigger on anim notify"
 >
@@ -42,22 +42,22 @@ Works without Wwise or UE5 running -- knowledge base, templates, and offline mod
                                 v
                     +---------------------------+
                     |      UE Audio MCP         |
-                    |      53 tools             |
-                    |      22K+ knowledge       |
+                    |      63 tools             |
+                    |      643 knowledge entries|
                     +---------------------------+
                             |
               +-------------+-------------------+
               v             v                   v
      +----------------+ +------------+  +------------------+
      |  Wwise Tools   | | MetaSounds |  | Blueprint Tools  |
-     |  (WAAPI)       | |  Tools     |  | (TCP + WAAPI)    |
-     |  21 tools      | | 22 tools   |  | 6 tools          |
+     |  (WAAPI)       | |  Tools     |  | (TCP + Knowledge)|
+     |  20 tools      | | 18 tools   |  | 14 tools         |
      +-------+--------+ +-----+------+  +--------+---------+
              |               |                   |
              v               v                   v
      +----------------+ +---------------------------+
      | Wwise App      | | UE5 C++ Plugin             |
-     | WAAPI :8080    | | TCP:9877 (25 commands)     |
+     | WAAPI :8080    | | TCP:9877 (35 commands)     |
      +----------------+ | MetaSounds Builder API     |
                         | Blueprint Graph Scanner    |
                         | Editor Menu Integration    |
@@ -88,7 +88,7 @@ C64 chiptune plays      ->    ReSID SID Chip node    ->   Music bus, stereo mix
 
 ## What's Included
 
-### 53 MCP Tools
+### 63 MCP Tools
 
 | Category | Tools | What They Do |
 |----------|-------|-------------|
@@ -96,37 +96,41 @@ C64 chiptune plays      ->    ReSID SID Chip node    ->   Music bus, stereo mix
 | Wwise Objects | 4 | Create objects (19 types), set properties, import audio |
 | Wwise Events | 4 | Events, RTPC curves, switch assign, attenuation |
 | Wwise Preview | 2 | Transport control, SoundBank generation |
-| Wwise Templates | 6 | One-call gunshot/footsteps/ambient/UI/weather + AAA setup |
-| MetaSounds Knowledge | 4 | Search 144 nodes, categories, TF-IDF semantic search |
+| Wwise Templates | 5 | One-call gunshot/footsteps/ambient/UI/weather + AAA setup |
+| MetaSounds Knowledge | 4 | Search 178 nodes, categories, TF-IDF semantic search |
 | MetaSounds Graphs | 3 | Validate, to Builder API commands, from template |
 | MetaSounds Builder | 10 | Create source, add node, connect, set defaults, audition, presets |
 | MetaSounds Advanced | 5 | Variables, preset swap/morph, macro trigger |
-| Blueprint | 6 | Search 22K+ nodes (keyword), scan graphs, list assets, call function |
+| MetaSounds Sync | 1 | Sync engine node registry to knowledge DB |
+| Blueprint Knowledge | 6 | Search nodes, scan graphs, list assets, call function |
+| Blueprint Builder | 8 | Add nodes, connect pins, compile, set defaults, wire audio params |
+| Blueprint Sync | 1 | Sync engine function registry to knowledge DB |
 | UE5 Connection | 3 | Connect, status, info |
 | Orchestration | 2 | `build_audio_system` + `build_aaa_project` |
 
-### Knowledge Base -- 22K+ Entries
+### Knowledge Base -- 643 Verified Entries
 
-Structured data with keyword search (22K+ Blueprint nodes) and TF-IDF semantic search (144 MetaSounds nodes, WAAPI, patterns):
+All data engine-verified or hand-curated. TF-IDF semantic search for MetaSounds nodes, WAAPI, and patterns. SQL keyword matching for Blueprint functions.
 
 | Data | Entries | Source |
 |------|---------|--------|
-| **Blueprint API nodes** | **22,649** | Epic Blueprint API Reference (Playwright scraper, UE 5.7) |
-| **Blueprint categories** | **2,524** | Recursive BFS scrape of Epic SPA |
-| Blueprint nodes (curated) | 946 | 11 hand-categorized audio sub-modules |
-| MetaSounds nodes | 144 (798 pins, 21 categories) | Epic MetaSounds Reference + Editor screenshots |
-| Builder API functions | 68+ | UE 5.7 MetaSounds Builder API |
+| MetaSounds nodes | **178** (23 categories, 128 class_name mappings) | Engine registry sync + Epic docs |
+| Cross-system pin mappings | 130 | BP ↔ MetaSounds ↔ Wwise wiring table |
+| Builder API functions | 81 | UE 5.7 MetaSounds Builder API |
 | WAAPI functions | 66 | Audiokinetic SDK reference |
 | Blueprint audio functions | 55 | GameplayStatics, AudioComponent, Quartz |
+| Blueprint nodes (curated) | 55 | Engine-synced audio functions catalogue |
+| Audio console commands | 20 | UE5 audio debugging commands |
 | Wwise types & properties | 19 | Types, categories, default paths |
-| Audio patterns | 6 | Game audio design patterns |
-| UE4->UE5 conversion | 14 | Sound Cue -> MetaSounds migration map |
-| Cross-system pin mappings | 130 | BP ↔ MetaSounds ↔ Wwise wiring table |
-| **Project Blueprints** | **growing** | Scanned from Lyra, Stack-O-Bot, and user projects |
+| Tutorial workflows | 17 | Step-by-step MetaSounds build guides |
+| Attenuation subsystems | 8 | Distance models and parameters |
+| Audio patterns | 6 | Game audio design patterns (gunshot, footsteps, ambient, etc.) |
+| UE game examples | 5 | Lyra reference implementations |
+| Spatialization methods | 3 | HRTF, ITD, panning |
 
-The 22K+ Blueprint leaf nodes include full pin specs (inputs, outputs, types, descriptions) scraped directly from Epic's documentation SPA. MetaSounds nodes, WAAPI functions, and audio patterns use TF-IDF + cosine similarity for semantic search. Blueprint nodes use SQL keyword matching. The batch scanner (`scripts/scan_project.py`) imports scanned project Blueprints into the knowledge DB.
+Engine sync scripts fetch live data from the running UE5 editor (842 MetaSounds nodes, 979 audio Blueprint functions from 165 classes). The batch scanner (`scripts/scan_project.py`) imports scanned project Blueprints into the knowledge DB.
 
-### 61 Templates
+### 61 Templates (25/25 MS validated)
 
 | Type | Count | Examples |
 |------|-------|---------|
@@ -134,7 +138,7 @@ The 22K+ Blueprint leaf nodes include full pin specs (inputs, outputs, types, de
 | Blueprint Logic | 30 | weapon_burst, footfalls, ambient_wind, quartz_beat_sync, spectral_analysis, sfx_generator_widget, spatial_attenuation, submix_recording, physics_audio... |
 | Wwise Hierarchy | 6 | gunshot, footsteps, ambient, ui_sound, weather, vehicle_engine |
 
-All MetaSounds templates are validated against the knowledge DB with pin-level accuracy.
+All 25 MetaSounds templates pass 7-stage validation (node types, pin names, connections, type compatibility, defaults, required inputs, interface pins) against the engine-verified catalogue. Blueprint and Wwise templates pass structural checks.
 
 ---
 
@@ -194,9 +198,10 @@ SIDKIT extensions beyond stock reSID: FM cross-modulation (Cwejman S1 style), re
 
 Editor-only plugin providing TCP server for MetaSounds Builder API and Blueprint graph access:
 
-- **25 commands**: builder lifecycle, node ops, graph I/O, variables, presets, audition, blueprint scanning, asset queries, live updates
+- **35 commands**: builder lifecycle, node ops, graph I/O, variables, presets, audition, blueprint scanning/building, asset queries, engine registry sync, live updates
 - **Wire protocol**: 4-byte length-prefix + UTF-8 JSON on port 9877
 - **Node registry**: 70 display-name -> class-name mappings (65 standard + 5 SID) + passthrough for `::` names
+- **Blueprint builder**: `FAudioMCPBlueprintManager` -- add nodes, connect pins, compile, audio function allowlist
 - **Thread safety**: FRunnable TCP -> AsyncTask(GameThread) dispatch
 - **Blueprint reflection**: ProcessEvent with proper InitializeValue/DestroyValue lifecycle
 - **Security**: localhost only (127.0.0.1), message size validation
@@ -267,14 +272,14 @@ Creates bus hierarchy, work units, events, MetaSounds sources, and Blueprint wir
 ## Project Stats
 
 ```
-Python (src/)         12,300 lines   43 files
-C++ Plugin             6,200 lines   36 files
+Python (src/)         14,000+ lines  45+ files
+C++ Plugin             7,000+ lines  38 files
 ReSID ThirdParty      17,300 lines   37 files
-Scripts                4,000 lines   10 files
+Scripts                5,000+ lines  15 files
 Templates             61 files       (25 MetaSounds + 30 Blueprint + 6 Wwise)
-Tests                  3,400 lines   20 files
+Tests                  3,800+ lines  20 files   (432 passing)
                      --------
-Total                 43,200 lines   207 files
+Total                 47,000+ lines  216+ files
 ```
 
 ---
@@ -283,21 +288,22 @@ Total                 43,200 lines   207 files
 
 ```
 Phase 1: Wwise MCP Server        Done    20 tools, WAAPI bridge
-Phase 2: Knowledge Base           Done    22K+ entries, TF-IDF search (144 MS nodes), keyword search (22K BP)
-Phase 3: UE5 Plugin + Tools       Done    C++ plugin (25 cmds), 22 tools, TCP protocol
+Phase 2: Knowledge Base           Done    643 entries, TF-IDF search (178 MS nodes), keyword search (55 BP)
+Phase 3: UE5 Plugin + Tools       Done    C++ plugin (35 cmds), 63 tools, TCP protocol
 Phase 4: Orchestration            Done    11 patterns, AAA project, 3-mode auto-detection
 Phase 5: ReSID SIDKIT Edition     Done    5 custom C++ MetaSounds nodes, 3 templates
 Phase 6: Blueprint Scanner        Done    Graph inspection, editor menu, batch scanner
-Phase 7: A2HW Protocol Spec      WIP     Defined in SIDKIT, extended here
+Phase 7: Blueprint Builder        Done    8 MCP tools, audio function allowlist, compile
+Phase 8: Engine Registry Sync     Done    842 MS nodes + 979 BP funcs synced from live engine
+Phase 9: Data Integrity           Done    25/25 templates verified, 128 class_name mappings
 ```
 
 ### Coming Next
 
-- **Live plugin testing** -- End-to-end validation with UE5.7 running
-- **Game project scanning** -- Extracting Blueprints + MetaSounds from Lyra, Stack-O-Bot, and community projects
-- **Error learning** -- Error signature -> fix mapping (build fails get remembered)
+- **Game project scanning** -- Extracting Blueprints + MetaSounds from Lyra, Stack-O-Bot
+- **End-to-end testing** -- Build MetaSounds + wire Blueprints + hear audio in PIE
 - **AudioLink integration** -- Automated MetaSounds -> Wwise routing via AudioLink bridge
-- **More AAA categories** -- Dialogue, music, cinematics, vehicles expanded
+- **Video demo** -- Prompt-to-audio pipeline walkthrough
 - **A2HW Protocol** -- Agent-to-Hardware protocol for AI-controlled audio across platforms
 
 ---
@@ -312,8 +318,8 @@ npx skills add koshimazaki/ue-audio-skills
 
 | Skill | What it does |
 |-------|-------------|
-| `/mcp-plugin` | TCP plugin control -- 25 commands for building MetaSounds graphs, scanning blueprints, listing assets |
-| `/metasound-dsp` | MetaSounds DSP specialist -- 144 nodes, Builder API, signal flow patterns, graph templates |
+| `/mcp-plugin` | TCP plugin control -- 35 commands for building MetaSounds graphs, scanning blueprints, listing assets |
+| `/metasound-dsp` | MetaSounds DSP specialist -- 178 nodes, Builder API, signal flow patterns, graph templates |
 | `/unreal-bp` | Blueprint audio logic -- game event detection, parameter wiring, asset scanning |
 | `/build-system` | Full pipeline orchestrator -- generates complete 3-layer audio systems from a single description |
 
