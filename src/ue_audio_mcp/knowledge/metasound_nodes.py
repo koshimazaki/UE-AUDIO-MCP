@@ -1991,6 +1991,41 @@ _register(_node(
     complexity=3,
 ))
 
+# NOTE: MSP_ nodes are custom MetaSounds Patches (subgraphs) — NOT built-in engine
+# nodes. They must be built as separate MetaSounds Patch assets first, then referenced
+# by templates that use them. The pins below match the tutorial implementations.
+# Agents should create these patches before building templates that depend on them.
+
+_register(_node(
+    "MSP_Sequencer", "Patches",
+    "Step sequencer patch — steps through a MIDI note array on each trigger, "
+    "converts to frequency output. Random At shuffles note order after N steps. "
+    "From Matt Spendlove (msp) mono synth tutorial. Must be built as a separate "
+    "MetaSounds Patch asset before use.",
+    [_in("In", "Trigger"),
+     _in("Notes", "Int32[]"),
+     _in("Start Note MIDI", "Float", required=False, default=28.0),
+     _in("Step Length", "Int32", required=False, default=3),
+     _in("Random At", "Int32", required=False, default=12)],
+    [_out("Value", "Float")],
+    ["sequencer", "step", "midi", "notes", "pitch", "patch", "reusable", "mono-synth"],
+    complexity=3,
+))
+
+_register(_node(
+    "MSP_ADControl", "Patches",
+    "Attack/Decay time splitter — divides a total period (Max Value) into Attack "
+    "and Decay times by ratio (Value). At ratio 0.128: Attack = 12.8%%, Decay = 87.2%%. "
+    "From Matt Spendlove (msp) mono synth tutorial. Must be built as a separate "
+    "MetaSounds Patch asset before use.",
+    [_in("Value", "Float"),
+     _in("Max Value", "Float")],
+    [_out("Attack", "Float"),
+     _out("Decay", "Float")],
+    ["envelope", "attack", "decay", "ratio", "time", "patch", "reusable", "mono-synth"],
+    complexity=2,
+))
+
 
 # -------------------------------------------------------------------
 # Effects — Spectral  (4 nodes, from SFX Generator screenshots)

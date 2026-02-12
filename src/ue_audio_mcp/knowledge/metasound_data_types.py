@@ -140,7 +140,7 @@ NODE_CATEGORIES: list[str] = [
 PIN_COMPATIBILITY: dict[str, set[str]] = {
     "Audio": {"Audio", "Float"},
     "Trigger": {"Trigger"},
-    "Float": {"Float", "Audio"},
+    "Float": {"Float", "Audio", "Time"},  # Float can connect to Time inputs (seconds)
     "Int32": {"Int32", "Float"},  # Int32 can connect to Float inputs
     "Bool": {"Bool"},
     "Time": {"Time", "Float"},  # Time can connect to Float inputs

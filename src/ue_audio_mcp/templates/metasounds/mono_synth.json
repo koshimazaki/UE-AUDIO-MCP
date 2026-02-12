@@ -85,6 +85,14 @@
       "type": "Audio"
     },
     {
+      "name": "Out Stereo L",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo R",
+      "type": "Audio"
+    },
+    {
       "name": "OnFinished",
       "type": "Trigger"
     }
@@ -404,6 +412,18 @@
       "from_pin": "Out",
       "to_node": "__graph__",
       "to_pin": "Out Mono"
+    },
+    {
+      "from_node": "biquad_filter",
+      "from_pin": "Out",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo L"
+    },
+    {
+      "from_node": "biquad_filter",
+      "from_pin": "Out",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo R"
     }
   ]
 }
