@@ -2,7 +2,7 @@
   "name": "Sound Pad Source",
   "asset_type": "Source",
   "author": "Dr Chris Payne (ChrisPayne123)",
-  "description": "Dual-source sound pad from Chris Payne tutorial. Two parallel signal paths: (1) Synth path — ScaleDegree indexes into MajorScaleArray variable, adds RootNote offset, MIDI To Frequency converts to Hz, SuperOscillator generates tone, AD Envelope shapes amplitude. (2) Sample path — Wave Player plays AudioFile on trigger. Audio Mixer (Stereo, 2) combines both paths. Best practice: MIDI ints in Blueprint, Hz conversion inside MetaSounds.",
+  "description": "Dual-source sound pad from Chris Payne tutorial. Two parallel signal paths: (1) Synth path \u2014 ScaleDegree indexes into MajorScaleArray variable, adds RootNote offset, MIDI To Frequency converts to Hz, SuperOscillator generates tone, AD Envelope shapes amplitude. (2) Sample path \u2014 Wave Player plays AudioFile on trigger. Audio Mixer (Stereo, 2) combines both paths. Best practice: MIDI ints in Blueprint, Hz conversion inside MetaSounds.",
   "source_url": "https://dev.epicgames.com/community/learning/tutorials/opvv/unreal-engine-metasound-sound-pads",
   "interfaces": [
     "UE.Source.OneShot"
@@ -92,7 +92,7 @@
         600,
         0
       ],
-      "comment": "Converts MIDI int to Hz float — the conversion boundary between BP and MS"
+      "comment": "Converts MIDI int to Hz float \u2014 the conversion boundary between BP and MS"
     },
     {
       "id": "synth",
@@ -129,7 +129,7 @@
         "Hard Reset": false,
         "Looping": false
       },
-      "comment": "Shapes synth amplitude — short attack, medium decay for percussive pad hit"
+      "comment": "Shapes synth amplitude \u2014 short attack, medium decay for percussive pad hit"
     },
     {
       "id": "synth_gain",
@@ -138,7 +138,7 @@
         1000,
         0
       ],
-      "comment": "Oscillator × Envelope = shaped synth signal"
+      "comment": "Oscillator \u00d7 Envelope = shaped synth signal"
     },
     {
       "id": "wave_player",
@@ -150,7 +150,7 @@
       "defaults": {
         "Loop": false
       },
-      "comment": "Sample playback path — plays AudioFile when triggered"
+      "comment": "Sample playback path \u2014 plays AudioFile when triggered"
     },
     {
       "id": "mixer",
@@ -308,17 +308,17 @@
       "from_node": "env",
       "from_pin": "On Done",
       "to_node": "trigger_any",
-      "to_pin": "Trigger 0"
+      "to_pin": "In 0"
     },
     {
       "from_node": "wave_player",
       "from_pin": "On Finished",
       "to_node": "trigger_any",
-      "to_pin": "Trigger 1"
+      "to_pin": "In 1"
     },
     {
       "from_node": "trigger_any",
-      "from_pin": "Trigger",
+      "from_pin": "Out",
       "to_node": "__graph__",
       "to_pin": "OnFinished"
     },

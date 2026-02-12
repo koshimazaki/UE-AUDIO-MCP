@@ -39,17 +39,6 @@
   ],
   "nodes": [
     {
-      "id": "trigger_route",
-      "node_type": "Trigger Route",
-      "position": [
-        0,
-        0
-      ],
-      "defaults": {
-        "NumOutputs": 4
-      }
-    },
-    {
       "id": "random_get",
       "node_type": "Random Get (WaveAssetArray)",
       "position": [
@@ -107,18 +96,6 @@
     {
       "from_node": "__graph__",
       "from_pin": "OnPlay",
-      "to_node": "trigger_route",
-      "to_pin": "Trigger"
-    },
-    {
-      "from_node": "__graph__",
-      "from_pin": "SurfaceType",
-      "to_node": "trigger_route",
-      "to_pin": "Index"
-    },
-    {
-      "from_node": "trigger_route",
-      "from_pin": "Trigger 0",
       "to_node": "random_get",
       "to_pin": "Next"
     },

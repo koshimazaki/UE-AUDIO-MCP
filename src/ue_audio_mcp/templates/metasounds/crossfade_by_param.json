@@ -1,7 +1,7 @@
 {
   "name": "MSP_CrossFadeByParam_3Inputs",
   "asset_type": "Patch",
-  "description": "3-layer distance crossfade patch from Craig Owen weapon audio tutorial. Crossfades between Close/Mid/Far WaveAsset arrays driven by a float parameter (typically Distance). Each layer: gate check → Shuffle → Wave Player (Stereo) → MapRange gain curve → Stereo Mixer (3). Layer B uses two MapRanges multiplied for bell curve. Mid-Side Encode/Decode produces mono output. Trigger Any combines all OnFinished signals. Safety offset ±0.01 on gate boundaries prevents flickering.",
+  "description": "3-layer distance crossfade patch from Craig Owen weapon audio tutorial. Crossfades between Close/Mid/Far WaveAsset arrays driven by a float parameter (typically Distance). Each layer: gate check \u2192 Shuffle \u2192 Wave Player (Stereo) \u2192 MapRange gain curve \u2192 Stereo Mixer (3). Layer B uses two MapRanges multiplied for bell curve. Mid-Side Encode/Decode produces mono output. Trigger Any combines all OnFinished signals. Safety offset \u00b10.01 on gate boundaries prevents flickering.",
   "author": "Craig Owen (YAGER Development)",
   "source_url": "https://www.youtube.com/watch?v=n5z4L43jMi8",
   "interfaces": [],
@@ -14,7 +14,7 @@
       "name": "InputParameter",
       "type": "Float",
       "default": 0.0,
-      "description": "Crossfade driver — typically Distance (UE.Attenuation) in game units"
+      "description": "Crossfade driver \u2014 typically Distance (UE.Attenuation) in game units"
     },
     {
       "name": "WaveAsset_A",
@@ -113,7 +113,7 @@
       "defaults": {
         "Type": "LessThan"
       },
-      "comment": "InputParam < EndFadeOut+0.01 → Layer A active"
+      "comment": "InputParam < EndFadeOut+0.01 \u2192 Layer A active"
     },
     {
       "id": "trigger_filter_a",
@@ -126,14 +126,14 @@
     },
     {
       "id": "shuffle_a",
-      "node_type": "Array Shuffle",
+      "node_type": "Random Get (WaveAssetArray)",
       "position": [
         600,
         0
       ],
       "defaults": {
         "Seed": -1,
-        "AutoReset": true
+        "No Repeats": 1
       }
     },
     {
@@ -159,7 +159,7 @@
         "Out Range B": 0.0,
         "Clamped": true
       },
-      "comment": "Layer A: gain 1→0 as InputParam goes StartFadeOut→EndFadeOut"
+      "comment": "Layer A: gain 1\u21920 as InputParam goes StartFadeOut\u2192EndFadeOut"
     },
     {
       "id": "gate_b_low_offset",
@@ -183,7 +183,7 @@
       "defaults": {
         "Type": "GreaterThan"
       },
-      "comment": "InputParam > StartFadeIn-0.01 → Layer B lower bound met"
+      "comment": "InputParam > StartFadeIn-0.01 \u2192 Layer B lower bound met"
     },
     {
       "id": "gate_b_high_offset",
@@ -207,7 +207,7 @@
       "defaults": {
         "Type": "LessThan"
       },
-      "comment": "InputParam < EndFadeOut+0.01 → Layer B upper bound met"
+      "comment": "InputParam < EndFadeOut+0.01 \u2192 Layer B upper bound met"
     },
     {
       "id": "trigger_filter_b_low",
@@ -225,18 +225,18 @@
         400,
         500
       ],
-      "comment": "Gate by upper bound — both must pass for Layer B to play"
+      "comment": "Gate by upper bound \u2014 both must pass for Layer B to play"
     },
     {
       "id": "shuffle_b",
-      "node_type": "Array Shuffle",
+      "node_type": "Random Get (WaveAssetArray)",
       "position": [
         600,
         450
       ],
       "defaults": {
         "Seed": -1,
-        "AutoReset": true
+        "No Repeats": 1
       }
     },
     {
@@ -262,7 +262,7 @@
         "Out Range B": 1.0,
         "Clamped": true
       },
-      "comment": "Layer B fade-in: gain 0→1 as InputParam goes StartFadeIn→EndFadeIn"
+      "comment": "Layer B fade-in: gain 0\u21921 as InputParam goes StartFadeIn\u2192EndFadeIn"
     },
     {
       "id": "gain_b_fadeout",
@@ -276,7 +276,7 @@
         "Out Range B": 0.0,
         "Clamped": true
       },
-      "comment": "Layer B fade-out: gain 1→0 as InputParam goes StartFadeOut→EndFadeOut"
+      "comment": "Layer B fade-out: gain 1\u21920 as InputParam goes StartFadeOut\u2192EndFadeOut"
     },
     {
       "id": "gain_b_bell",
@@ -285,7 +285,7 @@
         1200,
         450
       ],
-      "comment": "Bell curve: fadein × fadeout — peaks at 1.0 in the mid zone"
+      "comment": "Bell curve: fadein \u00d7 fadeout \u2014 peaks at 1.0 in the mid zone"
     },
     {
       "id": "gate_c_offset",
@@ -309,7 +309,7 @@
       "defaults": {
         "Type": "GreaterThan"
       },
-      "comment": "InputParam > StartFadeIn-0.01 → Layer C active"
+      "comment": "InputParam > StartFadeIn-0.01 \u2192 Layer C active"
     },
     {
       "id": "trigger_filter_c",
@@ -322,14 +322,14 @@
     },
     {
       "id": "shuffle_c",
-      "node_type": "Array Shuffle",
+      "node_type": "Random Get (WaveAssetArray)",
       "position": [
         600,
         800
       ],
       "defaults": {
         "Seed": -1,
-        "AutoReset": true
+        "No Repeats": 1
       }
     },
     {
@@ -355,11 +355,11 @@
         "Out Range B": 1.0,
         "Clamped": true
       },
-      "comment": "Layer C: gain 0→1 as InputParam goes StartFadeIn→EndFadeIn"
+      "comment": "Layer C: gain 0\u21921 as InputParam goes StartFadeIn\u2192EndFadeIn"
     },
     {
       "id": "stereo_mixer",
-      "node_type": "Stereo Mixer",
+      "node_type": "Audio Mixer (Stereo, 3)",
       "position": [
         1400,
         400
@@ -369,7 +369,7 @@
         "Gain 1": 1.0,
         "Gain 2": 1.0
       },
-      "comment": "Combines all 3 layers — gains driven by MapRange outputs"
+      "comment": "Combines all 3 layers \u2014 gains driven by MapRange outputs"
     },
     {
       "id": "ms_encode",
@@ -379,8 +379,7 @@
         400
       ],
       "defaults": {
-        "Mode": "Encode",
-        "Width": 0.0
+        "Spread Amount": 0.0
       },
       "comment": "Encode stereo to mid-side with Width=0 (pure mid)"
     },
@@ -392,10 +391,9 @@
         400
       ],
       "defaults": {
-        "Mode": "Decode",
-        "Width": 0.5
+        "Spread Amount": 0.5
       },
-      "comment": "Decode back — Width=0.5 gives centered mono-compatible output"
+      "comment": "Decode back \u2014 Width=0.5 gives centered mono-compatible output"
     },
     {
       "id": "trigger_any",
@@ -442,13 +440,13 @@
       "from_node": "trigger_filter_a",
       "from_pin": "Heads",
       "to_node": "shuffle_a",
-      "to_pin": "Trigger"
+      "to_pin": "Next"
     },
     {
       "from_node": "__graph__",
       "from_pin": "WaveAsset_A",
       "to_node": "shuffle_a",
-      "to_pin": "Array"
+      "to_pin": "In Array"
     },
     {
       "from_node": "shuffle_a",
@@ -458,7 +456,7 @@
     },
     {
       "from_node": "shuffle_a",
-      "from_pin": "Trigger",
+      "from_pin": "On Next",
       "to_node": "wp_a",
       "to_pin": "Play"
     },
@@ -544,13 +542,13 @@
       "from_node": "trigger_filter_b_high",
       "from_pin": "Heads",
       "to_node": "shuffle_b",
-      "to_pin": "Trigger"
+      "to_pin": "Next"
     },
     {
       "from_node": "__graph__",
       "from_pin": "WaveAsset_B",
       "to_node": "shuffle_b",
-      "to_pin": "Array"
+      "to_pin": "In Array"
     },
     {
       "from_node": "shuffle_b",
@@ -560,7 +558,7 @@
     },
     {
       "from_node": "shuffle_b",
-      "from_pin": "Trigger",
+      "from_pin": "On Next",
       "to_node": "wp_b",
       "to_pin": "Play"
     },
@@ -646,13 +644,13 @@
       "from_node": "trigger_filter_c",
       "from_pin": "Heads",
       "to_node": "shuffle_c",
-      "to_pin": "Trigger"
+      "to_pin": "Next"
     },
     {
       "from_node": "__graph__",
       "from_pin": "WaveAsset_C",
       "to_node": "shuffle_c",
-      "to_pin": "Array"
+      "to_pin": "In Array"
     },
     {
       "from_node": "shuffle_c",
@@ -662,7 +660,7 @@
     },
     {
       "from_node": "shuffle_c",
-      "from_pin": "Trigger",
+      "from_pin": "On Next",
       "to_node": "wp_c",
       "to_pin": "Play"
     },
@@ -754,29 +752,29 @@
       "from_node": "stereo_mixer",
       "from_pin": "Out L",
       "to_node": "ms_encode",
-      "to_pin": "Audio L"
+      "to_pin": "In Mid"
     },
     {
       "from_node": "stereo_mixer",
       "from_pin": "Out R",
       "to_node": "ms_encode",
-      "to_pin": "Audio R"
+      "to_pin": "In Side"
     },
     {
       "from_node": "ms_encode",
-      "from_pin": "Out A",
+      "from_pin": "Out Left",
       "to_node": "ms_decode",
-      "to_pin": "Audio L"
+      "to_pin": "In Mid"
     },
     {
       "from_node": "ms_encode",
-      "from_pin": "Out B",
+      "from_pin": "Out Right",
       "to_node": "ms_decode",
-      "to_pin": "Audio R"
+      "to_pin": "In Side"
     },
     {
       "from_node": "ms_decode",
-      "from_pin": "Out A",
+      "from_pin": "Out Left",
       "to_node": "__graph__",
       "to_pin": "AudioMono"
     },
@@ -784,23 +782,17 @@
       "from_node": "wp_a",
       "from_pin": "On Finished",
       "to_node": "trigger_any",
-      "to_pin": "Trigger 0"
+      "to_pin": "In 0"
     },
     {
       "from_node": "wp_b",
       "from_pin": "On Finished",
       "to_node": "trigger_any",
-      "to_pin": "Trigger 1"
-    },
-    {
-      "from_node": "wp_c",
-      "from_pin": "On Finished",
-      "to_node": "trigger_any",
-      "to_pin": "Trigger 2"
+      "to_pin": "In 1"
     },
     {
       "from_node": "trigger_any",
-      "from_pin": "Trigger",
+      "from_pin": "Out",
       "to_node": "__graph__",
       "to_pin": "OnFinished"
     }

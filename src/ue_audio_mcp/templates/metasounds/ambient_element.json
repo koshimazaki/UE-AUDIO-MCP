@@ -1,0 +1,155 @@
+{
+  "name": "Ambient Element",
+  "asset_type": "Patch",
+  "description": "Single ambient voice from Lyra (mx_PlayAmbientElement). Trigger delay with random timing picks a random wave from an array, plays with pitch variation, and outputs stereo. Production pattern for ambient pads, environmental layers, music stems, and foley loops.",
+  "author": "Epic Games (Lyra sample)",
+  "interfaces": [],
+  "inputs": [
+    {
+      "name": "Next",
+      "type": "Trigger",
+      "description": "Triggers next ambient element playback"
+    },
+    {
+      "name": "Waves",
+      "type": "WaveAsset[]",
+      "description": "Array of wave assets for random selection"
+    },
+    {
+      "name": "Pan Left",
+      "type": "Float",
+      "default": -0.5,
+      "description": "Pan position for stereo placement (-1 to 1)"
+    },
+    {
+      "name": "Pan Right",
+      "type": "Float",
+      "default": 0.5,
+      "description": "Pan position for stereo placement (-1 to 1)"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "Out L",
+      "type": "Audio"
+    },
+    {
+      "name": "Out R",
+      "type": "Audio"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "trigger_delay",
+      "node_type": "Trigger Delay",
+      "position": [200, 0],
+      "comment": "Delays trigger by random time for natural spacing"
+    },
+    {
+      "id": "random_time",
+      "node_type": "Random Time",
+      "position": [0, 100],
+      "defaults": {
+        "Min": 0.5,
+        "Max": 3.0
+      },
+      "comment": "Generates random delay time for organic feel"
+    },
+    {
+      "id": "random_get",
+      "node_type": "Random Get (WaveAssetArray)",
+      "position": [400, 0],
+      "defaults": {
+        "No Repeats": 1
+      },
+      "comment": "Picks random wave from array with no immediate repeats"
+    },
+    {
+      "id": "wave_player",
+      "node_type": "Wave Player (Stereo)",
+      "position": [600, 0],
+      "defaults": {
+        "Loop": false
+      },
+      "comment": "Stereo wave player for ambient element"
+    },
+    {
+      "id": "random_pitch",
+      "node_type": "Random Float",
+      "position": [400, 200],
+      "defaults": {
+        "Min": 0.95,
+        "Max": 1.05
+      },
+      "comment": "Subtle pitch variation for natural feel"
+    }
+  ],
+  "connections": [
+    {
+      "from_node": "__graph__",
+      "from_pin": "Next",
+      "to_node": "random_time",
+      "to_pin": "Next"
+    },
+    {
+      "from_node": "random_time",
+      "from_pin": "Value",
+      "to_node": "trigger_delay",
+      "to_pin": "Delay Time"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Next",
+      "to_node": "trigger_delay",
+      "to_pin": "In"
+    },
+    {
+      "from_node": "trigger_delay",
+      "from_pin": "Out",
+      "to_node": "random_get",
+      "to_pin": "Next"
+    },
+    {
+      "from_node": "trigger_delay",
+      "from_pin": "Out",
+      "to_node": "random_pitch",
+      "to_pin": "Next"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Waves",
+      "to_node": "random_get",
+      "to_pin": "In Array"
+    },
+    {
+      "from_node": "random_get",
+      "from_pin": "Value",
+      "to_node": "wave_player",
+      "to_pin": "Wave Asset"
+    },
+    {
+      "from_node": "random_get",
+      "from_pin": "On Next",
+      "to_node": "wave_player",
+      "to_pin": "Play"
+    },
+    {
+      "from_node": "random_pitch",
+      "from_pin": "Value",
+      "to_node": "wave_player",
+      "to_pin": "Pitch Shift"
+    },
+    {
+      "from_node": "wave_player",
+      "from_pin": "Out Left",
+      "to_node": "__graph__",
+      "to_pin": "Out L"
+    },
+    {
+      "from_node": "wave_player",
+      "from_pin": "Out Right",
+      "to_node": "__graph__",
+      "to_pin": "Out R"
+    }
+  ]
+}

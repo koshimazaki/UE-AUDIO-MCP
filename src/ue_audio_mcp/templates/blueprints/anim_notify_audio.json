@@ -1,0 +1,74 @@
+{
+  "name": "Anim Notify Audio",
+  "type": "blueprint",
+  "blueprint_type": "character",
+  "description": "AnimNotify-driven audio from Lyra (ABP_ItemAnimLayersBase). Animation notify triggers SpawnSoundAtLocation at character feet with surface material lookup via line trace. Select node picks appropriate sound based on physical material. Production pattern for footsteps, weapon foley, cloth rustling, and equipment jingle.",
+  "author": "Epic Games (Lyra sample)",
+  "requires": [
+    "Animation Montage or AnimSequence with Notify events",
+    "Physical Material setup on level surfaces",
+    "Sound assets per surface type"
+  ],
+  "nodes": [
+    {
+      "id": "anim_notify",
+      "node_type": "AnimNotify",
+      "position": [0, 0],
+      "defaults": {"NotifyName": "Footstep"},
+      "comment": "AnimNotify_Footstep — placed on contact frames in walk/run animations"
+    },
+    {
+      "id": "get_location",
+      "node_type": "GetActorLocation",
+      "position": [200, 0],
+      "comment": "Character world position for sound spawn point"
+    },
+    {
+      "id": "get_surface",
+      "node_type": "LineTraceByChannel",
+      "position": [200, 200],
+      "defaults": {
+        "TraceLength": 100.0
+      },
+      "comment": "Traces down from character to detect floor physical material"
+    },
+    {
+      "id": "get_phys_mat",
+      "node_type": "GetPhysicalMaterial",
+      "position": [500, 200],
+      "comment": "Extracts physical material from hit result for surface type"
+    },
+    {
+      "id": "select_sound",
+      "node_type": "Select",
+      "position": [700, 200],
+      "comment": "Selects sound asset based on physical material surface type"
+    },
+    {
+      "id": "spawn_sound",
+      "node_type": "SpawnSoundAtLocation",
+      "position": [900, 0],
+      "defaults": {
+        "AttenuationSettings": "<FootstepAttenuation>"
+      },
+      "comment": "Spawns footstep sound at character location with surface-appropriate asset"
+    }
+  ],
+  "variables": [
+    {"name": "ConcreteSound", "type": "SoundBase", "description": "Footstep sound for concrete/stone surfaces"},
+    {"name": "DirtSound", "type": "SoundBase", "description": "Footstep sound for dirt/gravel surfaces"},
+    {"name": "WoodSound", "type": "SoundBase", "description": "Footstep sound for wood surfaces"},
+    {"name": "MetalSound", "type": "SoundBase", "description": "Footstep sound for metal surfaces"},
+    {"name": "DefaultSound", "type": "SoundBase", "description": "Fallback footstep sound when no material detected"}
+  ],
+  "connections": [
+    {"from_node": "anim_notify", "from_pin": "Exec", "to_node": "get_surface", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "get_surface", "from_pin": "Exec", "to_node": "spawn_sound", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "get_location", "from_pin": "ReturnValue", "to_node": "get_surface", "to_pin": "Start", "type": "data"},
+    {"from_node": "get_location", "from_pin": "ReturnValue", "to_node": "spawn_sound", "to_pin": "Location", "type": "data"},
+    {"from_node": "get_surface", "from_pin": "OutHit", "to_node": "get_phys_mat", "to_pin": "Hit", "type": "data"},
+    {"from_node": "get_phys_mat", "from_pin": "ReturnValue", "to_node": "select_sound", "to_pin": "Index", "type": "data"},
+    {"from_node": "select_sound", "from_pin": "ReturnValue", "to_node": "spawn_sound", "to_pin": "Sound", "type": "data"}
+  ],
+  "notes": "Line trace direction should be (0, 0, -1) from character location to detect floor. TraceLength of 100 works for most character capsule heights. Physical materials must be assigned to level geometry materials. For MetaSounds-based footsteps, replace SpawnSoundAtLocation with SpawnSoundAttached and pass surface type as an Int32 parameter to the MetaSounds graph. Consider adding velocity-based volume scaling for walk vs run intensity."
+}

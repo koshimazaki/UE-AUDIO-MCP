@@ -1,0 +1,314 @@
+{
+  "name": "Random EQ",
+  "asset_type": "Patch",
+  "description": "Procedural timbral variation from Lyra (MS_RandomEQ). Four cascaded Biquad Filters per channel with random gain variation. Each trigger randomizes EQ gains via MapRange, creating non-repetitive timbral coloring without needing additional samples. Production pattern for weapon timbre variation and non-repetitive impacts.",
+  "author": "Epic Games (Lyra sample)",
+  "interfaces": [],
+  "inputs": [
+    {
+      "name": "Next",
+      "type": "Trigger",
+      "description": "Triggers new random EQ curve"
+    },
+    {
+      "name": "In L",
+      "type": "Audio",
+      "description": "Left channel input"
+    },
+    {
+      "name": "In R",
+      "type": "Audio",
+      "description": "Right channel input"
+    },
+    {
+      "name": "Seed",
+      "type": "Int32",
+      "default": -1,
+      "description": "Random seed (-1 for truly random)"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "Out L",
+      "type": "Audio"
+    },
+    {
+      "name": "Out R",
+      "type": "Audio"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "biquad_l0",
+      "node_type": "Biquad Filter",
+      "position": [400, 0],
+      "defaults": {
+        "Cutoff Frequency": 250.0,
+        "Bandwidth": 1.0,
+        "Type": "Peaking"
+      },
+      "comment": "Band 0 L — low-mid EQ"
+    },
+    {
+      "id": "biquad_l1",
+      "node_type": "Biquad Filter",
+      "position": [600, 0],
+      "defaults": {
+        "Cutoff Frequency": 800.0,
+        "Bandwidth": 1.0,
+        "Type": "Peaking"
+      },
+      "comment": "Band 1 L — mid EQ"
+    },
+    {
+      "id": "biquad_l2",
+      "node_type": "Biquad Filter",
+      "position": [800, 0],
+      "defaults": {
+        "Cutoff Frequency": 2500.0,
+        "Bandwidth": 1.0,
+        "Type": "Peaking"
+      },
+      "comment": "Band 2 L — upper-mid EQ"
+    },
+    {
+      "id": "biquad_l3",
+      "node_type": "Biquad Filter",
+      "position": [1000, 0],
+      "defaults": {
+        "Cutoff Frequency": 6000.0,
+        "Bandwidth": 1.0,
+        "Type": "Peaking"
+      },
+      "comment": "Band 3 L — presence EQ"
+    },
+    {
+      "id": "biquad_r0",
+      "node_type": "Biquad Filter",
+      "position": [400, 300],
+      "defaults": {
+        "Cutoff Frequency": 250.0,
+        "Bandwidth": 1.0,
+        "Type": "Peaking"
+      },
+      "comment": "Band 0 R — low-mid EQ"
+    },
+    {
+      "id": "biquad_r1",
+      "node_type": "Biquad Filter",
+      "position": [600, 300],
+      "defaults": {
+        "Cutoff Frequency": 800.0,
+        "Bandwidth": 1.0,
+        "Type": "Peaking"
+      },
+      "comment": "Band 1 R — mid EQ"
+    },
+    {
+      "id": "biquad_r2",
+      "node_type": "Biquad Filter",
+      "position": [800, 300],
+      "defaults": {
+        "Cutoff Frequency": 2500.0,
+        "Bandwidth": 1.0,
+        "Type": "Peaking"
+      },
+      "comment": "Band 2 R — upper-mid EQ"
+    },
+    {
+      "id": "biquad_r3",
+      "node_type": "Biquad Filter",
+      "position": [1000, 300],
+      "defaults": {
+        "Cutoff Frequency": 6000.0,
+        "Bandwidth": 1.0,
+        "Type": "Peaking"
+      },
+      "comment": "Band 3 R — presence EQ"
+    },
+    {
+      "id": "rand_gain0",
+      "node_type": "Random Float",
+      "position": [200, 600],
+      "comment": "Random value for bands 0+1 gain"
+    },
+    {
+      "id": "rand_gain1",
+      "node_type": "Random Float",
+      "position": [200, 800],
+      "comment": "Random value for bands 2+3 gain"
+    },
+    {
+      "id": "map_gain0",
+      "node_type": "Map Range (Float)",
+      "position": [400, 600],
+      "defaults": {
+        "In Range A": 0.0,
+        "In Range B": 1.0,
+        "Out Range A": -6.0,
+        "Out Range B": 6.0,
+        "Clamped": true
+      },
+      "comment": "Maps random 0-1 to -6..+6 dB gain range for bands 0+1"
+    },
+    {
+      "id": "map_gain1",
+      "node_type": "Map Range (Float)",
+      "position": [400, 800],
+      "defaults": {
+        "In Range A": 0.0,
+        "In Range B": 1.0,
+        "Out Range A": -6.0,
+        "Out Range B": 6.0,
+        "Clamped": true
+      },
+      "comment": "Maps random 0-1 to -6..+6 dB gain range for bands 2+3"
+    }
+  ],
+  "connections": [
+    {
+      "from_node": "__graph__",
+      "from_pin": "Next",
+      "to_node": "rand_gain0",
+      "to_pin": "Next"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Next",
+      "to_node": "rand_gain1",
+      "to_pin": "Next"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Seed",
+      "to_node": "rand_gain0",
+      "to_pin": "Seed"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Seed",
+      "to_node": "rand_gain1",
+      "to_pin": "Seed"
+    },
+    {
+      "from_node": "rand_gain0",
+      "from_pin": "Value",
+      "to_node": "map_gain0",
+      "to_pin": "In"
+    },
+    {
+      "from_node": "rand_gain1",
+      "from_pin": "Value",
+      "to_node": "map_gain1",
+      "to_pin": "In"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "In L",
+      "to_node": "biquad_l0",
+      "to_pin": "In"
+    },
+    {
+      "from_node": "biquad_l0",
+      "from_pin": "Out",
+      "to_node": "biquad_l1",
+      "to_pin": "In"
+    },
+    {
+      "from_node": "biquad_l1",
+      "from_pin": "Out",
+      "to_node": "biquad_l2",
+      "to_pin": "In"
+    },
+    {
+      "from_node": "biquad_l2",
+      "from_pin": "Out",
+      "to_node": "biquad_l3",
+      "to_pin": "In"
+    },
+    {
+      "from_node": "biquad_l3",
+      "from_pin": "Out",
+      "to_node": "__graph__",
+      "to_pin": "Out L"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "In R",
+      "to_node": "biquad_r0",
+      "to_pin": "In"
+    },
+    {
+      "from_node": "biquad_r0",
+      "from_pin": "Out",
+      "to_node": "biquad_r1",
+      "to_pin": "In"
+    },
+    {
+      "from_node": "biquad_r1",
+      "from_pin": "Out",
+      "to_node": "biquad_r2",
+      "to_pin": "In"
+    },
+    {
+      "from_node": "biquad_r2",
+      "from_pin": "Out",
+      "to_node": "biquad_r3",
+      "to_pin": "In"
+    },
+    {
+      "from_node": "biquad_r3",
+      "from_pin": "Out",
+      "to_node": "__graph__",
+      "to_pin": "Out R"
+    },
+    {
+      "from_node": "map_gain0",
+      "from_pin": "Out Value",
+      "to_node": "biquad_l0",
+      "to_pin": "Gain"
+    },
+    {
+      "from_node": "map_gain0",
+      "from_pin": "Out Value",
+      "to_node": "biquad_l1",
+      "to_pin": "Gain"
+    },
+    {
+      "from_node": "map_gain1",
+      "from_pin": "Out Value",
+      "to_node": "biquad_l2",
+      "to_pin": "Gain"
+    },
+    {
+      "from_node": "map_gain1",
+      "from_pin": "Out Value",
+      "to_node": "biquad_l3",
+      "to_pin": "Gain"
+    },
+    {
+      "from_node": "map_gain0",
+      "from_pin": "Out Value",
+      "to_node": "biquad_r0",
+      "to_pin": "Gain"
+    },
+    {
+      "from_node": "map_gain0",
+      "from_pin": "Out Value",
+      "to_node": "biquad_r1",
+      "to_pin": "Gain"
+    },
+    {
+      "from_node": "map_gain1",
+      "from_pin": "Out Value",
+      "to_node": "biquad_r2",
+      "to_pin": "Gain"
+    },
+    {
+      "from_node": "map_gain1",
+      "from_pin": "Out Value",
+      "to_node": "biquad_r3",
+      "to_pin": "Gain"
+    }
+  ]
+}

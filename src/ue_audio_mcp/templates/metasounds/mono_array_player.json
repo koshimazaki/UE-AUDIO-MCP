@@ -1,0 +1,162 @@
+{
+  "name": "Mono Array Player",
+  "asset_type": "Source",
+  "description": "Randomized one-shot SFX player from StackOBot (MS_MonoArray). Picks a random wave from an array with pitch variation for non-repetitive playback. Production pattern for gunshots, impacts, footsteps, UI sounds, and creature vocalizations.",
+  "author": "Epic Games (StackOBot sample)",
+  "interfaces": [
+    "UE.Source.OneShot"
+  ],
+  "inputs": [
+    {
+      "name": "OnPlay",
+      "type": "Trigger"
+    },
+    {
+      "name": "WaveArray",
+      "type": "WaveAsset[]",
+      "description": "Array of wave assets for random selection"
+    },
+    {
+      "name": "PitchMin",
+      "type": "Float",
+      "default": -2.5,
+      "description": "Minimum pitch shift in semitones"
+    },
+    {
+      "name": "PitchMax",
+      "type": "Float",
+      "default": 1.0,
+      "description": "Maximum pitch shift in semitones"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "Out Mono",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo L",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo R",
+      "type": "Audio"
+    },
+    {
+      "name": "OnFinished",
+      "type": "Trigger"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "random_get",
+      "node_type": "Random Get (WaveAssetArray)",
+      "position": [200, 0],
+      "defaults": {
+        "No Repeats": 1
+      },
+      "comment": "Picks random wave from array with no immediate repeats"
+    },
+    {
+      "id": "random_pitch",
+      "node_type": "Random Float",
+      "position": [200, 200],
+      "comment": "Random pitch between PitchMin and PitchMax for timbral variation"
+    },
+    {
+      "id": "pitch_to_freq",
+      "node_type": "Semitone To Freq Multiplier",
+      "position": [400, 200],
+      "comment": "Converts semitone offset to frequency multiplier for Wave Player pitch"
+    },
+    {
+      "id": "wave_player",
+      "node_type": "Wave Player (Mono)",
+      "position": [600, 0],
+      "defaults": {
+        "Loop": false
+      },
+      "comment": "Mono wave player — pitch driven by random semitone value"
+    }
+  ],
+  "connections": [
+    {
+      "from_node": "__graph__",
+      "from_pin": "OnPlay",
+      "to_node": "random_get",
+      "to_pin": "Next"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "WaveArray",
+      "to_node": "random_get",
+      "to_pin": "In Array"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "OnPlay",
+      "to_node": "random_pitch",
+      "to_pin": "Next"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "PitchMin",
+      "to_node": "random_pitch",
+      "to_pin": "Min"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "PitchMax",
+      "to_node": "random_pitch",
+      "to_pin": "Max"
+    },
+    {
+      "from_node": "random_pitch",
+      "from_pin": "Value",
+      "to_node": "pitch_to_freq",
+      "to_pin": "Semitones"
+    },
+    {
+      "from_node": "random_get",
+      "from_pin": "Value",
+      "to_node": "wave_player",
+      "to_pin": "Wave Asset"
+    },
+    {
+      "from_node": "random_get",
+      "from_pin": "On Next",
+      "to_node": "wave_player",
+      "to_pin": "Play"
+    },
+    {
+      "from_node": "pitch_to_freq",
+      "from_pin": "Frequency Multiplier",
+      "to_node": "wave_player",
+      "to_pin": "Pitch Shift"
+    },
+    {
+      "from_node": "wave_player",
+      "from_pin": "Out Mono",
+      "to_node": "__graph__",
+      "to_pin": "Out Mono"
+    },
+    {
+      "from_node": "wave_player",
+      "from_pin": "Out Mono",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo L"
+    },
+    {
+      "from_node": "wave_player",
+      "from_pin": "Out Mono",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo R"
+    },
+    {
+      "from_node": "wave_player",
+      "from_pin": "On Finished",
+      "to_node": "__graph__",
+      "to_pin": "OnFinished"
+    }
+  ]
+}

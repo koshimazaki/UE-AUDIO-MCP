@@ -1,0 +1,217 @@
+{
+  "name": "Stereo EQ Delay",
+  "asset_type": "Patch",
+  "description": "Reusable stereo EQ+Delay effect chain from StackOBot (MUS_EQDelay_MSP). HPF removes rumble, LPF tames harshness, Stereo Delay adds space. Designed as a processing patch for music stems or SFX buses. Insert between source and output for per-stem EQ+delay.",
+  "author": "Epic Games (StackOBot sample)",
+  "interfaces": [],
+  "inputs": [
+    {
+      "name": "In L",
+      "type": "Audio",
+      "description": "Left channel input"
+    },
+    {
+      "name": "In R",
+      "type": "Audio",
+      "description": "Right channel input"
+    },
+    {
+      "name": "HighPass",
+      "type": "Float",
+      "default": 10.0,
+      "description": "High-pass cutoff frequency in Hz"
+    },
+    {
+      "name": "LowPass",
+      "type": "Float",
+      "default": 20000.0,
+      "description": "Low-pass cutoff frequency in Hz"
+    },
+    {
+      "name": "DelayTime",
+      "type": "Time",
+      "default": 0.1,
+      "description": "Stereo delay time in seconds"
+    },
+    {
+      "name": "Feedback",
+      "type": "Float",
+      "default": 0.05,
+      "description": "Delay feedback amount (0-1)"
+    },
+    {
+      "name": "DelayGain",
+      "type": "Float",
+      "default": 1.0,
+      "description": "Wet gain for delay signal"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "Out L",
+      "type": "Audio"
+    },
+    {
+      "name": "Out R",
+      "type": "Audio"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "hpf_l",
+      "node_type": "One-Pole High Pass Filter",
+      "position": [200, 0],
+      "comment": "HPF on left channel — removes low rumble"
+    },
+    {
+      "id": "hpf_r",
+      "node_type": "One-Pole High Pass Filter",
+      "position": [200, 200],
+      "comment": "HPF on right channel"
+    },
+    {
+      "id": "lpf_l",
+      "node_type": "One-Pole Low Pass Filter",
+      "position": [400, 0],
+      "comment": "LPF on left channel — tames harshness"
+    },
+    {
+      "id": "lpf_r",
+      "node_type": "One-Pole Low Pass Filter",
+      "position": [400, 200],
+      "comment": "LPF on right channel"
+    },
+    {
+      "id": "delay",
+      "node_type": "Stereo Delay",
+      "position": [600, 100],
+      "comment": "Stereo delay for spatial width and depth"
+    },
+    {
+      "id": "mixer",
+      "node_type": "Audio Mixer (Stereo, 2)",
+      "position": [800, 100],
+      "defaults": {
+        "Gain 0": 1.0,
+        "Gain 1": 1.0
+      },
+      "comment": "Combines dry EQ signal (slot 0) with wet delay (slot 1)"
+    }
+  ],
+  "connections": [
+    {
+      "from_node": "__graph__",
+      "from_pin": "In L",
+      "to_node": "hpf_l",
+      "to_pin": "In"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "In R",
+      "to_node": "hpf_r",
+      "to_pin": "In"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "HighPass",
+      "to_node": "hpf_l",
+      "to_pin": "Cutoff Frequency"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "HighPass",
+      "to_node": "hpf_r",
+      "to_pin": "Cutoff Frequency"
+    },
+    {
+      "from_node": "hpf_l",
+      "from_pin": "Out",
+      "to_node": "lpf_l",
+      "to_pin": "In"
+    },
+    {
+      "from_node": "hpf_r",
+      "from_pin": "Out",
+      "to_node": "lpf_r",
+      "to_pin": "In"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "LowPass",
+      "to_node": "lpf_l",
+      "to_pin": "Cutoff Frequency"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "LowPass",
+      "to_node": "lpf_r",
+      "to_pin": "Cutoff Frequency"
+    },
+    {
+      "from_node": "lpf_l",
+      "from_pin": "Out",
+      "to_node": "delay",
+      "to_pin": "In Left"
+    },
+    {
+      "from_node": "lpf_r",
+      "from_pin": "Out",
+      "to_node": "delay",
+      "to_pin": "In Right"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "DelayTime",
+      "to_node": "delay",
+      "to_pin": "Delay Time"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Feedback",
+      "to_node": "delay",
+      "to_pin": "Feedback"
+    },
+    {
+      "from_node": "lpf_l",
+      "from_pin": "Out",
+      "to_node": "mixer",
+      "to_pin": "In 0 L"
+    },
+    {
+      "from_node": "lpf_r",
+      "from_pin": "Out",
+      "to_node": "mixer",
+      "to_pin": "In 0 R"
+    },
+    {
+      "from_node": "delay",
+      "from_pin": "Out Left",
+      "to_node": "mixer",
+      "to_pin": "In 1 L"
+    },
+    {
+      "from_node": "delay",
+      "from_pin": "Out Right",
+      "to_node": "mixer",
+      "to_pin": "In 1 R"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "DelayGain",
+      "to_node": "mixer",
+      "to_pin": "Gain 1"
+    },
+    {
+      "from_node": "mixer",
+      "from_pin": "Out L",
+      "to_node": "__graph__",
+      "to_pin": "Out L"
+    },
+    {
+      "from_node": "mixer",
+      "from_pin": "Out R",
+      "to_node": "__graph__",
+      "to_pin": "Out R"
+    }
+  ]
+}

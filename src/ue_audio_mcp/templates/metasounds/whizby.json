@@ -1,0 +1,243 @@
+{
+  "name": "Whizby",
+  "asset_type": "Patch",
+  "description": "Doppler bullet whizby from Lyra (lib_WhizBy). Two-phase playback: oncoming sample crossfades to receding sample with configurable delay and blend. Random selection from wave arrays for variation. Production pattern for bullet whizby, vehicle pass-by, and projectile flyover effects.",
+  "author": "Epic Games (Lyra sample)",
+  "interfaces": [],
+  "inputs": [
+    {
+      "name": "Next",
+      "type": "Trigger",
+      "description": "Triggers a new whizby event"
+    },
+    {
+      "name": "Oncoming",
+      "type": "WaveAsset[]",
+      "description": "Array of oncoming/approaching wave assets"
+    },
+    {
+      "name": "Receding",
+      "type": "WaveAsset[]",
+      "description": "Array of receding/departing wave assets"
+    },
+    {
+      "name": "CrossfadeValue",
+      "type": "Float",
+      "default": 0.5,
+      "description": "Crossfade position between oncoming (0) and receding (1)"
+    },
+    {
+      "name": "RecedingDelay",
+      "type": "Time",
+      "default": 0.1,
+      "description": "Delay before receding sample starts"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "Out L",
+      "type": "Audio"
+    },
+    {
+      "name": "Out R",
+      "type": "Audio"
+    },
+    {
+      "name": "OnFinished",
+      "type": "Trigger"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "rand_oncoming",
+      "node_type": "Random Get (WaveAssetArray)",
+      "position": [200, 0],
+      "defaults": {
+        "No Repeats": 1
+      },
+      "comment": "Picks random oncoming wave"
+    },
+    {
+      "id": "rand_receding",
+      "node_type": "Random Get (WaveAssetArray)",
+      "position": [200, 400],
+      "defaults": {
+        "No Repeats": 1
+      },
+      "comment": "Picks random receding wave"
+    },
+    {
+      "id": "player_oncoming",
+      "node_type": "Wave Player (Stereo)",
+      "position": [500, 0],
+      "defaults": {
+        "Loop": false
+      },
+      "comment": "Plays approaching/oncoming sample"
+    },
+    {
+      "id": "trigger_delay",
+      "node_type": "Trigger Delay",
+      "position": [200, 200],
+      "comment": "Delays receding trigger to simulate Doppler transition timing"
+    },
+    {
+      "id": "player_receding",
+      "node_type": "Wave Player (Stereo)",
+      "position": [500, 400],
+      "defaults": {
+        "Loop": false
+      },
+      "comment": "Plays departing/receding sample"
+    },
+    {
+      "id": "crossfade",
+      "node_type": "Crossfade (Audio, 2)",
+      "position": [800, 0],
+      "comment": "Blends oncoming (In 0) → receding (In 1) based on CrossfadeValue"
+    },
+    {
+      "id": "crossfade_r",
+      "node_type": "Crossfade (Audio, 2)",
+      "position": [800, 200],
+      "comment": "Right channel crossfade"
+    },
+    {
+      "id": "accum",
+      "node_type": "Trigger Accumulate",
+      "position": [800, 500],
+      "defaults": {
+        "Auto Reset": true
+      },
+      "comment": "Fires OnFinished when both players complete"
+    }
+  ],
+  "connections": [
+    {
+      "from_node": "__graph__",
+      "from_pin": "Next",
+      "to_node": "rand_oncoming",
+      "to_pin": "Next"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Oncoming",
+      "to_node": "rand_oncoming",
+      "to_pin": "In Array"
+    },
+    {
+      "from_node": "rand_oncoming",
+      "from_pin": "Value",
+      "to_node": "player_oncoming",
+      "to_pin": "Wave Asset"
+    },
+    {
+      "from_node": "rand_oncoming",
+      "from_pin": "On Next",
+      "to_node": "player_oncoming",
+      "to_pin": "Play"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Next",
+      "to_node": "trigger_delay",
+      "to_pin": "In"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "RecedingDelay",
+      "to_node": "trigger_delay",
+      "to_pin": "Delay Time"
+    },
+    {
+      "from_node": "trigger_delay",
+      "from_pin": "Out",
+      "to_node": "rand_receding",
+      "to_pin": "Next"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Receding",
+      "to_node": "rand_receding",
+      "to_pin": "In Array"
+    },
+    {
+      "from_node": "rand_receding",
+      "from_pin": "Value",
+      "to_node": "player_receding",
+      "to_pin": "Wave Asset"
+    },
+    {
+      "from_node": "rand_receding",
+      "from_pin": "On Next",
+      "to_node": "player_receding",
+      "to_pin": "Play"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "CrossfadeValue",
+      "to_node": "crossfade",
+      "to_pin": "Crossfade Value"
+    },
+    {
+      "from_node": "player_oncoming",
+      "from_pin": "Out Left",
+      "to_node": "crossfade",
+      "to_pin": "In 0"
+    },
+    {
+      "from_node": "player_receding",
+      "from_pin": "Out Left",
+      "to_node": "crossfade",
+      "to_pin": "In 1"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "CrossfadeValue",
+      "to_node": "crossfade_r",
+      "to_pin": "Crossfade Value"
+    },
+    {
+      "from_node": "player_oncoming",
+      "from_pin": "Out Right",
+      "to_node": "crossfade_r",
+      "to_pin": "In 0"
+    },
+    {
+      "from_node": "player_receding",
+      "from_pin": "Out Right",
+      "to_node": "crossfade_r",
+      "to_pin": "In 1"
+    },
+    {
+      "from_node": "crossfade",
+      "from_pin": "Out",
+      "to_node": "__graph__",
+      "to_pin": "Out L"
+    },
+    {
+      "from_node": "crossfade_r",
+      "from_pin": "Out",
+      "to_node": "__graph__",
+      "to_pin": "Out R"
+    },
+    {
+      "from_node": "player_oncoming",
+      "from_pin": "On Finished",
+      "to_node": "accum",
+      "to_pin": "In 0"
+    },
+    {
+      "from_node": "player_receding",
+      "from_pin": "On Finished",
+      "to_node": "accum",
+      "to_pin": "In 1"
+    },
+    {
+      "from_node": "accum",
+      "from_pin": "Out",
+      "to_node": "__graph__",
+      "to_pin": "OnFinished"
+    }
+  ]
+}

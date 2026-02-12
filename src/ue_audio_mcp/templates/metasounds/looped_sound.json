@@ -1,0 +1,210 @@
+{
+  "name": "Looped Sound",
+  "asset_type": "Source",
+  "description": "Start-Loop-End pattern from StackOBot (MS_Jetpack). Three-phase playback: start one-shot triggers looping middle section with ADSR pitch modulation, stop trigger crossfades to end one-shot. Production pattern for engines, jetpacks, breathing, hover effects, and sustained creature loops.",
+  "author": "Epic Games (StackOBot sample)",
+  "interfaces": [
+    "UE.Source.OneShot"
+  ],
+  "inputs": [
+    {
+      "name": "OnPlay",
+      "type": "Trigger",
+      "description": "Triggers start phase"
+    },
+    {
+      "name": "StopLoop",
+      "type": "Trigger",
+      "description": "Stops loop and triggers end phase"
+    },
+    {
+      "name": "StartWave",
+      "type": "WaveAsset",
+      "description": "One-shot wave for start phase"
+    },
+    {
+      "name": "LoopWave",
+      "type": "WaveAsset",
+      "description": "Looping wave for sustain phase"
+    },
+    {
+      "name": "EndWave",
+      "type": "WaveAsset",
+      "description": "One-shot wave for end/tail phase"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "Out Mono",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo L",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo R",
+      "type": "Audio"
+    },
+    {
+      "name": "OnFinished",
+      "type": "Trigger"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "start_player",
+      "node_type": "Wave Player (Mono)",
+      "position": [200, 0],
+      "defaults": {
+        "Loop": false
+      },
+      "comment": "Start one-shot — plays intro transient"
+    },
+    {
+      "id": "loop_player",
+      "node_type": "Wave Player (Mono)",
+      "position": [200, 200],
+      "defaults": {
+        "Loop": true
+      },
+      "comment": "Looping sustain — triggered by start OnFinished"
+    },
+    {
+      "id": "end_player",
+      "node_type": "Wave Player (Mono)",
+      "position": [200, 400],
+      "defaults": {
+        "Loop": false
+      },
+      "comment": "End one-shot — tail/decay sound"
+    },
+    {
+      "id": "adsr",
+      "node_type": "ADSR Envelope (Float)",
+      "position": [400, 200],
+      "defaults": {
+        "Attack Time": 0.5,
+        "Decay Time": 0.2,
+        "Sustain Level": 0.8,
+        "Release Time": 0.3
+      },
+      "comment": "ADSR shapes pitch modulation depth over loop lifetime"
+    },
+    {
+      "id": "pitch_mod",
+      "node_type": "Multiply (Float)",
+      "position": [600, 200],
+      "comment": "Envelope × base pitch = modulated pitch for loop"
+    },
+    {
+      "id": "mixer",
+      "node_type": "Audio Mixer (Mono, 3)",
+      "position": [800, 200],
+      "defaults": {
+        "Gain 0": 1.0,
+        "Gain 1": 1.0,
+        "Gain 2": 1.0
+      },
+      "comment": "Combines start (0) + loop (1) + end (2) into mono output"
+    }
+  ],
+  "connections": [
+    {
+      "from_node": "__graph__",
+      "from_pin": "OnPlay",
+      "to_node": "start_player",
+      "to_pin": "Play"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "StartWave",
+      "to_node": "start_player",
+      "to_pin": "Wave Asset"
+    },
+    {
+      "from_node": "start_player",
+      "from_pin": "On Finished",
+      "to_node": "loop_player",
+      "to_pin": "Play"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "LoopWave",
+      "to_node": "loop_player",
+      "to_pin": "Wave Asset"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "OnPlay",
+      "to_node": "adsr",
+      "to_pin": "Trigger Attack"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "StopLoop",
+      "to_node": "loop_player",
+      "to_pin": "Stop"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "StopLoop",
+      "to_node": "end_player",
+      "to_pin": "Play"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "StopLoop",
+      "to_node": "adsr",
+      "to_pin": "Trigger Release"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "EndWave",
+      "to_node": "end_player",
+      "to_pin": "Wave Asset"
+    },
+    {
+      "from_node": "start_player",
+      "from_pin": "Out Mono",
+      "to_node": "mixer",
+      "to_pin": "In 0"
+    },
+    {
+      "from_node": "loop_player",
+      "from_pin": "Out Mono",
+      "to_node": "mixer",
+      "to_pin": "In 1"
+    },
+    {
+      "from_node": "end_player",
+      "from_pin": "Out Mono",
+      "to_node": "mixer",
+      "to_pin": "In 2"
+    },
+    {
+      "from_node": "mixer",
+      "from_pin": "Out",
+      "to_node": "__graph__",
+      "to_pin": "Out Mono"
+    },
+    {
+      "from_node": "mixer",
+      "from_pin": "Out",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo L"
+    },
+    {
+      "from_node": "mixer",
+      "from_pin": "Out",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo R"
+    },
+    {
+      "from_node": "end_player",
+      "from_pin": "On Finished",
+      "to_node": "__graph__",
+      "to_pin": "OnFinished"
+    }
+  ]
+}
