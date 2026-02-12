@@ -1,0 +1,1777 @@
+{
+  "_meta": {
+    "description": "Verified Blueprint audio function catalogue -- generated from blueprint_audio.py",
+    "function_count": 55,
+    "source": "scripts/export_catalogues.py"
+  },
+  "functions": [
+    {
+      "name": "AudioComponent.AdjustAttenuation",
+      "class_name": "AudioComponent",
+      "description": "Modify attenuation settings on audio component instance.",
+      "params": [
+        {
+          "name": "InAttenuationSettings",
+          "type": "FSoundAttenuationSettings"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "attenuation",
+        "3D",
+        "distance",
+        "modify"
+      ]
+    },
+    {
+      "name": "AudioComponent.AdjustVolume",
+      "class_name": "AudioComponent",
+      "description": "Adjust volume over time with fade curve.",
+      "params": [
+        {
+          "name": "AdjustVolumeDuration",
+          "type": "float"
+        },
+        {
+          "name": "AdjustVolumeLevel",
+          "type": "float"
+        },
+        {
+          "name": "FadeCurve",
+          "type": "EAudioFaderCurve",
+          "default": "Linear"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "volume",
+        "adjust",
+        "fade",
+        "transition"
+      ]
+    },
+    {
+      "name": "AudioComponent.FadeIn",
+      "class_name": "AudioComponent",
+      "description": "Play sound with volume fade in over duration.",
+      "params": [
+        {
+          "name": "FadeInDuration",
+          "type": "float"
+        },
+        {
+          "name": "FadeVolumeLevel",
+          "type": "float",
+          "default": 1.0
+        },
+        {
+          "name": "StartTime",
+          "type": "float",
+          "default": 0.0
+        },
+        {
+          "name": "FadeCurve",
+          "type": "EAudioFaderCurve",
+          "default": "Linear"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "fade",
+        "in",
+        "volume",
+        "play",
+        "transition"
+      ]
+    },
+    {
+      "name": "AudioComponent.FadeOut",
+      "class_name": "AudioComponent",
+      "description": "Fade out volume over duration then stop.",
+      "params": [
+        {
+          "name": "FadeOutDuration",
+          "type": "float"
+        },
+        {
+          "name": "FadeVolumeLevel",
+          "type": "float"
+        },
+        {
+          "name": "FadeCurve",
+          "type": "EAudioFaderCurve",
+          "default": "Linear"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "fade",
+        "out",
+        "volume",
+        "stop",
+        "transition"
+      ]
+    },
+    {
+      "name": "AudioComponent.GetPlaybackPercentage",
+      "class_name": "AudioComponent",
+      "description": "Returns playback progress as percentage (0-100).",
+      "params": [],
+      "returns": "float",
+      "tags": [
+        "query",
+        "progress",
+        "percentage"
+      ]
+    },
+    {
+      "name": "AudioComponent.GetPlaybackTime",
+      "class_name": "AudioComponent",
+      "description": "Returns current playback time in seconds.",
+      "params": [],
+      "returns": "float",
+      "tags": [
+        "query",
+        "time",
+        "position"
+      ]
+    },
+    {
+      "name": "AudioComponent.IsPlaying",
+      "class_name": "AudioComponent",
+      "description": "Returns whether audio is currently playing.",
+      "params": [],
+      "returns": "bool",
+      "tags": [
+        "query",
+        "playing",
+        "status"
+      ]
+    },
+    {
+      "name": "AudioComponent.Pause",
+      "class_name": "AudioComponent",
+      "description": "Pause audio playback, can be resumed.",
+      "params": [],
+      "returns": null,
+      "tags": [
+        "pause",
+        "playback"
+      ]
+    },
+    {
+      "name": "AudioComponent.Play",
+      "class_name": "AudioComponent",
+      "description": "Start audio playback from specified time.",
+      "params": [
+        {
+          "name": "StartTime",
+          "type": "float",
+          "default": 0.0
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "play",
+        "start",
+        "playback",
+        "component"
+      ]
+    },
+    {
+      "name": "AudioComponent.PlayQuantized",
+      "class_name": "AudioComponent",
+      "description": "Start playback on quantization boundary with Quartz clock.",
+      "params": [
+        {
+          "name": "ClockHandle",
+          "type": "UQuartzClockHandle*"
+        },
+        {
+          "name": "QuantizationBoundary",
+          "type": "FQuartzQuantizationBoundary"
+        },
+        {
+          "name": "Delegate",
+          "type": "FOnQuartzCommandEventBP"
+        },
+        {
+          "name": "StartTime",
+          "type": "float",
+          "default": 0.0
+        },
+        {
+          "name": "FadeInDuration",
+          "type": "float",
+          "default": 0.0
+        },
+        {
+          "name": "FadeVolumeLevel",
+          "type": "float",
+          "default": 1.0
+        },
+        {
+          "name": "FadeCurve",
+          "type": "EAudioFaderCurve",
+          "default": "Linear"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "play",
+        "quantized",
+        "Quartz",
+        "sync",
+        "beat",
+        "music"
+      ]
+    },
+    {
+      "name": "AudioComponent.SetBoolParameter",
+      "class_name": "AudioComponent",
+      "description": "Set a bool parameter on the sound instance.",
+      "params": [
+        {
+          "name": "InName",
+          "type": "FName"
+        },
+        {
+          "name": "InBool",
+          "type": "bool"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "parameter",
+        "bool",
+        "MetaSounds"
+      ]
+    },
+    {
+      "name": "AudioComponent.SetFloatParameter",
+      "class_name": "AudioComponent",
+      "description": "Set a float parameter on the sound instance.",
+      "params": [
+        {
+          "name": "InName",
+          "type": "FName"
+        },
+        {
+          "name": "InFloat",
+          "type": "float"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "parameter",
+        "float",
+        "MetaSounds",
+        "RTPC"
+      ]
+    },
+    {
+      "name": "AudioComponent.SetIntParameter",
+      "class_name": "AudioComponent",
+      "description": "Set an integer parameter on the sound instance.",
+      "params": [
+        {
+          "name": "InName",
+          "type": "FName"
+        },
+        {
+          "name": "InInt",
+          "type": "int32"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "parameter",
+        "int",
+        "MetaSounds"
+      ]
+    },
+    {
+      "name": "AudioComponent.SetLowPassFilterFrequency",
+      "class_name": "AudioComponent",
+      "description": "Set low-pass filter cutoff frequency in Hz.",
+      "params": [
+        {
+          "name": "InLowPassFilterFrequency",
+          "type": "float"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "filter",
+        "lowpass",
+        "frequency",
+        "occlusion"
+      ]
+    },
+    {
+      "name": "AudioComponent.SetPaused",
+      "class_name": "AudioComponent",
+      "description": "Set pause state explicitly.",
+      "params": [
+        {
+          "name": "bPause",
+          "type": "bool"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "pause",
+        "resume",
+        "toggle"
+      ]
+    },
+    {
+      "name": "AudioComponent.SetPitchMultiplier",
+      "class_name": "AudioComponent",
+      "description": "Set pitch multiplier for the audio component.",
+      "params": [
+        {
+          "name": "NewPitchMultiplier",
+          "type": "float"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "pitch",
+        "set",
+        "multiplier"
+      ]
+    },
+    {
+      "name": "AudioComponent.SetSound",
+      "class_name": "AudioComponent",
+      "description": "Set the sound asset to be played by this component.",
+      "params": [
+        {
+          "name": "NewSound",
+          "type": "USoundBase*"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "sound",
+        "set",
+        "assign",
+        "asset"
+      ]
+    },
+    {
+      "name": "AudioComponent.SetSourceBusSendPostEffect",
+      "class_name": "AudioComponent",
+      "description": "Set audio send to source bus post-effect.",
+      "params": [
+        {
+          "name": "SoundSourceBus",
+          "type": "USoundSourceBus*"
+        },
+        {
+          "name": "SourceBusSendLevel",
+          "type": "float"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "bus",
+        "send",
+        "post-effect",
+        "routing"
+      ]
+    },
+    {
+      "name": "AudioComponent.SetSourceBusSendPreEffect",
+      "class_name": "AudioComponent",
+      "description": "Set audio send to source bus pre-effect.",
+      "params": [
+        {
+          "name": "SoundSourceBus",
+          "type": "USoundSourceBus*"
+        },
+        {
+          "name": "SourceBusSendLevel",
+          "type": "float"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "bus",
+        "send",
+        "pre-effect",
+        "routing"
+      ]
+    },
+    {
+      "name": "AudioComponent.SetSubmixSend",
+      "class_name": "AudioComponent",
+      "description": "Set send level to a specified submix.",
+      "params": [
+        {
+          "name": "Submix",
+          "type": "USoundSubmixBase*"
+        },
+        {
+          "name": "SendLevel",
+          "type": "float"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "submix",
+        "send",
+        "routing",
+        "effect"
+      ]
+    },
+    {
+      "name": "AudioComponent.SetUISound",
+      "class_name": "AudioComponent",
+      "description": "Mark sound as UI sound (non-spatial, unaffected by pause).",
+      "params": [
+        {
+          "name": "bInUISound",
+          "type": "bool"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "UI",
+        "non-spatial",
+        "pause"
+      ]
+    },
+    {
+      "name": "AudioComponent.SetVolumeMultiplier",
+      "class_name": "AudioComponent",
+      "description": "Set volume multiplier for the audio component.",
+      "params": [
+        {
+          "name": "NewVolumeMultiplier",
+          "type": "float"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "volume",
+        "set",
+        "multiplier"
+      ]
+    },
+    {
+      "name": "AudioComponent.SetWaveParameter",
+      "class_name": "AudioComponent",
+      "description": "Set a wave parameter (SoundCue compatibility).",
+      "params": [
+        {
+          "name": "InName",
+          "type": "FName"
+        },
+        {
+          "name": "InWave",
+          "type": "USoundWave*"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "parameter",
+        "wave",
+        "SoundCue"
+      ]
+    },
+    {
+      "name": "AudioComponent.Stop",
+      "class_name": "AudioComponent",
+      "description": "Stop audio playback immediately.",
+      "params": [],
+      "returns": null,
+      "tags": [
+        "stop",
+        "playback",
+        "component"
+      ]
+    },
+    {
+      "name": "AudioComponent.StopDelayed",
+      "class_name": "AudioComponent",
+      "description": "Stop audio after delay in seconds.",
+      "params": [
+        {
+          "name": "DelayTime",
+          "type": "float"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "stop",
+        "delay",
+        "playback"
+      ]
+    },
+    {
+      "name": "AudioVolume.SetEnabled",
+      "class_name": "AudioVolume",
+      "description": "Enable or disable an audio volume.",
+      "params": [
+        {
+          "name": "bNewEnabled",
+          "type": "bool"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "volume",
+        "enable",
+        "disable",
+        "toggle"
+      ]
+    },
+    {
+      "name": "AudioVolume.SetInteriorSettings",
+      "class_name": "AudioVolume",
+      "description": "Set interior settings (volume, LPF) for audio volume.",
+      "params": [
+        {
+          "name": "NewInteriorSettings",
+          "type": "FInteriorSettings"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "interior",
+        "volume",
+        "LPF",
+        "environment"
+      ]
+    },
+    {
+      "name": "AudioVolume.SetReverbSettings",
+      "class_name": "AudioVolume",
+      "description": "Set reverb settings for audio volume at runtime.",
+      "params": [
+        {
+          "name": "NewReverbSettings",
+          "type": "FReverbSettings"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "reverb",
+        "volume",
+        "environment",
+        "room"
+      ]
+    },
+    {
+      "name": "ClearSoundMixModifiers",
+      "class_name": "GameplayStatics",
+      "description": "Clear all sound mix modifiers from the audio system.",
+      "params": [],
+      "returns": null,
+      "tags": [
+        "mix",
+        "clear",
+        "reset"
+      ]
+    },
+    {
+      "name": "CreateSound2D",
+      "class_name": "GameplayStatics",
+      "description": "Create audio component without auto-playing, for manual control.",
+      "params": [
+        {
+          "name": "Sound",
+          "type": "USoundBase*"
+        },
+        {
+          "name": "VolumeMultiplier",
+          "type": "float",
+          "default": 1.0
+        },
+        {
+          "name": "PitchMultiplier",
+          "type": "float",
+          "default": 1.0
+        },
+        {
+          "name": "StartTime",
+          "type": "float",
+          "default": 0.0
+        },
+        {
+          "name": "ConcurrencySettings",
+          "type": "USoundConcurrency*"
+        },
+        {
+          "name": "bPersistAcrossLevelTransition",
+          "type": "bool",
+          "default": false
+        },
+        {
+          "name": "bAutoDestroy",
+          "type": "bool",
+          "default": true
+        }
+      ],
+      "returns": "UAudioComponent*",
+      "tags": [
+        "create",
+        "2D",
+        "component",
+        "manual",
+        "no-autoplay"
+      ]
+    },
+    {
+      "name": "PlayDialogue2D",
+      "class_name": "GameplayStatics",
+      "description": "Play DialogueWave with no attenuation, fire-and-forget.",
+      "params": [
+        {
+          "name": "Dialogue",
+          "type": "UDialogueWave*"
+        },
+        {
+          "name": "Context",
+          "type": "FDialogueContext"
+        },
+        {
+          "name": "VolumeMultiplier",
+          "type": "float",
+          "default": 1.0
+        },
+        {
+          "name": "PitchMultiplier",
+          "type": "float",
+          "default": 1.0
+        },
+        {
+          "name": "StartTime",
+          "type": "float",
+          "default": 0.0
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "dialogue",
+        "2D",
+        "localisation",
+        "voice"
+      ]
+    },
+    {
+      "name": "PlayDialogueAtLocation",
+      "class_name": "GameplayStatics",
+      "description": "Play DialogueWave at location with 3D attenuation, fire-and-forget.",
+      "params": [
+        {
+          "name": "Dialogue",
+          "type": "UDialogueWave*"
+        },
+        {
+          "name": "Context",
+          "type": "FDialogueContext"
+        },
+        {
+          "name": "Location",
+          "type": "FVector"
+        },
+        {
+          "name": "Rotation",
+          "type": "FRotator"
+        },
+        {
+          "name": "VolumeMultiplier",
+          "type": "float",
+          "default": 1.0
+        },
+        {
+          "name": "PitchMultiplier",
+          "type": "float",
+          "default": 1.0
+        },
+        {
+          "name": "StartTime",
+          "type": "float",
+          "default": 0.0
+        },
+        {
+          "name": "AttenuationSettings",
+          "type": "USoundAttenuation*"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "dialogue",
+        "3D",
+        "location",
+        "localisation",
+        "voice"
+      ]
+    },
+    {
+      "name": "PlaySound2D",
+      "class_name": "GameplayStatics",
+      "description": "Play sound with no attenuation, fire-and-forget. Perfect for UI sounds.",
+      "params": [
+        {
+          "name": "Sound",
+          "type": "USoundBase*"
+        },
+        {
+          "name": "VolumeMultiplier",
+          "type": "float",
+          "default": 1.0
+        },
+        {
+          "name": "PitchMultiplier",
+          "type": "float",
+          "default": 1.0
+        },
+        {
+          "name": "StartTime",
+          "type": "float",
+          "default": 0.0
+        },
+        {
+          "name": "ConcurrencySettings",
+          "type": "USoundConcurrency*"
+        },
+        {
+          "name": "OwningActor",
+          "type": "AActor*"
+        },
+        {
+          "name": "bIsUISound",
+          "type": "bool",
+          "default": false
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "play",
+        "2D",
+        "UI",
+        "fire-and-forget",
+        "non-spatial"
+      ]
+    },
+    {
+      "name": "PlaySoundAtLocation",
+      "class_name": "GameplayStatics",
+      "description": "Play sound at world location with 3D attenuation, fire-and-forget.",
+      "params": [
+        {
+          "name": "Sound",
+          "type": "USoundBase*"
+        },
+        {
+          "name": "Location",
+          "type": "FVector"
+        },
+        {
+          "name": "Rotation",
+          "type": "FRotator"
+        },
+        {
+          "name": "VolumeMultiplier",
+          "type": "float",
+          "default": 1.0
+        },
+        {
+          "name": "PitchMultiplier",
+          "type": "float",
+          "default": 1.0
+        },
+        {
+          "name": "StartTime",
+          "type": "float",
+          "default": 0.0
+        },
+        {
+          "name": "AttenuationSettings",
+          "type": "USoundAttenuation*"
+        },
+        {
+          "name": "ConcurrencySettings",
+          "type": "USoundConcurrency*"
+        },
+        {
+          "name": "OwningActor",
+          "type": "AActor*"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "play",
+        "3D",
+        "location",
+        "spatial",
+        "fire-and-forget",
+        "attenuation"
+      ]
+    },
+    {
+      "name": "PushSoundMixModifier",
+      "class_name": "GameplayStatics",
+      "description": "Push a sound mix modifier onto the active stack.",
+      "params": [
+        {
+          "name": "InSoundMixModifier",
+          "type": "USoundMix*"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "mix",
+        "modifier",
+        "push",
+        "stack"
+      ]
+    },
+    {
+      "name": "QuartzClock.PauseClock",
+      "class_name": "Quartz",
+      "description": "Pause a Quartz clock.",
+      "params": [
+        {
+          "name": "ClockHandle",
+          "type": "UQuartzClockHandle*"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "Quartz",
+        "clock",
+        "pause"
+      ]
+    },
+    {
+      "name": "QuartzClock.ResumeClock",
+      "class_name": "Quartz",
+      "description": "Resume a paused Quartz clock.",
+      "params": [
+        {
+          "name": "ClockHandle",
+          "type": "UQuartzClockHandle*"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "Quartz",
+        "clock",
+        "resume"
+      ]
+    },
+    {
+      "name": "QuartzClock.SetBeatsPerMinute",
+      "class_name": "Quartz",
+      "description": "Change BPM on quantization boundary.",
+      "params": [
+        {
+          "name": "QuantizationBoundary",
+          "type": "FQuartzQuantizationBoundary"
+        },
+        {
+          "name": "Delegate",
+          "type": "FOnQuartzCommandEventBP"
+        },
+        {
+          "name": "ClockHandle",
+          "type": "UQuartzClockHandle*"
+        },
+        {
+          "name": "BeatsPerMinute",
+          "type": "float"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "Quartz",
+        "BPM",
+        "tempo",
+        "change"
+      ]
+    },
+    {
+      "name": "QuartzClock.SetTicksPerSecond",
+      "class_name": "Quartz",
+      "description": "Change clock tick rate on quantization boundary.",
+      "params": [
+        {
+          "name": "QuantizationBoundary",
+          "type": "FQuartzQuantizationBoundary"
+        },
+        {
+          "name": "Delegate",
+          "type": "FOnQuartzCommandEventBP"
+        },
+        {
+          "name": "ClockHandle",
+          "type": "UQuartzClockHandle*"
+        },
+        {
+          "name": "TicksPerSecond",
+          "type": "float"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "Quartz",
+        "tick",
+        "rate",
+        "timing"
+      ]
+    },
+    {
+      "name": "QuartzClock.StartClock",
+      "class_name": "Quartz",
+      "description": "Start a Quartz clock metronome.",
+      "params": [
+        {
+          "name": "ClockHandle",
+          "type": "UQuartzClockHandle*"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "Quartz",
+        "clock",
+        "start",
+        "metronome"
+      ]
+    },
+    {
+      "name": "QuartzClock.StopClock",
+      "class_name": "Quartz",
+      "description": "Stop a Quartz clock.",
+      "params": [
+        {
+          "name": "CancelPendingEvents",
+          "type": "bool",
+          "default": false
+        },
+        {
+          "name": "ClockHandle",
+          "type": "UQuartzClockHandle*"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "Quartz",
+        "clock",
+        "stop"
+      ]
+    },
+    {
+      "name": "QuartzClock.SubscribeToAllQuantizationEvents",
+      "class_name": "Quartz",
+      "description": "Subscribe to all quantization event types.",
+      "params": [
+        {
+          "name": "OnQuantizationEvent",
+          "type": "FOnQuartzMetronomeEventBP"
+        },
+        {
+          "name": "ClockHandle",
+          "type": "UQuartzClockHandle*"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "Quartz",
+        "subscribe",
+        "all",
+        "events"
+      ]
+    },
+    {
+      "name": "QuartzClock.SubscribeToQuantizationEvent",
+      "class_name": "Quartz",
+      "description": "Subscribe to quantization events (bars, beats) for gameplay sync.",
+      "params": [
+        {
+          "name": "InQuantizationBoundary",
+          "type": "EQuartzCommandQuantization"
+        },
+        {
+          "name": "OnQuantizationEvent",
+          "type": "FOnQuartzMetronomeEventBP"
+        },
+        {
+          "name": "ClockHandle",
+          "type": "UQuartzClockHandle*"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "Quartz",
+        "subscribe",
+        "event",
+        "beat",
+        "bar",
+        "sync"
+      ]
+    },
+    {
+      "name": "QuartzSubsystem.CreateNewClock",
+      "class_name": "Quartz",
+      "description": "Create a new Quartz clock for sample-accurate scheduling.",
+      "params": [
+        {
+          "name": "ClockName",
+          "type": "FName"
+        },
+        {
+          "name": "InSettings",
+          "type": "FQuartzClockSettings"
+        },
+        {
+          "name": "bOverrideSettingsIfClockExists",
+          "type": "bool",
+          "default": false
+        },
+        {
+          "name": "bUseAudioEngineClockManager",
+          "type": "bool",
+          "default": true
+        }
+      ],
+      "returns": "UQuartzClockHandle*",
+      "tags": [
+        "Quartz",
+        "clock",
+        "create",
+        "timing",
+        "music"
+      ]
+    },
+    {
+      "name": "QuartzSubsystem.DoesClockExist",
+      "class_name": "Quartz",
+      "description": "Check if a named Quartz clock exists.",
+      "params": [
+        {
+          "name": "ClockName",
+          "type": "FName"
+        }
+      ],
+      "returns": "bool",
+      "tags": [
+        "Quartz",
+        "clock",
+        "exists",
+        "query"
+      ]
+    },
+    {
+      "name": "SetBaseSoundMix",
+      "class_name": "GameplayStatics",
+      "description": "Set the base sound mix for the audio system EQ and mixing.",
+      "params": [
+        {
+          "name": "InSoundMix",
+          "type": "USoundMix*"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "mix",
+        "EQ",
+        "base",
+        "global"
+      ]
+    },
+    {
+      "name": "SetGlobalListenerFocusParameters",
+      "class_name": "GameplayStatics",
+      "description": "Set parameters for audio focus system affecting spatialization.",
+      "params": [
+        {
+          "name": "FocusAzimuthScale",
+          "type": "float"
+        },
+        {
+          "name": "NonFocusAzimuthScale",
+          "type": "float"
+        },
+        {
+          "name": "FocusDistanceScale",
+          "type": "float"
+        },
+        {
+          "name": "NonFocusDistanceScale",
+          "type": "float"
+        },
+        {
+          "name": "FocusVolumeScale",
+          "type": "float"
+        },
+        {
+          "name": "NonFocusVolumeScale",
+          "type": "float"
+        },
+        {
+          "name": "FocusPriorityScale",
+          "type": "float"
+        },
+        {
+          "name": "NonFocusPriorityScale",
+          "type": "float"
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "global",
+        "listener",
+        "focus",
+        "spatial",
+        "attention"
+      ]
+    },
+    {
+      "name": "SetGlobalPitchModulation",
+      "class_name": "GameplayStatics",
+      "description": "Set global pitch modulation for all sounds.",
+      "params": [
+        {
+          "name": "PitchModulation",
+          "type": "float",
+          "default": 1.0
+        },
+        {
+          "name": "TimeSec",
+          "type": "float",
+          "default": 0.0
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "global",
+        "pitch",
+        "modulation",
+        "slow-motion"
+      ]
+    },
+    {
+      "name": "SetSoundMixClassOverride",
+      "class_name": "GameplayStatics",
+      "description": "Override sound class adjuster in the given sound mix.",
+      "params": [
+        {
+          "name": "InSoundMixModifier",
+          "type": "USoundMix*"
+        },
+        {
+          "name": "InSoundClass",
+          "type": "USoundClass*"
+        },
+        {
+          "name": "Volume",
+          "type": "float",
+          "default": 1.0
+        },
+        {
+          "name": "Pitch",
+          "type": "float",
+          "default": 1.0
+        },
+        {
+          "name": "FadeInTime",
+          "type": "float",
+          "default": 1.0
+        },
+        {
+          "name": "bApplyToChildren",
+          "type": "bool",
+          "default": true
+        }
+      ],
+      "returns": null,
+      "tags": [
+        "mix",
+        "override",
+        "sound class",
+        "volume",
+        "pitch"
+      ]
+    },
+    {
+      "name": "SpawnDialogue2D",
+      "class_name": "GameplayStatics",
+      "description": "Create audio component for DialogueWave, non-spatial.",
+      "params": [
+        {
+          "name": "Dialogue",
+          "type": "UDialogueWave*"
+        },
+        {
+          "name": "Context",
+          "type": "FDialogueContext"
+        },
+        {
+          "name": "VolumeMultiplier",
+          "type": "float",
+          "default": 1.0
+        },
+        {
+          "name": "PitchMultiplier",
+          "type": "float",
+          "default": 1.0
+        },
+        {
+          "name": "StartTime",
+          "type": "float",
+          "default": 0.0
+        },
+        {
+          "name": "bAutoDestroy",
+          "type": "bool",
+          "default": true
+        }
+      ],
+      "returns": "UAudioComponent*",
+      "tags": [
+        "dialogue",
+        "spawn",
+        "2D",
+        "component"
+      ]
+    },
+    {
+      "name": "SpawnDialogueAtLocation",
+      "class_name": "GameplayStatics",
+      "description": "Create audio component for DialogueWave at location with 3D attenuation.",
+      "params": [
+        {
+          "name": "Dialogue",
+          "type": "UDialogueWave*"
+        },
+        {
+          "name": "Context",
+          "type": "FDialogueContext"
+        },
+        {
+          "name": "Location",
+          "type": "FVector"
+        },
+        {
+          "name": "Rotation",
+          "type": "FRotator"
+        },
+        {
+          "name": "VolumeMultiplier",
+          "type": "float",
+          "default": 1.0
+        },
+        {
+          "name": "PitchMultiplier",
+          "type": "float",
+          "default": 1.0
+        },
+        {
+          "name": "StartTime",
+          "type": "float",
+          "default": 0.0
+        },
+        {
+          "name": "AttenuationSettings",
+          "type": "USoundAttenuation*"
+        },
+        {
+          "name": "bAutoDestroy",
+          "type": "bool",
+          "default": true
+        }
+      ],
+      "returns": "UAudioComponent*",
+      "tags": [
+        "dialogue",
+        "spawn",
+        "3D",
+        "location",
+        "component"
+      ]
+    },
+    {
+      "name": "SpawnDialogueAttached",
+      "class_name": "GameplayStatics",
+      "description": "Create audio component for DialogueWave attached to scene component.",
+      "params": [
+        {
+          "name": "Dialogue",
+          "type": "UDialogueWave*"
+        },
+        {
+          "name": "Context",
+          "type": "FDialogueContext"
+        },
+        {
+          "name": "AttachToComponent",
+          "type": "USceneComponent*"
+        },
+        {
+          "name": "AttachPointName",
+          "type": "FName"
+        },
+        {
+          "name": "Location",
+          "type": "FVector"
+        },
+        {
+          "name": "Rotation",
+          "type": "FRotator"
+        },
+        {
+          "name": "LocationType",
+          "type": "EAttachLocation"
+        },
+        {
+          "name": "bStopWhenAttachedToDestroyed",
+          "type": "bool",
+          "default": true
+        },
+        {
+          "name": "VolumeMultiplier",
+          "type": "float",
+          "default": 1.0
+        },
+        {
+          "name": "PitchMultiplier",
+          "type": "float",
+          "default": 1.0
+        },
+        {
+          "name": "StartTime",
+          "type": "float",
+          "default": 0.0
+        },
+        {
+          "name": "AttenuationSettings",
+          "type": "USoundAttenuation*"
+        },
+        {
+          "name": "bAutoDestroy",
+          "type": "bool",
+          "default": true
+        }
+      ],
+      "returns": "UAudioComponent*",
+      "tags": [
+        "dialogue",
+        "spawn",
+        "attached",
+        "component"
+      ]
+    },
+    {
+      "name": "SpawnSound2D",
+      "class_name": "GameplayStatics",
+      "description": "Create audio component for non-spatial sound with dynamic control.",
+      "params": [
+        {
+          "name": "Sound",
+          "type": "USoundBase*"
+        },
+        {
+          "name": "VolumeMultiplier",
+          "type": "float",
+          "default": 1.0
+        },
+        {
+          "name": "PitchMultiplier",
+          "type": "float",
+          "default": 1.0
+        },
+        {
+          "name": "StartTime",
+          "type": "float",
+          "default": 0.0
+        },
+        {
+          "name": "ConcurrencySettings",
+          "type": "USoundConcurrency*"
+        },
+        {
+          "name": "bPersistAcrossLevelTransition",
+          "type": "bool",
+          "default": false
+        },
+        {
+          "name": "bAutoDestroy",
+          "type": "bool",
+          "default": true
+        }
+      ],
+      "returns": "UAudioComponent*",
+      "tags": [
+        "spawn",
+        "2D",
+        "component",
+        "controllable",
+        "non-spatial"
+      ]
+    },
+    {
+      "name": "SpawnSoundAtLocation",
+      "class_name": "GameplayStatics",
+      "description": "Create audio component at location for 3D sound with dynamic control.",
+      "params": [
+        {
+          "name": "Sound",
+          "type": "USoundBase*"
+        },
+        {
+          "name": "Location",
+          "type": "FVector"
+        },
+        {
+          "name": "Rotation",
+          "type": "FRotator"
+        },
+        {
+          "name": "VolumeMultiplier",
+          "type": "float",
+          "default": 1.0
+        },
+        {
+          "name": "PitchMultiplier",
+          "type": "float",
+          "default": 1.0
+        },
+        {
+          "name": "StartTime",
+          "type": "float",
+          "default": 0.0
+        },
+        {
+          "name": "AttenuationSettings",
+          "type": "USoundAttenuation*"
+        },
+        {
+          "name": "ConcurrencySettings",
+          "type": "USoundConcurrency*"
+        },
+        {
+          "name": "bAutoDestroy",
+          "type": "bool",
+          "default": true
+        }
+      ],
+      "returns": "UAudioComponent*",
+      "tags": [
+        "spawn",
+        "3D",
+        "location",
+        "component",
+        "controllable",
+        "spatial"
+      ]
+    },
+    {
+      "name": "SpawnSoundAttached",
+      "class_name": "GameplayStatics",
+      "description": "Create audio component attached to scene component, follows parent transform.",
+      "params": [
+        {
+          "name": "Sound",
+          "type": "USoundBase*"
+        },
+        {
+          "name": "AttachToComponent",
+          "type": "USceneComponent*"
+        },
+        {
+          "name": "AttachPointName",
+          "type": "FName"
+        },
+        {
+          "name": "Location",
+          "type": "FVector"
+        },
+        {
+          "name": "Rotation",
+          "type": "FRotator"
+        },
+        {
+          "name": "LocationType",
+          "type": "EAttachLocation"
+        },
+        {
+          "name": "bStopWhenAttachedToDestroyed",
+          "type": "bool",
+          "default": true
+        },
+        {
+          "name": "VolumeMultiplier",
+          "type": "float",
+          "default": 1.0
+        },
+        {
+          "name": "PitchMultiplier",
+          "type": "float",
+          "default": 1.0
+        },
+        {
+          "name": "StartTime",
+          "type": "float",
+          "default": 0.0
+        },
+        {
+          "name": "AttenuationSettings",
+          "type": "USoundAttenuation*"
+        },
+        {
+          "name": "ConcurrencySettings",
+          "type": "USoundConcurrency*"
+        },
+        {
+          "name": "bAutoDestroy",
+          "type": "bool",
+          "default": true
+        }
+      ],
+      "returns": "UAudioComponent*",
+      "tags": [
+        "spawn",
+        "attached",
+        "component",
+        "follow",
+        "actor",
+        "3D"
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "BeginPlay",
+      "description": "Called when actor starts playing. Use for audio component setup and initial sound triggers.",
+      "mcp_notes": "Common starting point for audio initialization. Spawn AudioComponents here."
+    },
+    {
+      "name": "EndPlay",
+      "description": "Called when actor is destroyed or level unloads. Use for cleanup.",
+      "mcp_notes": "Stop all sounds and release AudioComponent references."
+    },
+    {
+      "name": "BeginOverlap",
+      "description": "Triggered when actor enters collision volume. Use for zone-based audio.",
+      "mcp_notes": "Wire to SetRTPCValue or PostEvent for ambient zone transitions."
+    },
+    {
+      "name": "EndOverlap",
+      "description": "Triggered when actor exits collision volume.",
+      "mcp_notes": "Fade out zone audio, reset RTPC values."
+    },
+    {
+      "name": "OnAudioPlaybackPercent",
+      "description": "Fires at playback percentage milestones.",
+      "mcp_notes": "Use for syncing visuals to audio progress."
+    },
+    {
+      "name": "OnAudioFinished",
+      "description": "Fires when audio component finishes playback.",
+      "mcp_notes": "Chain to next sound or trigger gameplay event."
+    },
+    {
+      "name": "OnAudioMultiEnvelopeValue",
+      "description": "Returns envelope value during playback for amplitude tracking.",
+      "mcp_notes": "Wire to visual effects for audio-reactive gameplay."
+    },
+    {
+      "name": "OnQuartzMetronomeEvent",
+      "description": "Fires on Quartz clock beat/bar boundaries.",
+      "mcp_notes": "Use for music-synced gameplay actions and audio quantization."
+    },
+    {
+      "name": "OnSubmixSpectralAnalysis",
+      "description": "Returns spectral analysis data from submix.",
+      "mcp_notes": "Use for frequency-reactive visuals or adaptive audio."
+    },
+    {
+      "name": "Tick",
+      "description": "Called every frame. Use sparingly for continuous audio parameter updates.",
+      "mcp_notes": "Wire distance calculations to SetFloatParameter for continuous spatial audio."
+    }
+  ],
+  "categories": [
+    {
+      "name": "Audio|Playback",
+      "description": "Sound playback functions (Play, Spawn, Stop)"
+    },
+    {
+      "name": "Audio|Parameters",
+      "description": "MetaSounds parameter setting (SetFloat/Int/Bool/TriggerParameter)"
+    },
+    {
+      "name": "Audio|Components",
+      "description": "AudioComponent lifecycle (Create, Attach, Destroy)"
+    },
+    {
+      "name": "Audio|Volume",
+      "description": "Volume and fade control (AdjustVolume, FadeIn, FadeOut)"
+    },
+    {
+      "name": "Audio|Spatial",
+      "description": "3D positioning and attenuation"
+    },
+    {
+      "name": "Audio|SoundMix",
+      "description": "Sound mix modifiers and EQ"
+    },
+    {
+      "name": "Audio|Submix",
+      "description": "Submix sends and routing"
+    },
+    {
+      "name": "Wwise|Events",
+      "description": "Wwise event posting (PostEvent, PostAkEvent)"
+    },
+    {
+      "name": "Wwise|RTPC",
+      "description": "Wwise real-time parameter control (SetRTPCValue)"
+    },
+    {
+      "name": "Wwise|Switches",
+      "description": "Wwise switch/state setting (SetSwitch, SetState)"
+    },
+    {
+      "name": "Quartz|Clock",
+      "description": "Quartz clock creation and control"
+    },
+    {
+      "name": "Quartz|Quantization",
+      "description": "Beat/bar quantization and subscriptions"
+    }
+  ],
+  "mcp_patterns": {
+    "gunshot": {
+      "description": "Weapon fire with layered samples and pitch randomization",
+      "bp_functions": [
+        "PlaySoundAtLocation",
+        "SpawnSoundAtLocation"
+      ],
+      "ms_nodes": [
+        "Random Get",
+        "Wave Player (Mono)",
+        "ADSR Envelope (Audio)",
+        "Stereo Mixer"
+      ],
+      "wwise_flow": "RandomSequenceContainer > Sound variations > pitch randomization"
+    },
+    "footsteps": {
+      "description": "Surface-aware randomized footstep audio",
+      "bp_functions": [
+        "PlaySoundAtLocation",
+        "AudioComponent.SetIntParameter"
+      ],
+      "ms_nodes": [
+        "Trigger Route",
+        "Wave Player (Mono)",
+        "AD Envelope (Audio)",
+        "One-Pole Low Pass Filter"
+      ],
+      "wwise_flow": "SwitchContainer by surface > RandomSequence per surface"
+    },
+    "ambient": {
+      "description": "Looping layered environmental audio with natural variation",
+      "bp_functions": [
+        "SpawnSoundAtLocation",
+        "AudioComponent.SetFloatParameter",
+        "AudioComponent.AdjustVolume"
+      ],
+      "ms_nodes": [
+        "Wave Player (Stereo)",
+        "Trigger Repeat",
+        "LFO",
+        "Stereo Panner"
+      ],
+      "wwise_flow": "BlendContainer > RTPC-driven layer volumes > zone triggers"
+    },
+    "spatial": {
+      "description": "3D positioned audio with binaural rendering",
+      "bp_functions": [
+        "SpawnSoundAttached",
+        "AudioComponent.AdjustAttenuation"
+      ],
+      "ms_nodes": [
+        "ITD Panner",
+        "Stereo Panner"
+      ],
+      "wwise_flow": "3D Spatialization > HRTF > distance attenuation"
+    },
+    "ui_sound": {
+      "description": "Non-spatial UI feedback sounds",
+      "bp_functions": [
+        "PlaySound2D",
+        "SpawnSound2D"
+      ],
+      "ms_nodes": [
+        "Sine",
+        "AD Envelope (Audio)",
+        "Wave Player (Mono)"
+      ],
+      "wwise_flow": "Direct to UI bus, no spatialization"
+    },
+    "weather_states": {
+      "description": "Game state driven audio transitions",
+      "bp_functions": [
+        "AudioComponent.SetFloatParameter",
+        "AudioComponent.FadeIn",
+        "AudioComponent.FadeOut"
+      ],
+      "ms_nodes": [
+        "Trigger Route",
+        "Crossfade",
+        "InterpTo",
+        "Wave Player (Stereo)"
+      ],
+      "wwise_flow": "StateGroup-driven SwitchContainer > crossfade transitions"
+    }
+  },
+  "allowlist": [
+    "Add_FloatFloat",
+    "AdjustVolume",
+    "Divide_FloatFloat",
+    "ExecuteTriggerParameter",
+    "FClamp",
+    "FadeIn",
+    "FadeOut",
+    "GetActorLocation",
+    "GetDistanceTo",
+    "IsPlaying",
+    "Lerp",
+    "MapRangeClamped",
+    "Multiply_FloatFloat",
+    "Play",
+    "PlaySound2D",
+    "PlaySoundAtLocation",
+    "PopSoundMixModifier",
+    "PostAkEvent",
+    "PostEvent",
+    "PostTrigger",
+    "PrintString",
+    "PushSoundMixModifier",
+    "SetBoolParameter",
+    "SetFloatParameter",
+    "SetIntParameter",
+    "SetPaused",
+    "SetPitchMultiplier",
+    "SetRTPCValue",
+    "SetSound",
+    "SetSoundMixClassOverride",
+    "SetState",
+    "SetStringParameter",
+    "SetSwitch",
+    "SetVolumeMultiplier",
+    "SetWaveParameter",
+    "SetWorldLocation",
+    "SetWorldRotation",
+    "SpawnSound2D",
+    "SpawnSoundAtLocation",
+    "Stop",
+    "Subtract_FloatFloat"
+  ]
+}

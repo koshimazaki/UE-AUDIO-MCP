@@ -23,6 +23,9 @@
 #include "K2Node_MacroInstance.h"
 #include "K2Node_DynamicCast.h"
 
+// Blueprint function enumeration
+#include "UObject/UObjectIterator.h"
+
 // ---------------------------------------------------------------------------
 // Shared helpers for MetaSound query commands
 // ---------------------------------------------------------------------------
@@ -1289,5 +1292,229 @@ TSharedPtr<FJsonObject> FExportAudioBlueprintCommand::Execute(
 	Response->SetNumberField(TEXT("total_nodes"), NodesArray.Num());
 	Response->SetArrayField(TEXT("nodes"), NodesArray);
 	Response->SetArrayField(TEXT("edges"), EdgesArray);
+	return Response;
+}
+
+// ---------------------------------------------------------------------------
+// list_blueprint_functions — enumerate BlueprintCallable UFunctions
+// ---------------------------------------------------------------------------
+
+namespace
+{
+	/** Map FProperty subclass to a short type string for JSON output. */
+	FString PropertyTypeString(const FProperty* Prop)
+	{
+		if (!Prop) return TEXT("Unknown");
+
+		// Use GetCPPType for the canonical name, then simplify common cases
+		FString CPP = Prop->GetCPPType();
+
+		// Strip common prefixes for cleaner output
+		CPP.RemoveFromStart(TEXT("class "));
+		CPP.RemoveFromStart(TEXT("struct "));
+		CPP.RemoveFromStart(TEXT("enum "));
+
+		return CPP;
+	}
+}
+
+TSharedPtr<FJsonObject> FListBlueprintFunctionsCommand::Execute(
+	const TSharedPtr<FJsonObject>& Params,
+	FAudioMCPBuilderManager& BuilderManager)
+{
+	// --- Params ---
+	FString Filter;
+	Params->TryGetStringField(TEXT("filter"), Filter);
+
+	FString ClassFilter;
+	Params->TryGetStringField(TEXT("class_filter"), ClassFilter);
+
+	bool bAudioOnly = false;
+	Params->TryGetBoolField(TEXT("audio_only"), bAudioOnly);
+
+	bool bListClassesOnly = false;
+	Params->TryGetBoolField(TEXT("list_classes_only"), bListClassesOnly);
+
+	bool bIncludePins = true;
+	Params->TryGetBoolField(TEXT("include_pins"), bIncludePins);
+
+	int32 Limit = 500;
+	double LimitVal;
+	if (Params->TryGetNumberField(TEXT("limit"), LimitVal))
+	{
+		Limit = FMath::Clamp(static_cast<int32>(LimitVal), 1, 50000);
+	}
+
+	// --- Class summary mode ---
+	if (bListClassesOnly)
+	{
+		TMap<FString, int32> ClassCounts;
+		for (TObjectIterator<UClass> ClassIt; ClassIt; ++ClassIt)
+		{
+			UClass* Class = *ClassIt;
+			if (!Class || Class->HasAnyClassFlags(CLASS_Deprecated | CLASS_NewerVersionExists))
+				continue;
+
+			FString ClassName = Class->GetName();
+			if (!ClassFilter.IsEmpty() && !ClassName.Equals(ClassFilter, ESearchCase::IgnoreCase))
+				continue;
+
+			if (bAudioOnly && !AudioMCP::IsAudioRelevant(ClassName))
+				continue;
+
+			int32 FuncCount = 0;
+			for (TFieldIterator<UFunction> FuncIt(Class, EFieldIterationFlags::ExcludeSuper); FuncIt; ++FuncIt)
+			{
+				if ((*FuncIt)->HasAnyFunctionFlags(FUNC_BlueprintCallable))
+					FuncCount++;
+			}
+
+			if (FuncCount > 0)
+			{
+				ClassCounts.Add(ClassName, FuncCount);
+			}
+		}
+
+		TArray<TSharedPtr<FJsonValue>> ClassArray;
+		int32 TotalFuncs = 0;
+		for (const auto& Pair : ClassCounts)
+		{
+			if (ClassArray.Num() >= Limit) break;
+			TSharedPtr<FJsonObject> Obj = MakeShared<FJsonObject>();
+			Obj->SetStringField(TEXT("class_name"), Pair.Key);
+			Obj->SetNumberField(TEXT("function_count"), Pair.Value);
+			ClassArray.Add(MakeShared<FJsonValueObject>(Obj));
+			TotalFuncs += Pair.Value;
+		}
+
+		TSharedPtr<FJsonObject> Response = AudioMCP::MakeOkResponse(
+			FString::Printf(TEXT("Found %d classes with %d callable functions"),
+				ClassCounts.Num(), TotalFuncs));
+		Response->SetArrayField(TEXT("classes"), ClassArray);
+		Response->SetNumberField(TEXT("total_classes"), ClassCounts.Num());
+		Response->SetNumberField(TEXT("total_functions"), TotalFuncs);
+		Response->SetNumberField(TEXT("shown"), ClassArray.Num());
+		return Response;
+	}
+
+	// --- Full function enumeration ---
+	TArray<TSharedPtr<FJsonValue>> FuncArray;
+	int32 TotalMatched = 0;
+
+	for (TObjectIterator<UClass> ClassIt; ClassIt; ++ClassIt)
+	{
+		UClass* Class = *ClassIt;
+		if (!Class || Class->HasAnyClassFlags(CLASS_Deprecated | CLASS_NewerVersionExists))
+			continue;
+
+		FString ClassName = Class->GetName();
+
+		// Class filter: exact match
+		if (!ClassFilter.IsEmpty() && !ClassName.Equals(ClassFilter, ESearchCase::IgnoreCase))
+			continue;
+
+		// Audio-only: skip non-audio classes (unless a function matches)
+		bool bClassAudioRelevant = AudioMCP::IsAudioRelevant(ClassName);
+
+		for (TFieldIterator<UFunction> FuncIt(Class, EFieldIterationFlags::ExcludeSuper); FuncIt; ++FuncIt)
+		{
+			UFunction* Func = *FuncIt;
+			if (!Func->HasAnyFunctionFlags(FUNC_BlueprintCallable))
+				continue;
+
+			FString FuncName = Func->GetName();
+
+			// Substring filter on function or class name
+			if (!Filter.IsEmpty()
+				&& !FuncName.Contains(Filter, ESearchCase::IgnoreCase)
+				&& !ClassName.Contains(Filter, ESearchCase::IgnoreCase))
+			{
+				continue;
+			}
+
+			bool bFuncAudioRelevant = bClassAudioRelevant || AudioMCP::IsAudioRelevant(FuncName);
+			if (bAudioOnly && !bFuncAudioRelevant)
+				continue;
+
+			TotalMatched++;
+
+			if (FuncArray.Num() >= Limit)
+				continue; // keep counting total but stop emitting
+
+			TSharedPtr<FJsonObject> FuncObj = MakeShared<FJsonObject>();
+			FuncObj->SetStringField(TEXT("name"), FuncName);
+			FuncObj->SetStringField(TEXT("class_name"), ClassName);
+
+			// Category from metadata
+			FString Category;
+			if (Func->HasMetaData(TEXT("Category")))
+			{
+				Category = Func->GetMetaData(TEXT("Category"));
+				FuncObj->SetStringField(TEXT("category"), Category);
+			}
+
+			// Description / tooltip
+			FString Tooltip = Func->GetToolTipText().ToString();
+			if (!Tooltip.IsEmpty())
+			{
+				FuncObj->SetStringField(TEXT("description"), Tooltip);
+			}
+
+			// Flags
+			FuncObj->SetBoolField(TEXT("is_pure"),
+				Func->HasAnyFunctionFlags(FUNC_BlueprintPure));
+			FuncObj->SetBoolField(TEXT("is_static"),
+				Func->HasAnyFunctionFlags(FUNC_Static));
+
+			// --- Parameters ---
+			if (bIncludePins)
+			{
+				TArray<TSharedPtr<FJsonValue>> ParamArray;
+				for (TFieldIterator<FProperty> ParamIt(Func); ParamIt; ++ParamIt)
+				{
+					FProperty* Param = *ParamIt;
+					TSharedPtr<FJsonObject> ParamObj = MakeShared<FJsonObject>();
+					ParamObj->SetStringField(TEXT("name"), Param->GetName());
+					ParamObj->SetStringField(TEXT("type"), PropertyTypeString(Param));
+
+					bool bIsReturn = Param->HasAnyPropertyFlags(CPF_ReturnParm);
+					bool bIsOut = Param->HasAnyPropertyFlags(CPF_OutParm);
+
+					if (bIsReturn)
+					{
+						ParamObj->SetStringField(TEXT("direction"), TEXT("return"));
+					}
+					else if (bIsOut)
+					{
+						ParamObj->SetStringField(TEXT("direction"), TEXT("out"));
+					}
+					else
+					{
+						ParamObj->SetStringField(TEXT("direction"), TEXT("in"));
+					}
+
+					// Default value from metadata
+					FString MetaDefault;
+					if (Func->HasMetaData(*FString::Printf(TEXT("CPP_Default_%s"), *Param->GetName())))
+					{
+						MetaDefault = Func->GetMetaData(*FString::Printf(TEXT("CPP_Default_%s"), *Param->GetName()));
+						ParamObj->SetStringField(TEXT("default"), MetaDefault);
+					}
+
+					ParamArray.Add(MakeShared<FJsonValueObject>(ParamObj));
+				}
+				FuncObj->SetArrayField(TEXT("params"), ParamArray);
+			}
+
+			FuncArray.Add(MakeShared<FJsonValueObject>(FuncObj));
+		}
+	}
+
+	TSharedPtr<FJsonObject> Response = AudioMCP::MakeOkResponse(
+		FString::Printf(TEXT("Found %d callable functions (%d shown)"),
+			TotalMatched, FuncArray.Num()));
+	Response->SetArrayField(TEXT("functions"), FuncArray);
+	Response->SetNumberField(TEXT("total"), TotalMatched);
+	Response->SetNumberField(TEXT("shown"), FuncArray.Num());
 	return Response;
 }

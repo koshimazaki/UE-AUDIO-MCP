@@ -1,8 +1,8 @@
 """Blueprint Builder tools — add nodes, connect pins, and compile Blueprints via UE5 plugin.
 
-8 tools for additive Blueprint modification: open, add nodes (allowlisted),
+9 tools for additive Blueprint modification: open, add nodes (allowlisted),
 connect pins, set defaults, compile, register existing nodes, list pins,
-and a high-level wire-audio-param helper.
+a high-level wire-audio-param helper, and engine function sync.
 
 Requires an active UE5 plugin connection (ue5_connect).
 """
@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import logging
+from typing import Any
 
 from ue_audio_mcp.server import mcp
 from ue_audio_mcp.tools.utils import _error, _ok
@@ -129,7 +130,7 @@ def bp_connect_bp_pins(
         to_node: Destination node ID
         to_pin: Destination input pin name
     """
-    if not all([from_node, from_pin, to_node, to_pin]):
+    if not all(v.strip() if isinstance(v, str) else v for v in [from_node, from_pin, to_node, to_pin]):
         return _error("All pin params required: from_node, from_pin, to_node, to_pin")
 
     conn = get_ue5_connection()
@@ -338,11 +339,164 @@ def bp_wire_audio_param(
         compile_ok = result.get("status") != "error"
         steps.append("compiled" if compile_ok else "compile_failed")
 
-        return _ok({
+        data = {
             "message": "Wired SetFloatParameter('{}') into {}".format(param_name, asset_path),
             "steps": steps,
             "compile_result": result.get("compile_result", "unknown"),
-        })
+        }
+        if not compile_ok:
+            return _error(
+                "Wired SetFloatParameter('{}') but compile failed".format(param_name),
+                data={"steps": steps, "compile_result": result.get("compile_result", "unknown")},
+            )
+        return _ok(data)
 
     except Exception as e:
         return _error("Wire failed at step {}: {}".format(len(steps), e))
+
+
+# ---------------------------------------------------------------------------
+# Engine function sync
+# ---------------------------------------------------------------------------
+
+def _engine_func_to_bp_scraped(func: dict) -> dict | None:
+    """Convert an engine function dict to blueprint_nodes_scraped format.
+
+    Returns None if the function cannot be mapped (e.g. missing name).
+    """
+    name = func.get("name", "")
+    if not name:
+        return None
+
+    class_name = func.get("class_name", "")
+    category = func.get("category", "")
+    description = func.get("description", "")
+
+    # Build inputs/outputs from params
+    inputs: list[dict[str, Any]] = []
+    outputs: list[dict[str, Any]] = []
+
+    for param in func.get("params", []):
+        pname = param.get("name", "")
+        ptype = param.get("type", "")
+        direction = param.get("direction", "in")
+        default = param.get("default")
+
+        pin: dict[str, Any] = {"name": pname, "type": ptype}
+        if default is not None:
+            pin["default"] = default
+
+        if direction == "return":
+            outputs.append(pin)
+        elif direction == "out":
+            outputs.append(pin)
+        else:
+            inputs.append(pin)
+
+    return {
+        "name": name,
+        "target": class_name,
+        "category": category,
+        "description": description,
+        "inputs": inputs,
+        "outputs": outputs,
+        "slug": "",
+        "ue_version": "",
+        "path": "",
+    }
+
+
+@mcp.tool()
+def bp_sync_from_engine(
+    audio_only: bool = True,
+    update_db: bool = False,
+    filter: str = "",
+    class_filter: str = "",
+    limit: int = 10000,
+) -> str:
+    """Sync Blueprint function catalogue from the running UE5 engine.
+
+    Calls list_blueprint_functions to enumerate all BlueprintCallable
+    UFunctions with their parameter signatures directly from the engine.
+    Optionally upserts results into the blueprint_nodes_scraped SQLite table.
+
+    Args:
+        audio_only: Only fetch audio-relevant functions (default True)
+        update_db: If True, upsert into the SQLite blueprint_nodes_scraped table
+        filter: Optional substring filter on function or class name
+        class_filter: Optional exact class name filter
+        limit: Max functions to fetch (default 10000)
+
+    Returns:
+        JSON summary: total functions, classes found, new vs updated counts.
+    """
+    conn = get_ue5_connection()
+    try:
+        result = conn.send_command({
+            "action": "list_blueprint_functions",
+            "audio_only": audio_only,
+            "include_pins": True,
+            "filter": filter,
+            "class_filter": class_filter,
+            "limit": limit,
+        })
+    except Exception as e:
+        return _error(str(e))
+
+    if result.get("status") != "ok":
+        return _error(result.get("message", "list_blueprint_functions failed"))
+
+    engine_funcs = result.get("functions", [])
+    if not engine_funcs:
+        return _ok({
+            "message": "No functions returned from engine",
+            "total": 0, "new": 0, "updated": 0,
+        })
+
+    # Convert to scraped format
+    converted: list[dict] = []
+    classes: dict[str, int] = {}
+
+    for func in engine_funcs:
+        bp_entry = _engine_func_to_bp_scraped(func)
+        if bp_entry is None:
+            continue
+        converted.append(bp_entry)
+        cls = func.get("class_name", "Unknown")
+        classes[cls] = classes.get(cls, 0) + 1
+
+    # Optionally update SQLite
+    db_updated = 0
+    db_error = ""
+    if update_db and converted:
+        try:
+            from ue_audio_mcp.knowledge.db import get_knowledge_db
+            db = get_knowledge_db()
+            db.insert_blueprint_scraped_batch(converted)
+            db_updated = len(converted)
+        except Exception as e:
+            log.warning("DB update failed: %s", e)
+            db_error = str(e)
+
+    data = {
+        "message": "Synced {} functions from {} classes".format(
+            len(converted), len(classes)
+        ),
+        "total": len(engine_funcs),
+        "converted": len(converted),
+        "db_updated": db_updated,
+        "classes": dict(sorted(classes.items())),
+        "class_count": len(classes),
+    }
+    if db_error:
+        return _error(
+            "Synced {} functions but DB update failed: {}".format(len(converted), db_error),
+            data={
+                "total": len(engine_funcs),
+                "converted": len(converted),
+                "db_updated": 0,
+                "classes": dict(sorted(classes.items())),
+                "class_count": len(classes),
+            },
+        )
+    return _ok(data)

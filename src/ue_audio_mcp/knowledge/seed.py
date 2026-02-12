@@ -1,7 +1,7 @@
 """Seed the knowledge database from static Python data.
 
 Called on first run (when metasound_nodes table is empty).
-Populates all 8 tables from existing knowledge modules and research data.
+Populates 13 table groups from existing knowledge modules and research data.
 """
 
 from __future__ import annotations
@@ -229,7 +229,11 @@ def _seed_blueprint_audio(db: KnowledgeDB) -> int:
 
 
 def _seed_blueprint_scraped(db: KnowledgeDB) -> int:
-    """Seed scraped Blueprint node specs (with full pin data)."""
+    """Seed Blueprint audio functions from the verified catalogue.
+
+    Loads curated functions from blueprint_audio_catalogue.json (55 entries)
+    instead of the old 26K-node scraped bp_node_specs.json.
+    """
     from ue_audio_mcp.knowledge.blueprint_scraped import load_scraped_nodes
 
     nodes = load_scraped_nodes()

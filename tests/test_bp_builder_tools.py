@@ -387,3 +387,20 @@ def test_wire_audio_param_open_fails(ue5_conn, mock_ue5_plugin):
     ))
     assert result["status"] == "error"
     assert "Open failed" in result["message"]
+
+
+def test_wire_audio_param_compile_fails(ue5_conn, mock_ue5_plugin):
+    """Compile failure should return error status, not ok."""
+    mock_ue5_plugin.set_response("bp_open_blueprint", {"status": "ok"})
+    mock_ue5_plugin.set_response("bp_add_node", {"status": "ok"})
+    mock_ue5_plugin.set_response("bp_set_pin_default", {"status": "ok"})
+    mock_ue5_plugin.set_response("bp_compile", {
+        "status": "error", "compile_result": "failed", "message": "Syntax error",
+    })
+
+    result = json.loads(bp_wire_audio_param(
+        asset_path="/Game/BP_Test", param_name="Speed",
+    ))
+    assert result["status"] == "error"
+    assert "compile failed" in result["message"]
+    assert "compile_failed" in result["steps"]

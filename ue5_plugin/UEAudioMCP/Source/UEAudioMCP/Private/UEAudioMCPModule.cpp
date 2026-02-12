@@ -35,7 +35,7 @@ void FUEAudioMCPModule::StartupModule()
 	if (TcpServer->StartListening(AudioMCP::DEFAULT_PORT))
 	{
 		UE_LOG(LogAudioMCPModule, Log,
-			TEXT("UE Audio MCP ready — listening on port %d (33 commands registered)"),
+			TEXT("UE Audio MCP ready — listening on port %d (35 commands registered)"),
 			AudioMCP::DEFAULT_PORT);
 	}
 	else
@@ -156,7 +156,11 @@ void FUEAudioMCPModule::RegisterCommands()
 	Dispatcher->RegisterCommand(TEXT("export_audio_blueprint"),
 		MakeShared<FExportAudioBlueprintCommand>());
 
-	// 27-33. Blueprint Builder commands
+	// 27. Blueprint function registry
+	Dispatcher->RegisterCommand(TEXT("list_blueprint_functions"),
+		MakeShared<FListBlueprintFunctionsCommand>());
+
+	// 28-34. Blueprint Builder commands
 	Dispatcher->RegisterCommand(TEXT("bp_open_blueprint"),
 		MakeShared<FBPOpenBlueprintCommand>());
 	Dispatcher->RegisterCommand(TEXT("bp_add_node"),
