@@ -767,6 +767,14 @@ TSharedPtr<FJsonObject> FScanBlueprintCommand::Execute(
 	bool bIncludePins = false;
 	Params->TryGetBoolField(TEXT("include_pins"), bIncludePins);
 
+	// Filter to a single graph by name (e.g. "EventGraph") for chunked scanning
+	FString GraphNameFilter;
+	Params->TryGetStringField(TEXT("graph_name"), GraphNameFilter);
+
+	// List graphs only mode — returns graph names + node counts without iterating nodes
+	bool bListGraphsOnly = false;
+	Params->TryGetBoolField(TEXT("list_graphs_only"), bListGraphsOnly);
+
 	// --- 2. Validate path ---
 	if (!AssetPath.StartsWith(TEXT("/Game/")) && !AssetPath.StartsWith(TEXT("/Engine/")))
 	{
@@ -820,6 +828,32 @@ TSharedPtr<FJsonObject> FScanBlueprintCommand::Execute(
 		if (Graph) AllGraphs.Add({TEXT("macro"), Graph});
 	}
 
+	// --- 5b. list_graphs_only mode — return graph names + counts without iterating ---
+	if (bListGraphsOnly)
+	{
+		TArray<TSharedPtr<FJsonValue>> GraphList;
+		int32 TotalNodes = 0;
+		for (const FGraphEntry& Entry : AllGraphs)
+		{
+			TSharedPtr<FJsonObject> G = MakeShared<FJsonObject>();
+			G->SetStringField(TEXT("name"), Entry.Graph->GetName());
+			G->SetStringField(TEXT("type"), Entry.Type);
+			G->SetNumberField(TEXT("node_count"), Entry.Graph->Nodes.Num());
+			TotalNodes += Entry.Graph->Nodes.Num();
+			GraphList.Add(MakeShared<FJsonValueObject>(G));
+		}
+		TSharedPtr<FJsonObject> Response = AudioMCP::MakeOkResponse(
+			FString::Printf(TEXT("Blueprint '%s': %d graphs, %d total nodes"),
+				*BPName, GraphList.Num(), TotalNodes));
+		Response->SetStringField(TEXT("asset_path"), AssetPath);
+		Response->SetStringField(TEXT("blueprint_name"), BPName);
+		Response->SetStringField(TEXT("parent_class"), ParentClass);
+		Response->SetStringField(TEXT("blueprint_type"), BlueprintType);
+		Response->SetNumberField(TEXT("total_nodes"), TotalNodes);
+		Response->SetArrayField(TEXT("graphs"), GraphList);
+		return Response;
+	}
+
 	// --- 6. Iterate graphs and nodes ---
 	TArray<TSharedPtr<FJsonValue>> GraphsArray;
 	TArray<FString> AudioFunctions;
@@ -828,6 +862,11 @@ TSharedPtr<FJsonObject> FScanBlueprintCommand::Execute(
 
 	for (const FGraphEntry& Entry : AllGraphs)
 	{
+		// Skip graphs that don't match the filter
+		if (!GraphNameFilter.IsEmpty() && Entry.Graph->GetName() != GraphNameFilter)
+		{
+			continue;
+		}
 		UEdGraph* Graph = Entry.Graph;
 		TArray<TSharedPtr<FJsonValue>> NodesArray;
 
