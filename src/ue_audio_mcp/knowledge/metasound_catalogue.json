@@ -1,7 +1,7 @@
 {
   "_meta": {
     "description": "Verified MetaSounds node catalogue -- generated from metasound_nodes.py",
-    "node_count": 157,
+    "node_count": 178,
     "categories": [
       "Array",
       "Arrays",
@@ -14,12 +14,14 @@
       "Filters",
       "General",
       "Generators",
+      "Logic",
       "Math",
       "Mix",
       "Music",
       "Patches",
       "Random",
       "ReSID SIDKIT Edition",
+      "Routing",
       "Spatialization",
       "Triggers",
       "Utility",
@@ -30,7 +32,7 @@
   "nodes": [
     {
       "name": "AD Envelope",
-      "class_name": "AD Envelope::AD Envelope::Audio",
+      "class_name": "",
       "category": "Envelopes",
       "description": "Attack-Decay envelope — real UE5 node name. Outputs audio-rate envelope signal. Pin names verified from engine exports.",
       "inputs": [
@@ -104,7 +106,7 @@
     },
     {
       "name": "AD Envelope (Audio)",
-      "class_name": "UE::AD Envelope::Audio",
+      "class_name": "AD Envelope::AD Envelope::Audio",
       "category": "Envelopes",
       "description": "Attack-Decay envelope outputting audio-rate signal. Engine variant name: AD Envelope::AD Envelope::Audio. Pins verified from exports.",
       "inputs": [
@@ -178,7 +180,7 @@
     },
     {
       "name": "AD Envelope (Float)",
-      "class_name": "UE::AD Envelope::Float",
+      "class_name": "AD Envelope::AD Envelope::Float",
       "category": "Envelopes",
       "description": "Attack-Decay envelope outputting block-rate float. Engine variant name: AD Envelope::AD Envelope::Float. Pins verified from exports.",
       "inputs": [
@@ -339,46 +341,83 @@
       "name": "ADSR Envelope (Audio)",
       "class_name": "ADSR Envelope::ADSR Envelope::Audio",
       "category": "Envelopes",
-      "description": "Full ADSR envelope outputting audio-rate signal for sustained sounds.",
+      "description": "Full ADSR envelope outputting audio-rate signal for sustained sounds. Has separate Trigger Attack and Trigger Release inputs, NOT a single Trigger. Pin names verified from engine exports.",
       "inputs": [
         {
-          "name": "Trigger",
+          "name": "Trigger Attack",
           "type": "Trigger",
-          "required": true
+          "required": false
         },
         {
-          "name": "Attack",
-          "type": "Time",
-          "required": true,
-          "default": 0.01
+          "name": "Trigger Release",
+          "type": "Trigger",
+          "required": false
         },
         {
-          "name": "Decay",
-          "type": "Time",
-          "required": true,
-          "default": 0.1
-        },
-        {
-          "name": "Sustain",
+          "name": "Attack Time",
           "type": "Float",
-          "required": true,
-          "default": 0.7
+          "required": false
         },
         {
-          "name": "Release",
-          "type": "Time",
-          "required": true,
-          "default": 0.2
+          "name": "Decay Time",
+          "type": "Float",
+          "required": false
+        },
+        {
+          "name": "Sustain Level",
+          "type": "Float",
+          "required": false
+        },
+        {
+          "name": "Release Time",
+          "type": "Float",
+          "required": false
+        },
+        {
+          "name": "Attack Curve",
+          "type": "Float",
+          "required": false
+        },
+        {
+          "name": "Decay Curve",
+          "type": "Float",
+          "required": false
+        },
+        {
+          "name": "Release Curve",
+          "type": "Float",
+          "required": false
+        },
+        {
+          "name": "Hard Reset",
+          "type": "Bool",
+          "required": false
         }
       ],
       "outputs": [
         {
-          "name": "Envelope",
-          "type": "Audio"
+          "name": "On Attack Triggered",
+          "type": "Trigger"
         },
         {
-          "name": "OnDone",
+          "name": "On Decay Triggered",
           "type": "Trigger"
+        },
+        {
+          "name": "On Sustain Triggered",
+          "type": "Trigger"
+        },
+        {
+          "name": "On Release Triggered",
+          "type": "Trigger"
+        },
+        {
+          "name": "On Done",
+          "type": "Trigger"
+        },
+        {
+          "name": "Out Envelope",
+          "type": "Audio"
         }
       ],
       "tags": [
@@ -548,6 +587,41 @@
       "mcp_notes": "Arithmetic on audio/float signals. Use Multiply for volume control, Add for mixing, MapRange for parameter scaling from BP values."
     },
     {
+      "name": "Add (Float)",
+      "class_name": "UE::Add::Float",
+      "category": "Math",
+      "description": "Adds two float values.",
+      "inputs": [
+        {
+          "name": "PrimaryOperand",
+          "type": "Float",
+          "required": true,
+          "default": 0.0
+        },
+        {
+          "name": "AdditionalOperands",
+          "type": "Float",
+          "required": true,
+          "default": 0.0
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Out",
+          "type": "Float"
+        }
+      ],
+      "tags": [
+        "math",
+        "add",
+        "plus",
+        "sum",
+        "float"
+      ],
+      "complexity": 1,
+      "mcp_notes": "Arithmetic on audio/float signals. Use Multiply for volume control, Add for mixing, MapRange for parameter scaling from BP values."
+    },
+    {
       "name": "Add (Int32)",
       "class_name": "UE::Add::Int32",
       "category": "Math",
@@ -692,6 +766,38 @@
         "index",
         "access",
         "element"
+      ],
+      "complexity": 1
+    },
+    {
+      "name": "Array Get (Int32)",
+      "class_name": "",
+      "category": "Arrays",
+      "description": "Gets an element from an Int32 array by index.",
+      "inputs": [
+        {
+          "name": "Index",
+          "type": "Int32",
+          "required": true
+        },
+        {
+          "name": "Array",
+          "type": "Int32[]",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Element",
+          "type": "Int32"
+        }
+      ],
+      "tags": [
+        "array",
+        "get",
+        "index",
+        "element",
+        "int32"
       ],
       "complexity": 1
     },
@@ -882,7 +988,7 @@
     },
     {
       "name": "Audio Mixer (Mono, 2)",
-      "class_name": "AudioMixer::Audio Mixer (Mono, 2)::None",
+      "class_name": "",
       "category": "Mix",
       "description": "2-input mono mixer — real UE5 node name. Mixes two mono signals with per-input gain.",
       "inputs": [
@@ -984,8 +1090,76 @@
       "mcp_notes": "Combine multiple audio streams. Use Stereo Mixer for L/R panning, Mono Mixer for summing layers before effects chain."
     },
     {
+      "name": "Audio Mixer (Mono, 4)",
+      "class_name": "",
+      "category": "Mix",
+      "description": "4-input mono mixer with per-input gain. Pins: In 0..3, Gain 0..3, Out.",
+      "inputs": [
+        {
+          "name": "In 0",
+          "type": "Audio",
+          "required": true
+        },
+        {
+          "name": "Gain 0",
+          "type": "Float",
+          "required": true,
+          "default": 1.0
+        },
+        {
+          "name": "In 1",
+          "type": "Audio",
+          "required": false
+        },
+        {
+          "name": "Gain 1",
+          "type": "Float",
+          "required": false,
+          "default": 1.0
+        },
+        {
+          "name": "In 2",
+          "type": "Audio",
+          "required": false
+        },
+        {
+          "name": "Gain 2",
+          "type": "Float",
+          "required": false,
+          "default": 1.0
+        },
+        {
+          "name": "In 3",
+          "type": "Audio",
+          "required": false
+        },
+        {
+          "name": "Gain 3",
+          "type": "Float",
+          "required": false,
+          "default": 1.0
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Out",
+          "type": "Audio"
+        }
+      ],
+      "tags": [
+        "mix",
+        "mixer",
+        "mono",
+        "sum",
+        "combine",
+        "audio mixer"
+      ],
+      "complexity": 1,
+      "mcp_notes": "Combine multiple audio streams. Use Stereo Mixer for L/R panning, Mono Mixer for summing layers before effects chain."
+    },
+    {
       "name": "Audio Mixer (Stereo, 2)",
-      "class_name": "AudioMixer::Audio Mixer (Stereo, 2)::None",
+      "class_name": "",
       "category": "Mix",
       "description": "2-input stereo mixer — real UE5 node name. Mixes two stereo pairs with per-input gain. Pin names use 'In N L/R' format. From Chris Payne Sound Pads project binary extraction.",
       "inputs": [
@@ -1044,6 +1218,81 @@
       "mcp_notes": "Combine multiple audio streams. Use Stereo Mixer for L/R panning, Mono Mixer for summing layers before effects chain."
     },
     {
+      "name": "Audio Mixer (Stereo, 3)",
+      "class_name": "AudioMixer::Audio Mixer (Stereo, 3)::None",
+      "category": "Mix",
+      "description": "Mixes 3 stereo audio inputs with individual gain controls.",
+      "inputs": [
+        {
+          "name": "In 0 L",
+          "type": "Audio",
+          "required": true
+        },
+        {
+          "name": "In 0 R",
+          "type": "Audio",
+          "required": true
+        },
+        {
+          "name": "Gain 0",
+          "type": "Float",
+          "required": false,
+          "default": 1.0
+        },
+        {
+          "name": "In 1 L",
+          "type": "Audio",
+          "required": true
+        },
+        {
+          "name": "In 1 R",
+          "type": "Audio",
+          "required": true
+        },
+        {
+          "name": "Gain 1",
+          "type": "Float",
+          "required": false,
+          "default": 1.0
+        },
+        {
+          "name": "In 2 L",
+          "type": "Audio",
+          "required": true
+        },
+        {
+          "name": "In 2 R",
+          "type": "Audio",
+          "required": true
+        },
+        {
+          "name": "Gain 2",
+          "type": "Float",
+          "required": false,
+          "default": 1.0
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Out L",
+          "type": "Audio"
+        },
+        {
+          "name": "Out R",
+          "type": "Audio"
+        }
+      ],
+      "tags": [
+        "mixer",
+        "stereo",
+        "audio",
+        "gain",
+        "summing"
+      ],
+      "complexity": 1,
+      "mcp_notes": "Combine multiple audio streams. Use Stereo Mixer for L/R panning, Mono Mixer for summing layers before effects chain."
+    },
+    {
       "name": "Audio To Float",
       "class_name": "UE::ConversionAudioToFloat::None",
       "category": "General",
@@ -1073,7 +1322,7 @@
     },
     {
       "name": "BPM To Seconds",
-      "class_name": "UE::BPM To Seconds::Float",
+      "class_name": "UE::BPMToSeconds::None",
       "category": "Music",
       "description": "Converts beats per minute to a time duration per beat in seconds. Engine class: UE::BPMToSeconds::None. Output is Time type.",
       "inputs": [
@@ -1128,14 +1377,12 @@
         {
           "name": "Cutoff Frequency",
           "type": "Float",
-          "required": true,
-          "default": 1000.0
+          "required": true
         },
         {
           "name": "Bandwidth",
           "type": "Float",
-          "required": true,
-          "default": 1.0
+          "required": true
         },
         {
           "name": "Gain",
@@ -1145,8 +1392,7 @@
         {
           "name": "Type",
           "type": "Enum",
-          "required": true,
-          "default": "LPF"
+          "required": false
         }
       ],
       "outputs": [
@@ -1170,49 +1416,6 @@
       ],
       "complexity": 2,
       "mcp_notes": "Versatile 2nd-order filter. Wire Type+Frequency+Gain from BP for runtime EQ control."
-    },
-    {
-      "name": "BitCrusher",
-      "class_name": "UE::Bitcrusher::Audio",
-      "category": "Effects",
-      "description": "Reduces sample rate and bit depth for lo-fi / aliased spectral effects. Low Sample Rate creates aliasing. Low Bit Depth creates quantization noise. From SFX Generator — used for harsh spectral output.",
-      "inputs": [
-        {
-          "name": "Audio",
-          "type": "Audio",
-          "required": true
-        },
-        {
-          "name": "Sample Rate",
-          "type": "Float",
-          "required": true,
-          "default": 48000.0
-        },
-        {
-          "name": "Bit Depth",
-          "type": "Float",
-          "required": false,
-          "default": 8.0
-        }
-      ],
-      "outputs": [
-        {
-          "name": "Audio",
-          "type": "Audio"
-        }
-      ],
-      "tags": [
-        "bitcrusher",
-        "lofi",
-        "alias",
-        "retro",
-        "downsample",
-        "quantize",
-        "sfx",
-        "spectral"
-      ],
-      "complexity": 2,
-      "mcp_notes": "Chain after generators/filters. Expose mix/feedback params to Blueprint for runtime control. Route wet signal to Wwise via AudioLink."
     },
     {
       "name": "Bitcrusher",
@@ -1255,25 +1458,60 @@
       "mcp_notes": "Chain after generators. Wire cutoff/resonance from BP params via SetFloatParameter. Use Biquad for general EQ, Ladder for resonant synth."
     },
     {
-      "name": "Clamp",
+      "name": "Clamp (Audio)",
       "class_name": "Clamp::Clamp::Audio",
       "category": "Math",
-      "description": "Clamps a float value between min and max bounds.",
+      "description": "Clamps audio signal between min and max values.",
       "inputs": [
         {
+          "name": "In",
+          "type": "Audio",
+          "required": true
+        },
+        {
           "name": "Min",
-          "type": "Float",
-          "required": true,
-          "default": 0.0
+          "type": "Audio",
+          "required": true
         },
         {
           "name": "Max",
-          "type": "Float",
-          "required": true,
-          "default": 1.0
-        },
+          "type": "Audio",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Value",
+          "type": "Audio"
+        }
+      ],
+      "tags": [
+        "math",
+        "clamp",
+        "limit",
+        "audio"
+      ],
+      "complexity": 1,
+      "mcp_notes": "Arithmetic on audio/float signals. Use Multiply for volume control, Add for mixing, MapRange for parameter scaling from BP values."
+    },
+    {
+      "name": "Clamp (Float)",
+      "class_name": "Clamp::Clamp::Float",
+      "category": "Math",
+      "description": "Clamps float value between min and max.",
+      "inputs": [
         {
           "name": "In",
+          "type": "Float",
+          "required": true
+        },
+        {
+          "name": "Min",
+          "type": "Float",
+          "required": true
+        },
+        {
+          "name": "Max",
           "type": "Float",
           "required": true
         }
@@ -1288,8 +1526,44 @@
         "math",
         "clamp",
         "limit",
-        "bound",
-        "constrain"
+        "float"
+      ],
+      "complexity": 1,
+      "mcp_notes": "Arithmetic on audio/float signals. Use Multiply for volume control, Add for mixing, MapRange for parameter scaling from BP values."
+    },
+    {
+      "name": "Clamp (Int32)",
+      "class_name": "Clamp::Clamp::Int32",
+      "category": "Math",
+      "description": "Clamps integer value between min and max.",
+      "inputs": [
+        {
+          "name": "In",
+          "type": "Int32",
+          "required": true
+        },
+        {
+          "name": "Min",
+          "type": "Int32",
+          "required": true
+        },
+        {
+          "name": "Max",
+          "type": "Int32",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Value",
+          "type": "Int32"
+        }
+      ],
+      "tags": [
+        "math",
+        "clamp",
+        "limit",
+        "integer"
       ],
       "complexity": 1,
       "mcp_notes": "Arithmetic on audio/float signals. Use Multiply for volume control, Add for mixing, MapRange for parameter scaling from BP values."
@@ -1453,7 +1727,7 @@
     },
     {
       "name": "Crossfade",
-      "class_name": "UE::Crossfade::Audio",
+      "class_name": "",
       "category": "Envelopes",
       "description": "Crossfade between two audio signals using a 0-1 control value.",
       "inputs": [
@@ -1558,7 +1832,7 @@
     },
     {
       "name": "Delay",
-      "class_name": "UE::Delay::Audio",
+      "class_name": "Delay::Delay::AudioBufferDelayTime",
       "category": "Delays",
       "description": "Mono delay line with dry/wet mix.",
       "inputs": [
@@ -1576,17 +1850,20 @@
         {
           "name": "Delay Time",
           "type": "Time",
-          "required": true
+          "required": false,
+          "default": 0.5
         },
         {
           "name": "Dry Level",
           "type": "Float",
-          "required": true
+          "required": true,
+          "default": 1.0
         },
         {
           "name": "Wet Level",
           "type": "Float",
-          "required": true
+          "required": true,
+          "default": 1.0
         },
         {
           "name": "Max Delay Time",
@@ -1610,8 +1887,71 @@
       "complexity": 2
     },
     {
+      "name": "Delay (Audio)",
+      "class_name": "UE::Delay::Audio",
+      "category": "Delays",
+      "description": "Audio delay line with feedback and wet/dry mix control.",
+      "inputs": [
+        {
+          "name": "In",
+          "type": "Audio",
+          "required": true
+        },
+        {
+          "name": "Delay Time",
+          "type": "Time",
+          "required": true,
+          "default": 1.0
+        },
+        {
+          "name": "Dry Level",
+          "type": "Float",
+          "required": true,
+          "default": 0.0
+        },
+        {
+          "name": "Wet Level",
+          "type": "Float",
+          "required": true,
+          "default": 1.0
+        },
+        {
+          "name": "Feedback",
+          "type": "Float",
+          "required": true,
+          "default": 0.0
+        },
+        {
+          "name": "Max Delay Time",
+          "type": "Time",
+          "required": true,
+          "default": 5.0
+        },
+        {
+          "name": "Reset",
+          "type": "Trigger",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Out",
+          "type": "Audio"
+        }
+      ],
+      "tags": [
+        "delay",
+        "echo",
+        "audio",
+        "feedback",
+        "time"
+      ],
+      "complexity": 2,
+      "mcp_notes": "Echo/delay effect. Expose DelayTime+Feedback to BP for runtime delay control."
+    },
+    {
       "name": "Delay (Time)",
-      "class_name": "UE::Delay::Time",
+      "class_name": "",
       "category": "Effects",
       "description": "Audio delay effect with feedback. Delay Time in seconds, Dry Level controls direct signal, Feedback controls repeats. From SFX Generator temporal effects section.",
       "inputs": [
@@ -1805,6 +2145,40 @@
         "/",
         "arithmetic",
         "audio"
+      ],
+      "complexity": 1,
+      "mcp_notes": "Arithmetic on audio/float signals. Use Multiply for volume control, Add for mixing, MapRange for parameter scaling from BP values."
+    },
+    {
+      "name": "Divide (Float)",
+      "class_name": "UE::Divide::Float",
+      "category": "Math",
+      "description": "Divides float values.",
+      "inputs": [
+        {
+          "name": "PrimaryOperand",
+          "type": "Float",
+          "required": true,
+          "default": 1.0
+        },
+        {
+          "name": "AdditionalOperands",
+          "type": "Float",
+          "required": true,
+          "default": 1.0
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Out",
+          "type": "Float"
+        }
+      ],
+      "tags": [
+        "math",
+        "divide",
+        "quotient",
+        "float"
       ],
       "complexity": 1,
       "mcp_notes": "Arithmetic on audio/float signals. Use Multiply for volume control, Add for mixing, MapRange for parameter scaling from BP values."
@@ -2096,12 +2470,14 @@
         {
           "name": "Center Delay",
           "type": "Time",
-          "required": true
+          "required": true,
+          "default": 0.002
         },
         {
           "name": "Mix Level",
           "type": "Float",
-          "required": true
+          "required": true,
+          "default": 0.5
         }
       ],
       "outputs": [
@@ -2189,8 +2565,34 @@
       "complexity": 1
     },
     {
+      "name": "Float To Time",
+      "class_name": "UE::ConversionFloatToTime::None",
+      "category": "General",
+      "description": "Converts float value to Time type.",
+      "inputs": [
+        {
+          "name": "In",
+          "type": "Float",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Out",
+          "type": "Time"
+        }
+      ],
+      "tags": [
+        "convert",
+        "float",
+        "time",
+        "type"
+      ],
+      "complexity": 1
+    },
+    {
       "name": "Frequency To MIDI",
-      "class_name": "UE::FrequencyToMidi::Float",
+      "class_name": "UE::Frequency to MIDI::Float",
       "category": "Music",
       "description": "Converts a frequency in Hz to a MIDI note number.",
       "inputs": [
@@ -2445,7 +2847,7 @@
     },
     {
       "name": "ITD Panner",
-      "class_name": "UE::ITD Panner::Audio",
+      "class_name": "UE::ITD Panner::None",
       "category": "Spatialization",
       "description": "Interaural Time Difference panner for binaural 3D audio on headphones.",
       "inputs": [
@@ -2525,23 +2927,17 @@
       "name": "InterpTo",
       "class_name": "UE::InterpTo::Audio",
       "category": "Math",
-      "description": "Smoothly interpolates from current value toward target at a given speed.",
+      "description": "Smoothly interpolates from internal value toward target over time. NO Current input — maintains state internally. Pin names verified from engine exports.",
       "inputs": [
         {
-          "name": "Current",
-          "type": "Float",
-          "required": false,
-          "default": 0.0
+          "name": "Interp Time",
+          "type": "Time",
+          "required": false
         },
         {
           "name": "Target",
           "type": "Float",
-          "required": true
-        },
-        {
-          "name": "Interp Time",
-          "type": "Time",
-          "required": true
+          "required": false
         }
       ],
       "outputs": [
@@ -2558,6 +2954,39 @@
         "lerp",
         "glide",
         "ease"
+      ],
+      "complexity": 2,
+      "mcp_notes": "Arithmetic on audio/float signals. Use Multiply for volume control, Add for mixing, MapRange for parameter scaling from BP values."
+    },
+    {
+      "name": "InterpTo (Audio)",
+      "class_name": "UE::InterpTo::Audio",
+      "category": "Math",
+      "description": "Interpolates towards target value over time. Same as InterpTo node. Pin names verified from engine exports.",
+      "inputs": [
+        {
+          "name": "Interp Time",
+          "type": "Time",
+          "required": true
+        },
+        {
+          "name": "Target",
+          "type": "Float",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Value",
+          "type": "Float"
+        }
+      ],
+      "tags": [
+        "math",
+        "interpolate",
+        "smooth",
+        "lerp",
+        "audio"
       ],
       "complexity": 2,
       "mcp_notes": "Arithmetic on audio/float signals. Use Multiply for volume control, Add for mixing, MapRange for parameter scaling from BP values."
@@ -2689,7 +3118,7 @@
     },
     {
       "name": "Linear To Log Frequency",
-      "class_name": "UE::Linear To Log Frequency::Float",
+      "class_name": "UE::Linear To Log Frequency::None",
       "category": "Utility",
       "description": "Maps a normalized 0-1 value to a logarithmic frequency range (Hz). Min/Max Domain define input range, Min/Max Range define output Hz range. Essential for frequency knobs: linear knob → perceptually even pitch. From SFX Generator base frequency section.",
       "inputs": [
@@ -2849,37 +3278,27 @@
       "name": "Low-Frequency Oscillator",
       "class_name": "UE::LFO::Audio",
       "category": "Generators",
-      "description": "LFO for modulation: sine, saw, square, triangle, sample-and-hold shapes.",
+      "description": "LFO for modulation: sine, saw, square, triangle, sample-and-hold shapes. Pin names verified from engine exports.",
       "inputs": [
         {
           "name": "Frequency",
           "type": "Float",
-          "required": true,
-          "default": 1.0
+          "required": true
         },
         {
           "name": "Shape",
           "type": "Enum",
-          "required": true,
-          "default": "Sine"
+          "required": false
         },
         {
           "name": "Min Value",
           "type": "Float",
-          "required": true,
-          "default": -1.0
+          "required": false
         },
         {
           "name": "Max Value",
           "type": "Float",
-          "required": true,
-          "default": 1.0
-        },
-        {
-          "name": "Phase Offset",
-          "type": "Float",
-          "required": false,
-          "default": 0.0
+          "required": false
         },
         {
           "name": "Sync",
@@ -2887,10 +3306,14 @@
           "required": false
         },
         {
+          "name": "Phase Offset",
+          "type": "Float",
+          "required": false
+        },
+        {
           "name": "Pulse Width",
           "type": "Float",
-          "required": false,
-          "default": 0.5
+          "required": false
         }
       ],
       "outputs": [
@@ -2957,7 +3380,7 @@
     },
     {
       "name": "MIDI To Frequency",
-      "class_name": "UE::MidiNoteToFrequency::Float",
+      "class_name": "UE::MIDI To Frequency::Float",
       "category": "Music",
       "description": "Converts a MIDI note number to frequency in Hz. Engine class: UE::MIDI To Frequency::Float. Input is Float (supports fractional MIDI). Best practice: send MIDI values from Blueprint, convert to Hz here inside MetaSounds.",
       "inputs": [
@@ -2985,6 +3408,45 @@
       ],
       "complexity": 1,
       "mcp_notes": "Convert MIDI note (Int32) to Hz (Float). Wire from BP for musical pitch control."
+    },
+    {
+      "name": "MSP_ADControl",
+      "class_name": "",
+      "category": "Patches",
+      "description": "Attack/Decay time splitter — divides a total period (Max Value) into Attack and Decay times by ratio (Value). At ratio 0.128: Attack = 12.8%%, Decay = 87.2%%. From Matt Spendlove (msp) mono synth tutorial. Must be built as a separate MetaSounds Patch asset before use.",
+      "inputs": [
+        {
+          "name": "Value",
+          "type": "Float",
+          "required": true
+        },
+        {
+          "name": "Max Value",
+          "type": "Float",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Attack",
+          "type": "Float"
+        },
+        {
+          "name": "Decay",
+          "type": "Float"
+        }
+      ],
+      "tags": [
+        "envelope",
+        "attack",
+        "decay",
+        "ratio",
+        "time",
+        "patch",
+        "reusable",
+        "mono-synth"
+      ],
+      "complexity": 2
     },
     {
       "name": "MSP_CrossFadeByParam_3Inputs",
@@ -3221,6 +3683,59 @@
       "complexity": 3
     },
     {
+      "name": "MSP_Sequencer",
+      "class_name": "",
+      "category": "Patches",
+      "description": "Step sequencer patch — steps through a MIDI note array on each trigger, converts to frequency output. Random At shuffles note order after N steps. From Matt Spendlove (msp) mono synth tutorial. Must be built as a separate MetaSounds Patch asset before use.",
+      "inputs": [
+        {
+          "name": "In",
+          "type": "Trigger",
+          "required": true
+        },
+        {
+          "name": "Notes",
+          "type": "Int32[]",
+          "required": true
+        },
+        {
+          "name": "Start Note MIDI",
+          "type": "Float",
+          "required": false,
+          "default": 28.0
+        },
+        {
+          "name": "Step Length",
+          "type": "Int32",
+          "required": false,
+          "default": 3
+        },
+        {
+          "name": "Random At",
+          "type": "Int32",
+          "required": false,
+          "default": 12
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Value",
+          "type": "Float"
+        }
+      ],
+      "tags": [
+        "sequencer",
+        "step",
+        "midi",
+        "notes",
+        "pitch",
+        "patch",
+        "reusable",
+        "mono-synth"
+      ],
+      "complexity": 3
+    },
+    {
       "name": "MSP_Switch_3Inputs",
       "class_name": "",
       "category": "Patches",
@@ -3279,10 +3794,68 @@
       "complexity": 3
     },
     {
-      "name": "Map Range",
+      "name": "Map Range (Audio)",
       "class_name": "MapRange::MapRange::Audio",
       "category": "Math",
-      "description": "Remaps a float from one range to another (linear interpolation).",
+      "description": "Maps audio signal from one range to another.",
+      "inputs": [
+        {
+          "name": "In",
+          "type": "Audio",
+          "required": true
+        },
+        {
+          "name": "In Range A",
+          "type": "Float",
+          "required": true,
+          "default": -1.0
+        },
+        {
+          "name": "In Range B",
+          "type": "Float",
+          "required": true,
+          "default": 1.0
+        },
+        {
+          "name": "Out Range A",
+          "type": "Float",
+          "required": true,
+          "default": -1.0
+        },
+        {
+          "name": "Out Range B",
+          "type": "Float",
+          "required": true,
+          "default": 1.0
+        },
+        {
+          "name": "Clamped",
+          "type": "Bool",
+          "required": true,
+          "default": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Out Value",
+          "type": "Audio"
+        }
+      ],
+      "tags": [
+        "math",
+        "map",
+        "range",
+        "scale",
+        "audio"
+      ],
+      "complexity": 2,
+      "mcp_notes": "Arithmetic on audio/float signals. Use Multiply for volume control, Add for mixing, MapRange for parameter scaling from BP values."
+    },
+    {
+      "name": "Map Range (Float)",
+      "class_name": "MapRange::MapRange::Float",
+      "category": "Math",
+      "description": "Maps float value from one range to another.",
       "inputs": [
         {
           "name": "In",
@@ -3316,7 +3889,7 @@
         {
           "name": "Clamped",
           "type": "Bool",
-          "required": false,
+          "required": true,
           "default": true
         }
       ],
@@ -3330,12 +3903,68 @@
         "math",
         "map",
         "range",
-        "rescale",
-        "normalize",
-        "remap",
-        "lerp"
+        "scale",
+        "float"
       ],
-      "complexity": 1,
+      "complexity": 2,
+      "mcp_notes": "Arithmetic on audio/float signals. Use Multiply for volume control, Add for mixing, MapRange for parameter scaling from BP values."
+    },
+    {
+      "name": "Map Range (Int32)",
+      "class_name": "MapRange::MapRange::Int32",
+      "category": "Math",
+      "description": "Maps integer value from one range to another.",
+      "inputs": [
+        {
+          "name": "In",
+          "type": "Int32",
+          "required": true
+        },
+        {
+          "name": "In Range A",
+          "type": "Int32",
+          "required": true,
+          "default": 0
+        },
+        {
+          "name": "In Range B",
+          "type": "Int32",
+          "required": true,
+          "default": 100
+        },
+        {
+          "name": "Out Range A",
+          "type": "Int32",
+          "required": true,
+          "default": 0
+        },
+        {
+          "name": "Out Range B",
+          "type": "Int32",
+          "required": true,
+          "default": 100
+        },
+        {
+          "name": "Clamped",
+          "type": "Bool",
+          "required": true,
+          "default": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Out Value",
+          "type": "Int32"
+        }
+      ],
+      "tags": [
+        "math",
+        "map",
+        "range",
+        "scale",
+        "integer"
+      ],
+      "complexity": 2,
       "mcp_notes": "Arithmetic on audio/float signals. Use Multiply for volume control, Add for mixing, MapRange for parameter scaling from BP values."
     },
     {
@@ -3589,7 +4218,7 @@
     },
     {
       "name": "Mono Mixer",
-      "class_name": "UE::Mono Mixer::Audio",
+      "class_name": "AudioMixer::Audio Mixer (Mono, 2)::None",
       "category": "Mix",
       "description": "Mixes N mono audio inputs into a single mono output with per-input gain. Real UE5 pin names: In 0..N, Gain 0..N (Lin), Out.",
       "inputs": [
@@ -3755,6 +4384,41 @@
         "*",
         "arithmetic",
         "audio"
+      ],
+      "complexity": 1,
+      "mcp_notes": "Arithmetic on audio/float signals. Use Multiply for volume control, Add for mixing, MapRange for parameter scaling from BP values."
+    },
+    {
+      "name": "Multiply (Float)",
+      "class_name": "UE::Multiply::Float",
+      "category": "Math",
+      "description": "Multiplies two float values.",
+      "inputs": [
+        {
+          "name": "PrimaryOperand",
+          "type": "Float",
+          "required": true,
+          "default": 1.0
+        },
+        {
+          "name": "AdditionalOperands",
+          "type": "Float",
+          "required": true,
+          "default": 1.0
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Out",
+          "type": "Float"
+        }
+      ],
+      "tags": [
+        "math",
+        "multiply",
+        "times",
+        "product",
+        "float"
       ],
       "complexity": 1,
       "mcp_notes": "Arithmetic on audio/float signals. Use Multiply for volume control, Add for mixing, MapRange for parameter scaling from BP values."
@@ -4358,7 +5022,7 @@
         {
           "name": "Next",
           "type": "Trigger",
-          "required": true
+          "required": false
         },
         {
           "name": "Reset",
@@ -4566,7 +5230,7 @@
     },
     {
       "name": "Ring Modulator",
-      "class_name": "UE::Ring Modulator::Audio",
+      "class_name": "",
       "category": "Effects",
       "description": "Ring modulation — multiplies input signal by a modulator oscillator. Built-in AD envelope controls modulator depth. Creates metallic, inharmonic tones. From SFX Generator — last in spectral effects chain.",
       "inputs": [
@@ -5217,6 +5881,35 @@
       "mcp_notes": "MIDI/pitch utilities. Convert MIDI note numbers from BP Int32 params to Hz. Use BPM To Seconds for tempo-synced timing."
     },
     {
+      "name": "Semitone To Freq Multiplier",
+      "class_name": "UE::Semitone to Frequency Multiplier::Float",
+      "category": "Math",
+      "description": "Converts semitone offset to frequency multiplier.",
+      "inputs": [
+        {
+          "name": "Semitones",
+          "type": "Float",
+          "required": true,
+          "default": 0.0
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Frequency Multiplier",
+          "type": "Float"
+        }
+      ],
+      "tags": [
+        "math",
+        "music",
+        "pitch",
+        "semitone",
+        "frequency"
+      ],
+      "complexity": 1,
+      "mcp_notes": "Arithmetic on audio/float signals. Use Multiply for volume control, Add for mixing, MapRange for parameter scaling from BP values."
+    },
+    {
       "name": "Send",
       "class_name": "",
       "category": "General",
@@ -5249,6 +5942,32 @@
         "effect send"
       ],
       "complexity": 1
+    },
+    {
+      "name": "Send (Audio)",
+      "class_name": "Send::Audio::None",
+      "category": "General",
+      "description": "Sends audio to an external address via transmission system.",
+      "inputs": [
+        {
+          "name": "Address",
+          "type": "Transmission:Address",
+          "required": true
+        },
+        {
+          "name": "Audio",
+          "type": "Audio",
+          "required": true
+        }
+      ],
+      "outputs": [],
+      "tags": [
+        "send",
+        "external",
+        "transmission",
+        "output"
+      ],
+      "complexity": 2
     },
     {
       "name": "Set",
@@ -5555,7 +6274,8 @@
         {
           "name": "Band Stop Control",
           "type": "Float",
-          "required": true
+          "required": true,
+          "default": 0.0
         }
       ],
       "outputs": [
@@ -5649,7 +6369,8 @@
         {
           "name": "Dry Level",
           "type": "Float",
-          "required": true
+          "required": true,
+          "default": 1.0
         },
         {
           "name": "Wet Level",
@@ -5680,7 +6401,7 @@
     },
     {
       "name": "Stereo Mixer",
-      "class_name": "UE::Mix Stereo::Audio",
+      "class_name": "AudioMixer::Audio Mixer (Stereo, 2)::None",
       "category": "Mix",
       "description": "Mixes N stereo audio input pairs into a single stereo output with per-input gain. Real UE5 pin names: In N L/R, Gain N (Lin), Out L/R. Variant suffix (N) sets input count: Stereo Mixer (2), (3), (4), (8).",
       "inputs": [
@@ -5692,7 +6413,7 @@
         {
           "name": "In 0 R",
           "type": "Audio",
-          "required": true
+          "required": false
         },
         {
           "name": "Gain 0",
@@ -5772,7 +6493,7 @@
     },
     {
       "name": "Stereo Panner",
-      "class_name": "UE::Stereo Panner::Audio",
+      "class_name": "UE::Stereo Panner::None",
       "category": "Spatialization",
       "description": "Simple stereo pan from left (-1) to right (+1) for speaker output.",
       "inputs": [
@@ -5898,6 +6619,41 @@
         "-",
         "arithmetic",
         "audio"
+      ],
+      "complexity": 1,
+      "mcp_notes": "Arithmetic on audio/float signals. Use Multiply for volume control, Add for mixing, MapRange for parameter scaling from BP values."
+    },
+    {
+      "name": "Subtract (Float)",
+      "class_name": "UE::Subtract::Float",
+      "category": "Math",
+      "description": "Subtracts float values.",
+      "inputs": [
+        {
+          "name": "PrimaryOperand",
+          "type": "Float",
+          "required": true,
+          "default": 0.0
+        },
+        {
+          "name": "AdditionalOperands",
+          "type": "Float",
+          "required": true,
+          "default": 0.0
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Out",
+          "type": "Float"
+        }
+      ],
+      "tags": [
+        "math",
+        "subtract",
+        "minus",
+        "difference",
+        "float"
       ],
       "complexity": 1,
       "mcp_notes": "Arithmetic on audio/float signals. Use Multiply for volume control, Add for mixing, MapRange for parameter scaling from BP values."
@@ -6035,6 +6791,32 @@
       ],
       "complexity": 3,
       "mcp_notes": "Multi-voice unison. Use for thick pads/leads. Wire Voices+Detune from BP for morphing."
+    },
+    {
+      "name": "Time To Float",
+      "class_name": "UE::ConversionTimeToFloat::None",
+      "category": "General",
+      "description": "Converts Time type to float value.",
+      "inputs": [
+        {
+          "name": "In",
+          "type": "Time",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Out",
+          "type": "Float"
+        }
+      ],
+      "tags": [
+        "convert",
+        "time",
+        "float",
+        "type"
+      ],
+      "complexity": 1
     },
     {
       "name": "Triangle",
@@ -6189,6 +6971,98 @@
       "mcp_notes": "Event routing and timing. Trigger Repeat for looping patterns, Trigger Route for surface-type switching from BP enums."
     },
     {
+      "name": "Trigger Compare (Bool)",
+      "class_name": "TriggerCompare::Clamp::Bool",
+      "category": "Logic",
+      "description": "Compares two boolean values and fires True or False trigger.",
+      "inputs": [
+        {
+          "name": "Compare",
+          "type": "Trigger",
+          "required": false
+        },
+        {
+          "name": "A",
+          "type": "Bool",
+          "required": true
+        },
+        {
+          "name": "B",
+          "type": "Bool",
+          "required": true
+        },
+        {
+          "name": "Type",
+          "type": "Enum",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "name": "True",
+          "type": "Trigger"
+        },
+        {
+          "name": "False",
+          "type": "Trigger"
+        }
+      ],
+      "tags": [
+        "compare",
+        "logic",
+        "trigger",
+        "branch",
+        "condition"
+      ],
+      "complexity": 1
+    },
+    {
+      "name": "Trigger Compare (Float)",
+      "class_name": "TriggerCompare::Clamp::Float",
+      "category": "Logic",
+      "description": "Compares two float values and fires True or False trigger based on comparison type.",
+      "inputs": [
+        {
+          "name": "Compare",
+          "type": "Trigger",
+          "required": false
+        },
+        {
+          "name": "A",
+          "type": "Float",
+          "required": true
+        },
+        {
+          "name": "B",
+          "type": "Float",
+          "required": true
+        },
+        {
+          "name": "Type",
+          "type": "Enum",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "name": "True",
+          "type": "Trigger"
+        },
+        {
+          "name": "False",
+          "type": "Trigger"
+        }
+      ],
+      "tags": [
+        "compare",
+        "logic",
+        "trigger",
+        "branch",
+        "condition"
+      ],
+      "complexity": 1
+    },
+    {
       "name": "Trigger Compare (Int32)",
       "class_name": "",
       "category": "Triggers",
@@ -6197,7 +7071,7 @@
         {
           "name": "Compare",
           "type": "Trigger",
-          "required": true
+          "required": false
         },
         {
           "name": "A",
@@ -6290,7 +7164,7 @@
     },
     {
       "name": "Trigger Counter",
-      "class_name": "UE::Trigger Counter::Audio",
+      "class_name": "UE::Trigger Counter::None",
       "category": "Triggers",
       "description": "Counts triggers up or down and exposes the current count. Pin names verified from engine exports.",
       "inputs": [
@@ -6412,8 +7286,8 @@
         {
           "name": "Probability",
           "type": "Float",
-          "required": false,
-          "default": 1.0
+          "required": true,
+          "default": 0.5
         }
       ],
       "outputs": [
@@ -6439,7 +7313,7 @@
     },
     {
       "name": "Trigger On Threshold",
-      "class_name": "UE::Trigger On Threshold::Audio",
+      "class_name": "",
       "category": "Triggers",
       "description": "Fires trigger when a float value crosses a threshold (rising or falling).",
       "inputs": [
@@ -6620,14 +7494,14 @@
     },
     {
       "name": "Trigger Repeat",
-      "class_name": "UE::Trigger Repeat::Audio",
+      "class_name": "UE::TriggerRepeat::None",
       "category": "Triggers",
       "description": "Repeats trigger at a regular interval (periodic timer). Engine class: UE::TriggerRepeat::None. Pin names verified from exports.",
       "inputs": [
         {
           "name": "Start",
           "type": "Trigger",
-          "required": true
+          "required": false
         },
         {
           "name": "Stop",
@@ -6667,7 +7541,7 @@
     },
     {
       "name": "Trigger Route",
-      "class_name": "UE::Trigger Route::Audio",
+      "class_name": "TriggerRoute::Trigger Route (Audio, 2)::Audio",
       "category": "Triggers",
       "description": "Routes trigger to one of N outputs based on an integer index.",
       "inputs": [
@@ -6719,6 +7593,51 @@
       "mcp_notes": "Route triggers by index. Use for surface-type switching (footsteps) from BP Int32."
     },
     {
+      "name": "Trigger Route (Float, 2)",
+      "class_name": "TriggerRoute::Trigger Route (Float, 2)::Float",
+      "category": "Routing",
+      "description": "Routes float values to output based on trigger inputs. 2-input variant.",
+      "inputs": [
+        {
+          "name": "Set 0",
+          "type": "Trigger",
+          "required": false
+        },
+        {
+          "name": "Value 0",
+          "type": "Float",
+          "required": true
+        },
+        {
+          "name": "Set 1",
+          "type": "Trigger",
+          "required": true
+        },
+        {
+          "name": "Value 1",
+          "type": "Float",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "name": "On Set",
+          "type": "Trigger"
+        },
+        {
+          "name": "Value",
+          "type": "Float"
+        }
+      ],
+      "tags": [
+        "routing",
+        "trigger",
+        "switch",
+        "select"
+      ],
+      "complexity": 1
+    },
+    {
       "name": "Trigger Select",
       "class_name": "UE::Trigger Select (2)::None",
       "category": "Triggers",
@@ -6751,7 +7670,7 @@
     },
     {
       "name": "Trigger Sequence",
-      "class_name": "UE::Trigger Sequence::Audio",
+      "class_name": "UE::Trigger Sequence (2)::None",
       "category": "Triggers",
       "description": "Fires output triggers in sequential round-robin order (0, 1, 2, ...). When Loop is enabled, wraps back to Out 0 after the last output. Used for cycling through weapon shot layers.",
       "inputs": [
@@ -6872,6 +7791,16 @@
       "description": "The Wave Player node is used to play a Sound Wave asset. There are multiple versions of this node in order to support several different channel configurations, such as Mono, Stereo, Quad (4.0), 5.1...",
       "inputs": [
         {
+          "name": "Play",
+          "type": "Trigger",
+          "required": false
+        },
+        {
+          "name": "Stop",
+          "type": "Trigger",
+          "required": false
+        },
+        {
           "name": "Wave Asset",
           "type": "WaveAsset",
           "required": true
@@ -6879,12 +7808,12 @@
         {
           "name": "Start Time",
           "type": "Time",
-          "required": true
+          "required": false
         },
         {
           "name": "Pitch Shift",
           "type": "Float",
-          "required": true
+          "required": false
         },
         {
           "name": "Loop",
@@ -6895,12 +7824,12 @@
         {
           "name": "Loop Start",
           "type": "Time",
-          "required": true
+          "required": false
         },
         {
           "name": "Loop Duration",
           "type": "Time",
-          "required": true
+          "required": false
         }
       ],
       "outputs": [
@@ -6941,7 +7870,7 @@
           "type": "Float"
         },
         {
-          "name": "Out X",
+          "name": "Out Mono",
           "type": "Audio"
         }
       ],
@@ -6961,7 +7890,7 @@
         {
           "name": "Play",
           "type": "Trigger",
-          "required": true
+          "required": false
         },
         {
           "name": "Stop",
@@ -6976,32 +7905,34 @@
         {
           "name": "Start Time",
           "type": "Time",
-          "required": false,
-          "default": 0.0
+          "required": false
         },
         {
           "name": "Pitch Shift",
           "type": "Float",
-          "required": false,
-          "default": 0.0
+          "required": false
         },
         {
           "name": "Loop",
           "type": "Bool",
           "required": true,
-          "default": false
+          "default": true
         },
         {
           "name": "Loop Start",
           "type": "Time",
-          "required": false,
-          "default": 0.0
+          "required": false
         },
         {
           "name": "Loop Duration",
           "type": "Time",
           "required": false,
           "default": -1.0
+        },
+        {
+          "name": "Maintain Audio Sync",
+          "type": "Bool",
+          "required": false
         }
       ],
       "outputs": [
@@ -7062,7 +7993,7 @@
         {
           "name": "Play",
           "type": "Trigger",
-          "required": true
+          "required": false
         },
         {
           "name": "Stop",
@@ -7077,32 +8008,34 @@
         {
           "name": "Start Time",
           "type": "Time",
-          "required": false,
-          "default": 0.0
+          "required": false
         },
         {
           "name": "Pitch Shift",
           "type": "Float",
-          "required": false,
-          "default": 0.0
+          "required": false
         },
         {
           "name": "Loop",
           "type": "Bool",
           "required": true,
-          "default": false
+          "default": true
         },
         {
           "name": "Loop Start",
           "type": "Time",
-          "required": false,
-          "default": 0.0
+          "required": false
         },
         {
           "name": "Loop Duration",
           "type": "Time",
           "required": false,
           "default": -1.0
+        },
+        {
+          "name": "Maintain Audio Sync",
+          "type": "Bool",
+          "required": false
         }
       ],
       "outputs": [
@@ -7171,7 +8104,7 @@
         {
           "name": "Play",
           "type": "Trigger",
-          "required": true
+          "required": false
         },
         {
           "name": "Stop",
@@ -7186,41 +8119,47 @@
         {
           "name": "Start Time",
           "type": "Time",
-          "required": false,
-          "default": 0.0
+          "required": false
         },
         {
           "name": "Pitch Shift",
           "type": "Float",
-          "required": false,
-          "default": 0.0
+          "required": false
         },
         {
           "name": "Loop",
           "type": "Bool",
           "required": true,
-          "default": false
+          "default": true
         },
         {
           "name": "Loop Start",
           "type": "Time",
-          "required": false,
-          "default": 0.0
+          "required": false
         },
         {
           "name": "Loop Duration",
           "type": "Time",
           "required": false,
           "default": -1.0
+        },
+        {
+          "name": "Maintain Audio Sync",
+          "type": "Bool",
+          "required": false
         }
       ],
       "outputs": [
         {
-          "name": "Audio",
-          "type": "Audio"
+          "name": "On Play",
+          "type": "Trigger"
         },
         {
           "name": "On Finished",
+          "type": "Trigger"
+        },
+        {
+          "name": "On Nearly Finished",
           "type": "Trigger"
         },
         {
@@ -7228,8 +8167,32 @@
           "type": "Trigger"
         },
         {
-          "name": "On Nearly Finished",
+          "name": "On Cue Point",
           "type": "Trigger"
+        },
+        {
+          "name": "Cue Point ID",
+          "type": "Int32"
+        },
+        {
+          "name": "Cue Point Label",
+          "type": "String"
+        },
+        {
+          "name": "Loop Percent",
+          "type": "Float"
+        },
+        {
+          "name": "Playback Location",
+          "type": "Float"
+        },
+        {
+          "name": "Playback Time",
+          "type": "Float"
+        },
+        {
+          "name": "Out Mono",
+          "type": "Audio"
         }
       ],
       "tags": [
@@ -7252,7 +8215,7 @@
         {
           "name": "Play",
           "type": "Trigger",
-          "required": true
+          "required": false
         },
         {
           "name": "Stop",
@@ -7267,32 +8230,34 @@
         {
           "name": "Start Time",
           "type": "Time",
-          "required": false,
-          "default": 0.0
+          "required": false
         },
         {
           "name": "Pitch Shift",
           "type": "Float",
-          "required": false,
-          "default": 0.0
+          "required": false
         },
         {
           "name": "Loop",
           "type": "Bool",
           "required": true,
-          "default": false
+          "default": true
         },
         {
           "name": "Loop Start",
           "type": "Time",
-          "required": false,
-          "default": 0.0
+          "required": false
         },
         {
           "name": "Loop Duration",
           "type": "Time",
           "required": false,
           "default": -1.0
+        },
+        {
+          "name": "Maintain Audio Sync",
+          "type": "Bool",
+          "required": false
         }
       ],
       "outputs": [
@@ -7345,7 +8310,7 @@
         {
           "name": "Play",
           "type": "Trigger",
-          "required": true
+          "required": false
         },
         {
           "name": "Stop",
@@ -7360,43 +8325,37 @@
         {
           "name": "Start Time",
           "type": "Time",
-          "required": false,
-          "default": 0.0
+          "required": false
         },
         {
           "name": "Pitch Shift",
           "type": "Float",
-          "required": false,
-          "default": 0.0
+          "required": false
         },
         {
           "name": "Loop",
           "type": "Bool",
           "required": true,
-          "default": false
+          "default": true
         },
         {
           "name": "Loop Start",
           "type": "Time",
-          "required": false,
-          "default": 0.0
+          "required": false
         },
         {
           "name": "Loop Duration",
           "type": "Time",
           "required": false,
           "default": -1.0
+        },
+        {
+          "name": "Maintain Audio Sync",
+          "type": "Bool",
+          "required": false
         }
       ],
       "outputs": [
-        {
-          "name": "Out Left",
-          "type": "Audio"
-        },
-        {
-          "name": "Out Right",
-          "type": "Audio"
-        },
         {
           "name": "On Play",
           "type": "Trigger"
@@ -7426,7 +8385,7 @@
           "type": "String"
         },
         {
-          "name": "Loop Ratio",
+          "name": "Loop Percent",
           "type": "Float"
         },
         {
@@ -7436,6 +8395,14 @@
         {
           "name": "Playback Time",
           "type": "Time"
+        },
+        {
+          "name": "Out Left",
+          "type": "Audio"
+        },
+        {
+          "name": "Out Right",
+          "type": "Audio"
         }
       ],
       "tags": [
