@@ -12,6 +12,11 @@ Usage:
     python scripts/scan_project.py --full-export --import-db --rebuild-embeddings
     python scripts/scan_project.py --audio-only --include-pins
     python scripts/scan_project.py --path /Game/Blueprints
+
+File import (no TCP required — reads plugin Export button output):
+    python scripts/scan_project.py --import-files /path/to/Saved/AudioMCP
+    python scripts/scan_project.py --import-files /path/to/Saved/AudioMCP --stats
+    python scripts/scan_project.py --import-files /path/to/Saved/AudioMCP --dry-run
 """
 
 from __future__ import annotations
@@ -235,7 +240,403 @@ def extract_cross_references(
 
 
 # ---------------------------------------------------------------------------
-# Knowledge DB import
+# File-based import (from plugin Export button output)
+# ---------------------------------------------------------------------------
+
+def _resolve_guid_nodes(metasounds: list[dict]) -> dict[str, str]:
+    """Build GUID->display_name map from patch references in graphs."""
+    guid_map = {}
+    for ms in metasounds:
+        for node in ms.get("nodes", []):
+            cn = node.get("class_name", "")
+            if cn.startswith("None::") and cn.endswith("::None"):
+                guid = cn.split("::")[1]
+                name = node.get("name", "")
+                if name and name not in ("Reroute", "Input"):
+                    guid_map[guid] = name
+    return guid_map
+
+
+def _enrich_ms_nodes(nodes: list[dict], guid_map: dict[str, str]) -> list[dict]:
+    """Resolve GUID references and add display names to nodes."""
+    enriched = []
+    for node in nodes:
+        n = dict(node)
+        cn = n.get("class_name", "")
+        if cn.startswith("None::") and cn.endswith("::None"):
+            guid = cn.split("::")[1]
+            if guid in guid_map:
+                n["resolved_name"] = guid_map[guid]
+                n["is_patch_ref"] = True
+        if n.get("class_type") == "External" and "::" in cn:
+            parts = cn.split("::")
+            if len(parts) >= 2:
+                n["display_name"] = parts[1]
+        enriched.append(n)
+    return enriched
+
+
+def _compute_graph_stats(ms: dict) -> dict:
+    """Compute summary statistics for a MetaSounds graph."""
+    from collections import Counter
+    nodes = ms.get("nodes", [])
+    node_types = Counter()
+    dsp_nodes = Counter()
+    patch_refs = []
+    for node in nodes:
+        ct = node.get("class_type", "Unknown")
+        node_types[ct] += 1
+        if ct == "External":
+            dsp_nodes[node.get("class_name", "")] += 1
+        elif node.get("is_patch_ref"):
+            patch_refs.append(node.get("resolved_name", node.get("name", "?")))
+    return {
+        "total_nodes": len(nodes),
+        "total_edges": len(ms.get("edges", [])),
+        "total_variables": len(ms.get("variables", [])),
+        "node_type_counts": dict(node_types),
+        "dsp_node_counts": dict(dsp_nodes),
+        "patch_references": patch_refs,
+        "interfaces": ms.get("interfaces", []),
+        "is_preset": ms.get("is_preset", False),
+    }
+
+
+def _cross_reference_catalogue(metasounds: list[dict]) -> dict:
+    """Cross-reference DSP nodes used vs our catalogue."""
+    from collections import Counter
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+    from ue_audio_mcp.knowledge.metasound_nodes import (
+        METASOUND_NODES,
+        CLASS_NAME_TO_DISPLAY,
+    )
+    used = Counter()
+    for ms in metasounds:
+        for node in ms.get("nodes", []):
+            if node.get("class_type") == "External":
+                used[node.get("class_name", "")] += 1
+
+    cat_cn = set(CLASS_NAME_TO_DISPLAY.keys())
+    cat_dn = set(METASOUND_NODES.keys())
+    in_cat, missing = [], []
+    for cn, count in used.most_common():
+        if cn in cat_cn:
+            in_cat.append((cn, CLASS_NAME_TO_DISPLAY[cn], count))
+        else:
+            parts = cn.split("::")
+            display = parts[1] if len(parts) >= 2 else cn
+            if display in cat_dn:
+                in_cat.append((cn, display, count))
+            elif cn.startswith("None::"):
+                in_cat.append((cn, f"[Patch]", count))
+            else:
+                missing.append((cn, display, count))
+    return {
+        "in_catalogue": in_cat,
+        "missing": missing,
+        "total_unique": len(used),
+        "total_instances": sum(used.values()),
+    }
+
+
+def import_from_files(
+    export_dir: str,
+    project_name: str,
+    dry_run: bool = False,
+    show_stats: bool = False,
+    rebuild_embeddings: bool = False,
+) -> dict:
+    """Import from plugin Export button output files (no TCP required).
+
+    Reads metasound_export.json, blueprint_audio_export.json, and
+    project_audio_scan.json from export_dir and imports all data into
+    the knowledge DB.
+    """
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+    from ue_audio_mcp.knowledge.db import get_knowledge_db
+
+    # Load files — supports multiple naming patterns and formats
+    ms_files = ["metasound_export.json", "stackobot_metasounds_full.json"]
+    bp_files = ["blueprint_audio_export.json", "stackobot_bp_audio_scan.json"]
+
+    metasounds, blueprints = [], []
+    loaded_ms_name = ""
+
+    for ms_name in ms_files:
+        ms_path = os.path.join(export_dir, ms_name)
+        if os.path.exists(ms_path):
+            with open(ms_path) as f:
+                ms_data = json.load(f)
+            # Lyra format: {"metasounds": [...]} or {"count": N, "metasounds": [...]}
+            if isinstance(ms_data, dict) and "metasounds" in ms_data:
+                metasounds = ms_data["metasounds"]
+            # Stack0bot format: {"MS_name": {nodes, edges}, ...}
+            elif isinstance(ms_data, dict) and all(
+                isinstance(v, dict) and "nodes" in v
+                for v in ms_data.values()
+                if isinstance(v, dict)
+            ):
+                for name, graph in ms_data.items():
+                    if isinstance(graph, dict) and "nodes" in graph:
+                        metasounds.append({
+                            "asset_path": f"/Game/Audio/{name}.{name}",
+                            "asset_type": "Patch" if "_MSP" in name else "Source",
+                            "is_preset": False,
+                            "interfaces": [],
+                            "graph_inputs": [],
+                            "graph_outputs": [],
+                            "variables": [],
+                            "nodes": graph.get("nodes", []),
+                            "edges": graph.get("edges", []),
+                            "message": f"Imported {name}",
+                        })
+            loaded_ms_name = ms_name
+            print(f"  MetaSounds: {len(metasounds)} graphs from {ms_name} ({os.path.getsize(ms_path) / 1024:.0f}KB)")
+            break
+    else:
+        print(f"  [SKIP] No MetaSounds export found")
+
+    for bp_name in bp_files:
+        bp_path = os.path.join(export_dir, bp_name)
+        if os.path.exists(bp_path):
+            with open(bp_path) as f:
+                bp_data = json.load(f)
+            # Lyra format: {"blueprints": [...]}
+            if isinstance(bp_data, dict) and "blueprints" in bp_data:
+                blueprints = bp_data["blueprints"]
+            # Stack0bot format: {"BP_Name": {status, nodes, graphs...}, ...}
+            elif isinstance(bp_data, dict) and all(
+                isinstance(v, dict) for v in bp_data.values()
+            ):
+                for name, scan in bp_data.items():
+                    if isinstance(scan, dict) and scan.get("status") == "ok":
+                        # Convert older graph-based scan to flat node list
+                        flat_nodes = []
+                        for graph in scan.get("graphs", []):
+                            for node in graph.get("nodes", []):
+                                flat_nodes.append(node)
+                        blueprints.append({
+                            "blueprint_name": scan.get("blueprint_name", name),
+                            "asset_path": scan.get("asset_path", ""),
+                            "audio_nodes": scan.get("audio_summary", {}).get("audio_node_count", 0),
+                            "total_nodes": scan.get("total_nodes", 0),
+                            "nodes": flat_nodes,
+                            "edges": [],
+                            "message": scan.get("message", ""),
+                        })
+            print(f"  Blueprints: {len(blueprints)} from {bp_name} ({os.path.getsize(bp_path) / 1024:.0f}KB)")
+            break
+    else:
+        print(f"  [SKIP] No Blueprint export found")
+
+    if not metasounds and not blueprints:
+        print("ERROR: No export files found!")
+        return {"status": "error", "message": "No export files"}
+
+    # Resolve GUID patch references
+    guid_map = _resolve_guid_nodes(metasounds)
+    print(f"  Resolved {len(guid_map)} patch GUID references")
+
+    # Cross-reference with catalogue
+    if show_stats or not dry_run:
+        xref = _cross_reference_catalogue(metasounds)
+        print(f"\n  DSP nodes: {xref['total_unique']} unique, {xref['total_instances']} instances")
+        print(f"  In catalogue: {len(xref['in_catalogue'])}")
+        if xref["missing"]:
+            print(f"  Missing from catalogue: {len(xref['missing'])}")
+            for cn, display, count in xref["missing"]:
+                print(f"    {count:4d}x  {display} ({cn})")
+        else:
+            print(f"  All DSP nodes covered by catalogue!")
+
+    if show_stats:
+        return {"status": "ok", "stats_only": True}
+
+    if dry_run:
+        print("\n--- Dry run ---")
+        for ms in metasounds:
+            path = ms.get("asset_path", "")
+            name = path.split("/")[-1].split(".")[0] if path else "?"
+            atype = ms.get("asset_type", "?")
+            nn = len(ms.get("nodes", []))
+            ne = len(ms.get("edges", []))
+            print(f"  [MS] {name} ({atype}) {nn}N/{ne}E")
+        for bp in blueprints:
+            name = bp.get("blueprint_name", "?")
+            an = bp.get("audio_nodes", 0)
+            tn = bp.get("total_nodes", 0)
+            print(f"  [BP] {name} ({an} audio/{tn} total)")
+        return {"status": "ok", "dry_run": True, "ms": len(metasounds), "bp": len(blueprints)}
+
+    # Copy to local exports
+    safe_name = project_name.lower().replace(" ", "_")
+    local_dir = os.path.join(os.path.dirname(__file__), "..", "exports", safe_name)
+    os.makedirs(local_dir, exist_ok=True)
+    import shutil
+    for fname in os.listdir(export_dir):
+        if fname.endswith(".json") and not fname.startswith("."):
+            src = os.path.join(export_dir, fname)
+            if os.path.isfile(src):
+                shutil.copy2(src, os.path.join(local_dir, fname))
+                print(f"  Copied {fname} to exports/{safe_name}/")
+
+    # --- Import to DB ---
+    print(f"\n--- Importing to DB (project={project_name}) ---")
+    db = get_knowledge_db()
+    ms_count = 0
+    bp_count = 0
+
+    # Detect source type from loaded file name
+    source = "engine_export"
+    if "lyra" in export_dir.lower():
+        source = "lyra"
+    elif "stackobot" in loaded_ms_name.lower():
+        source = "stackobot"
+
+    # Import MetaSounds + populate graph_node_usage
+    graph_usage_rows: list[tuple[str, str, str, str, int]] = []
+
+    for ms in metasounds:
+        path = ms.get("asset_path", "")
+        name = path.split("/")[-1].split(".")[0] if path else "?"
+        asset_type = ms.get("asset_type", "Source")
+        enriched = _enrich_ms_nodes(ms.get("nodes", []), guid_map)
+        stats = _compute_graph_stats({**ms, "nodes": enriched})
+
+        db.insert_project_asset(
+            {
+                "name": name,
+                "category": f"metasound_{asset_type.lower()}",
+                "path": path,
+                "references": stats["patch_references"],
+                "properties": stats["interfaces"],
+                "graph_inputs": ms.get("graph_inputs", []),
+                "graph_outputs": ms.get("graph_outputs", []),
+                "nodes": enriched,
+                "edges": ms.get("edges", []),
+                "variables": ms.get("variables", []),
+                "stats": stats,
+            },
+            project_name,
+            source=source,
+        )
+        ms_count += 1
+
+        # Populate graph_node_usage from DSP nodes
+        from collections import Counter
+        dsp_counter: Counter = Counter()
+        for node in enriched:
+            if node.get("class_type") == "External":
+                cn = node.get("class_name", "")
+                if cn and not cn.startswith("None::"):
+                    dsp_counter[cn] += 1
+        for cn, count in dsp_counter.items():
+            parts = cn.split("::")
+            display = parts[1] if len(parts) >= 2 else cn
+            graph_usage_rows.append((name, project_name, cn, display, count))
+
+    if graph_usage_rows:
+        db.insert_graph_node_usage_batch(graph_usage_rows)
+        print(f"  Graph node usage: {len(graph_usage_rows)} entries")
+
+    # Import Blueprints + extract audio triggers
+    _AUDIO_TRIGGER_FUNCTIONS = {
+        "PlaySound2D": "play_sound_2d",
+        "PlaySoundAtLocation": "play_sound_at_location",
+        "SpawnSound2D": "spawn_sound_2d",
+        "SpawnSoundAttached": "spawn_sound_attached",
+        "SpawnSoundAtLocation": "spawn_sound_at_location",
+        "PostEvent": "post_event",
+        "PostAkEvent": "post_event",
+        "K2_ExecuteGameplayCueWithParams": "gameplay_cue",
+        "K2_AddGameplayCue": "gameplay_cue",
+        "ActivateSystem": "activate_system",
+        "SetSoundMixClassOverride": "sound_mix",
+        "SetBaseSoundMix": "sound_mix",
+    }
+    trigger_rows: list[dict] = []
+
+    for bp in blueprints:
+        name = bp.get("blueprint_name", "")
+        if not name:
+            bpath = bp.get("asset_path", "")
+            name = bpath.split("/")[-1].split(".")[0] if bpath else "?"
+
+        all_funcs, audio_funcs, variables, events = [], [], [], []
+        for node in bp.get("nodes", []):
+            title = node.get("title", node.get("function_name", ""))
+            if title:
+                all_funcs.append(title)
+                if node.get("audio_relevant"):
+                    audio_funcs.append(title)
+            if node.get("class") == "K2Node_VariableGet":
+                vn = node.get("title", "")
+                if vn and vn not in variables:
+                    variables.append(vn)
+            if "Event" in node.get("class", ""):
+                events.append(node.get("title", node.get("class", "")))
+
+            # Extract audio triggers
+            func_name = node.get("function_name", title)
+            if func_name in _AUDIO_TRIGGER_FUNCTIONS:
+                trigger_rows.append({
+                    "bp_name": name,
+                    "project": project_name,
+                    "trigger_type": _AUDIO_TRIGGER_FUNCTIONS[func_name],
+                    "function_name": func_name,
+                    "target_asset": node.get("target_asset", ""),
+                    "details": {
+                        k: v for k, v in node.items()
+                        if k in ("class", "pins", "audio_relevant")
+                    },
+                })
+
+        db.insert_project_blueprint(
+            {
+                "name": name,
+                "description": bp.get("message", ""),
+                "functions": all_funcs,
+                "variables": variables,
+                "components": [],
+                "events": events,
+                "references": audio_funcs,
+                "asset_path": bp.get("asset_path", ""),
+                "audio_nodes": bp.get("audio_nodes", 0),
+                "total_nodes": bp.get("total_nodes", 0),
+                "nodes": bp.get("nodes", []),
+                "edges": bp.get("edges", []),
+            },
+            project_name,
+            source=source,
+        )
+        bp_count += 1
+
+    if trigger_rows:
+        db.insert_bp_audio_triggers_batch(trigger_rows)
+        print(f"  BP audio triggers: {len(trigger_rows)} entries")
+
+    db._conn.commit()
+
+    summary = {
+        "status": "ok",
+        "project": project_name,
+        "metasounds": ms_count,
+        "blueprints": bp_count,
+        "graph_node_usage": len(graph_usage_rows),
+        "bp_audio_triggers": len(trigger_rows),
+    }
+
+    if rebuild_embeddings and (ms_count + bp_count) > 0:
+        summary["embeddings"] = _rebuild_embeddings(db, project_name)
+
+    db_stats = db.table_counts()
+    summary["db_project_audio_assets"] = db_stats.get("project_audio_assets", 0)
+    summary["db_project_blueprints"] = db_stats.get("project_blueprints", 0)
+    return summary
+
+
+# ---------------------------------------------------------------------------
+# Knowledge DB import (from TCP scan results)
 # ---------------------------------------------------------------------------
 
 def import_to_db(
@@ -411,7 +812,36 @@ def main():
                         help="Import results into knowledge DB")
     parser.add_argument("--rebuild-embeddings", action="store_true",
                         help="Rebuild TF-IDF embeddings after import")
+    parser.add_argument("--import-files", metavar="DIR",
+                        help="Import from plugin Export files (no TCP needed)")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Show what would be imported (with --import-files)")
+    parser.add_argument("--stats", action="store_true",
+                        help="Show node usage stats only (with --import-files)")
     args = parser.parse_args()
+
+    # --- File-based import mode (no TCP) ---
+    if args.import_files:
+        export_dir = args.import_files
+        project_name = args.project or "LyraStarterGame"
+        print("=" * 60)
+        print("AudioMCP File Import")
+        print(f"Export dir: {export_dir}")
+        print(f"Project: {project_name}")
+        print("=" * 60)
+        result = import_from_files(
+            export_dir,
+            project_name,
+            dry_run=args.dry_run,
+            show_stats=args.stats,
+            rebuild_embeddings=args.rebuild_embeddings,
+        )
+        print("\n" + "=" * 60)
+        print("IMPORT SUMMARY")
+        print("=" * 60)
+        for k, v in result.items():
+            print(f"  {k}: {v}")
+        return
 
     # --full-export enables everything
     if args.full_export:

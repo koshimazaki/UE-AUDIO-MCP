@@ -66,3 +66,21 @@ public:
 		const TSharedPtr<FJsonObject>& Params,
 		FAudioMCPBuilderManager& BuilderManager) override;
 };
+
+/** export_audio_blueprint: Focused export of audio-relevant BP nodes + 1-hop neighbours with full edge wiring. */
+class FExportAudioBlueprintCommand : public IAudioMCPCommand
+{
+public:
+	virtual TSharedPtr<FJsonObject> Execute(
+		const TSharedPtr<FJsonObject>& Params,
+		FAudioMCPBuilderManager& BuilderManager) override;
+};
+
+/** list_blueprint_functions: Enumerate BlueprintCallable UFunctions across all loaded classes. */
+class FListBlueprintFunctionsCommand : public IAudioMCPCommand
+{
+public:
+	virtual TSharedPtr<FJsonObject> Execute(
+		const TSharedPtr<FJsonObject>& Params,
+		FAudioMCPBuilderManager& BuilderManager) override;
+};

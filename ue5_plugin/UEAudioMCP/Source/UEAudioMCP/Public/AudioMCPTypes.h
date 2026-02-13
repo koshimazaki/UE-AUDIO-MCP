@@ -66,6 +66,7 @@ namespace AudioMCP
 			TEXT("SetState"), TEXT("Submix"), TEXT("Modulation"),
 			TEXT("SoundClass"), TEXT("SoundCue"), TEXT("Listener"),
 			TEXT("Spatialization"), TEXT("AudioVolume"),
+			TEXT("Quartz"), TEXT("Pitch"), TEXT("Volume"),
 		};
 		for (const TCHAR* Keyword : Keywords)
 		{

@@ -14,7 +14,7 @@
     },
     {
       "name": "Period",
-      "type": "Float",
+      "type": "Time",
       "default": 1.0,
       "description": "Time between random plays in seconds"
     }
@@ -27,6 +27,14 @@
     {
       "name": "OnFinished",
       "type": "Trigger"
+    },
+    {
+      "name": "Out Stereo L",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo R",
+      "type": "Audio"
     }
   ],
   "variables": [
@@ -38,7 +46,7 @@
     {
       "name": "Weights",
       "type": "Float[]",
-      "description": "Per-element probability weights \u2014 must match array length. Example: [0.1, 0.1, 0.7, 0.1] gives 70% chance to index 2. Empty array = uniform distribution."
+      "description": "Per-element probability weights — must match array length. Example: [0.1, 0.1, 0.7, 0.1] gives 70% chance to index 2. Empty array = uniform distribution."
     }
   ],
   "nodes": [
@@ -61,10 +69,9 @@
       ],
       "defaults": {
         "Seed": -1,
-        "No Repeats": 1,
-        "Enable Shared State": false
+        "No Repeats": 1
       },
-      "comment": "Weighted random selection \u2014 Weights array controls probability per element"
+      "comment": "Weighted random selection — Weights array controls probability per element"
     },
     {
       "id": "wave_player",
@@ -78,6 +85,26 @@
         "Pitch Shift": 0.0,
         "Loop": false
       }
+    },
+    {
+      "id": "var_numberssamples",
+      "node_type": "__variable_get__",
+      "variable_name": "NumbersSamples",
+      "position": [
+        200,
+        200
+      ],
+      "defaults": {}
+    },
+    {
+      "id": "var_weights",
+      "node_type": "__variable_get__",
+      "variable_name": "Weights",
+      "position": [
+        200,
+        300
+      ],
+      "defaults": {}
     }
   ],
   "connections": [
@@ -85,7 +112,7 @@
       "from_node": "__graph__",
       "from_pin": "OnPlay",
       "to_node": "trigger_repeat",
-      "to_pin": "Play"
+      "to_pin": "Start"
     },
     {
       "from_node": "__graph__",
@@ -95,18 +122,18 @@
     },
     {
       "from_node": "trigger_repeat",
-      "from_pin": "Trigger Output",
+      "from_pin": "RepeatOut",
       "to_node": "random_get",
       "to_pin": "Next"
     },
     {
-      "from_node": "var:NumbersSamples",
+      "from_node": "var_numberssamples",
       "from_pin": "Value",
       "to_node": "random_get",
       "to_pin": "In Array"
     },
     {
-      "from_node": "var:Weights",
+      "from_node": "var_weights",
       "from_pin": "Value",
       "to_node": "random_get",
       "to_pin": "Weights"
@@ -134,6 +161,18 @@
       "from_pin": "Out Mono",
       "to_node": "__graph__",
       "to_pin": "Out Mono"
+    },
+    {
+      "from_node": "wave_player",
+      "from_pin": "Out Mono",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo L"
+    },
+    {
+      "from_node": "wave_player",
+      "from_pin": "Out Mono",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo R"
     }
   ]
 }

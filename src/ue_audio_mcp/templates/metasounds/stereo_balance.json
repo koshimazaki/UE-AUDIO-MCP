@@ -1,0 +1,129 @@
+{
+  "name": "Stereo Balance",
+  "asset_type": "Patch",
+  "description": "L/R gain balance from Lyra (lib_StereoBalance). Two Stereo Panners position left and right signals independently, then Add nodes combine them per channel. Adjusting Pan Left/Right controls stereo width and balance. Production pattern for stereo width control, surround panning, and balance adjustment.",
+  "author": "Epic Games (Lyra sample)",
+  "interfaces": [],
+  "inputs": [
+    {
+      "name": "In L",
+      "type": "Audio",
+      "description": "Left channel input"
+    },
+    {
+      "name": "In R",
+      "type": "Audio",
+      "description": "Right channel input"
+    },
+    {
+      "name": "Pan Left",
+      "type": "Float",
+      "default": -0.5,
+      "description": "Pan position for left signal (-1 = hard left, 0 = center, 1 = hard right)"
+    },
+    {
+      "name": "Pan Right",
+      "type": "Float",
+      "default": 0.5,
+      "description": "Pan position for right signal (-1 = hard left, 0 = center, 1 = hard right)"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "Out L",
+      "type": "Audio"
+    },
+    {
+      "name": "Out R",
+      "type": "Audio"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "panner_l",
+      "node_type": "Stereo Panner",
+      "position": [200, 0],
+      "comment": "Pans the left input signal"
+    },
+    {
+      "id": "panner_r",
+      "node_type": "Stereo Panner",
+      "position": [200, 200],
+      "comment": "Pans the right input signal"
+    },
+    {
+      "id": "add_l",
+      "node_type": "Add (Audio)",
+      "position": [500, 0],
+      "comment": "Sums left outputs from both panners"
+    },
+    {
+      "id": "add_r",
+      "node_type": "Add (Audio)",
+      "position": [500, 200],
+      "comment": "Sums right outputs from both panners"
+    }
+  ],
+  "connections": [
+    {
+      "from_node": "__graph__",
+      "from_pin": "In L",
+      "to_node": "panner_l",
+      "to_pin": "In"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Pan Left",
+      "to_node": "panner_l",
+      "to_pin": "Pan Amount"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "In R",
+      "to_node": "panner_r",
+      "to_pin": "In"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Pan Right",
+      "to_node": "panner_r",
+      "to_pin": "Pan Amount"
+    },
+    {
+      "from_node": "panner_l",
+      "from_pin": "Out Left",
+      "to_node": "add_l",
+      "to_pin": "PrimaryOperand"
+    },
+    {
+      "from_node": "panner_r",
+      "from_pin": "Out Left",
+      "to_node": "add_l",
+      "to_pin": "AdditionalOperands"
+    },
+    {
+      "from_node": "panner_l",
+      "from_pin": "Out Right",
+      "to_node": "add_r",
+      "to_pin": "PrimaryOperand"
+    },
+    {
+      "from_node": "panner_r",
+      "from_pin": "Out Right",
+      "to_node": "add_r",
+      "to_pin": "AdditionalOperands"
+    },
+    {
+      "from_node": "add_l",
+      "from_pin": "Out",
+      "to_node": "__graph__",
+      "to_pin": "Out L"
+    },
+    {
+      "from_node": "add_r",
+      "from_pin": "Out",
+      "to_node": "__graph__",
+      "to_pin": "Out R"
+    }
+  ]
+}

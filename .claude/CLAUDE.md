@@ -15,9 +15,9 @@ MCP server for game audio — generating complete Wwise + MetaSounds + Blueprint
 |-----------|-----------|-------|
 | MCP Server | Python (FastMCP) | Main server, stdio transport |
 | Wwise Bridge | `waapi-client` | Official Audiokinetic Python lib, WebSocket :8080 |
-| UE5 Bridge | C++ plugin + TCP (port 9877) | JSON command protocol, 25 commands |
-| Knowledge | Local SQLite + TF-IDF | 144 nodes, 22K+ BP entries, semantic search |
-| Templates | Parameterised JSON | 22 MetaSounds + 30 Blueprint + 6 Wwise |
+| UE5 Bridge | C++ plugin + TCP (port 9877) | JSON command protocol, 35 commands |
+| Knowledge | Local SQLite + TF-IDF | 195 nodes, 1027 entries, 20 tables, semantic search |
+| Templates | Parameterised JSON | 25 MetaSounds + 30 Blueprint + 6 Wwise |
 
 ## Key APIs
 - **WAAPI**: 87 functions, WAMP/WebSocket on :8080, HTTP on :8090. Wwise MUST be running.
@@ -78,25 +78,75 @@ src/ue_audio_mcp/
 ├── connection.py          → WaapiConnection + UE5PluginConnection singletons
 ├── tools/
 │   ├── wwise_*.py         → WAAPI tool implementations (20 tools)
-│   ├── ms_*.py            → MetaSounds tools (knowledge + builder, 18 tools)
-│   ├── bp_*.py            → Blueprint tools (6 tools)
+│   ├── ms_*.py            → MetaSounds tools (knowledge + builder + sync, 19 tools)
+│   ├── bp_*.py            → Blueprint tools (builder + knowledge + sync, 15 tools)
 │   └── systems.py         → Orchestrator (build_audio_system, build_aaa_project)
 ├── knowledge/
-│   ├── db.py              → SQLite knowledge DB (9 tables, singleton)
+│   ├── db.py              → SQLite knowledge DB (20 tables, schema v2, singleton)
+│   ├── node_schema.py     → Shared TypedDicts (MSPin, MSNode) + normalize_pin_type()
 │   ├── embeddings.py      → TF-IDF + cosine similarity search
 │   ├── wwise_types.py     → Object types, properties, defaults
-│   ├── metasound_nodes.py → 144 nodes, 798 pins, 20 categories
+│   ├── metasound_nodes.py → 195 nodes, 23 categories, 145 class_name mappings
 │   └── tutorials.py       → Builder API catalogue, patterns, conversions
 ├── templates/
-│   ├── metasounds/        → 22 MS graph templates (JSON)
+│   ├── metasounds/        → 25 MS graph templates (JSON, 25/25 validated)
 │   ├── blueprints/        → 30 BP templates (JSON)
 │   └── wwise/             → 6 Wwise hierarchy templates (JSON)
 └── graph_schema.py        → Graph spec format + 7-stage validator
-ue5_plugin/UEAudioMCP/     → C++ plugin (25 commands, TCP:9877)
+ue5_plugin/UEAudioMCP/     → C++ plugin (35 commands, TCP:9877)
 ue5_plugin/SIDMetaSoundNodes/ → ReSID SID chip nodes (5 custom nodes)
+scripts/                   → Key scripts (see below)
 research/                  → 3 core reference docs (WAAPI, MetaSounds, MCP landscape)
-tests/                     → 332 tests across 20 files
+tests/                     → 432 tests across 20+ files
+exports/                   → Engine sync outputs (JSON)
 ```
+
+## Key Scripts
+
+### Build & Deploy
+```bash
+./scripts/build_plugin.sh              # Sync source + compile (UE Editor must be closed)
+./scripts/build_plugin.sh --sync-only  # Sync only (UE recompiles on open)
+./scripts/build_plugin.sh --clean      # Clean build (stale intermediates)
+# Engine:  /Volumes/Koshi_T7/UN5.3/UE_5.7/
+# Project: ~/Documents/Unreal Projects/UEIntroProject/
+```
+
+### Engine Sync (requires UE Editor running with plugin)
+```bash
+python scripts/sync_nodes_from_engine.py       # Sync 842 MS nodes → exports/all_metasound_nodes.json
+python scripts/sync_bp_from_engine.py --audio-only  # Sync 1173 BP audio funcs → exports/blueprint_functions_audio.json
+python scripts/scan_project.py --full-export -o exports/project_scan.json  # Full project scan: BPs + MS graphs + audio assets + cross-refs
+```
+
+### Pin Update Pipeline (engine → catalogue)
+```bash
+python scripts/update_catalogue_pins.py                    # Dry-run: show pin mismatches
+python scripts/update_catalogue_pins.py --apply            # Patch catalogue JSON with engine pins
+python scripts/update_catalogue_pins.py --apply --export   # Patch + regenerate JSON catalogues
+python scripts/update_catalogue_pins.py --apply --update-source  # Also patch metasound_nodes.py
+```
+
+### Verification & Cross-Reference
+```bash
+python scripts/verify_templates.py     # 4-check: CLASS_NAME_TO_DISPLAY, MS templates, engine pins, BP templates
+python scripts/cross_reference.py --all  # Cross-ref engine exports vs catalogue (finds pin mismatches)
+```
+
+### Catalogue Management
+```bash
+python scripts/export_catalogues.py    # Regenerate JSON catalogues from Python source
+python scripts/export_catalogues.py --ms-only   # MetaSounds only
+python scripts/export_catalogues.py --bp-only   # Blueprints only
+```
+
+### Utility
+| Script | Purpose |
+|--------|---------|
+| `test_plugin_live.py` | Live TCP plugin smoke test |
+| `convert_export_to_template.py` | Convert MS graph export → template JSON |
+| `parse_metasound_export.py` | Parse raw MS export data |
+| `verify_pins.py` | Pin-level verification against engine |
 
 ## Common Patterns (6 Game Audio Systems)
 1. **Gunshot** — RandomSequenceContainer + variations + pitch randomisation + ADSR
@@ -112,4 +162,4 @@ tests/                     → 332 tests across 20 files
 - `/ue-agent` — Launch UE5 specialist for MetaSounds/Blueprint/DSP tasks
 - `/wwise-agent` — Launch Wwise specialist for WAAPI/mixing/routing tasks
 - `/build-system` — Full pipeline audio system generator
-- `/mcp-plugin` — UE5 plugin TCP control (25 commands)
+- `/mcp-plugin` — UE5 plugin TCP control (35 commands)

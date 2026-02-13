@@ -1,0 +1,66 @@
+{
+  "name": "Gameplay Cue Audio",
+  "type": "blueprint",
+  "blueprint_type": "actor",
+  "description": "GameplayCue with audio feedback from Lyra (GCNL_Character_DamageTaken pattern). OnBurstExecuted triggers SpawnSoundAttached for spatial audio and optionally SpawnEmitterAttached for visual feedback. Uses Branch to conditionally play based on game state. Production pattern for damage feedback, ability activation, and pickup effects in GAS-based games.",
+  "author": "Epic Games (Lyra sample)",
+  "requires": [
+    "GameplayCueNotify_BurstLatent base class",
+    "Sound assets for audio feedback",
+    "Skeletal Mesh Component for attachment"
+  ],
+  "nodes": [
+    {
+      "id": "on_burst",
+      "node_type": "OnBurstExecuted",
+      "position": [0, 0],
+      "comment": "GameplayCue burst event — fires once when cue activates"
+    },
+    {
+      "id": "get_mesh",
+      "node_type": "GetMesh",
+      "position": [200, 200],
+      "comment": "Gets skeletal mesh from target actor for attachment point"
+    },
+    {
+      "id": "branch",
+      "node_type": "Branch",
+      "position": [200, 0],
+      "comment": "Conditionally play based on validity or game state"
+    },
+    {
+      "id": "spawn_sound",
+      "node_type": "SpawnSoundAttached",
+      "position": [500, 0],
+      "defaults": {
+        "Sound": "<DamageSound>",
+        "AttachPointName": "spine_03"
+      },
+      "comment": "Attaches sound to character mesh — moves with character for spatial accuracy"
+    },
+    {
+      "id": "spawn_emitter",
+      "node_type": "SpawnEmitterAttached",
+      "position": [500, 200],
+      "defaults": {
+        "EmitterTemplate": "<DamageVFX>",
+        "AttachPointName": "spine_03"
+      },
+      "comment": "Optional VFX feedback paired with audio — same attachment point"
+    }
+  ],
+  "variables": [
+    {"name": "DamageSound", "type": "SoundBase", "description": "Sound to play on damage/activation"},
+    {"name": "DamageVFX", "type": "ParticleSystem", "description": "Optional VFX to spawn with audio"}
+  ],
+  "connections": [
+    {"from_node": "on_burst", "from_pin": "Exec", "to_node": "branch", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "on_burst", "from_pin": "Target", "to_node": "get_mesh", "to_pin": "Target", "type": "data"},
+    {"from_node": "branch", "from_pin": "True", "to_node": "spawn_sound", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "spawn_sound", "from_pin": "Exec", "to_node": "spawn_emitter", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "get_mesh", "from_pin": "ReturnValue", "to_node": "spawn_sound", "to_pin": "AttachToComponent", "type": "data"},
+    {"from_node": "get_mesh", "from_pin": "ReturnValue", "to_node": "spawn_emitter", "to_pin": "AttachToComponent", "type": "data"},
+    {"from_node": "var:DamageSound", "from_pin": "Value", "to_node": "spawn_sound", "to_pin": "Sound", "type": "data"}
+  ],
+  "notes": "GameplayCueNotify_BurstLatent fires once and auto-destroys. For looping effects (burning, poison), use GameplayCueNotify_Looping with WhileActive/OnRemove instead. SpawnSoundAttached keeps sound moving with character — critical for 3rd person games where characters move during damage reaction animations."
+}

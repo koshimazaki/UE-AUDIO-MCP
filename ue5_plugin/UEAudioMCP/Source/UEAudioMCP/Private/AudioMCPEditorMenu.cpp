@@ -127,6 +127,14 @@ void FAudioMCPEditorMenu::PopulateMenu(UToolMenu* Menu)
 		);
 
 		Section.AddMenuEntry(
+			"ExportAudioBlueprints",
+			LOCTEXT("ExportAudioBPs", "Export Audio Blueprints"),
+			LOCTEXT("ExportAudioBPsTip", "Export audio-relevant Blueprint subgraphs with edges"),
+			FSlateIcon(FAppStyle::GetAppStyleSetName(), "ClassIcon.Blueprint"),
+			FUIAction(FExecuteAction::CreateStatic(&FAudioMCPEditorMenu::OnExportAudioBlueprints))
+		);
+
+		Section.AddMenuEntry(
 			"OpenResults",
 			LOCTEXT("OpenResults", "Open Results Folder"),
 			LOCTEXT("OpenResultsTip", "Open the Saved/AudioMCP/ output folder"),
@@ -398,6 +406,98 @@ void FAudioMCPEditorMenu::OnExportMetaSounds()
 }
 
 
+void FAudioMCPEditorMenu::OnExportAudioBlueprints()
+{
+	// 1. Find all Blueprint assets
+	IAssetRegistry& Registry =
+		FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry").Get();
+
+	FARFilter Filter;
+	Filter.PackagePaths.Add(FName(TEXT("/Game")));
+	Filter.bRecursivePaths = true;
+	Filter.bRecursiveClasses = true;
+	Filter.ClassPaths.Add(FTopLevelAssetPath(TEXT("/Script/Engine"), TEXT("Blueprint")));
+
+	TArray<FAssetData> Assets;
+	Registry.GetAssets(Filter, Assets);
+
+	if (Assets.Num() == 0)
+	{
+		ShowNotification(
+			LOCTEXT("NoBPsExport", "No Blueprints found under /Game/"),
+			SNotificationItem::CS_Fail);
+		return;
+	}
+
+	// 2. Pre-scan to find audio-relevant BPs, then export only those
+	FScanBlueprintCommand ScanCmd;
+	FExportAudioBlueprintCommand ExportCmd;
+	FAudioMCPBuilderManager DummyManager;
+
+	FScopedSlowTask SlowTask(Assets.Num(),
+		LOCTEXT("ExportingAudioBPs", "Exporting audio Blueprints..."));
+	SlowTask.MakeDialog(true);
+
+	TArray<TSharedPtr<FJsonValue>> ResultsArray;
+	int32 AudioBPs = 0;
+
+	for (const FAssetData& AssetData : Assets)
+	{
+		SlowTask.EnterProgressFrame(1.0f,
+			FText::FromString(AssetData.AssetName.ToString()));
+		if (SlowTask.ShouldCancel()) break;
+
+		// Quick scan to check if audio-relevant
+		TSharedPtr<FJsonObject> ScanParams = MakeShared<FJsonObject>();
+		ScanParams->SetStringField(TEXT("asset_path"), AssetData.GetObjectPathString());
+		ScanParams->SetBoolField(TEXT("audio_only"), true);
+		ScanParams->SetBoolField(TEXT("include_pins"), false);
+
+		TSharedPtr<FJsonObject> ScanResult = ScanCmd.Execute(ScanParams, DummyManager);
+		if (ScanResult->GetStringField(TEXT("status")) != TEXT("ok")) continue;
+
+		const TSharedPtr<FJsonObject>* AudioSummaryPtr = nullptr;
+		int32 AudioNodeCount = 0;
+		if (ScanResult->TryGetObjectField(TEXT("audio_summary"), AudioSummaryPtr))
+		{
+			AudioNodeCount = static_cast<int32>((*AudioSummaryPtr)->GetNumberField(TEXT("audio_node_count")));
+		}
+		if (AudioNodeCount == 0) continue;
+
+		// Full audio export
+		TSharedPtr<FJsonObject> ExportParams = MakeShared<FJsonObject>();
+		ExportParams->SetStringField(TEXT("asset_path"), AssetData.GetObjectPathString());
+
+		TSharedPtr<FJsonObject> ExportResult = ExportCmd.Execute(ExportParams, DummyManager);
+		if (ExportResult->GetStringField(TEXT("status")) == TEXT("ok"))
+		{
+			ResultsArray.Add(MakeShared<FJsonValueObject>(ExportResult));
+			AudioBPs++;
+		}
+	}
+
+	// 3. Save results
+	TSharedPtr<FJsonObject> Root = MakeShared<FJsonObject>();
+	Root->SetStringField(TEXT("project"), FApp::GetProjectName());
+	Root->SetStringField(TEXT("export_time"), FDateTime::Now().ToString());
+	Root->SetNumberField(TEXT("total_blueprints"), Assets.Num());
+	Root->SetNumberField(TEXT("audio_blueprints"), AudioBPs);
+	Root->SetArrayField(TEXT("blueprints"), ResultsArray);
+
+	FString OutputPath = SaveResultJson(TEXT("blueprint_audio_export.json"), Root);
+
+	UE_LOG(LogAudioMCPMenu, Log,
+		TEXT("Audio BP export complete: %d/%d audio-relevant, saved to %s"),
+		AudioBPs, Assets.Num(), *OutputPath);
+
+	ShowNotification(
+		FText::Format(
+			LOCTEXT("ExportAudioBPsDone", "Exported {0} audio Blueprint(s) to Saved/AudioMCP/"),
+			AudioBPs),
+		SNotificationItem::CS_Success);
+}
+
+
 void FAudioMCPEditorMenu::OnOpenResultsFolder()
 {
 	FString Dir = GetOutputDir();
@@ -411,7 +511,7 @@ void FAudioMCPEditorMenu::OnShowStatus()
 		TEXT("Audio MCP TCP Server\n"
 			 "Port: %d\n"
 			 "Project: %s\n"
-			 "Commands: 25"),
+			 "Commands: 33"),
 		AudioMCP::DEFAULT_PORT,
 		FApp::GetProjectName());
 

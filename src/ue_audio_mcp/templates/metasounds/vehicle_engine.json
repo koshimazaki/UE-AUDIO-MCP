@@ -22,11 +22,6 @@
       "description": "Repulsor loop layer 1 variations"
     },
     {
-      "name": "RepulsorSamples_2",
-      "type": "WaveAsset[]",
-      "description": "Repulsor loop layer 2 variations"
-    },
-    {
       "name": "TurboStartSample",
       "type": "WaveAsset",
       "description": "Turbo spool-up one-shot"
@@ -64,6 +59,18 @@
     {
       "name": "OnFinished",
       "type": "Trigger"
+    },
+    {
+      "name": "Out Mono",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo L",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo R",
+      "type": "Audio"
     }
   ],
   "nodes": [
@@ -106,19 +113,6 @@
       "comment": "Random sample from repulsor layer 1"
     },
     {
-      "id": "random_get_2",
-      "node_type": "Random Get (WaveAssetArray)",
-      "position": [
-        300,
-        400
-      ],
-      "defaults": {
-        "Seed": -1,
-        "No Repeats": 1
-      },
-      "comment": "Random sample from repulsor layer 2"
-    },
-    {
       "id": "repulsor_wp_0",
       "node_type": "Wave Player (Stereo)",
       "position": [
@@ -151,20 +145,6 @@
       "comment": "Repulsor loop layer 1 \u2014 offset start for variation"
     },
     {
-      "id": "repulsor_wp_2",
-      "node_type": "Wave Player (Stereo)",
-      "position": [
-        600,
-        400
-      ],
-      "defaults": {
-        "Loop": true,
-        "Start Time": 0.0,
-        "Pitch Shift": 0.0
-      },
-      "comment": "Repulsor loop layer 2 \u2014 further offset for phasing"
-    },
-    {
       "id": "repulsor_mixer",
       "node_type": "Stereo Mixer",
       "position": [
@@ -173,8 +153,7 @@
       ],
       "defaults": {
         "Gain 0": 1.0,
-        "Gain 1": 1.0,
-        "Gain 2": 1.0
+        "Gain 1": 1.0
       },
       "comment": "Combines 3 stereo repulsor layers \u2014 Stereo Mixer (3) in UE"
     },
@@ -216,7 +195,7 @@
     },
     {
       "id": "engine_mixer",
-      "node_type": "Mono Mixer",
+      "node_type": "Audio Mixer (Mono, 3)",
       "position": [
         700,
         900
@@ -224,8 +203,7 @@
       "defaults": {
         "Gain 0": 1.0,
         "Gain 1": 1.0,
-        "Gain 2": 2.0,
-        "Gain 3": 1.0
+        "Gain 2": 2.0
       },
       "comment": "Mono mix: turbo start (1.0) + turbo stop (1.0) + idle (2.0 = louder base) + spare"
     },
@@ -284,12 +262,6 @@
       "to_pin": "Next"
     },
     {
-      "from_node": "trigger_seq",
-      "from_pin": "Out 2",
-      "to_node": "random_get_2",
-      "to_pin": "Next"
-    },
-    {
       "from_node": "__graph__",
       "from_pin": "RepulsorSamples_0",
       "to_node": "random_get_0",
@@ -302,12 +274,6 @@
       "to_pin": "In Array"
     },
     {
-      "from_node": "__graph__",
-      "from_pin": "RepulsorSamples_2",
-      "to_node": "random_get_2",
-      "to_pin": "In Array"
-    },
-    {
       "from_node": "random_get_0",
       "from_pin": "Value",
       "to_node": "repulsor_wp_0",
@@ -329,18 +295,6 @@
       "from_node": "random_get_1",
       "from_pin": "On Next",
       "to_node": "repulsor_wp_1",
-      "to_pin": "Play"
-    },
-    {
-      "from_node": "random_get_2",
-      "from_pin": "Value",
-      "to_node": "repulsor_wp_2",
-      "to_pin": "Wave Asset"
-    },
-    {
-      "from_node": "random_get_2",
-      "from_pin": "On Next",
-      "to_node": "repulsor_wp_2",
       "to_pin": "Play"
     },
     {
@@ -366,18 +320,6 @@
       "from_pin": "Out Right",
       "to_node": "repulsor_mixer",
       "to_pin": "In 1 R"
-    },
-    {
-      "from_node": "repulsor_wp_2",
-      "from_pin": "Out Left",
-      "to_node": "repulsor_mixer",
-      "to_pin": "In 2 L"
-    },
-    {
-      "from_node": "repulsor_wp_2",
-      "from_pin": "Out Right",
-      "to_node": "repulsor_mixer",
-      "to_pin": "In 2 R"
     },
     {
       "from_node": "__graph__",
@@ -417,19 +359,19 @@
     },
     {
       "from_node": "turbo_start_wp",
-      "from_pin": "Audio",
+      "from_pin": "Out Mono",
       "to_node": "engine_mixer",
       "to_pin": "In 0"
     },
     {
       "from_node": "turbo_stop_wp",
-      "from_pin": "Audio",
+      "from_pin": "Out Mono",
       "to_node": "engine_mixer",
       "to_pin": "In 1"
     },
     {
       "from_node": "idle_wp",
-      "from_pin": "Audio",
+      "from_pin": "Out Mono",
       "to_node": "engine_mixer",
       "to_pin": "In 2"
     },
@@ -474,6 +416,24 @@
       "from_pin": "Out R",
       "to_node": "__graph__",
       "to_pin": "Out Right"
+    },
+    {
+      "from_node": "final_mixer",
+      "from_pin": "Out L",
+      "to_node": "__graph__",
+      "to_pin": "Out Mono"
+    },
+    {
+      "from_node": "final_mixer",
+      "from_pin": "Out L",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo L"
+    },
+    {
+      "from_node": "final_mixer",
+      "from_pin": "Out R",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo R"
     }
   ]
 }

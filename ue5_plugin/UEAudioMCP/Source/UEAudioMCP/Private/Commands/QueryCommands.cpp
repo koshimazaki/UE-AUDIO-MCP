@@ -7,6 +7,7 @@
 #include "MetasoundFrontendDocument.h"
 #include "MetasoundDocumentInterface.h"
 #include "MetasoundSource.h"
+#include "MetasoundFrontendNodeClassRegistry.h"
 #include "Dom/JsonObject.h"
 #include "Dom/JsonValue.h"
 
@@ -22,6 +23,9 @@
 #include "K2Node_VariableSet.h"
 #include "K2Node_MacroInstance.h"
 #include "K2Node_DynamicCast.h"
+
+// Blueprint function enumeration
+#include "UObject/UObjectIterator.h"
 
 // ---------------------------------------------------------------------------
 // Shared helpers for MetaSound query commands
@@ -238,7 +242,7 @@ TSharedPtr<FJsonObject> FSetLiveUpdatesCommand::Execute(
 }
 
 // ---------------------------------------------------------------------------
-// list_node_classes
+// list_node_classes / list_metasound_nodes
 // ---------------------------------------------------------------------------
 
 TSharedPtr<FJsonObject> FListNodeClassesCommand::Execute(
@@ -254,13 +258,80 @@ TSharedPtr<FJsonObject> FListNodeClassesCommand::Execute(
 	double LimitVal;
 	if (Params->TryGetNumberField(TEXT("limit"), LimitVal))
 	{
-		Limit = FMath::Clamp(static_cast<int32>(LimitVal), 1, 5000);
+		Limit = FMath::Clamp(static_cast<int32>(LimitVal), 1, 10000);
 	}
 
+	// Optional offset for pagination
+	int32 Offset = 0;
+	double OffsetVal;
+	if (Params->TryGetNumberField(TEXT("offset"), OffsetVal))
+	{
+		Offset = FMath::Max(0, static_cast<int32>(OffsetVal));
+	}
+
+	// Optional flags
+	bool bIncludePins = true;
+	Params->TryGetBoolField(TEXT("include_pins"), bIncludePins);
+
+	bool bIncludeMetadata = false;
+	Params->TryGetBoolField(TEXT("include_metadata"), bIncludeMetadata);
+
+	// Use INodeClassRegistry for full registry enumeration (not just project-used nodes),
+	// then look up full FMetasoundFrontendClass via ISearchEngine for pin data.
 	Metasound::Frontend::ISearchEngine& SearchEngine = Metasound::Frontend::ISearchEngine::Get();
 	SearchEngine.Prime();
 
-	TArray<FMetasoundFrontendClass> AllClasses = SearchEngine.FindAllClasses(false /* bInIncludeAllVersions */);
+	// Collect all classes: first from INodeClassRegistry (full registry), then
+	// supplement with ISearchEngine (which may have additional pin data).
+	TArray<FMetasoundFrontendClass> AllClasses;
+	TSet<FString> SeenClassNames;
+
+	// Phase 1: Iterate full node class registry
+	Metasound::Frontend::INodeClassRegistry& NodeRegistry = Metasound::Frontend::INodeClassRegistry::GetChecked();
+	NodeRegistry.IterateRegistry(
+		[&](const FMetasoundFrontendClass& InClass)
+		{
+			FString FullName = QueryHelpers::BuildFullClassName(InClass.Metadata.GetClassName());
+			if (!SeenClassNames.Contains(FullName))
+			{
+				SeenClassNames.Add(FullName);
+				AllClasses.Add(InClass);
+			}
+		},
+		EMetasoundFrontendClassType::External
+	);
+
+	// Phase 2: Also sweep ISearchEngine to catch any classes not in node registry
+	TArray<FMetasoundFrontendClass> SearchClasses = SearchEngine.FindAllClasses(false);
+	for (const FMetasoundFrontendClass& Cls : SearchClasses)
+	{
+		FString FullName = QueryHelpers::BuildFullClassName(Cls.Metadata.GetClassName());
+		if (!SeenClassNames.Contains(FullName))
+		{
+			SeenClassNames.Add(FullName);
+			AllClasses.Add(Cls);
+		}
+	}
+
+	// Sort by class name for deterministic pagination order
+	// Pre-compute keys to avoid repeated string construction during sort
+	TArray<TPair<FString, int32>> SortKeys;
+	SortKeys.Reserve(AllClasses.Num());
+	for (int32 i = 0; i < AllClasses.Num(); ++i)
+	{
+		SortKeys.Emplace(QueryHelpers::BuildFullClassName(AllClasses[i].Metadata.GetClassName()), i);
+	}
+	SortKeys.Sort([](const TPair<FString, int32>& A, const TPair<FString, int32>& B)
+	{
+		return A.Key < B.Key;
+	});
+	TArray<FMetasoundFrontendClass> Sorted;
+	Sorted.Reserve(AllClasses.Num());
+	for (const auto& Pair : SortKeys)
+	{
+		Sorted.Add(AllClasses[Pair.Value]);
+	}
+	AllClasses = MoveTemp(Sorted);
 
 	TArray<TSharedPtr<FJsonValue>> NodeArray;
 	int32 TotalMatched = 0;
@@ -279,6 +350,12 @@ TSharedPtr<FJsonObject> FListNodeClassesCommand::Execute(
 
 		TotalMatched++;
 
+		// Skip entries before offset
+		if (TotalMatched <= Offset)
+		{
+			continue;
+		}
+
 		if (NodeArray.Num() < Limit)
 		{
 			TSharedPtr<FJsonObject> NodeObj = MakeShared<FJsonObject>();
@@ -286,6 +363,85 @@ TSharedPtr<FJsonObject> FListNodeClassesCommand::Execute(
 			NodeObj->SetStringField(TEXT("namespace"), CN.Namespace.ToString());
 			NodeObj->SetStringField(TEXT("name"), CN.Name.ToString());
 			NodeObj->SetStringField(TEXT("variant"), CN.Variant.ToString());
+
+			// --- Pin serialization ---
+			if (bIncludePins)
+			{
+				TArray<TSharedPtr<FJsonValue>> InputPins;
+				for (const FMetasoundFrontendClassInput& Input : FrontendClass.Interface.Inputs)
+				{
+					TSharedPtr<FJsonObject> PinObj = MakeShared<FJsonObject>();
+					PinObj->SetStringField(TEXT("name"), Input.Name.ToString());
+					PinObj->SetStringField(TEXT("type"), Input.TypeName.ToString());
+
+					// Extract default if available
+					if (const FMetasoundFrontendLiteral* DefaultLit = Input.FindConstDefault(FGuid()))
+					{
+						QueryHelpers::SetLiteralOnJson(PinObj, TEXT("default"), *DefaultLit);
+					}
+
+					InputPins.Add(MakeShared<FJsonValueObject>(PinObj));
+				}
+				NodeObj->SetArrayField(TEXT("inputs"), InputPins);
+
+				TArray<TSharedPtr<FJsonValue>> OutputPins;
+				for (const FMetasoundFrontendClassOutput& Output : FrontendClass.Interface.Outputs)
+				{
+					TSharedPtr<FJsonObject> PinObj = MakeShared<FJsonObject>();
+					PinObj->SetStringField(TEXT("name"), Output.Name.ToString());
+					PinObj->SetStringField(TEXT("type"), Output.TypeName.ToString());
+					OutputPins.Add(MakeShared<FJsonValueObject>(PinObj));
+				}
+				NodeObj->SetArrayField(TEXT("outputs"), OutputPins);
+			}
+
+			// --- Optional metadata ---
+			if (bIncludeMetadata)
+			{
+				FString Description = Metadata.GetDescription().ToString();
+				if (!Description.IsEmpty())
+				{
+					NodeObj->SetStringField(TEXT("description"), Description);
+				}
+
+				FString Author = Metadata.GetAuthor();
+				if (!Author.IsEmpty())
+				{
+					NodeObj->SetStringField(TEXT("author"), Author);
+				}
+
+				// Category path from class info (UE 5.7: returns TArray<FText>)
+				const TArray<FText>& CatHierarchy = Metadata.GetCategoryHierarchy();
+				if (CatHierarchy.Num() > 0)
+				{
+					FString CategoryPath;
+					for (int32 ci = 0; ci < CatHierarchy.Num(); ++ci)
+					{
+						if (ci > 0) CategoryPath += TEXT("|");
+						CategoryPath += CatHierarchy[ci].ToString();
+					}
+					NodeObj->SetStringField(TEXT("category"), CategoryPath);
+				}
+
+				// Keywords
+				TArray<FString> Keywords;
+				for (const FText& Keyword : Metadata.GetKeywords())
+				{
+					Keywords.Add(Keyword.ToString());
+				}
+				if (Keywords.Num() > 0)
+				{
+					TArray<TSharedPtr<FJsonValue>> KwArray;
+					for (const FString& Kw : Keywords)
+					{
+						KwArray.Add(MakeShared<FJsonValueString>(Kw));
+					}
+					NodeObj->SetArrayField(TEXT("keywords"), KwArray);
+				}
+
+				NodeObj->SetBoolField(TEXT("deprecated"), Metadata.GetIsDeprecated());
+			}
+
 			NodeArray.Add(MakeShared<FJsonValueObject>(NodeObj));
 		}
 	}
@@ -295,6 +451,7 @@ TSharedPtr<FJsonObject> FListNodeClassesCommand::Execute(
 	Response->SetArrayField(TEXT("nodes"), NodeArray);
 	Response->SetNumberField(TEXT("total"), TotalMatched);
 	Response->SetNumberField(TEXT("shown"), NodeArray.Num());
+	Response->SetNumberField(TEXT("offset"), Offset);
 	return Response;
 }
 
@@ -610,6 +767,14 @@ TSharedPtr<FJsonObject> FScanBlueprintCommand::Execute(
 	bool bIncludePins = false;
 	Params->TryGetBoolField(TEXT("include_pins"), bIncludePins);
 
+	// Filter to a single graph by name (e.g. "EventGraph") for chunked scanning
+	FString GraphNameFilter;
+	Params->TryGetStringField(TEXT("graph_name"), GraphNameFilter);
+
+	// List graphs only mode — returns graph names + node counts without iterating nodes
+	bool bListGraphsOnly = false;
+	Params->TryGetBoolField(TEXT("list_graphs_only"), bListGraphsOnly);
+
 	// --- 2. Validate path ---
 	if (!AssetPath.StartsWith(TEXT("/Game/")) && !AssetPath.StartsWith(TEXT("/Engine/")))
 	{
@@ -663,6 +828,32 @@ TSharedPtr<FJsonObject> FScanBlueprintCommand::Execute(
 		if (Graph) AllGraphs.Add({TEXT("macro"), Graph});
 	}
 
+	// --- 5b. list_graphs_only mode — return graph names + counts without iterating ---
+	if (bListGraphsOnly)
+	{
+		TArray<TSharedPtr<FJsonValue>> GraphList;
+		int32 TotalNodes = 0;
+		for (const FGraphEntry& Entry : AllGraphs)
+		{
+			TSharedPtr<FJsonObject> G = MakeShared<FJsonObject>();
+			G->SetStringField(TEXT("name"), Entry.Graph->GetName());
+			G->SetStringField(TEXT("type"), Entry.Type);
+			G->SetNumberField(TEXT("node_count"), Entry.Graph->Nodes.Num());
+			TotalNodes += Entry.Graph->Nodes.Num();
+			GraphList.Add(MakeShared<FJsonValueObject>(G));
+		}
+		TSharedPtr<FJsonObject> Response = AudioMCP::MakeOkResponse(
+			FString::Printf(TEXT("Blueprint '%s': %d graphs, %d total nodes"),
+				*BPName, GraphList.Num(), TotalNodes));
+		Response->SetStringField(TEXT("asset_path"), AssetPath);
+		Response->SetStringField(TEXT("blueprint_name"), BPName);
+		Response->SetStringField(TEXT("parent_class"), ParentClass);
+		Response->SetStringField(TEXT("blueprint_type"), BlueprintType);
+		Response->SetNumberField(TEXT("total_nodes"), TotalNodes);
+		Response->SetArrayField(TEXT("graphs"), GraphList);
+		return Response;
+	}
+
 	// --- 6. Iterate graphs and nodes ---
 	TArray<TSharedPtr<FJsonValue>> GraphsArray;
 	TArray<FString> AudioFunctions;
@@ -671,8 +862,16 @@ TSharedPtr<FJsonObject> FScanBlueprintCommand::Execute(
 
 	for (const FGraphEntry& Entry : AllGraphs)
 	{
+		// Skip graphs that don't match the filter
+		if (!GraphNameFilter.IsEmpty() && Entry.Graph->GetName() != GraphNameFilter)
+		{
+			continue;
+		}
 		UEdGraph* Graph = Entry.Graph;
 		TArray<TSharedPtr<FJsonValue>> NodesArray;
+
+		// Map NodeGuid -> index for edge building
+		TMap<FGuid, int32> NodeGuidToIndex;
 
 		for (UEdGraphNode* Node : Graph->Nodes)
 		{
@@ -755,9 +954,13 @@ TSharedPtr<FJsonObject> FScanBlueprintCommand::Execute(
 
 			// Build node JSON
 			TSharedPtr<FJsonObject> NodeObj = MakeShared<FJsonObject>();
+			NodeObj->SetStringField(TEXT("node_id"), Node->NodeGuid.ToString());
 			NodeObj->SetStringField(TEXT("type"), NodeType);
 			NodeObj->SetStringField(TEXT("title"),
 				Node->GetNodeTitle(ENodeTitleType::ListView).ToString());
+
+			// Track for edge building
+			NodeGuidToIndex.Add(Node->NodeGuid, NodesArray.Num());
 
 			if (!FuncName.IsEmpty())
 			{
@@ -831,6 +1034,29 @@ TSharedPtr<FJsonObject> FScanBlueprintCommand::Execute(
 			NodesArray.Add(MakeShared<FJsonValueObject>(NodeObj));
 		}
 
+		// Build edges by walking output pins' LinkedTo arrays (output→input only to avoid duplicates)
+		TArray<TSharedPtr<FJsonValue>> EdgesArray;
+		for (UEdGraphNode* Node : Graph->Nodes)
+		{
+			if (!Node) continue;
+			for (const UEdGraphPin* Pin : Node->Pins)
+			{
+				if (!Pin || Pin->Direction != EEdGraphPinDirection::EGPD_Output) continue;
+				for (const UEdGraphPin* LinkedPin : Pin->LinkedTo)
+				{
+					if (!LinkedPin || !LinkedPin->GetOwningNode()) continue;
+
+					TSharedPtr<FJsonObject> EdgeObj = MakeShared<FJsonObject>();
+					EdgeObj->SetStringField(TEXT("from_node"), Node->NodeGuid.ToString());
+					EdgeObj->SetStringField(TEXT("from_pin"), Pin->PinName.ToString());
+					EdgeObj->SetStringField(TEXT("to_node"), LinkedPin->GetOwningNode()->NodeGuid.ToString());
+					EdgeObj->SetStringField(TEXT("to_pin"), LinkedPin->PinName.ToString());
+					EdgeObj->SetStringField(TEXT("pin_type"), Pin->PinType.PinCategory.ToString());
+					EdgesArray.Add(MakeShared<FJsonValueObject>(EdgeObj));
+				}
+			}
+		}
+
 		// Build graph JSON
 		TSharedPtr<FJsonObject> GraphObj = MakeShared<FJsonObject>();
 		GraphObj->SetStringField(TEXT("name"), Graph->GetName());
@@ -838,6 +1064,8 @@ TSharedPtr<FJsonObject> FScanBlueprintCommand::Execute(
 		GraphObj->SetNumberField(TEXT("total_nodes"), Graph->Nodes.Num());
 		GraphObj->SetNumberField(TEXT("shown_nodes"), NodesArray.Num());
 		GraphObj->SetArrayField(TEXT("nodes"), NodesArray);
+		GraphObj->SetNumberField(TEXT("total_edges"), EdgesArray.Num());
+		GraphObj->SetArrayField(TEXT("edges"), EdgesArray);
 
 		GraphsArray.Add(MakeShared<FJsonValueObject>(GraphObj));
 	}
@@ -997,5 +1225,423 @@ TSharedPtr<FJsonObject> FListAssetsCommand::Execute(
 	{
 		Response->SetStringField(TEXT("class_filter"), ClassFilter);
 	}
+	return Response;
+}
+
+// ---------------------------------------------------------------------------
+// export_audio_blueprint — focused audio subgraph export with edges
+// ---------------------------------------------------------------------------
+
+TSharedPtr<FJsonObject> FExportAudioBlueprintCommand::Execute(
+	const TSharedPtr<FJsonObject>& Params,
+	FAudioMCPBuilderManager& BuilderManager)
+{
+	// --- 1. Extract & validate params ---
+	FString AssetPath;
+	if (!Params->TryGetStringField(TEXT("asset_path"), AssetPath))
+	{
+		return AudioMCP::MakeErrorResponse(TEXT("Missing required param 'asset_path'"));
+	}
+	if (!AssetPath.StartsWith(TEXT("/Game/")) && !AssetPath.StartsWith(TEXT("/Engine/")))
+	{
+		return AudioMCP::MakeErrorResponse(
+			FString::Printf(TEXT("Asset path must start with /Game/ or /Engine/ (got '%s')"), *AssetPath));
+	}
+	if (AssetPath.Contains(TEXT("..")))
+	{
+		return AudioMCP::MakeErrorResponse(TEXT("Asset path must not contain '..'"));
+	}
+
+	// --- 2. Load Blueprint ---
+	UObject* Asset = StaticLoadObject(UObject::StaticClass(), nullptr, *AssetPath);
+	if (!Asset)
+	{
+		return AudioMCP::MakeErrorResponse(
+			FString::Printf(TEXT("Could not load asset '%s'"), *AssetPath));
+	}
+	UBlueprint* BP = Cast<UBlueprint>(Asset);
+	if (!BP)
+	{
+		return AudioMCP::MakeErrorResponse(
+			FString::Printf(TEXT("Asset '%s' is not a Blueprint"), *AssetPath));
+	}
+
+	// --- 3. Collect all graphs ---
+	TArray<UEdGraph*> AllGraphs;
+	for (UEdGraph* G : BP->UbergraphPages) { if (G) AllGraphs.Add(G); }
+	for (UEdGraph* G : BP->FunctionGraphs) { if (G) AllGraphs.Add(G); }
+	for (UEdGraph* G : BP->MacroGraphs) { if (G) AllGraphs.Add(G); }
+
+	// --- 4. Find audio-relevant nodes + 1-hop neighbours ---
+	TSet<UEdGraphNode*> AudioNodes;
+	TSet<UEdGraphNode*> IncludedNodes;
+
+	for (UEdGraph* Graph : AllGraphs)
+	{
+		for (UEdGraphNode* Node : Graph->Nodes)
+		{
+			if (!Node) continue;
+			FString Title = Node->GetNodeTitle(ENodeTitleType::ListView).ToString();
+			if (AudioMCP::IsAudioRelevant(Title))
+			{
+				AudioNodes.Add(Node);
+			}
+			// Also check function name for CallFunction nodes
+			if (UK2Node_CallFunction* CallNode = Cast<UK2Node_CallFunction>(Node))
+			{
+				FString FuncName = CallNode->FunctionReference.GetMemberName().ToString();
+				if (AudioMCP::IsAudioRelevant(FuncName))
+				{
+					AudioNodes.Add(Node);
+				}
+			}
+		}
+	}
+
+	// Add audio nodes + 1-hop neighbours
+	for (UEdGraphNode* AudioNode : AudioNodes)
+	{
+		IncludedNodes.Add(AudioNode);
+		for (const UEdGraphPin* Pin : AudioNode->Pins)
+		{
+			if (!Pin) continue;
+			for (const UEdGraphPin* Linked : Pin->LinkedTo)
+			{
+				if (Linked && Linked->GetOwningNode())
+				{
+					IncludedNodes.Add(Linked->GetOwningNode());
+				}
+			}
+		}
+	}
+
+	// --- 5. Build nodes JSON ---
+	TArray<TSharedPtr<FJsonValue>> NodesArray;
+	TSet<FGuid> IncludedGuids;
+
+	for (UEdGraphNode* Node : IncludedNodes)
+	{
+		IncludedGuids.Add(Node->NodeGuid);
+
+		TSharedPtr<FJsonObject> NodeObj = MakeShared<FJsonObject>();
+		NodeObj->SetStringField(TEXT("node_id"), Node->NodeGuid.ToString());
+		NodeObj->SetStringField(TEXT("title"),
+			Node->GetNodeTitle(ENodeTitleType::ListView).ToString());
+		NodeObj->SetStringField(TEXT("class"), Node->GetClass()->GetName());
+		NodeObj->SetBoolField(TEXT("audio_relevant"), AudioNodes.Contains(Node));
+		NodeObj->SetNumberField(TEXT("x"), Node->NodePosX);
+		NodeObj->SetNumberField(TEXT("y"), Node->NodePosY);
+
+		if (!Node->NodeComment.IsEmpty())
+		{
+			NodeObj->SetStringField(TEXT("comment"), Node->NodeComment);
+		}
+
+		// Function name for CallFunction nodes
+		if (UK2Node_CallFunction* CallNode = Cast<UK2Node_CallFunction>(Node))
+		{
+			NodeObj->SetStringField(TEXT("function_name"),
+				CallNode->FunctionReference.GetMemberName().ToString());
+		}
+
+		// Pins
+		TArray<TSharedPtr<FJsonValue>> PinsArray;
+		for (const UEdGraphPin* Pin : Node->Pins)
+		{
+			if (!Pin) continue;
+			TSharedPtr<FJsonObject> PinObj = MakeShared<FJsonObject>();
+			PinObj->SetStringField(TEXT("name"), Pin->PinName.ToString());
+			PinObj->SetStringField(TEXT("direction"),
+				Pin->Direction == EEdGraphPinDirection::EGPD_Input
+					? TEXT("input") : TEXT("output"));
+			PinObj->SetStringField(TEXT("type"), Pin->PinType.PinCategory.ToString());
+			if (Pin->PinType.PinSubCategoryObject.IsValid())
+			{
+				PinObj->SetStringField(TEXT("sub_type"),
+					Pin->PinType.PinSubCategoryObject->GetName());
+			}
+			if (!Pin->DefaultValue.IsEmpty())
+			{
+				PinObj->SetStringField(TEXT("default"), Pin->DefaultValue);
+			}
+			PinObj->SetBoolField(TEXT("connected"), Pin->LinkedTo.Num() > 0);
+			PinsArray.Add(MakeShared<FJsonValueObject>(PinObj));
+		}
+		NodeObj->SetArrayField(TEXT("pins"), PinsArray);
+
+		NodesArray.Add(MakeShared<FJsonValueObject>(NodeObj));
+	}
+
+	// --- 6. Build edges (within included set only) ---
+	TArray<TSharedPtr<FJsonValue>> EdgesArray;
+	for (UEdGraphNode* Node : IncludedNodes)
+	{
+		for (const UEdGraphPin* Pin : Node->Pins)
+		{
+			if (!Pin || Pin->Direction != EEdGraphPinDirection::EGPD_Output) continue;
+			for (const UEdGraphPin* Linked : Pin->LinkedTo)
+			{
+				if (!Linked || !Linked->GetOwningNode()) continue;
+				if (!IncludedGuids.Contains(Linked->GetOwningNode()->NodeGuid)) continue;
+
+				TSharedPtr<FJsonObject> EdgeObj = MakeShared<FJsonObject>();
+				EdgeObj->SetStringField(TEXT("from_node"), Node->NodeGuid.ToString());
+				EdgeObj->SetStringField(TEXT("from_pin"), Pin->PinName.ToString());
+				EdgeObj->SetStringField(TEXT("to_node"), Linked->GetOwningNode()->NodeGuid.ToString());
+				EdgeObj->SetStringField(TEXT("to_pin"), Linked->PinName.ToString());
+				EdgeObj->SetStringField(TEXT("pin_type"), Pin->PinType.PinCategory.ToString());
+				EdgesArray.Add(MakeShared<FJsonValueObject>(EdgeObj));
+			}
+		}
+	}
+
+	// --- 7. Response ---
+	TSharedPtr<FJsonObject> Response = AudioMCP::MakeOkResponse(
+		FString::Printf(TEXT("Exported audio subgraph from '%s': %d nodes, %d edges"),
+			*BP->GetName(), NodesArray.Num(), EdgesArray.Num()));
+	Response->SetStringField(TEXT("asset_path"), AssetPath);
+	Response->SetStringField(TEXT("blueprint_name"), BP->GetName());
+	Response->SetNumberField(TEXT("audio_nodes"), AudioNodes.Num());
+	Response->SetNumberField(TEXT("total_nodes"), NodesArray.Num());
+	Response->SetArrayField(TEXT("nodes"), NodesArray);
+	Response->SetArrayField(TEXT("edges"), EdgesArray);
+	return Response;
+}
+
+// ---------------------------------------------------------------------------
+// list_blueprint_functions — enumerate BlueprintCallable UFunctions
+// ---------------------------------------------------------------------------
+
+namespace
+{
+	/** Map FProperty subclass to a short type string for JSON output. */
+	FString PropertyTypeString(const FProperty* Prop)
+	{
+		if (!Prop) return TEXT("Unknown");
+
+		// Use GetCPPType for the canonical name, then simplify common cases
+		// Note: variable must NOT be named "CPP" — UE defines #define CPP 1 in CoreDefines.h
+		FString TypeStr = Prop->GetCPPType();
+
+		// Strip common prefixes for cleaner output
+		TypeStr.RemoveFromStart(TEXT("class "));
+		TypeStr.RemoveFromStart(TEXT("struct "));
+		TypeStr.RemoveFromStart(TEXT("enum "));
+
+		return TypeStr;
+	}
+}
+
+TSharedPtr<FJsonObject> FListBlueprintFunctionsCommand::Execute(
+	const TSharedPtr<FJsonObject>& Params,
+	FAudioMCPBuilderManager& BuilderManager)
+{
+	// --- Params ---
+	FString Filter;
+	Params->TryGetStringField(TEXT("filter"), Filter);
+
+	FString ClassFilter;
+	Params->TryGetStringField(TEXT("class_filter"), ClassFilter);
+
+	bool bAudioOnly = false;
+	Params->TryGetBoolField(TEXT("audio_only"), bAudioOnly);
+
+	bool bListClassesOnly = false;
+	Params->TryGetBoolField(TEXT("list_classes_only"), bListClassesOnly);
+
+	bool bIncludePins = true;
+	Params->TryGetBoolField(TEXT("include_pins"), bIncludePins);
+
+	int32 Limit = 500;
+	double LimitVal;
+	if (Params->TryGetNumberField(TEXT("limit"), LimitVal))
+	{
+		Limit = FMath::Clamp(static_cast<int32>(LimitVal), 1, 50000);
+	}
+
+	// Optional offset for pagination
+	int32 Offset = 0;
+	double OffsetVal;
+	if (Params->TryGetNumberField(TEXT("offset"), OffsetVal))
+	{
+		Offset = FMath::Max(0, static_cast<int32>(OffsetVal));
+	}
+
+	// --- Class summary mode ---
+	if (bListClassesOnly)
+	{
+		TMap<FString, int32> ClassCounts;
+		for (TObjectIterator<UClass> ClassIt; ClassIt; ++ClassIt)
+		{
+			UClass* Class = *ClassIt;
+			if (!Class || Class->HasAnyClassFlags(CLASS_Deprecated | CLASS_NewerVersionExists))
+				continue;
+
+			FString ClassName = Class->GetName();
+			if (!ClassFilter.IsEmpty() && !ClassName.Equals(ClassFilter, ESearchCase::IgnoreCase))
+				continue;
+
+			if (bAudioOnly && !AudioMCP::IsAudioRelevant(ClassName))
+				continue;
+
+			int32 FuncCount = 0;
+			for (TFieldIterator<UFunction> FuncIt(Class, EFieldIterationFlags::None); FuncIt; ++FuncIt)
+			{
+				if ((*FuncIt)->HasAnyFunctionFlags(FUNC_BlueprintCallable))
+					FuncCount++;
+			}
+
+			if (FuncCount > 0)
+			{
+				ClassCounts.Add(ClassName, FuncCount);
+			}
+		}
+
+		TArray<TSharedPtr<FJsonValue>> ClassArray;
+		int32 TotalFuncs = 0;
+		for (const auto& Pair : ClassCounts)
+		{
+			if (ClassArray.Num() >= Limit) break;
+			TSharedPtr<FJsonObject> Obj = MakeShared<FJsonObject>();
+			Obj->SetStringField(TEXT("class_name"), Pair.Key);
+			Obj->SetNumberField(TEXT("function_count"), Pair.Value);
+			ClassArray.Add(MakeShared<FJsonValueObject>(Obj));
+			TotalFuncs += Pair.Value;
+		}
+
+		TSharedPtr<FJsonObject> Response = AudioMCP::MakeOkResponse(
+			FString::Printf(TEXT("Found %d classes with %d callable functions"),
+				ClassCounts.Num(), TotalFuncs));
+		Response->SetArrayField(TEXT("classes"), ClassArray);
+		Response->SetNumberField(TEXT("total_classes"), ClassCounts.Num());
+		Response->SetNumberField(TEXT("total_functions"), TotalFuncs);
+		Response->SetNumberField(TEXT("shown"), ClassArray.Num());
+		return Response;
+	}
+
+	// --- Full function enumeration ---
+	TArray<TSharedPtr<FJsonValue>> FuncArray;
+	int32 TotalMatched = 0;
+
+	for (TObjectIterator<UClass> ClassIt; ClassIt; ++ClassIt)
+	{
+		UClass* Class = *ClassIt;
+		if (!Class || Class->HasAnyClassFlags(CLASS_Deprecated | CLASS_NewerVersionExists))
+			continue;
+
+		FString ClassName = Class->GetName();
+
+		// Class filter: exact match
+		if (!ClassFilter.IsEmpty() && !ClassName.Equals(ClassFilter, ESearchCase::IgnoreCase))
+			continue;
+
+		// Audio-only: skip non-audio classes (unless a function matches)
+		bool bClassAudioRelevant = AudioMCP::IsAudioRelevant(ClassName);
+
+		for (TFieldIterator<UFunction> FuncIt(Class, EFieldIterationFlags::None); FuncIt; ++FuncIt)
+		{
+			UFunction* Func = *FuncIt;
+			if (!Func->HasAnyFunctionFlags(FUNC_BlueprintCallable))
+				continue;
+
+			FString FuncName = Func->GetName();
+
+			// Substring filter on function or class name
+			if (!Filter.IsEmpty()
+				&& !FuncName.Contains(Filter, ESearchCase::IgnoreCase)
+				&& !ClassName.Contains(Filter, ESearchCase::IgnoreCase))
+			{
+				continue;
+			}
+
+			bool bFuncAudioRelevant = bClassAudioRelevant || AudioMCP::IsAudioRelevant(FuncName);
+			if (bAudioOnly && !bFuncAudioRelevant)
+				continue;
+
+			TotalMatched++;
+
+			// Skip entries before offset
+			if (TotalMatched <= Offset)
+				continue;
+
+			if (FuncArray.Num() >= Limit)
+				continue; // keep counting total but stop emitting
+
+			TSharedPtr<FJsonObject> FuncObj = MakeShared<FJsonObject>();
+			FuncObj->SetStringField(TEXT("name"), FuncName);
+			FuncObj->SetStringField(TEXT("class_name"), ClassName);
+
+			// Category from metadata
+			FString Category;
+			if (Func->HasMetaData(TEXT("Category")))
+			{
+				Category = Func->GetMetaData(TEXT("Category"));
+				FuncObj->SetStringField(TEXT("category"), Category);
+			}
+
+			// Description / tooltip
+			FString Tooltip = Func->GetToolTipText().ToString();
+			if (!Tooltip.IsEmpty())
+			{
+				FuncObj->SetStringField(TEXT("description"), Tooltip);
+			}
+
+			// Flags
+			FuncObj->SetBoolField(TEXT("is_pure"),
+				Func->HasAnyFunctionFlags(FUNC_BlueprintPure));
+			FuncObj->SetBoolField(TEXT("is_static"),
+				Func->HasAnyFunctionFlags(FUNC_Static));
+
+			// --- Parameters ---
+			if (bIncludePins)
+			{
+				TArray<TSharedPtr<FJsonValue>> ParamArray;
+				for (TFieldIterator<FProperty> ParamIt(Func); ParamIt; ++ParamIt)
+				{
+					FProperty* Param = *ParamIt;
+					TSharedPtr<FJsonObject> ParamObj = MakeShared<FJsonObject>();
+					ParamObj->SetStringField(TEXT("name"), Param->GetName());
+					ParamObj->SetStringField(TEXT("type"), PropertyTypeString(Param));
+
+					bool bIsReturn = Param->HasAnyPropertyFlags(CPF_ReturnParm);
+					bool bIsOut = Param->HasAnyPropertyFlags(CPF_OutParm);
+
+					if (bIsReturn)
+					{
+						ParamObj->SetStringField(TEXT("direction"), TEXT("return"));
+					}
+					else if (bIsOut)
+					{
+						ParamObj->SetStringField(TEXT("direction"), TEXT("out"));
+					}
+					else
+					{
+						ParamObj->SetStringField(TEXT("direction"), TEXT("in"));
+					}
+
+					// Default value from metadata
+					FString MetaDefault;
+					if (Func->HasMetaData(*FString::Printf(TEXT("CPP_Default_%s"), *Param->GetName())))
+					{
+						MetaDefault = Func->GetMetaData(*FString::Printf(TEXT("CPP_Default_%s"), *Param->GetName()));
+						ParamObj->SetStringField(TEXT("default"), MetaDefault);
+					}
+
+					ParamArray.Add(MakeShared<FJsonValueObject>(ParamObj));
+				}
+				FuncObj->SetArrayField(TEXT("params"), ParamArray);
+			}
+
+			FuncArray.Add(MakeShared<FJsonValueObject>(FuncObj));
+		}
+	}
+
+	TSharedPtr<FJsonObject> Response = AudioMCP::MakeOkResponse(
+		FString::Printf(TEXT("Found %d callable functions (%d shown)"),
+			TotalMatched, FuncArray.Num()));
+	Response->SetArrayField(TEXT("functions"), FuncArray);
+	Response->SetNumberField(TEXT("total"), TotalMatched);
+	Response->SetNumberField(TEXT("shown"), FuncArray.Num());
+	Response->SetNumberField(TEXT("offset"), Offset);
 	return Response;
 }

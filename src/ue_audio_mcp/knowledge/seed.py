@@ -1,7 +1,9 @@
 """Seed the knowledge database from static Python data.
 
 Called on first run (when metasound_nodes table is empty).
-Populates all 8 tables from existing knowledge modules and research data.
+Populates 14 table groups from existing knowledge modules and research data.
+Schema v2 also backfills class_name, variant_group, source, mcp_note columns
+and populates the node_aliases table.
 """
 
 from __future__ import annotations
@@ -31,17 +33,50 @@ def seed_database(db: KnowledgeDB) -> dict[str, int]:
     counts["audio_console_commands"] = _seed_console_commands(db)
     counts["spatialization_methods"] = _seed_spatialization(db)
     counts["attenuation_subsystems"] = _seed_attenuation(db)
+    counts["pin_mappings"] = _seed_pin_mappings(db)
+    counts["node_aliases"] = _seed_node_aliases(db)
 
     total = sum(counts.values())
     log.info("Seeded knowledge DB: %d total entries %s", total, counts)
     return counts
 
 
+def _infer_variant_group(name: str) -> str:
+    """Infer variant group from node name.
+
+    'Audio Mixer (Stereo, 3)' -> 'Audio Mixer (Stereo)'
+    'Trigger Any (4)'         -> 'Trigger Any'
+    'Clamp (Float)'           -> 'Clamp'
+    'Sine'                    -> ''  (no variant)
+    """
+    import re
+    # Pattern: "Name (Type, N)" -> "Name (Type)"
+    m = re.match(r'^(.+?)\s*\(([^,]+),\s*\d+\)$', name)
+    if m:
+        return f"{m.group(1)} ({m.group(2).strip()})"
+    # Pattern: "Name (N)" where N is a digit -> "Name"
+    m = re.match(r'^(.+?)\s*\(\d+\)$', name)
+    if m:
+        return m.group(1).strip()
+    # Pattern: "Name (Type)" -> "Name"  (e.g. Clamp (Float) -> Clamp)
+    m = re.match(r'^(.+?)\s*\([^)]+\)$', name)
+    if m:
+        base = m.group(1).strip()
+        # Only group if there are other variants with same base
+        return base
+    return ""
+
+
 def _seed_metasound_nodes(db: KnowledgeDB) -> int:
     from ue_audio_mcp.knowledge.metasound_nodes import METASOUND_NODES
 
     for node in METASOUND_NODES.values():
-        db.insert_node(node)
+        enriched = dict(node)
+        if not enriched.get("variant_group"):
+            enriched["variant_group"] = _infer_variant_group(enriched["name"])
+        if not enriched.get("source"):
+            enriched["source"] = "catalogue"
+        db.insert_node(enriched)
     return len(METASOUND_NODES)
 
 
@@ -228,7 +263,11 @@ def _seed_blueprint_audio(db: KnowledgeDB) -> int:
 
 
 def _seed_blueprint_scraped(db: KnowledgeDB) -> int:
-    """Seed scraped Blueprint node specs (with full pin data)."""
+    """Seed Blueprint audio functions from the verified catalogue.
+
+    Loads curated functions from blueprint_audio_catalogue.json (55 entries)
+    instead of the old 26K-node scraped bp_node_specs.json.
+    """
     from ue_audio_mcp.knowledge.blueprint_scraped import load_scraped_nodes
 
     nodes = load_scraped_nodes()
@@ -309,3 +348,54 @@ def _seed_attenuation(db: KnowledgeDB) -> int:
                         if k not in ("description", "params")},
         })
     return len(ATTENUATION_SUBSYSTEMS)
+
+
+def _seed_pin_mappings(db: KnowledgeDB) -> int:
+    """Seed cross-system pin mappings (BP <-> MetaSounds <-> Wwise)."""
+    from ue_audio_mcp.knowledge.bp_ms_pin_mappings import PIN_MAPPINGS
+
+    return db.insert_pin_mappings_batch(PIN_MAPPINGS)
+
+
+def _seed_node_aliases(db: KnowledgeDB) -> int:
+    """Populate node_aliases from CLASS_NAME_TO_DISPLAY + DISPLAY_TO_CLASS.
+
+    Creates aliases of types: 'display', 'class_name', 'short'.
+    """
+    from ue_audio_mcp.knowledge.metasound_nodes import (
+        CLASS_NAME_TO_DISPLAY,
+        DISPLAY_TO_CLASS,
+        METASOUND_NODES,
+    )
+
+    aliases: list[tuple[str, str, str]] = []  # (alias, canonical, alias_type)
+
+    # 1. Display name -> canonical (identity, for completeness)
+    for name in METASOUND_NODES:
+        aliases.append((name, name, "display"))
+
+    # 2. Class name -> canonical
+    for class_name, display_name in CLASS_NAME_TO_DISPLAY.items():
+        if display_name in METASOUND_NODES:
+            aliases.append((class_name, display_name, "class_name"))
+
+    # 3. Short names (strip parenthetical suffixes)
+    import re
+    seen_shorts: set[str] = set()
+    for name in METASOUND_NODES:
+        m = re.match(r'^(.+?)\s*\(', name)
+        if m:
+            short = m.group(1).strip()
+            # Only add if the short name is unambiguous (maps to one node)
+            # or if it's already been added as an extra alias
+            if short not in METASOUND_NODES and short not in seen_shorts:
+                aliases.append((short, name, "short"))
+                seen_shorts.add(short)
+
+    # 4. Extra display->class aliases
+    for display_name, class_name in DISPLAY_TO_CLASS.items():
+        canonical = CLASS_NAME_TO_DISPLAY.get(class_name, display_name)
+        if canonical in METASOUND_NODES and display_name != canonical:
+            aliases.append((display_name, canonical, "display"))
+
+    return db.insert_node_aliases_batch(aliases)

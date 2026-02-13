@@ -1,7 +1,7 @@
 {
   "name": "Subtractive Synthesis",
   "asset_type": "Source",
-  "description": "Classic subtractive synthesis: White Noise through a Biquad Band Pass filter with LFO modulating cutoff frequency. LFO sweeps cutoff between Min Value (300 Hz) and Max Value (20000 Hz) at the Frequency rate. Mixer Vol controls noise amplitude before filtering. Bandwidth controls filter resonance width. Produces evolving filtered noise textures \u2014 wind, sci-fi ambience, sweeps.",
+  "description": "Classic subtractive synthesis: White Noise through a Biquad Band Pass filter with LFO modulating cutoff frequency. LFO sweeps cutoff between Min Value (300 Hz) and Max Value (20000 Hz) at the Frequency rate. Mixer Vol controls noise amplitude before filtering. Bandwidth controls filter resonance width. Produces evolving filtered noise textures — wind, sci-fi ambience, sweeps.",
   "author": "Matt Spendlove (msp)",
   "source_url": "https://dev.epicgames.com/community/learning/tutorials/metasound-subtractive-synthesis",
   "interfaces": [
@@ -17,7 +17,7 @@
       "type": "Float",
       "default": 0.096,
       "widget": "slider",
-      "description": "LFO rate in Hz \u2014 slow values (0.01-0.5) for sweeps, faster (1-10) for wobble"
+      "description": "LFO rate in Hz — slow values (0.01-0.5) for sweeps, faster (1-10) for wobble"
     },
     {
       "name": "Mixer Vol",
@@ -31,7 +31,7 @@
       "type": "Float",
       "default": 0.444,
       "widget": "slider",
-      "description": "Band pass filter width \u2014 lower = more resonant, higher = wider pass band"
+      "description": "Band pass filter width — lower = more resonant, higher = wider pass band"
     }
   ],
   "outputs": [
@@ -42,6 +42,14 @@
     {
       "name": "OnFinished",
       "type": "Trigger"
+    },
+    {
+      "name": "Out Stereo L",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo R",
+      "type": "Audio"
     }
   ],
   "nodes": [
@@ -56,23 +64,23 @@
         "Seed": -1,
         "Type": "White Noise"
       },
-      "comment": "White noise source \u2014 seed -1 for random each play"
+      "comment": "White noise source — seed -1 for random each play"
     },
     {
       "id": "mono_mixer",
-      "node_type": "Mono Mixer (2)",
+      "node_type": "Audio Mixer (Mono, 2)",
       "position": [
         300,
         200
       ],
       "defaults": {
-        "Gain 1 (Lin)": 1.0
+        "Gain 1": 1.0
       },
       "comment": "Gain 0 driven by Mixer Vol input, Gain 1 unused (default 1.0)"
     },
     {
       "id": "lfo",
-      "node_type": "LFO",
+      "node_type": "Low-Frequency Oscillator",
       "position": [
         300,
         0
@@ -81,7 +89,6 @@
         "Shape": "Sine",
         "Min Value": 300.0,
         "Max Value": 20000.0,
-        "Sync": false,
         "Phase Offset": 0.0,
         "Pulse Width": 0.5
       },
@@ -95,24 +102,18 @@
         200
       ],
       "defaults": {
-        "Gain (dB)": 0.0,
+        "Gain": 0.0,
         "Type": "Band Pass"
       },
-      "comment": "Band pass filter \u2014 cutoff driven by LFO, bandwidth by graph input"
+      "comment": "Band pass filter — cutoff driven by LFO, bandwidth by graph input"
     }
   ],
   "connections": [
     {
       "from_node": "__graph__",
-      "from_pin": "OnPlay",
-      "to_node": "noise",
-      "to_pin": "Play"
-    },
-    {
-      "from_node": "__graph__",
       "from_pin": "Mixer Vol",
       "to_node": "mono_mixer",
-      "to_pin": "Gain 0 (Lin)"
+      "to_pin": "Gain 0"
     },
     {
       "from_node": "__graph__",
@@ -149,6 +150,18 @@
       "from_pin": "Out",
       "to_node": "__graph__",
       "to_pin": "Out Mono"
+    },
+    {
+      "from_node": "biquad_filter",
+      "from_pin": "Out",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo L"
+    },
+    {
+      "from_node": "biquad_filter",
+      "from_pin": "Out",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo R"
     }
   ]
 }

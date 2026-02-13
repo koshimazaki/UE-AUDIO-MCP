@@ -76,7 +76,7 @@
     },
     {
       "from_node": "wave_player",
-      "from_pin": "Audio",
+      "from_pin": "Out Mono",
       "to_node": "itd_panner",
       "to_pin": "In"
     },
@@ -88,7 +88,7 @@
     },
     {
       "from_node": "wave_player",
-      "from_pin": "Audio",
+      "from_pin": "Out Mono",
       "to_node": "__graph__",
       "to_pin": "Out Mono"
     },

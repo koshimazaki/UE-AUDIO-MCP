@@ -1,6 +1,7 @@
 """SQLite knowledge database — structured queries over nodes, WAAPI, patterns.
 
-Same 8-table schema designed for future Cloudflare D1 migration.
+Schema v2 (2026-02-12): 21 tables. Adds class_name/variant_group/source/mcp_note
+to metasound_nodes, plus node_aliases, graph_node_usage, bp_audio_triggers.
 Default location: ~/.ue-audio-mcp/knowledge.db (persistent, auto-seeded on first run).
 """
 
@@ -26,8 +27,15 @@ CREATE TABLE IF NOT EXISTS metasound_nodes (
     inputs      TEXT NOT NULL,
     outputs     TEXT NOT NULL,
     tags        TEXT NOT NULL,
-    complexity  INTEGER NOT NULL DEFAULT 2
+    complexity  INTEGER NOT NULL DEFAULT 2,
+    class_name  TEXT NOT NULL DEFAULT '',
+    variant_group TEXT NOT NULL DEFAULT '',
+    source      TEXT NOT NULL DEFAULT 'catalogue',
+    mcp_note    TEXT NOT NULL DEFAULT ''
 );
+CREATE INDEX IF NOT EXISTS idx_msn_class ON metasound_nodes(class_name);
+CREATE INDEX IF NOT EXISTS idx_msn_variant ON metasound_nodes(variant_group);
+CREATE INDEX IF NOT EXISTS idx_msn_source ON metasound_nodes(source);
 
 CREATE TABLE IF NOT EXISTS waapi_functions (
     uri         TEXT PRIMARY KEY,
@@ -153,6 +161,7 @@ CREATE TABLE IF NOT EXISTS project_audio_assets (
     refs        TEXT NOT NULL DEFAULT '[]',
     properties  TEXT NOT NULL DEFAULT '[]',
     details     TEXT NOT NULL DEFAULT '{}',
+    source      TEXT NOT NULL DEFAULT '',
     PRIMARY KEY (name, project)
 );
 CREATE INDEX IF NOT EXISTS idx_paa_type ON project_audio_assets(asset_type);
@@ -167,8 +176,54 @@ CREATE TABLE IF NOT EXISTS project_blueprints (
     components  TEXT NOT NULL DEFAULT '[]',
     events      TEXT NOT NULL DEFAULT '[]',
     refs        TEXT NOT NULL DEFAULT '[]',
+    source      TEXT NOT NULL DEFAULT '',
     PRIMARY KEY (name, project)
 );
+
+CREATE TABLE IF NOT EXISTS pin_mappings (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    bp_function TEXT NOT NULL,
+    bp_pin      TEXT NOT NULL,
+    ms_node     TEXT NOT NULL DEFAULT '',
+    ms_pin      TEXT NOT NULL DEFAULT '',
+    data_type   TEXT NOT NULL,
+    direction   TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT ''
+);
+CREATE INDEX IF NOT EXISTS idx_pm_direction ON pin_mappings(direction);
+CREATE INDEX IF NOT EXISTS idx_pm_data_type ON pin_mappings(data_type);
+
+CREATE TABLE IF NOT EXISTS node_aliases (
+    alias       TEXT NOT NULL,
+    canonical   TEXT NOT NULL,
+    alias_type  TEXT NOT NULL,
+    PRIMARY KEY (alias, alias_type)
+);
+CREATE INDEX IF NOT EXISTS idx_na_canonical ON node_aliases(canonical);
+
+CREATE TABLE IF NOT EXISTS graph_node_usage (
+    graph_name  TEXT NOT NULL,
+    project     TEXT NOT NULL,
+    node_class  TEXT NOT NULL,
+    node_display TEXT NOT NULL,
+    usage_count INTEGER NOT NULL DEFAULT 1,
+    PRIMARY KEY (graph_name, project, node_class)
+);
+CREATE INDEX IF NOT EXISTS idx_gnu_node ON graph_node_usage(node_display);
+CREATE INDEX IF NOT EXISTS idx_gnu_project ON graph_node_usage(project);
+
+CREATE TABLE IF NOT EXISTS bp_audio_triggers (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    bp_name     TEXT NOT NULL,
+    project     TEXT NOT NULL,
+    trigger_type TEXT NOT NULL,
+    function_name TEXT NOT NULL,
+    target_asset TEXT NOT NULL DEFAULT '',
+    details     TEXT NOT NULL DEFAULT '{}'
+);
+CREATE INDEX IF NOT EXISTS idx_bat_bp ON bp_audio_triggers(bp_name, project);
+CREATE INDEX IF NOT EXISTS idx_bat_type ON bp_audio_triggers(trigger_type);
+CREATE INDEX IF NOT EXISTS idx_bat_target ON bp_audio_triggers(target_asset);
 """
 
 
@@ -201,6 +256,43 @@ class KnowledgeDB:
         self._conn = sqlite3.connect(db_path)
         self._conn.row_factory = sqlite3.Row
         self._conn.executescript(_SCHEMA)
+        self._migrate_v2()
+
+    def _migrate_v2(self) -> None:
+        """Add v2 columns to existing databases (idempotent)."""
+        # Check if metasound_nodes already has the new columns
+        cur = self._conn.execute("PRAGMA table_info(metasound_nodes)")
+        existing_cols = {row[1] for row in cur.fetchall()}
+        v2_cols = {
+            "class_name": "TEXT NOT NULL DEFAULT ''",
+            "variant_group": "TEXT NOT NULL DEFAULT ''",
+            "source": "TEXT NOT NULL DEFAULT 'catalogue'",
+            "mcp_note": "TEXT NOT NULL DEFAULT ''",
+        }
+        for col, typedef in v2_cols.items():
+            if col not in existing_cols:
+                self._conn.execute(
+                    f"ALTER TABLE metasound_nodes ADD COLUMN {col} {typedef}"
+                )
+                log.info("Migrated metasound_nodes: added column %s", col)
+
+        # Add source column to project_audio_assets
+        cur = self._conn.execute("PRAGMA table_info(project_audio_assets)")
+        paa_cols = {row[1] for row in cur.fetchall()}
+        if "source" not in paa_cols:
+            self._conn.execute(
+                "ALTER TABLE project_audio_assets ADD COLUMN source TEXT NOT NULL DEFAULT ''"
+            )
+
+        # Add source column to project_blueprints
+        cur = self._conn.execute("PRAGMA table_info(project_blueprints)")
+        pb_cols = {row[1] for row in cur.fetchall()}
+        if "source" not in pb_cols:
+            self._conn.execute(
+                "ALTER TABLE project_blueprints ADD COLUMN source TEXT NOT NULL DEFAULT ''"
+            )
+
+        self._conn.commit()
 
     def _parse_json_fields(self, d: dict) -> dict:
         for key, val in d.items():
@@ -223,8 +315,9 @@ class KnowledgeDB:
     def insert_node(self, node: dict) -> None:
         self._conn.execute(
             "INSERT OR REPLACE INTO metasound_nodes "
-            "(name, category, description, inputs, outputs, tags, complexity) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            "(name, category, description, inputs, outputs, tags, complexity, "
+            "class_name, variant_group, source, mcp_note) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 node["name"],
                 node["category"],
@@ -233,6 +326,10 @@ class KnowledgeDB:
                 json.dumps(node["outputs"]),
                 json.dumps(node["tags"]),
                 node.get("complexity", 2),
+                node.get("class_name", ""),
+                node.get("variant_group", ""),
+                node.get("source", "catalogue"),
+                node.get("mcp_note", ""),
             ),
         )
         self._conn.commit()
@@ -686,11 +783,11 @@ class KnowledgeDB:
 
     # -- Project audio assets (from uasset extraction) ----------------------
 
-    def insert_project_asset(self, asset: dict, project: str) -> None:
+    def insert_project_asset(self, asset: dict, project: str, source: str = "") -> None:
         self._conn.execute(
             "INSERT OR REPLACE INTO project_audio_assets "
-            "(name, project, asset_type, path, refs, properties, details) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            "(name, project, asset_type, path, refs, properties, details, source) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 asset["name"],
                 project,
@@ -703,15 +800,16 @@ class KnowledgeDB:
                     if k not in ("name", "category", "path", "references",
                                  "properties", "source")
                 }),
+                source or asset.get("source", ""),
             ),
         )
 
-    def insert_project_blueprint(self, bp: dict, project: str) -> None:
+    def insert_project_blueprint(self, bp: dict, project: str, source: str = "") -> None:
         self._conn.execute(
             "INSERT OR REPLACE INTO project_blueprints "
             "(name, project, description, functions, variables, "
-            "components, events, refs) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            "components, events, refs, source) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 bp["name"],
                 project,
@@ -721,6 +819,7 @@ class KnowledgeDB:
                 json.dumps(bp.get("components", [])),
                 json.dumps(bp.get("events", [])),
                 json.dumps(bp.get("references", [])),
+                source or bp.get("source", ""),
             ),
         )
 
@@ -783,6 +882,238 @@ class KnowledgeDB:
             )
         return self._fetch("SELECT * FROM project_blueprints ORDER BY project, name")
 
+    # -- Pin mappings (cross-system wiring) --------------------------------
+
+    def insert_pin_mapping(self, m: dict) -> None:
+        self._conn.execute(
+            "INSERT INTO pin_mappings "
+            "(bp_function, bp_pin, ms_node, ms_pin, data_type, direction, description) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (
+                m["bp_function"],
+                m["bp_pin"],
+                m.get("ms_node", ""),
+                m.get("ms_pin", ""),
+                m["data_type"],
+                m["direction"],
+                m.get("description", ""),
+            ),
+        )
+        self._conn.commit()
+
+    def insert_pin_mappings_batch(self, mappings: list[dict]) -> int:
+        """Bulk-insert pin mappings. Returns count inserted."""
+        self._conn.executemany(
+            "INSERT INTO pin_mappings "
+            "(bp_function, bp_pin, ms_node, ms_pin, data_type, direction, description) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            [
+                (
+                    m["bp_function"], m["bp_pin"],
+                    m.get("ms_node", ""), m.get("ms_pin", ""),
+                    m["data_type"], m["direction"],
+                    m.get("description", ""),
+                )
+                for m in mappings
+            ],
+        )
+        self._conn.commit()
+        return len(mappings)
+
+    def query_pin_mappings(
+        self,
+        direction: str | None = None,
+        data_type: str | None = None,
+        query: str | None = None,
+    ) -> list[dict]:
+        """Search pin mappings by direction, data type, or free text."""
+        if query:
+            param = _like_param(query)
+            return self._fetch(
+                "SELECT * FROM pin_mappings "
+                "WHERE bp_function LIKE ? ESCAPE '\\' "
+                "OR ms_pin LIKE ? ESCAPE '\\' "
+                "OR description LIKE ? ESCAPE '\\' "
+                "ORDER BY direction, bp_function",
+                (param, param, param),
+            )
+        if direction and data_type:
+            return self._fetch(
+                "SELECT * FROM pin_mappings "
+                "WHERE direction = ? AND data_type = ? "
+                "ORDER BY bp_function",
+                (direction, data_type),
+            )
+        if direction:
+            return self._fetch(
+                "SELECT * FROM pin_mappings WHERE direction = ? ORDER BY bp_function",
+                (direction,),
+            )
+        if data_type:
+            return self._fetch(
+                "SELECT * FROM pin_mappings WHERE data_type = ? ORDER BY bp_function",
+                (data_type,),
+            )
+        return self._fetch("SELECT * FROM pin_mappings ORDER BY direction, bp_function")
+
+    # -- Node aliases ------------------------------------------------------
+
+    def insert_node_alias(self, alias: str, canonical: str, alias_type: str) -> None:
+        self._conn.execute(
+            "INSERT OR REPLACE INTO node_aliases "
+            "(alias, canonical, alias_type) VALUES (?, ?, ?)",
+            (alias, canonical, alias_type),
+        )
+
+    def insert_node_aliases_batch(self, aliases: list[tuple[str, str, str]]) -> int:
+        """Bulk-insert (alias, canonical, alias_type) tuples."""
+        self._conn.executemany(
+            "INSERT OR REPLACE INTO node_aliases "
+            "(alias, canonical, alias_type) VALUES (?, ?, ?)",
+            aliases,
+        )
+        self._conn.commit()
+        return len(aliases)
+
+    def resolve_node_alias(self, name: str) -> str | None:
+        """Resolve any alias to its canonical node name."""
+        rows = self._fetch(
+            "SELECT canonical FROM node_aliases WHERE alias = ? LIMIT 1",
+            (name,),
+        )
+        return rows[0]["canonical"] if rows else None
+
+    def query_node_aliases(self, canonical: str) -> list[dict]:
+        """Get all aliases for a canonical node name."""
+        return self._fetch(
+            "SELECT alias, alias_type FROM node_aliases "
+            "WHERE canonical = ? ORDER BY alias_type, alias",
+            (canonical,),
+        )
+
+    # -- Graph node usage --------------------------------------------------
+
+    def insert_graph_node_usage(
+        self, graph_name: str, project: str, node_class: str,
+        node_display: str, usage_count: int = 1,
+    ) -> None:
+        self._conn.execute(
+            "INSERT OR REPLACE INTO graph_node_usage "
+            "(graph_name, project, node_class, node_display, usage_count) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (graph_name, project, node_class, node_display, usage_count),
+        )
+
+    def insert_graph_node_usage_batch(
+        self, rows: list[tuple[str, str, str, str, int]]
+    ) -> int:
+        """Bulk-insert (graph_name, project, node_class, node_display, count)."""
+        self._conn.executemany(
+            "INSERT OR REPLACE INTO graph_node_usage "
+            "(graph_name, project, node_class, node_display, usage_count) "
+            "VALUES (?, ?, ?, ?, ?)",
+            rows,
+        )
+        self._conn.commit()
+        return len(rows)
+
+    def query_graph_node_usage(
+        self,
+        node_display: str | None = None,
+        project: str | None = None,
+        graph_name: str | None = None,
+    ) -> list[dict]:
+        if node_display and project:
+            return self._fetch(
+                "SELECT * FROM graph_node_usage "
+                "WHERE node_display = ? AND project = ? ORDER BY graph_name",
+                (node_display, project),
+            )
+        if node_display:
+            return self._fetch(
+                "SELECT * FROM graph_node_usage "
+                "WHERE node_display = ? ORDER BY project, graph_name",
+                (node_display,),
+            )
+        if project:
+            return self._fetch(
+                "SELECT * FROM graph_node_usage "
+                "WHERE project = ? ORDER BY graph_name, node_display",
+                (project,),
+            )
+        if graph_name:
+            return self._fetch(
+                "SELECT * FROM graph_node_usage "
+                "WHERE graph_name = ? ORDER BY node_display",
+                (graph_name,),
+            )
+        return self._fetch("SELECT * FROM graph_node_usage ORDER BY project, graph_name")
+
+    def top_nodes_by_project(self, project: str, limit: int = 20) -> list[dict]:
+        """Top N most-used nodes in a project."""
+        return self._fetch(
+            "SELECT node_display, SUM(usage_count) as total "
+            "FROM graph_node_usage WHERE project = ? "
+            "GROUP BY node_display ORDER BY total DESC LIMIT ?",
+            (project, limit),
+        )
+
+    # -- BP audio triggers -------------------------------------------------
+
+    def insert_bp_audio_trigger(
+        self, bp_name: str, project: str, trigger_type: str,
+        function_name: str, target_asset: str = "", details: dict | None = None,
+    ) -> None:
+        self._conn.execute(
+            "INSERT INTO bp_audio_triggers "
+            "(bp_name, project, trigger_type, function_name, target_asset, details) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            (bp_name, project, trigger_type, function_name,
+             target_asset, json.dumps(details or {})),
+        )
+
+    def insert_bp_audio_triggers_batch(self, rows: list[dict]) -> int:
+        """Bulk-insert bp_audio_triggers dicts."""
+        self._conn.executemany(
+            "INSERT INTO bp_audio_triggers "
+            "(bp_name, project, trigger_type, function_name, target_asset, details) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            [
+                (r["bp_name"], r["project"], r["trigger_type"],
+                 r["function_name"], r.get("target_asset", ""),
+                 json.dumps(r.get("details", {})))
+                for r in rows
+            ],
+        )
+        self._conn.commit()
+        return len(rows)
+
+    def query_bp_audio_triggers(
+        self,
+        bp_name: str | None = None,
+        project: str | None = None,
+        trigger_type: str | None = None,
+    ) -> list[dict]:
+        if bp_name and project:
+            return self._fetch(
+                "SELECT * FROM bp_audio_triggers "
+                "WHERE bp_name = ? AND project = ? ORDER BY trigger_type",
+                (bp_name, project),
+            )
+        if trigger_type:
+            return self._fetch(
+                "SELECT * FROM bp_audio_triggers "
+                "WHERE trigger_type = ? ORDER BY bp_name",
+                (trigger_type,),
+            )
+        if project:
+            return self._fetch(
+                "SELECT * FROM bp_audio_triggers "
+                "WHERE project = ? ORDER BY bp_name, trigger_type",
+                (project,),
+            )
+        return self._fetch("SELECT * FROM bp_audio_triggers ORDER BY bp_name")
+
     # -- Utility -----------------------------------------------------------
 
     def table_counts(self) -> dict[str, int]:
@@ -835,6 +1166,18 @@ class KnowledgeDB:
             ).fetchone()["cnt"],
             "project_blueprints": self._conn.execute(
                 "SELECT COUNT(*) as cnt FROM project_blueprints"
+            ).fetchone()["cnt"],
+            "pin_mappings": self._conn.execute(
+                "SELECT COUNT(*) as cnt FROM pin_mappings"
+            ).fetchone()["cnt"],
+            "node_aliases": self._conn.execute(
+                "SELECT COUNT(*) as cnt FROM node_aliases"
+            ).fetchone()["cnt"],
+            "graph_node_usage": self._conn.execute(
+                "SELECT COUNT(*) as cnt FROM graph_node_usage"
+            ).fetchone()["cnt"],
+            "bp_audio_triggers": self._conn.execute(
+                "SELECT COUNT(*) as cnt FROM bp_audio_triggers"
             ).fetchone()["cnt"],
         }
 

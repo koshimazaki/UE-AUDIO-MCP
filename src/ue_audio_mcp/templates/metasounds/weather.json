@@ -66,13 +66,12 @@
         300
       ],
       "defaults": {
-        "Interp Time": 2.0,
-        "Current": 1000.0
+        "Interp Time": 2.0
       }
     },
     {
       "id": "cutoff_map",
-      "node_type": "Map Range",
+      "node_type": "Map Range (Float)",
       "position": [
         200,
         300
@@ -94,7 +93,7 @@
       ],
       "defaults": {
         "Bandwidth": 1.0,
-        "FilterType": "LPF"
+        "Type": "LPF"
       }
     },
     {
@@ -106,7 +105,7 @@
       ],
       "defaults": {
         "Bandwidth": 1.0,
-        "FilterType": "LPF"
+        "Type": "LPF"
       }
     }
   ],

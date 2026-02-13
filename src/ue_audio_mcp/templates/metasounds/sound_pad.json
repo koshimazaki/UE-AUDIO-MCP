@@ -52,6 +52,18 @@
     {
       "name": "Out Right",
       "type": "Audio"
+    },
+    {
+      "name": "Out Mono",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo L",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo R",
+      "type": "Audio"
     }
   ],
   "nodes": [
@@ -104,7 +116,7 @@
     },
     {
       "id": "env",
-      "node_type": "AD Envelope",
+      "node_type": "AD Envelope (Float)",
       "position": [
         800,
         200
@@ -121,7 +133,7 @@
     },
     {
       "id": "synth_gain",
-      "node_type": "Multiply",
+      "node_type": "Multiply (Audio)",
       "position": [
         1000,
         0
@@ -161,6 +173,16 @@
         0
       ],
       "comment": "OnFinished when either synth envelope or sample completes"
+    },
+    {
+      "id": "var_scale",
+      "node_type": "__variable_get__",
+      "variable_name": "MajorScaleArray",
+      "position": [
+        0,
+        0
+      ],
+      "defaults": {}
     }
   ],
   "variables": [
@@ -187,7 +209,7 @@
       "to_pin": "Index"
     },
     {
-      "from_node": "__variable__",
+      "from_node": "var_scale",
       "from_pin": "MajorScaleArray",
       "to_node": "scale_lookup",
       "to_pin": "Array"
@@ -196,17 +218,17 @@
       "from_node": "scale_lookup",
       "from_pin": "Element",
       "to_node": "note_add",
-      "to_pin": "A"
+      "to_pin": "PrimaryOperand"
     },
     {
       "from_node": "__graph__",
       "from_pin": "RootNote",
       "to_node": "note_add",
-      "to_pin": "B"
+      "to_pin": "AdditionalOperands"
     },
     {
       "from_node": "note_add",
-      "from_pin": "Result",
+      "from_pin": "Out",
       "to_node": "midi_to_freq",
       "to_pin": "MIDI In"
     },
@@ -226,13 +248,13 @@
       "from_node": "synth",
       "from_pin": "Audio",
       "to_node": "synth_gain",
-      "to_pin": "A"
+      "to_pin": "PrimaryOperand"
     },
     {
       "from_node": "env",
       "from_pin": "Out Envelope",
       "to_node": "synth_gain",
-      "to_pin": "B"
+      "to_pin": "AdditionalOperands"
     },
     {
       "from_node": "__graph__",
@@ -248,13 +270,13 @@
     },
     {
       "from_node": "synth_gain",
-      "from_pin": "Audio",
+      "from_pin": "Out",
       "to_node": "mixer",
       "to_pin": "In 0 L"
     },
     {
       "from_node": "synth_gain",
-      "from_pin": "Audio",
+      "from_pin": "Out",
       "to_node": "mixer",
       "to_pin": "In 0 R"
     },
@@ -286,19 +308,37 @@
       "from_node": "env",
       "from_pin": "On Done",
       "to_node": "trigger_any",
-      "to_pin": "Trigger 0"
+      "to_pin": "In 0"
     },
     {
       "from_node": "wave_player",
       "from_pin": "On Finished",
       "to_node": "trigger_any",
-      "to_pin": "Trigger 1"
+      "to_pin": "In 1"
     },
     {
       "from_node": "trigger_any",
-      "from_pin": "Trigger",
+      "from_pin": "Out",
       "to_node": "__graph__",
       "to_pin": "OnFinished"
+    },
+    {
+      "from_node": "mixer",
+      "from_pin": "Out L",
+      "to_node": "__graph__",
+      "to_pin": "Out Mono"
+    },
+    {
+      "from_node": "mixer",
+      "from_pin": "Out L",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo L"
+    },
+    {
+      "from_node": "mixer",
+      "from_pin": "Out R",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo R"
     }
   ]
 }

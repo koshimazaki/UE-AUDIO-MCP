@@ -1,7 +1,7 @@
 {
   "name": "Weapon Burst Fire",
   "asset_type": "Source",
-  "description": "Burst-fire weapon system from Craig Owen tutorial. OnPlay starts a Trigger Repeat at BurstRate, feeding a Trigger Sequence that round-robins across 3 MSP_RandomizationNode layers (each with its own WaveAsset array for per-shot pitch/volume variation). Trigger Counter tracks shot count and stops the burst after BurstCount shots via Trigger Compare. Stereo Mixer combines all 3 layers. Use weapon_source.json for room reverb and distance tails on top of this.",
+  "description": "Burst-fire weapon system from Craig Owen tutorial. OnPlay starts a Trigger Repeat at BurstRate, feeding a Trigger Sequence that round-robins across 2 MSP_RandomizationNode layers (each with its own WaveAsset array for per-shot pitch/volume variation). Trigger Counter tracks shot count and stops the burst after BurstCount shots via Trigger Compare. Stereo Mixer combines all 3 layers. Use weapon_source.json for room reverb and distance tails on top of this.",
   "author": "Craig Owen (YAGER Development)",
   "source_url": "https://www.youtube.com/watch?v=n5z4L43jMi8",
   "interfaces": [
@@ -35,11 +35,6 @@
       "description": "Shot layer 1 wave variations (e.g. body punch)"
     },
     {
-      "name": "WaveAsset_Layer2",
-      "type": "WaveAsset[]",
-      "description": "Shot layer 2 wave variations (e.g. transient crack)"
-    },
-    {
       "name": "Pitch_RandomMin",
       "type": "Float",
       "default": -0.05,
@@ -69,6 +64,18 @@
     },
     {
       "name": "Out Right",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Mono",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo L",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo R",
       "type": "Audio"
     }
   ],
@@ -137,15 +144,6 @@
       "comment": "Layer 1: body punch / mid. Per-shot pitch and volume randomization."
     },
     {
-      "id": "layer_2",
-      "node_type": "MSP_RandomizationNode",
-      "position": [
-        700,
-        200
-      ],
-      "comment": "Layer 2: transient crack / tail. Per-shot pitch and volume randomization."
-    },
-    {
       "id": "stereo_mixer",
       "node_type": "Stereo Mixer",
       "position": [
@@ -154,8 +152,7 @@
       ],
       "defaults": {
         "Gain 0": 1.0,
-        "Gain 1": 1.0,
-        "Gain 2": 1.0
+        "Gain 1": 1.0
       },
       "comment": "Combines all 3 shot layers into stereo output"
     },
@@ -237,12 +234,6 @@
       "to_pin": "Next"
     },
     {
-      "from_node": "trigger_seq",
-      "from_pin": "Out 2",
-      "to_node": "layer_2",
-      "to_pin": "Next"
-    },
-    {
       "from_node": "__graph__",
       "from_pin": "WaveAsset_Layer0",
       "to_node": "layer_0",
@@ -256,12 +247,6 @@
     },
     {
       "from_node": "__graph__",
-      "from_pin": "WaveAsset_Layer2",
-      "to_node": "layer_2",
-      "to_pin": "In Array"
-    },
-    {
-      "from_node": "__graph__",
       "from_pin": "Pitch_RandomMin",
       "to_node": "layer_0",
       "to_pin": "Pitch_RandomMin"
@@ -294,24 +279,6 @@
       "from_node": "__graph__",
       "from_pin": "Volume_Master",
       "to_node": "layer_1",
-      "to_pin": "Volume_Master"
-    },
-    {
-      "from_node": "__graph__",
-      "from_pin": "Pitch_RandomMin",
-      "to_node": "layer_2",
-      "to_pin": "Pitch_RandomMin"
-    },
-    {
-      "from_node": "__graph__",
-      "from_pin": "Pitch_RandomMax",
-      "to_node": "layer_2",
-      "to_pin": "Pitch_RandomMax"
-    },
-    {
-      "from_node": "__graph__",
-      "from_pin": "Volume_Master",
-      "to_node": "layer_2",
       "to_pin": "Volume_Master"
     },
     {
@@ -325,12 +292,6 @@
       "from_pin": "Out",
       "to_node": "stereo_mixer",
       "to_pin": "In 1 L"
-    },
-    {
-      "from_node": "layer_2",
-      "from_pin": "Out",
-      "to_node": "stereo_mixer",
-      "to_pin": "In 2 L"
     },
     {
       "from_node": "stereo_mixer",
@@ -348,25 +309,37 @@
       "from_node": "layer_0",
       "from_pin": "On Finished",
       "to_node": "trigger_any",
-      "to_pin": "Trigger 0"
+      "to_pin": "In 0"
     },
     {
       "from_node": "layer_1",
       "from_pin": "On Finished",
       "to_node": "trigger_any",
-      "to_pin": "Trigger 1"
-    },
-    {
-      "from_node": "layer_2",
-      "from_pin": "On Finished",
-      "to_node": "trigger_any",
-      "to_pin": "Trigger 2"
+      "to_pin": "In 1"
     },
     {
       "from_node": "trigger_any",
-      "from_pin": "Trigger",
+      "from_pin": "Out",
       "to_node": "__graph__",
       "to_pin": "OnFinished"
+    },
+    {
+      "from_node": "stereo_mixer",
+      "from_pin": "Out L",
+      "to_node": "__graph__",
+      "to_pin": "Out Mono"
+    },
+    {
+      "from_node": "stereo_mixer",
+      "from_pin": "Out L",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo L"
+    },
+    {
+      "from_node": "stereo_mixer",
+      "from_pin": "Out R",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo R"
     }
   ]
 }

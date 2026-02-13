@@ -1,0 +1,117 @@
+{
+  "name": "Stereo High Shelf",
+  "asset_type": "Patch",
+  "description": "Simple stereo high-shelf EQ from Lyra (MS_StereoHighShelf). Two matched Biquad Filters with shared frequency and gain parameters. Production pattern for distance darkening, brightness control, and high-shelf EQ on stereo buses.",
+  "author": "Epic Games (Lyra sample)",
+  "interfaces": [],
+  "inputs": [
+    {
+      "name": "In L",
+      "type": "Audio",
+      "description": "Left channel input"
+    },
+    {
+      "name": "In R",
+      "type": "Audio",
+      "description": "Right channel input"
+    },
+    {
+      "name": "Frequency",
+      "type": "Float",
+      "default": 4000.0,
+      "description": "Shelf frequency in Hz"
+    },
+    {
+      "name": "High Gain",
+      "type": "Float",
+      "default": 0.0,
+      "description": "Shelf gain in dB (negative = cut, positive = boost)"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "Out L",
+      "type": "Audio"
+    },
+    {
+      "name": "Out R",
+      "type": "Audio"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "biquad_l",
+      "node_type": "Biquad Filter",
+      "position": [400, 0],
+      "defaults": {
+        "Type": "HighShelf",
+        "Cutoff Frequency": 4000.0,
+        "Bandwidth": 1.0,
+        "Gain": 0.0
+      },
+      "comment": "High shelf filter on left channel"
+    },
+    {
+      "id": "biquad_r",
+      "node_type": "Biquad Filter",
+      "position": [400, 200],
+      "defaults": {
+        "Type": "HighShelf",
+        "Cutoff Frequency": 4000.0,
+        "Bandwidth": 1.0,
+        "Gain": 0.0
+      },
+      "comment": "High shelf filter on right channel"
+    }
+  ],
+  "connections": [
+    {
+      "from_node": "__graph__",
+      "from_pin": "In L",
+      "to_node": "biquad_l",
+      "to_pin": "In"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "In R",
+      "to_node": "biquad_r",
+      "to_pin": "In"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Frequency",
+      "to_node": "biquad_l",
+      "to_pin": "Cutoff Frequency"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "Frequency",
+      "to_node": "biquad_r",
+      "to_pin": "Cutoff Frequency"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "High Gain",
+      "to_node": "biquad_l",
+      "to_pin": "Gain"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "High Gain",
+      "to_node": "biquad_r",
+      "to_pin": "Gain"
+    },
+    {
+      "from_node": "biquad_l",
+      "from_pin": "Out",
+      "to_node": "__graph__",
+      "to_pin": "Out L"
+    },
+    {
+      "from_node": "biquad_r",
+      "from_pin": "Out",
+      "to_node": "__graph__",
+      "to_pin": "Out R"
+    }
+  ]
+}

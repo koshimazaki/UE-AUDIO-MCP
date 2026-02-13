@@ -60,7 +60,7 @@
     },
     {
       "id": "map_cutoff",
-      "node_type": "Map Range",
+      "node_type": "Map Range (Float)",
       "position": [
         200,
         200
@@ -75,7 +75,7 @@
     },
     {
       "id": "map_bw",
-      "node_type": "Map Range",
+      "node_type": "Map Range (Float)",
       "position": [
         200,
         400
@@ -96,8 +96,7 @@
         200
       ],
       "defaults": {
-        "Interp Time": 5.0,
-        "Current": 500.0
+        "Interp Time": 5.0
       }
     },
     {
@@ -108,8 +107,7 @@
         400
       ],
       "defaults": {
-        "Interp Time": 5.0,
-        "Current": 0.5
+        "Interp Time": 5.0
       }
     },
     {
@@ -120,7 +118,7 @@
         0
       ],
       "defaults": {
-        "FilterType": "LPF"
+        "Type": "LPF"
       }
     }
   ],
@@ -181,7 +179,7 @@
     },
     {
       "from_node": "wave_player",
-      "from_pin": "Audio",
+      "from_pin": "Out Mono",
       "to_node": "filter",
       "to_pin": "In"
     },

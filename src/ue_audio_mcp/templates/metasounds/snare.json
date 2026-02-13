@@ -17,7 +17,7 @@
   "nodes": [
     {
       "id": "external_node_0",
-      "node_type": "Noise (Audio)",
+      "node_type": "Noise",
       "node_class": {
         "namespace": "UE",
         "name": "Noise",
@@ -34,7 +34,7 @@
     },
     {
       "id": "external_node_1",
-      "node_type": "State Variable Filter (Audio)",
+      "node_type": "State Variable Filter",
       "node_class": {
         "namespace": "UE",
         "name": "State Variable Filter",
@@ -89,7 +89,7 @@
     },
     {
       "id": "external_node_5",
-      "node_type": "TriggerRepeat",
+      "node_type": "Trigger Repeat",
       "node_class": {
         "namespace": "UE",
         "name": "TriggerRepeat",
@@ -106,7 +106,7 @@
     },
     {
       "id": "external_node_6",
-      "node_type": "BPMToSeconds",
+      "node_type": "BPM To Seconds",
       "node_class": {
         "namespace": "UE",
         "name": "BPMToSeconds",

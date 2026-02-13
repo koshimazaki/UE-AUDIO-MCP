@@ -1,0 +1,75 @@
+{
+  "name": "Weapon Fire Spatial",
+  "type": "blueprint",
+  "blueprint_type": "actor",
+  "description": "Spatial weapon fire from Lyra (B_WeaponFire + B_Weapon patterns). Fire event spawns sound at location, then sets Distance and RoomSize parameters on the audio component for MetaSounds-driven distance attenuation and room tail selection. Production pattern for weapon fire, ability cast, and tool usage.",
+  "author": "Epic Games (Lyra sample)",
+  "requires": [
+    "MetaSound Source with Distance (Float) and RoomSize (Int32) inputs",
+    "Weapon actor with muzzle socket/location"
+  ],
+  "nodes": [
+    {
+      "id": "fire_event",
+      "node_type": "CustomEvent",
+      "position": [0, 0],
+      "defaults": {"EventName": "OnWeaponFire"},
+      "comment": "Called from weapon logic when fire input is triggered"
+    },
+    {
+      "id": "get_muzzle_loc",
+      "node_type": "GetSocketLocation",
+      "position": [200, 200],
+      "defaults": {"InSocketName": "Muzzle"},
+      "comment": "Gets muzzle world position for spatial sound placement"
+    },
+    {
+      "id": "spawn_sound",
+      "node_type": "SpawnSoundAtLocation",
+      "position": [400, 0],
+      "defaults": {
+        "Sound": "<WeaponFireSound>",
+        "AttenuationSettings": "<WeaponAttenuation>"
+      },
+      "comment": "Spawns fire sound at muzzle location — returns Audio Component for param control"
+    },
+    {
+      "id": "get_distance",
+      "node_type": "GetDistanceTo",
+      "position": [200, 400],
+      "comment": "Distance from weapon to listener for MetaSounds attenuation layer"
+    },
+    {
+      "id": "set_distance",
+      "node_type": "Set Float Parameter",
+      "position": [700, 0],
+      "defaults": {"In Name": "Distance"},
+      "comment": "Passes distance to MetaSounds for tail crossfade layers"
+    },
+    {
+      "id": "set_room",
+      "node_type": "Set Int Parameter",
+      "position": [700, 200],
+      "defaults": {"In Name": "RoomSize"},
+      "comment": "0=outdoor, 1=small, 2=medium, 3=large — drives room impulse selection"
+    }
+  ],
+  "variables": [
+    {"name": "WeaponFireSound", "type": "SoundBase", "description": "MetaSound Source asset for weapon fire"},
+    {"name": "WeaponAttenuation", "type": "SoundAttenuation", "description": "Attenuation settings for spatial falloff"},
+    {"name": "RoomSize", "type": "Int32", "default": 0, "description": "Current room size from overlap volumes"},
+    {"name": "ListenerRef", "type": "Actor", "description": "Reference to listener/player for distance calculation"}
+  ],
+  "connections": [
+    {"from_node": "fire_event", "from_pin": "Exec", "to_node": "spawn_sound", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "get_muzzle_loc", "from_pin": "ReturnValue", "to_node": "spawn_sound", "to_pin": "Location", "type": "data"},
+    {"from_node": "spawn_sound", "from_pin": "Exec", "to_node": "set_distance", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "set_distance", "from_pin": "Exec", "to_node": "set_room", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "spawn_sound", "from_pin": "ReturnValue", "to_node": "set_distance", "to_pin": "Target", "type": "data"},
+    {"from_node": "spawn_sound", "from_pin": "ReturnValue", "to_node": "set_room", "to_pin": "Target", "type": "data"},
+    {"from_node": "var:ListenerRef", "from_pin": "Value", "to_node": "get_distance", "to_pin": "OtherActor", "type": "data"},
+    {"from_node": "get_distance", "from_pin": "ReturnValue", "to_node": "set_distance", "to_pin": "In Float", "type": "data"},
+    {"from_node": "var:RoomSize", "from_pin": "Value", "to_node": "set_room", "to_pin": "In Int", "type": "data"}
+  ],
+  "notes": "Pairs with weapon_source or weapon_burst MetaSounds templates. RoomSize should be set by BeginOverlap/EndOverlap events from room detection volumes in the level. Distance parameter drives the MetaSounds tail crossfade (close/mid/far layers). For automatic fire, wrap in a loop with BurstRate timer."
+}

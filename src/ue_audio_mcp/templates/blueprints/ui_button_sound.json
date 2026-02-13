@@ -1,0 +1,54 @@
+{
+  "name": "UI Button Sound",
+  "type": "blueprint",
+  "blueprint_type": "widget",
+  "description": "UI button audio from Lyra (W_LyraMenuButton pattern). OnClicked and OnHovered events trigger PlaySound2D for non-spatial UI feedback. Separate sound assets for click and hover allow distinct audio cues. Production pattern for menu buttons, settings toggles, and inventory interactions.",
+  "author": "Epic Games (Lyra sample)",
+  "requires": [
+    "UMG Widget with Button component",
+    "Sound assets for click and hover"
+  ],
+  "nodes": [
+    {
+      "id": "on_clicked",
+      "node_type": "OnClicked",
+      "position": [0, 0],
+      "comment": "Button click event — fires on mouse release"
+    },
+    {
+      "id": "on_hovered",
+      "node_type": "OnHovered",
+      "position": [0, 200],
+      "comment": "Button hover event — fires on mouse enter"
+    },
+    {
+      "id": "play_click",
+      "node_type": "PlaySound2D",
+      "position": [300, 0],
+      "defaults": {
+        "Sound": "<ClickSound>"
+      },
+      "comment": "Non-spatial click sound — UI bus, no attenuation"
+    },
+    {
+      "id": "play_hover",
+      "node_type": "PlaySound2D",
+      "position": [300, 200],
+      "defaults": {
+        "Sound": "<HoverSound>"
+      },
+      "comment": "Non-spatial hover sound — subtle feedback for mouse-over"
+    }
+  ],
+  "variables": [
+    {"name": "ClickSound", "type": "SoundBase", "description": "Sound to play on button click"},
+    {"name": "HoverSound", "type": "SoundBase", "description": "Sound to play on button hover"}
+  ],
+  "connections": [
+    {"from_node": "on_clicked", "from_pin": "Exec", "to_node": "play_click", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "on_hovered", "from_pin": "Exec", "to_node": "play_hover", "to_pin": "Exec", "type": "exec"},
+    {"from_node": "var:ClickSound", "from_pin": "Value", "to_node": "play_click", "to_pin": "Sound", "type": "data"},
+    {"from_node": "var:HoverSound", "from_pin": "Value", "to_node": "play_hover", "to_pin": "Sound", "type": "data"}
+  ],
+  "notes": "PlaySound2D is non-spatial — always plays at full volume regardless of listener position. Route to a UI submix for independent volume control. For focus/gamepad navigation, also bind OnFocusReceived. Consider adding a cooldown or debounce for hover sounds to prevent rapid-fire audio when moving mouse across multiple buttons."
+}

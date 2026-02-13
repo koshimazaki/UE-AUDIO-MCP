@@ -99,19 +99,19 @@
         0
       ],
       "defaults": {
-        "B": 0.01
+        "AdditionalOperands": 0.01
       },
       "comment": "EndFadeOut + 0.01 safety offset for Layer A gate"
     },
     {
       "id": "gate_a",
-      "node_type": "Float Compare",
+      "node_type": "Trigger Compare (Float)",
       "position": [
         200,
         0
       ],
       "defaults": {
-        "CompareOp": "LessThan"
+        "Type": "LessThan"
       },
       "comment": "InputParam < EndFadeOut+0.01 \u2192 Layer A active"
     },
@@ -126,14 +126,14 @@
     },
     {
       "id": "shuffle_a",
-      "node_type": "Array Shuffle",
+      "node_type": "Random Get (WaveAssetArray)",
       "position": [
         600,
         0
       ],
       "defaults": {
         "Seed": -1,
-        "AutoReset": true
+        "No Repeats": 1
       }
     },
     {
@@ -149,7 +149,7 @@
     },
     {
       "id": "gain_a",
-      "node_type": "Map Range",
+      "node_type": "Map Range (Float)",
       "position": [
         1000,
         0
@@ -169,19 +169,19 @@
         400
       ],
       "defaults": {
-        "B": 0.01
+        "AdditionalOperands": 0.01
       },
       "comment": "StartFadeIn - 0.01 safety offset for Layer B lower gate"
     },
     {
       "id": "gate_b_low",
-      "node_type": "Float Compare",
+      "node_type": "Trigger Compare (Float)",
       "position": [
         200,
         400
       ],
       "defaults": {
-        "CompareOp": "GreaterThan"
+        "Type": "GreaterThan"
       },
       "comment": "InputParam > StartFadeIn-0.01 \u2192 Layer B lower bound met"
     },
@@ -193,19 +193,19 @@
         500
       ],
       "defaults": {
-        "B": 0.01
+        "AdditionalOperands": 0.01
       },
       "comment": "EndFadeOut + 0.01 safety offset for Layer B upper gate"
     },
     {
       "id": "gate_b_high",
-      "node_type": "Float Compare",
+      "node_type": "Trigger Compare (Float)",
       "position": [
         200,
         500
       ],
       "defaults": {
-        "CompareOp": "LessThan"
+        "Type": "LessThan"
       },
       "comment": "InputParam < EndFadeOut+0.01 \u2192 Layer B upper bound met"
     },
@@ -229,14 +229,14 @@
     },
     {
       "id": "shuffle_b",
-      "node_type": "Array Shuffle",
+      "node_type": "Random Get (WaveAssetArray)",
       "position": [
         600,
         450
       ],
       "defaults": {
         "Seed": -1,
-        "AutoReset": true
+        "No Repeats": 1
       }
     },
     {
@@ -252,7 +252,7 @@
     },
     {
       "id": "gain_b_fadein",
-      "node_type": "Map Range",
+      "node_type": "Map Range (Float)",
       "position": [
         1000,
         400
@@ -266,7 +266,7 @@
     },
     {
       "id": "gain_b_fadeout",
-      "node_type": "Map Range",
+      "node_type": "Map Range (Float)",
       "position": [
         1000,
         500
@@ -295,19 +295,19 @@
         800
       ],
       "defaults": {
-        "B": 0.01
+        "AdditionalOperands": 0.01
       },
       "comment": "StartFadeIn - 0.01 safety offset for Layer C gate"
     },
     {
       "id": "gate_c",
-      "node_type": "Float Compare",
+      "node_type": "Trigger Compare (Float)",
       "position": [
         200,
         800
       ],
       "defaults": {
-        "CompareOp": "GreaterThan"
+        "Type": "GreaterThan"
       },
       "comment": "InputParam > StartFadeIn-0.01 \u2192 Layer C active"
     },
@@ -322,14 +322,14 @@
     },
     {
       "id": "shuffle_c",
-      "node_type": "Array Shuffle",
+      "node_type": "Random Get (WaveAssetArray)",
       "position": [
         600,
         800
       ],
       "defaults": {
         "Seed": -1,
-        "AutoReset": true
+        "No Repeats": 1
       }
     },
     {
@@ -345,7 +345,7 @@
     },
     {
       "id": "gain_c",
-      "node_type": "Map Range",
+      "node_type": "Map Range (Float)",
       "position": [
         1000,
         800
@@ -359,7 +359,7 @@
     },
     {
       "id": "stereo_mixer",
-      "node_type": "Stereo Mixer",
+      "node_type": "Audio Mixer (Stereo, 3)",
       "position": [
         1400,
         400
@@ -379,8 +379,7 @@
         400
       ],
       "defaults": {
-        "Mode": "Encode",
-        "Width": 0.0
+        "Spread Amount": 0.0
       },
       "comment": "Encode stereo to mid-side with Width=0 (pure mid)"
     },
@@ -392,8 +391,7 @@
         400
       ],
       "defaults": {
-        "Mode": "Decode",
-        "Width": 0.5
+        "Spread Amount": 0.5
       },
       "comment": "Decode back \u2014 Width=0.5 gives centered mono-compatible output"
     },
@@ -412,7 +410,7 @@
       "from_node": "__graph__",
       "from_pin": "WaveAsset_A_EndFadeOut",
       "to_node": "gate_a_threshold",
-      "to_pin": "A"
+      "to_pin": "PrimaryOperand"
     },
     {
       "from_node": "__graph__",
@@ -422,13 +420,13 @@
     },
     {
       "from_node": "gate_a_threshold",
-      "from_pin": "Result",
+      "from_pin": "Out",
       "to_node": "gate_a",
       "to_pin": "B"
     },
     {
       "from_node": "gate_a",
-      "from_pin": "Result",
+      "from_pin": "True",
       "to_node": "trigger_filter_a",
       "to_pin": "Trigger"
     },
@@ -436,19 +434,19 @@
       "from_node": "__graph__",
       "from_pin": "TriggerStart",
       "to_node": "trigger_filter_a",
-      "to_pin": "Heads"
+      "to_pin": "Trigger"
     },
     {
       "from_node": "trigger_filter_a",
       "from_pin": "Heads",
       "to_node": "shuffle_a",
-      "to_pin": "Trigger"
+      "to_pin": "Next"
     },
     {
       "from_node": "__graph__",
       "from_pin": "WaveAsset_A",
       "to_node": "shuffle_a",
-      "to_pin": "Array"
+      "to_pin": "In Array"
     },
     {
       "from_node": "shuffle_a",
@@ -458,7 +456,7 @@
     },
     {
       "from_node": "shuffle_a",
-      "from_pin": "Trigger",
+      "from_pin": "On Next",
       "to_node": "wp_a",
       "to_pin": "Play"
     },
@@ -484,7 +482,7 @@
       "from_node": "__graph__",
       "from_pin": "WaveAsset_B_StartFadeIn",
       "to_node": "gate_b_low_offset",
-      "to_pin": "A"
+      "to_pin": "PrimaryOperand"
     },
     {
       "from_node": "__graph__",
@@ -494,7 +492,7 @@
     },
     {
       "from_node": "gate_b_low_offset",
-      "from_pin": "Result",
+      "from_pin": "Out",
       "to_node": "gate_b_low",
       "to_pin": "B"
     },
@@ -502,7 +500,7 @@
       "from_node": "__graph__",
       "from_pin": "WaveAsset_B_EndFadeOut",
       "to_node": "gate_b_high_offset",
-      "to_pin": "A"
+      "to_pin": "PrimaryOperand"
     },
     {
       "from_node": "__graph__",
@@ -512,13 +510,13 @@
     },
     {
       "from_node": "gate_b_high_offset",
-      "from_pin": "Result",
+      "from_pin": "Out",
       "to_node": "gate_b_high",
       "to_pin": "B"
     },
     {
       "from_node": "gate_b_low",
-      "from_pin": "Result",
+      "from_pin": "True",
       "to_node": "trigger_filter_b_low",
       "to_pin": "Trigger"
     },
@@ -526,11 +524,11 @@
       "from_node": "__graph__",
       "from_pin": "TriggerStart",
       "to_node": "trigger_filter_b_low",
-      "to_pin": "Heads"
+      "to_pin": "Trigger"
     },
     {
       "from_node": "gate_b_high",
-      "from_pin": "Result",
+      "from_pin": "True",
       "to_node": "trigger_filter_b_high",
       "to_pin": "Trigger"
     },
@@ -538,19 +536,19 @@
       "from_node": "trigger_filter_b_low",
       "from_pin": "Heads",
       "to_node": "trigger_filter_b_high",
-      "to_pin": "Heads"
+      "to_pin": "Trigger"
     },
     {
       "from_node": "trigger_filter_b_high",
       "from_pin": "Heads",
       "to_node": "shuffle_b",
-      "to_pin": "Trigger"
+      "to_pin": "Next"
     },
     {
       "from_node": "__graph__",
       "from_pin": "WaveAsset_B",
       "to_node": "shuffle_b",
-      "to_pin": "Array"
+      "to_pin": "In Array"
     },
     {
       "from_node": "shuffle_b",
@@ -560,7 +558,7 @@
     },
     {
       "from_node": "shuffle_b",
-      "from_pin": "Trigger",
+      "from_pin": "On Next",
       "to_node": "wp_b",
       "to_pin": "Play"
     },
@@ -604,19 +602,19 @@
       "from_node": "gain_b_fadein",
       "from_pin": "Out Value",
       "to_node": "gain_b_bell",
-      "to_pin": "A"
+      "to_pin": "PrimaryOperand"
     },
     {
       "from_node": "gain_b_fadeout",
       "from_pin": "Out Value",
       "to_node": "gain_b_bell",
-      "to_pin": "B"
+      "to_pin": "AdditionalOperands"
     },
     {
       "from_node": "__graph__",
       "from_pin": "WaveAsset_C_StartFadeIn",
       "to_node": "gate_c_offset",
-      "to_pin": "A"
+      "to_pin": "PrimaryOperand"
     },
     {
       "from_node": "__graph__",
@@ -626,13 +624,13 @@
     },
     {
       "from_node": "gate_c_offset",
-      "from_pin": "Result",
+      "from_pin": "Out",
       "to_node": "gate_c",
       "to_pin": "B"
     },
     {
       "from_node": "gate_c",
-      "from_pin": "Result",
+      "from_pin": "True",
       "to_node": "trigger_filter_c",
       "to_pin": "Trigger"
     },
@@ -640,19 +638,19 @@
       "from_node": "__graph__",
       "from_pin": "TriggerStart",
       "to_node": "trigger_filter_c",
-      "to_pin": "Heads"
+      "to_pin": "Trigger"
     },
     {
       "from_node": "trigger_filter_c",
       "from_pin": "Heads",
       "to_node": "shuffle_c",
-      "to_pin": "Trigger"
+      "to_pin": "Next"
     },
     {
       "from_node": "__graph__",
       "from_pin": "WaveAsset_C",
       "to_node": "shuffle_c",
-      "to_pin": "Array"
+      "to_pin": "In Array"
     },
     {
       "from_node": "shuffle_c",
@@ -662,7 +660,7 @@
     },
     {
       "from_node": "shuffle_c",
-      "from_pin": "Trigger",
+      "from_pin": "On Next",
       "to_node": "wp_c",
       "to_pin": "Play"
     },
@@ -716,7 +714,7 @@
     },
     {
       "from_node": "gain_b_bell",
-      "from_pin": "Result",
+      "from_pin": "Out",
       "to_node": "stereo_mixer",
       "to_pin": "Gain 1"
     },
@@ -754,29 +752,29 @@
       "from_node": "stereo_mixer",
       "from_pin": "Out L",
       "to_node": "ms_encode",
-      "to_pin": "Audio L"
+      "to_pin": "In Mid"
     },
     {
       "from_node": "stereo_mixer",
       "from_pin": "Out R",
       "to_node": "ms_encode",
-      "to_pin": "Audio R"
+      "to_pin": "In Side"
     },
     {
       "from_node": "ms_encode",
-      "from_pin": "Out A",
+      "from_pin": "Out Left",
       "to_node": "ms_decode",
-      "to_pin": "Audio L"
+      "to_pin": "In Mid"
     },
     {
       "from_node": "ms_encode",
-      "from_pin": "Out B",
+      "from_pin": "Out Right",
       "to_node": "ms_decode",
-      "to_pin": "Audio R"
+      "to_pin": "In Side"
     },
     {
       "from_node": "ms_decode",
-      "from_pin": "Out A",
+      "from_pin": "Out Left",
       "to_node": "__graph__",
       "to_pin": "AudioMono"
     },
@@ -784,23 +782,17 @@
       "from_node": "wp_a",
       "from_pin": "On Finished",
       "to_node": "trigger_any",
-      "to_pin": "Trigger 0"
+      "to_pin": "In 0"
     },
     {
       "from_node": "wp_b",
       "from_pin": "On Finished",
       "to_node": "trigger_any",
-      "to_pin": "Trigger 1"
-    },
-    {
-      "from_node": "wp_c",
-      "from_pin": "On Finished",
-      "to_node": "trigger_any",
-      "to_pin": "Trigger 2"
+      "to_pin": "In 1"
     },
     {
       "from_node": "trigger_any",
-      "from_pin": "Trigger",
+      "from_pin": "Out",
       "to_node": "__graph__",
       "to_pin": "OnFinished"
     }

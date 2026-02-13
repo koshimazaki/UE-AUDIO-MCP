@@ -18,6 +18,11 @@ def _ok(data: dict | None = None) -> str:
     return json.dumps(result)
 
 
-def _error(message: str) -> str:
-    """Return a JSON error response."""
-    return json.dumps({"status": "error", "message": message})
+def _error(message: str, data: dict | None = None) -> str:
+    """Return a JSON error response, optionally with extra data fields."""
+    result: dict = {"status": "error", "message": message}
+    if data:
+        data.pop("status", None)
+        data.pop("message", None)
+        result.update(data)
+    return json.dumps(result)

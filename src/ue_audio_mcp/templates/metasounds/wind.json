@@ -29,6 +29,18 @@
     {
       "name": "OnFinished",
       "type": "Trigger"
+    },
+    {
+      "name": "Out Mono",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo L",
+      "type": "Audio"
+    },
+    {
+      "name": "Out Stereo R",
+      "type": "Audio"
     }
   ],
   "nodes": [
@@ -65,16 +77,16 @@
     },
     {
       "id": "lfo",
-      "node_type": "LFO",
+      "node_type": "Low-Frequency Oscillator",
       "position": [
         0,
         300
       ],
       "defaults": {
         "Frequency": 0.3,
-        "Type": "Sine",
         "Min Value": 200.0,
-        "Max Value": 2000.0
+        "Max Value": 2000.0,
+        "Shape": "Sine"
       }
     },
     {
@@ -85,7 +97,7 @@
         500
       ],
       "defaults": {
-        "B": 10.0
+        "AdditionalOperands": 10.0
       },
       "comment": "Scale PawnSpeed to frequency range"
     },
@@ -97,19 +109,19 @@
         500
       ],
       "defaults": {
-        "B": 200.0
+        "AdditionalOperands": 200.0
       },
       "comment": "Offset so idle speed still has some wind"
     },
     {
       "id": "interp",
-      "node_type": "FInterpTo (Float)",
+      "node_type": "InterpTo",
       "position": [
         400,
         300
       ],
       "defaults": {
-        "InterpSpeed": 2.0
+        "Interp Time": 2.0
       },
       "comment": "Smooth cutoff transitions"
     }
@@ -135,7 +147,7 @@
     },
     {
       "from_node": "lfo",
-      "from_pin": "Value",
+      "from_pin": "Out",
       "to_node": "interp",
       "to_pin": "Target"
     },
@@ -143,19 +155,13 @@
       "from_node": "__graph__",
       "from_pin": "PawnSpeed",
       "to_node": "multiply",
-      "to_pin": "A"
+      "to_pin": "PrimaryOperand"
     },
     {
       "from_node": "multiply",
-      "from_pin": "Result",
+      "from_pin": "Out",
       "to_node": "add",
-      "to_pin": "A"
-    },
-    {
-      "from_node": "add",
-      "from_pin": "Result",
-      "to_node": "interp",
-      "to_pin": "Current"
+      "to_pin": "PrimaryOperand"
     },
     {
       "from_node": "interp",
@@ -176,10 +182,22 @@
       "to_pin": "Out Right"
     },
     {
-      "from_node": "__graph__",
-      "from_pin": "OnPlay",
-      "to_node": "noise",
-      "to_pin": "Play"
+      "from_node": "stereo_mixer",
+      "from_pin": "Out L",
+      "to_node": "__graph__",
+      "to_pin": "Out Mono"
+    },
+    {
+      "from_node": "stereo_mixer",
+      "from_pin": "Out L",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo L"
+    },
+    {
+      "from_node": "stereo_mixer",
+      "from_pin": "Out R",
+      "to_node": "__graph__",
+      "to_pin": "Out Stereo R"
     }
   ]
 }

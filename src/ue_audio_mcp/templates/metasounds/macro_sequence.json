@@ -99,7 +99,7 @@
     },
     {
       "id": "cutoff_const",
-      "node_type": "Clamp",
+      "node_type": "Clamp (Float)",
       "position": [
         -200,
         300
@@ -112,7 +112,7 @@
     },
     {
       "id": "bw_const",
-      "node_type": "Clamp",
+      "node_type": "Clamp (Float)",
       "position": [
         -200,
         500
@@ -151,8 +151,7 @@
         200
       ],
       "defaults": {
-        "Interp Time": 3.0,
-        "Current": 2000.0
+        "Interp Time": 3.0
       }
     },
     {
@@ -163,8 +162,7 @@
         400
       ],
       "defaults": {
-        "Interp Time": 3.0,
-        "Current": 1.0
+        "Interp Time": 3.0
       }
     },
     {
@@ -175,7 +173,7 @@
         0
       ],
       "defaults": {
-        "FilterType": "LPF"
+        "Type": "LPF"
       }
     }
   ],
@@ -248,7 +246,7 @@
     },
     {
       "from_node": "wave_player",
-      "from_pin": "Audio",
+      "from_pin": "Out Mono",
       "to_node": "filter",
       "to_pin": "In"
     },
