@@ -10,7 +10,7 @@
 
 # UE Audio MCP
 
-**AI-driven game audio pipelines -- from natural language to Wwise + MetaSounds + Blueprints.**
+**AI-powered game audio toolkit — MetaSounds graph generation & export, project scanning, and Wwise/Blueprint knowledge base via MCP for Unreal Engine 5.7**
 
 One MCP server. Three audio engines. 63 tools. 178 engine-verified MetaSounds nodes. Optimised for **Unreal Engine 5.7** and **Wwise 2025**.
 
