@@ -12,7 +12,7 @@
 
 **AI-powered game audio toolkit — MetaSounds graph generation & export, project scanning, and Wwise/Blueprint knowledge base via MCP for Unreal Engine 5.7.**
 
-One MCP server. UE5 Plugin, three audio engines, five custom nodes for SID chip emulation. 63 tools. 178 engine-verified MetaSounds nodes. Optimised for Unreal Engine 5.7** and **Wwise 2025.
+One MCP server. UE5 Plugin, three audio engines, five custom nodes for SID chip emulation. 63 tools. 178 engine-verified MetaSounds nodes. Optimised for Unreal Engine 5.7 and Wwise 2025.
 
 > "Create a footsteps sound setup for my character -- use MetaSounds noise and filter in the patch, Blueprint trigger on anim notify"
 >
