@@ -1,0 +1,568 @@
+{
+  "ABP_Bot": {
+    "status": "ok",
+    "message": "Scanned 'ABP_Bot': 3 graphs, 83 nodes (2 audio-relevant)",
+    "asset_path": "/Game/StackOBot/Characters/Bot/ABP_Bot",
+    "blueprint_name": "ABP_Bot",
+    "parent_class": "AnimInstance",
+    "blueprint_type": "AnimBlueprint",
+    "total_nodes": 83,
+    "graphs": [
+      {
+        "name": "EventGraph",
+        "type": "ubergraph",
+        "total_nodes": 39,
+        "shown_nodes": 2,
+        "nodes": [
+          {
+            "node_id": "B60F484747F1168FDC2B9694BB0D4992",
+            "type": "Event",
+            "title": "AnimNotify_shake",
+            "event_name": "AnimNotify_shake",
+            "audio_relevant": true,
+            "x": -992,
+            "y": 1568
+          },
+          {
+            "node_id": "FAEA51F541A4EBE682B2B78D3375B70D",
+            "type": "CallFunction",
+            "title": "Play World Camera Shake",
+            "function_name": "PlayWorldCameraShake",
+            "function_class": "GameplayStatics",
+            "audio_relevant": true,
+            "x": -192,
+            "y": 1568
+          }
+        ],
+        "total_edges": 37,
+        "edges": [
+          {
+            "from_node": "534A6E134683D211BDA8D3993FAF3B7B",
+            "from_pin": "then",
+            "to_node": "E4719AE04E5821192509E5809B4AF866",
+            "to_pin": "exec",
+            "pin_type": "exec"
+          },
+          {
+            "from_node": "0F12C97248C1A3DF4C6F6484C10E72EF",
+            "from_pin": "ReturnValue",
+            "to_node": "877B99304D8CDC024C9D0980F8A50DCF",
+            "to_pin": "self",
+            "pin_type": "object"
+          },
+          {
+            "from_node": "0F12C97248C1A3DF4C6F6484C10E72EF",
+            "from_pin": "ReturnValue",
+            "to_node": "E4719AE04E5821192509E5809B4AF866",
+            "to_pin": "InputObject",
+            "pin_type": "object"
+          },
+          {
+            "from_node": "877B99304D8CDC024C9D0980F8A50DCF",
+            "from_pin": "ReturnValue",
+            "to_node": "D80190364ABF0507E03B5BB9A69611DB",
+            "to_pin": "InputPin",
+            "pin_type": "object"
+          },
+          {
+            "from_node": "E4719AE04E5821192509E5809B4AF866",
+            "from_pin": "Is Valid",
+            "to_node": "282D807943E38926A3DD81807F3A5F1E",
+            "to_pin": "execute",
+            "pin_type": "exec"
+          },
+          {
+            "from_node": "3302DD034B9020B777D926BF8C99E97E",
+            "from_pin": "ReturnValue",
+            "to_node": "62FC34A14392C702E0F3C2BE71F81924",
+            "to_pin": "IsInAir?",
+            "pin_type": "bool"
+          },
+          {
+            "from_node": "B60F484747F1168FDC2B9694BB0D4992",
+            "from_pin": "then",
+            "to_node": "727D0578435D030622AA419F53A94EC7",
+            "to_pin": "execute",
+            "pin_type": "exec"
+          },
+          {
+            "from_node": "0A30F13F42E99D1C14648982123C719C",
+            "from_pin": "ReturnValue",
+            "to_node": "2EC9A3CE4D0651C05CF6489A5C58F5AB",
+            "to_pin": "self",
+            "pin_type": "object"
+          },
+          {
+            "from_node": "2EC9A3CE4D0651C05CF6489A5C58F5AB",
+            "from_pin": "ReturnValue",
+            "to_node": "FAEA51F541A4EBE682B2B78D3375B70D",
+            "to_pin": "Epicenter",
+            "pin_type": "struct"
+          },
+          {
+            "from_node": "852404CB4BD1AC263AEE4FAEFE019F53",
+            "from_pin": "ReturnValue",
+            "to_node": "F30576A6418C85842BED539EE420CE78",
+            "to_pin": "A",
+            "pin_type": "struct"
+          },
+          {
+            "from_node": "F30576A6418C85842BED539EE420CE78",
+            "from_pin": "ReturnValue",
+            "to_node": "6826EE46478CA68CAFC1848E92C3B8BD",
+            "to_pin": "A",
+            "pin_type": "real"
+          },
+          {
+            "from_node": "6826EE46478CA68CAFC1848E92C3B8BD",
+            "from_pin": "ReturnValue",
+            "to_node": "8324816143B204FC570508A6663709FD",
+            "to_pin": "MovementInput?",
+            "pin_type": "bool"
+          },
+          {
+            "from_node": "8D1B4A974DCC29CB99140D9C681F4F0F",
+            "from_pin": "Velocity_X",
+            "to_node": "B27AD7064271595D003049AA3D1E3C58",
+            "to_pin": "A_X",
+            "pin_type": "real"
+          },
+          {
+            "from_node": "8D1B4A974DCC29CB99140D9C681F4F0F",
+            "from_pin": "Velocity_Y",
+            "to_node": "B27AD7064271595D003049AA3D1E3C58",
+            "to_pin": "A_Y",
+            "pin_type": "real"
+          },
+          {
+            "from_node": "B27AD7064271595D003049AA3D1E3C58",
+            "from_pin": "ReturnValue",
+            "to_node": "6E3D877342BC68840C7477B398276DD0",
+            "to_pin": "GroundSpeed",
+            "pin_type": "real"
+          },
+          {
+            "from_node": "BE2B852E427E10DEE1DCDBA9B9E2DB3D",
+            "from_pin": "ReturnValue",
+            "to_node": "11E455564936E910D6F29B984BA7F78C",
+            "to_pin": "Object",
+            "pin_type": "object"
+          },
+          {
+            "from_node": "11E455564936E910D6F29B984BA7F78C",
+            "from_pin": "then",
+            "to_node": "8F6589244B790F969CB4EDA63227461A",
+            "to_pin": "execute",
+            "pin_type": "exec"
+          },
+          {
+            "from_node": "11E455564936E910D6F29B984BA7F78C",
+            "from_pin": "AsBP Bot",
+            "to_node": "6C9966C346A4A46C062E3B88B7805A2A",
+            "to_pin": "self",
+            "pin_type": "object"
+          },
+          {
+            "from_node": "11E455564936E910D6F29B984BA7F78C",
+            "from_pin": "AsBP Bot",
+            "to_node": "E4BBDF464AE2824CF655839E6745AD9B",
+            "to_pin": "self",
+            "pin_type": "object"
+          },
+          {
+            "from_node": "11E455564936E910D6F29B984BA7F78C",
+            "from_pin": "AsBP Bot",
+            "to_node": "1C86315A4A8789E5961AE49BB58EDE8C",
+            "to_pin": "self",
+            "pin_type": "object"
+          },
+          {
+            "from_node": "8F6589244B790F969CB4EDA63227461A",
+            "from_pin": "then",
+            "to_node": "5EDCD721465EC6288BE8CFBDC4929903",
+            "to_pin": "execute",
+            "pin_type": "exec"
+          },
+          {
+            "from_node": "6C9966C346A4A46C062E3B88B7805A2A",
+            "from_pin": "JetpackActive",
+            "to_node": "8F6589244B790F969CB4EDA63227461A",
+            "to_pin": "IsHovering",
+            "pin_type": "bool"
+          },
+          {
+            "from_node": "E4BBDF464AE2824CF655839E6745AD9B",
+            "from_pin": "IsInactive",
+            "to_node": "5EDCD721465EC6288BE8CFBDC4929903",
+            "to_pin": "IsInactive",
+            "pin_type": "bool"
+          },
+          {
+            "from_node": "5EDCD721465EC6288BE8CFBDC4929903",
+            "from_pin": "then",
+            "to_node": "906E601B4AA46D884539EDB96E0E7958",
+            "to_pin": "execute",
+            "pin_type": "exec"
+          },
+          {
+            "from_node": "1C86315A4A8789E5961AE49BB58EDE8C",
+            "from_pin": "InteractionWorldLocation",
+            "to_node": "906E601B4AA46D884539EDB96E0E7958",
+            "to_pin": "InteractWorldLocation",
+            "pin_type": "struct"
+          },
+          {
+            "from_node": "2AC0CF674A93091C64C05883DE481307",
+            "from_pin": "ReturnValue",
+            "to_node": "852404CB4BD1AC263AEE4FAEFE019F53",
+            "to_pin": "self",
+            "pin_type": "object"
+          },
+          {
+            "from_node": "282D807943E38926A3DD81807F3A5F1E",
+            "from_pin": "then_0",
+            "to_node": "62FC34A14392C702E0F3C2BE71F81924",
+            "to_pin": "execute",
+            "pin_type": "exec"
+          },
+          {
+            "from_node": "282D807943E38926A3DD81807F3A5F1E",
+            "from_pin": "then_1",
+            "to_node": "6E3D877342BC68840C7477B398276DD0",
+            "to_pin": "execute",
+            "pin_type": "exec"
+          },
+          {
+            "from_node": "282D807943E38926A3DD81807F3A5F1E",
+            "from_pin": "then_2",
+            "to_node": "1AA4EA8D41C1C8383132839BB8B477CD",
+            "to_pin": "execute",
+            "pin_type": "exec"
+          },
+          {
+            "from_node": "282D807943E38926A3DD81807F3A5F1E",
+            "from_pin": "then_3",
+            "to_node": "8B35556C4114FDAF6D468AB21D1931D2",
+            "to_pin": "InputPin",
+            "pin_type": "exec"
+          },
+          {
+            "from_node": "282D807943E38926A3DD81807F3A5F1E",
+            "from_pin": "then_5",
+            "to_node": "11E455564936E910D6F29B984BA7F78C",
+            "to_pin": "execute",
+            "pin_type": "exec"
+          },
+          {
+            "from_node": "D80190364ABF0507E03B5BB9A69611DB",
+            "from_pin": "OutputPin",
+            "to_node": "3302DD034B9020B777D926BF8C99E97E",
+            "to_pin": "self",
+            "pin_type": "object"
+          },
+          {
+            "from_node": "D80190364ABF0507E03B5BB9A69611DB",
+            "from_pin": "OutputPin",
+            "to_node": "8D1B4A974DCC29CB99140D9C681F4F0F",
+            "to_pin": "self",
+            "pin_type": "object"
+          },
+          {
+            "from_node": "8B35556C4114FDAF6D468AB21D1931D2",
+            "from_pin": "OutputPin",
+            "to_node": "8324816143B204FC570508A6663709FD",
+            "to_pin": "execute",
+            "pin_type": "exec"
+          },
+          {
+            "from_node": "CE3C84E14DA6C4A85001CC92EBB2412E",
+            "from_pin": "ReturnValue",
+            "to_node": "727D0578435D030622AA419F53A94EC7",
+            "to_pin": "self",
+            "pin_type": "object"
+          },
+          {
+            "from_node": "727D0578435D030622AA419F53A94EC7",
+            "from_pin": "then",
+            "to_node": "F62E2F3842539FE50B2DF097563929FD",
+            "to_pin": "execute",
+            "pin_type": "exec"
+          },
+          {
+            "from_node": "727D0578435D030622AA419F53A94EC7",
+            "from_pin": "CameraState",
+            "to_node": "F62E2F3842539FE50B2DF097563929FD",
+            "to_pin": "Selection",
+            "pin_type": "byte"
+          }
+        ]
+      },
+      {
+        "name": "AnimGraph",
+        "type": "function",
+        "total_nodes": 30,
+        "shown_nodes": 0,
+        "nodes": [],
+        "total_edges": 15,
+        "edges": [
+          {
+            "from_node": "5055E39F4D4E08F5A30600AC70E5EF29",
+            "from_pin": "Pose",
+            "to_node": "21AD9E884F6A1BB1A71365B84748A7F5",
+            "to_pin": "Pose",
+            "pin_type": "struct"
+          },
+          {
+            "from_node": "5FCAFB78410BDF1670D00F85A92ECFE8",
+            "from_pin": "Pose",
+            "to_node": "B64834334417762E268F82998F6CC431",
+            "to_pin": "Pose",
+            "pin_type": "struct"
+          },
+          {
+            "from_node": "AC1F677F4F57DC2325C370BA09E4577A",
+            "from_pin": "Pose",
+            "to_node": "716B22D1498073F564C2EF9CD13494FC",
+            "to_pin": "Result",
+            "pin_type": "struct"
+          },
+          {
+            "from_node": "A70FD6A0465D41E74203B38F97E05748",
+            "from_pin": "IsInactive",
+            "to_node": "7EE80180447DC82D51C63AB106EE173E",
+            "to_pin": "bActiveValue",
+            "pin_type": "bool"
+          },
+          {
+            "from_node": "7EE80180447DC82D51C63AB106EE173E",
+            "from_pin": "Pose",
+            "to_node": "AC1F677F4F57DC2325C370BA09E4577A",
+            "to_pin": "Source",
+            "pin_type": "struct"
+          },
+          {
+            "from_node": "DBB9F0E04A053AE49E9DE987058AAC48",
+            "from_pin": "Pose",
+            "to_node": "7EE80180447DC82D51C63AB106EE173E",
+            "to_pin": "BlendPose_0",
+            "pin_type": "struct"
+          },
+          {
+            "from_node": "FFD378FC4AA79C43573C0DB61A0BF57B",
+            "from_pin": "InteractWorldLocation",
+            "to_node": "AC1F677F4F57DC2325C370BA09E4577A",
+            "to_pin": "InteractionWorldLocation",
+            "pin_type": "struct"
+          },
+          {
+            "from_node": "A6513D7A4006C58E2BC82AADE84F15F6",
+            "from_pin": "Pose",
+            "to_node": "E6ADAF4F43E653027B247AB8044A569A",
+            "to_pin": "Pose",
+            "pin_type": "struct"
+          },
+          {
+            "from_node": "ADF34C724AB59A537E03A694D16E3017",
+            "from_pin": "Pose",
+            "to_node": "4B538F7A43F931D742DF7DABDAA41036",
+            "to_pin": "Source",
+            "pin_type": "struct"
+          },
+          {
+            "from_node": "4B538F7A43F931D742DF7DABDAA41036",
+            "from_pin": "Pose",
+            "to_node": "A829AB58445EAA8FC6A63BB66F8EB660",
+            "to_pin": "Pose",
+            "pin_type": "struct"
+          },
+          {
+            "from_node": "1096CC954D4C5A5CE0F1EBBF1C510542",
+            "from_pin": "Pose",
+            "to_node": "A6513D7A4006C58E2BC82AADE84F15F6",
+            "to_pin": "BasePose",
+            "pin_type": "struct"
+          },
+          {
+            "from_node": "FBECDF584CC7985E10D302B586B4CB33",
+            "from_pin": "Pose",
+            "to_node": "A6513D7A4006C58E2BC82AADE84F15F6",
+            "to_pin": "BlendPoses_0",
+            "pin_type": "struct"
+          },
+          {
+            "from_node": "85FA76FD4110F6C5211E209889B35B23",
+            "from_pin": "Pose",
+            "to_node": "7EE80180447DC82D51C63AB106EE173E",
+            "to_pin": "BlendPose_1",
+            "pin_type": "struct"
+          },
+          {
+            "from_node": "D9D2A21B4BF4A42074350FAC27432E78",
+            "from_pin": "IsInAir?",
+            "to_node": "704BCFE04B09ECC1B151B1B3F2D6E165",
+            "to_pin": "A",
+            "pin_type": "bool"
+          },
+          {
+            "from_node": "704BCFE04B09ECC1B151B1B3F2D6E165",
+            "from_pin": "ReturnValue",
+            "to_node": "AC1F677F4F57DC2325C370BA09E4577A",
+            "to_pin": "ShouldDoIKTrace",
+            "pin_type": "bool"
+          }
+        ]
+      },
+      {
+        "name": "CalcLean",
+        "type": "function",
+        "total_nodes": 14,
+        "shown_nodes": 0,
+        "nodes": [],
+        "total_edges": 14,
+        "edges": [
+          {
+            "from_node": "8CCE224E4DC2A2FDFF6AA7A1E6833A29",
+            "from_pin": "then",
+            "to_node": "FFC9142F4C5D7F16011A7A9F8768C182",
+            "to_pin": "execute",
+            "pin_type": "exec"
+          },
+          {
+            "from_node": "5C4A451E4C27534DFA1E9994CF1DFD47",
+            "from_pin": "ReturnValue",
+            "to_node": "4366523940D48976DA7425929CDE9D9F",
+            "to_pin": "self",
+            "pin_type": "object"
+          },
+          {
+            "from_node": "4366523940D48976DA7425929CDE9D9F",
+            "from_pin": "ReturnValue",
+            "to_node": "264F1EEF4D2C27B9A9D9B5822C418235",
+            "to_pin": "B",
+            "pin_type": "struct"
+          },
+          {
+            "from_node": "4366523940D48976DA7425929CDE9D9F",
+            "from_pin": "ReturnValue",
+            "to_node": "BC9BECCE4AECA35CCBD321802CE19F95",
+            "to_pin": "InputPin",
+            "pin_type": "struct"
+          },
+          {
+            "from_node": "4366523940D48976DA7425929CDE9D9F",
+            "from_pin": "ReturnValue",
+            "to_node": "FFC9142F4C5D7F16011A7A9F8768C182",
+            "to_pin": "CurrentRotation",
+            "pin_type": "struct"
+          },
+          {
+            "from_node": "41B2E6744DB08E61F235C6BDD1AE301C",
+            "from_pin": "PreviousRotation",
+            "to_node": "264F1EEF4D2C27B9A9D9B5822C418235",
+            "to_pin": "A",
+            "pin_type": "struct"
+          },
+          {
+            "from_node": "264F1EEF4D2C27B9A9D9B5822C418235",
+            "from_pin": "ReturnValue_Yaw",
+            "to_node": "C670F7FC4E8F69017B3F47A8BDA794FC",
+            "to_pin": "InputPin",
+            "pin_type": "real"
+          },
+          {
+            "from_node": "56A226A943F4C4336C1B02AABAA7387A",
+            "from_pin": "LeanAmount",
+            "to_node": "3F1426514CF9085978809AA9CB079DF6",
+            "to_pin": "Current",
+            "pin_type": "real"
+          },
+          {
+            "from_node": "0EAF7D0D4D56C020B774A88186C091D7",
+            "from_pin": "then",
+            "to_node": "6E67365146A916DB29CD97ABCCB7B58A",
+            "to_pin": "execute",
+            "pin_type": "exec"
+          },
+          {
+            "from_node": "3F1426514CF9085978809AA9CB079DF6",
+            "from_pin": "ReturnValue",
+            "to_node": "0EAF7D0D4D56C020B774A88186C091D7",
+            "to_pin": "LeanAmount",
+            "pin_type": "real"
+          },
+          {
+            "from_node": "7FB1FEA64E4FABDCF61918AD85FE48A8",
+            "from_pin": "ReturnValue",
+            "to_node": "3F1426514CF9085978809AA9CB079DF6",
+            "to_pin": "DeltaTime",
+            "pin_type": "real"
+          },
+          {
+            "from_node": "BC9BECCE4AECA35CCBD321802CE19F95",
+            "from_pin": "OutputPin",
+            "to_node": "6E67365146A916DB29CD97ABCCB7B58A",
+            "to_pin": "PreviousRotation",
+            "pin_type": "struct"
+          },
+          {
+            "from_node": "FFC9142F4C5D7F16011A7A9F8768C182",
+            "from_pin": "then",
+            "to_node": "0EAF7D0D4D56C020B774A88186C091D7",
+            "to_pin": "execute",
+            "pin_type": "exec"
+          },
+          {
+            "from_node": "C670F7FC4E8F69017B3F47A8BDA794FC",
+            "from_pin": "OutputPin",
+            "to_node": "3F1426514CF9085978809AA9CB079DF6",
+            "to_pin": "Target",
+            "pin_type": "real"
+          }
+        ]
+      }
+    ],
+    "audio_summary": {
+      "has_audio": true,
+      "audio_node_count": 2,
+      "audio_functions": [
+        "PlayWorldCameraShake"
+      ]
+    },
+    "action": "scan_blueprint"
+  },
+  "BPI_Bot": {
+    "status": "ok",
+    "message": "Scanned 'BPI_Bot': 2 graphs, 2 nodes (0 audio-relevant)",
+    "asset_path": "/Game/StackOBot/Blueprints/Character/BPI_Bot",
+    "blueprint_name": "BPI_Bot",
+    "parent_class": "Interface",
+    "blueprint_type": "Blueprint",
+    "total_nodes": 2,
+    "graphs": [
+      {
+        "name": "RecieveDamage",
+        "type": "function",
+        "total_nodes": 1,
+        "shown_nodes": 0,
+        "nodes": [],
+        "total_edges": 0,
+        "edges": []
+      },
+      {
+        "name": "ResetJetpack",
+        "type": "function",
+        "total_nodes": 1,
+        "shown_nodes": 0,
+        "nodes": [],
+        "total_edges": 0,
+        "edges": []
+      }
+    ],
+    "audio_summary": {
+      "has_audio": false,
+      "audio_node_count": 0,
+      "audio_functions": []
+    },
+    "action": "scan_blueprint"
+  }
+}
