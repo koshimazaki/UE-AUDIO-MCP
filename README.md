@@ -130,15 +130,17 @@ All data engine-verified or hand-curated. TF-IDF semantic search for MetaSounds 
 
 Engine sync scripts fetch live data from the running UE5 editor (842 MetaSounds nodes, 979 audio Blueprint functions from 165 classes). The batch scanner (`scripts/scan_project.py`) imports scanned project Blueprints into the knowledge DB.
 
-### 61 Templates (25/25 MS validated)
+### 73 Templates (33/33 MS validated)
 
-| Type | Count | Examples |
-|------|-------|---------|
-| MetaSounds DSP | 25 | gunshot, footsteps, ambient, wind, weather, vehicle_engine, sfx_generator, sid_chip_tune, sid_bass, sid_lead, preset_morph, macro_sequence, subtractive_synth, mono_synth, snare... |
-| Blueprint Logic | 30 | weapon_burst, footfalls, ambient_wind, quartz_beat_sync, spectral_analysis, sfx_generator_widget, spatial_attenuation, submix_recording, physics_audio... |
+| Type | Count | Highlights |
+|------|-------|-----------|
+| MetaSounds DSP | 33 | 26 Sources + 7 Patches. Includes 12 from shipped games (Lyra, StackOBot) |
+| Blueprint Logic | 34 | Combat, Quartz music, physics, ambient, UI, animation-driven audio |
 | Wwise Hierarchy | 6 | gunshot, footsteps, ambient, ui_sound, weather, vehicle_engine |
 
-All 25 MetaSounds templates pass 7-stage validation (node types, pin names, connections, type compatibility, defaults, required inputs, interface pins) against the engine-verified catalogue. Blueprint and Wwise templates pass structural checks.
+All 33 MetaSounds templates pass 7-stage validation against the engine-verified catalogue. 12 templates derived from production games: **Lyra** (random_eq, whizby, stereo_high_shelf, stereo_balance, ambient_element, gameplay_cue_audio, weapon_fire_spatial, ui_button_sound, anim_notify_audio) and **StackOBot** (mono_array_player, looped_sound, stereo_eq_delay).
+
+See **[TEMPLATES.md](TEMPLATES.md)** for the full catalogue with C++ audio patterns from Lyra (Context Effects pipeline, Control Bus mixing).
 
 ---
 
@@ -281,11 +283,11 @@ Phase 6: Blueprint Scanner        Done    Graph inspection, editor menu, batch s
 Phase 7: Blueprint Builder        Done    8 MCP tools, audio function allowlist, compile
 Phase 8: Engine Registry Sync     Done    842 MS nodes + 979 BP funcs synced from live engine
 Phase 9: Data Integrity           Done    25/25 templates verified, 128 class_name mappings
+Phase 10: Production Templates    Done    +12 from Lyra/StackOBot, 33/33 MS + 34 BP validated
 ```
 
 ### Coming Next
 
-- **Game project scanning** -- Extracting Blueprints + MetaSounds from Lyra, Stack-O-Bot
 - **End-to-end testing** -- Build MetaSounds + wire Blueprints + hear audio in PIE
 - **AudioLink integration** -- Automated MetaSounds -> Wwise routing via AudioLink bridge
 - **Video demo** -- Prompt-to-audio pipeline walkthrough
