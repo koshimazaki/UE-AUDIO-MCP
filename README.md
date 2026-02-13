@@ -73,39 +73,6 @@ C64 chiptune plays      ->    ReSID SID Chip node    ->   Music bus, stereo mix
 
 ---
 
-## What's Included
-
-- **63 MCP tools** -- Wwise (20), MetaSounds (23), Blueprint (15), orchestration (5)
-- **643 knowledge entries** -- 178 MetaSounds nodes, 66 WAAPI functions, 55 BP audio functions, TF-IDF search
-- **73 templates** -- 33 MetaSounds DSP + 34 Blueprint logic + 6 Wwise hierarchy (33/33 MS validated)
-- **35 C++ TCP commands** -- MetaSounds Builder API, Blueprint builder, graph scanning, asset queries
-- **5 custom C++ nodes** -- ReSID SID chip emulator (oscillator, envelope, filter, voice, full chip)
-- **11 audio system patterns** -- gunshot, footsteps, ambient, vehicle, weather, UI, SID synth...
-- **Editor menu** -- Scan Project, Export MetaSounds, Server Status from UE5 menu bar
-- **Engine sync** -- 842 MS nodes + 979 BP functions synced from live UE5 editor
-
-12 templates from shipped games: **Lyra** (random EQ, whizby, stereo balance, gameplay cues, anim notify audio) and **StackOBot** (array player, looped sound, EQ+delay).
-
-See **[REFERENCE.md](REFERENCE.md)** for full tool listing, template catalogue, knowledge base details, C++ patterns, and workflows.
-
----
-
-## ReSID SIDKIT Edition -- C64 SID Chip in MetaSounds
-
-5 custom C++ MetaSounds nodes wrapping a cycle-accurate MOS 6581/8580 SID chip emulator. The same reSID core running in the [SIDKIT](https://github.com/koshimazaki/SIDKIT) project, now available as native MetaSounds DSP nodes.
-
-| Node | Type | Description |
-|------|------|-------------|
-| **SID Oscillator** | Audio | 24-bit accumulator, 8 waveforms (saw/tri/pulse/noise + combined) |
-| **SID Envelope** | Float | Non-linear exponential ADSR with authentic SID timing and delay bug |
-| **SID Filter** | Audio | Route any audio through the 6581's analog filter -- VICE VCR model |
-| **SID Voice** | Audio | Oscillator x Envelope convenience combo |
-| **SID Chip** | Audio | Complete 3-voice SID with filter, FM cross-modulation, per-voice outputs |
-
-`SIDMetaSoundNodes` is a separate Runtime module -- ships in games without the MCP TCP server.
-
----
-
 ## Setup
 
 ```bash
@@ -137,6 +104,39 @@ Works without Wwise or UE5 running -- knowledge base, templates, and offline mod
 | Unreal Engine | **5.7.2+** (MetaSounds Builder API, experimental since 5.4) |
 | Wwise | **2025.1.4+** (WAAPI enabled, WebSocket on localhost:8080) |
 | Python | 3.10+ |
+
+---
+
+## What's Included
+
+- **63 MCP tools** -- Wwise (20), MetaSounds (23), Blueprint (15), orchestration (5)
+- **643 knowledge entries** -- 178 MetaSounds nodes, 66 WAAPI functions, 55 BP audio functions, TF-IDF search
+- **73 templates** -- 33 MetaSounds DSP + 34 Blueprint logic + 6 Wwise hierarchy (33/33 MS validated)
+- **35 C++ TCP commands** -- MetaSounds Builder API, Blueprint builder, graph scanning, asset queries
+- **5 custom C++ nodes** -- ReSID SID chip emulator (oscillator, envelope, filter, voice, full chip)
+- **11 audio system patterns** -- gunshot, footsteps, ambient, vehicle, weather, UI, SID synth...
+- **Editor menu** -- Scan Project, Export MetaSounds, Server Status from UE5 menu bar
+- **Engine sync** -- 842 MS nodes + 979 BP functions synced from live UE5 editor
+
+12 templates from shipped games: **Lyra** (random EQ, whizby, stereo balance, gameplay cues, anim notify audio) and **StackOBot** (array player, looped sound, EQ+delay).
+
+See **[REFERENCE.md](REFERENCE.md)** for full tool listing, template catalogue, knowledge base details, C++ patterns, and workflows.
+
+---
+
+## ReSID SIDKIT Edition -- C64 SID Chip in MetaSounds
+
+5 custom C++ MetaSounds nodes wrapping a cycle-accurate MOS 6581/8580 SID chip emulator. The same reSID core running in the [SIDKIT](https://github.com/koshimazaki/SIDKIT) project, now available as native MetaSounds DSP nodes.
+
+| Node | Type | Description |
+|------|------|-------------|
+| **SID Oscillator** | Audio | 24-bit accumulator, 8 waveforms (saw/tri/pulse/noise + combined) |
+| **SID Envelope** | Float | Non-linear exponential ADSR with authentic SID timing and delay bug |
+| **SID Filter** | Audio | Route any audio through the 6581's analog filter -- VICE VCR model |
+| **SID Voice** | Audio | Oscillator x Envelope convenience combo |
+| **SID Chip** | Audio | Complete 3-voice SID with filter, FM cross-modulation, per-voice outputs |
+
+`SIDMetaSoundNodes` is a separate Runtime module -- ships in games without the MCP TCP server.
 
 ---
 
