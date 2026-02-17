@@ -20,6 +20,7 @@
 // Import
 #include "AssetToolsModule.h"
 #include "IAssetTools.h"
+#include "AutomatedAssetImportData.h"
 
 // Physical materials
 #include "PhysicalMaterials/PhysicalMaterial.h"
@@ -27,6 +28,7 @@
 // Audio volumes
 #include "Sound/AudioVolume.h"
 #include "Sound/ReverbEffect.h"
+#include "Builders/CubeBuilder.h"
 
 // Asset loading & registry
 #include "UObject/SoftObjectPath.h"
@@ -274,6 +276,12 @@ TSharedPtr<FJsonObject> FImportSoundFileCommand::Execute(
 		return AudioMCP::MakeErrorResponse(TEXT("Missing required param 'dest_folder'"));
 	}
 
+	// Validate paths — reject traversal
+	if (FilePath.Contains(TEXT("..")))
+	{
+		return AudioMCP::MakeErrorResponse(TEXT("file_path must not contain '..'"));
+	}
+
 	// Validate file extension
 	FString Extension = FPaths::GetExtension(FilePath).ToLower();
 	if (Extension != TEXT("wav") && Extension != TEXT("ogg"))
@@ -300,13 +308,14 @@ TSharedPtr<FJsonObject> FImportSoundFileCommand::Execute(
 		return AudioMCP::MakeErrorResponse(TEXT("dest_folder must not contain '..'"));
 	}
 
-	// Use AssetTools to import
+	// Use automated import (no modal dialog — headless for MCP)
+	UAutomatedAssetImportData* ImportData = NewObject<UAutomatedAssetImportData>();
+	ImportData->bReplaceExisting = true;
+	ImportData->DestinationPath = DestFolder;
+	ImportData->Filenames.Add(FilePath);
+
 	IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
-
-	TArray<FString> FilesToImport;
-	FilesToImport.Add(FilePath);
-
-	TArray<UObject*> ImportedAssets = AssetTools.ImportAssets(FilesToImport, DestFolder);
+	TArray<UObject*> ImportedAssets = AssetTools.ImportAssetsAutomated(ImportData);
 
 	if (ImportedAssets.Num() == 0)
 	{
@@ -383,20 +392,22 @@ TSharedPtr<FJsonObject> FSetPhysicalSurfaceCommand::Execute(
 
 	// Map surface type string to EPhysicalSurface enum
 	// UE5 defines SurfaceType1..SurfaceType62 as custom surface types
-	// We map common names to these slots
 	EPhysicalSurface Surface = SurfaceType_Default;
+	bool bFound = SurfaceType.Equals(TEXT("Default"), ESearchCase::IgnoreCase)
+	           || SurfaceType.Equals(TEXT("SurfaceType_Default"), ESearchCase::IgnoreCase);
 
 	// Check project surface type names from the project settings
 	UEnum* SurfaceEnum = StaticEnum<EPhysicalSurface>();
-	if (SurfaceEnum)
+	if (SurfaceEnum && !bFound)
 	{
-		// Try to find by display name first (project-configured names)
 		for (int32 i = 0; i < SurfaceEnum->NumEnums() - 1; ++i)
 		{
+			// Try display name first (project-configured names like "Grass")
 			FString EnumName = SurfaceEnum->GetDisplayNameTextByIndex(i).ToString();
 			if (EnumName.Equals(SurfaceType, ESearchCase::IgnoreCase))
 			{
 				Surface = static_cast<EPhysicalSurface>(SurfaceEnum->GetValueByIndex(i));
+				bFound = true;
 				break;
 			}
 			// Also check the raw enum name (e.g., "SurfaceType1")
@@ -404,9 +415,39 @@ TSharedPtr<FJsonObject> FSetPhysicalSurfaceCommand::Execute(
 			if (RawName.Equals(SurfaceType, ESearchCase::IgnoreCase))
 			{
 				Surface = static_cast<EPhysicalSurface>(SurfaceEnum->GetValueByIndex(i));
+				bFound = true;
 				break;
 			}
 		}
+	}
+
+	if (!bFound)
+	{
+		// Build list of available surface types for the error message
+		FString Available;
+		if (SurfaceEnum)
+		{
+			for (int32 i = 0; i < SurfaceEnum->NumEnums() - 1; ++i)
+			{
+				FString Name = SurfaceEnum->GetDisplayNameTextByIndex(i).ToString();
+				if (!Name.IsEmpty() && Name != TEXT("SurfaceType_Default"))
+				{
+					if (!Available.IsEmpty()) Available += TEXT(", ");
+					Available += Name;
+				}
+			}
+		}
+		FString Msg = FString::Printf(
+			TEXT("Unknown surface type '%s'."), *SurfaceType);
+		if (!Available.IsEmpty())
+		{
+			Msg += FString::Printf(TEXT(" Available: %s"), *Available);
+		}
+		else
+		{
+			Msg += TEXT(" Configure surface types in Project Settings > Physics > Physical Surface.");
+		}
+		return AudioMCP::MakeErrorResponse(Msg);
 	}
 
 	PhysMat->SurfaceType = Surface;
@@ -505,6 +546,13 @@ TSharedPtr<FJsonObject> FPlaceAudioVolumeCommand::Execute(
 	{
 		return AudioMCP::MakeErrorResponse(TEXT("Failed to spawn AudioVolume actor"));
 	}
+
+	// Build brush geometry so the volume defines an actual zone
+	UCubeBuilder* CubeBuilder = NewObject<UCubeBuilder>(Volume);
+	CubeBuilder->X = Extent.X * 2.0f;
+	CubeBuilder->Y = Extent.Y * 2.0f;
+	CubeBuilder->Z = Extent.Z * 2.0f;
+	CubeBuilder->Build(World, Volume);
 
 	Volume->SetActorLabel(*VolumeName);
 	Volume->SetPriority(static_cast<float>(Priority));

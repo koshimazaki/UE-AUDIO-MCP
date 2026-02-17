@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 
 
-def _ok(data: dict | None = None) -> str:
+def _ok(data: dict | None = None, warnings: list[str] | None = None) -> str:
     """Return a JSON success response.
 
     Strips any 'status' key from *data* so WAAPI responses cannot
@@ -15,6 +15,8 @@ def _ok(data: dict | None = None) -> str:
     if data:
         data.pop("status", None)
         result.update(data)
+    if warnings:
+        result["warnings"] = warnings
     return json.dumps(result)
 
 
@@ -26,3 +28,14 @@ def _error(message: str, data: dict | None = None) -> str:
         data.pop("message", None)
         result.update(data)
     return json.dumps(result)
+
+
+def _validate_asset_path(path: str, param_name: str = "path") -> str | None:
+    """Validate a UE asset path. Returns error string or None if valid."""
+    if not path.strip():
+        return f"{param_name} cannot be empty"
+    if ".." in path:
+        return f"{param_name} must not contain '..'"
+    if not path.startswith("/Game/") and not path.startswith("/Engine/"):
+        return f"{param_name} must start with /Game/ or /Engine/"
+    return None

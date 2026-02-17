@@ -114,6 +114,8 @@ TEXT("UE Audio MCP ready — listening on port %d (N+1 commands registered)"),
 **File**: `src/ue_audio_mcp/tools/<category>.py` (or new file)
 
 ```python
+from ue_audio_mcp.tools.utils import _error, _ok, _validate_asset_path
+
 @mcp.tool()
 def my_command_name(
     my_param: str,
@@ -127,10 +129,9 @@ def my_command_name(
         my_param: What this parameter controls
         optional_param: What this optional param does (default 0)
     """
-    if not my_param.strip():
-        return _error("my_param cannot be empty")
-    if ".." in my_param:
-        return _error("my_param must not contain '..'")
+    # Use shared helper for UE asset paths (checks empty, "..", /Game/ prefix)
+    if err := _validate_asset_path(my_param, "my_param"):
+        return _error(err)
 
     conn = get_ue5_connection()
     try:
@@ -141,10 +142,25 @@ def my_command_name(
         })
         if result.get("status") == "error":
             return _error(result.get("message", "my_command_name failed"))
-        return _ok(result)
+
+        # Add warnings for non-fatal issues the user should know about
+        warns = []
+        if some_condition:
+            warns.append("Helpful message about what might go wrong.")
+        return _ok(result, warnings=warns or None)
     except Exception as e:
         return _error(str(e))
 ```
+
+**Shared helpers** (from `utils.py`):
+- `_validate_asset_path(path, param_name)` — checks empty, `..`, `/Game/` or `/Engine/` prefix. Returns error string or `None`.
+- `_ok(data, warnings=["..."])` — success response with optional warnings list
+- `_error(message)` — error response
+
+**When to add warnings** (non-fatal issues):
+- Missing optional param that will cause silent failure (e.g. AnimNotify with no sound)
+- Value resolves to a default that probably isn't what the user wants (e.g. surface type Default)
+- Configuration that works but won't have the expected effect (e.g. volume with no geometry)
 
 If new file, add import in `src/ue_audio_mcp/server.py`:
 ```python

@@ -51,6 +51,14 @@ def test_place_anim_notify_path_traversal(ue5_conn):
     assert ".." in result["message"]
 
 
+def test_place_anim_notify_bad_prefix(ue5_conn):
+    result = json.loads(place_anim_notify(
+        animation_path="/Bad/Anims/Walk", time=0.5,
+    ))
+    assert result["status"] == "error"
+    assert "/Game/" in result["message"]
+
+
 def test_place_anim_notify_negative_time(ue5_conn):
     result = json.loads(place_anim_notify(
         animation_path="/Game/Anims/Walk", time=-1.0,
@@ -59,7 +67,7 @@ def test_place_anim_notify_negative_time(ue5_conn):
     assert "time" in result["message"].lower()
 
 
-def test_place_anim_notify_no_sound(ue5_conn, mock_ue5_plugin):
+def test_place_anim_notify_no_sound_warns(ue5_conn, mock_ue5_plugin):
     mock_ue5_plugin.set_response("place_anim_notify", {
         "status": "ok",
         "animation": "/Game/Anims/Walk",
@@ -72,6 +80,23 @@ def test_place_anim_notify_no_sound(ue5_conn, mock_ue5_plugin):
     assert result["status"] == "ok"
     cmd = mock_ue5_plugin.commands[-1]
     assert "sound" not in cmd
+    assert "warnings" in result
+    assert any("silence" in w for w in result["warnings"])
+
+
+def test_place_anim_notify_with_sound_no_warning(ue5_conn, mock_ue5_plugin):
+    mock_ue5_plugin.set_response("place_anim_notify", {
+        "status": "ok",
+        "animation": "/Game/Anims/Walk",
+        "notify_name": "Footstep",
+        "time": 0.3,
+    })
+    result = json.loads(place_anim_notify(
+        animation_path="/Game/Anims/Walk", time=0.3,
+        sound="/Game/Audio/Step",
+    ))
+    assert result["status"] == "ok"
+    assert "warnings" not in result
 
 
 def test_place_anim_notify_not_connected():
@@ -111,6 +136,14 @@ def test_spawn_emitter_empty_sound(ue5_conn):
     result = json.loads(spawn_audio_emitter(sound="", location=[0, 0, 0]))
     assert result["status"] == "error"
     assert "empty" in result["message"]
+
+
+def test_spawn_emitter_bad_prefix(ue5_conn):
+    result = json.loads(spawn_audio_emitter(
+        sound="/tmp/local_file", location=[0, 0, 0],
+    ))
+    assert result["status"] == "error"
+    assert "/Game/" in result["message"]
 
 
 def test_spawn_emitter_bad_location(ue5_conn):
@@ -217,6 +250,40 @@ def test_set_surface_path_traversal(ue5_conn):
     ))
     assert result["status"] == "error"
     assert ".." in result["message"]
+
+
+def test_set_surface_default_warns(ue5_conn, mock_ue5_plugin):
+    mock_ue5_plugin.set_response("set_physical_surface", {
+        "status": "ok",
+        "material_path": "/Game/Materials/PM_Test",
+        "surface_type": "Default",
+        "surface_enum": "Default",
+        "surface_index": 0,
+        "created": False,
+    })
+    result = json.loads(set_physical_surface(
+        material_path="/Game/Materials/PM_Test",
+        surface_type="Default",
+    ))
+    assert result["status"] == "ok"
+    assert "warnings" in result
+    assert any("Default" in w for w in result["warnings"])
+
+
+def test_set_surface_non_default_no_warning(ue5_conn, mock_ue5_plugin):
+    mock_ue5_plugin.set_response("set_physical_surface", {
+        "status": "ok",
+        "material_path": "/Game/Materials/PM_Grass",
+        "surface_type": "Grass",
+        "surface_index": 1,
+        "created": False,
+    })
+    result = json.loads(set_physical_surface(
+        material_path="/Game/Materials/PM_Grass",
+        surface_type="Grass",
+    ))
+    assert result["status"] == "ok"
+    assert "warnings" not in result
 
 
 def test_set_surface_creates_new(ue5_conn, mock_ue5_plugin):

@@ -14,7 +14,7 @@ import logging
 from typing import Any
 
 from ue_audio_mcp.server import mcp
-from ue_audio_mcp.tools.utils import _error, _ok
+from ue_audio_mcp.tools.utils import _error, _ok, _validate_asset_path
 from ue_audio_mcp.ue5_connection import get_ue5_connection
 
 log = logging.getLogger(__name__)
@@ -38,10 +38,8 @@ def place_anim_notify(
         sound: Optional SoundBase asset path to play
         notify_name: Name for the notify event (default "Footstep")
     """
-    if not animation_path.strip():
-        return _error("animation_path cannot be empty")
-    if ".." in animation_path:
-        return _error("animation_path must not contain '..'")
+    if err := _validate_asset_path(animation_path, "animation_path"):
+        return _error(err)
     if time < 0:
         return _error("time must be >= 0")
 
@@ -58,7 +56,13 @@ def place_anim_notify(
         result = conn.send_command(cmd)
         if result.get("status") == "error":
             return _error(result.get("message", "place_anim_notify failed"))
-        return _ok(result)
+        warns = []
+        if not sound:
+            warns.append(
+                "No sound asset specified — AnimNotify will fire but play silence. "
+                "Set 'sound' to a SoundBase/MetaSound asset path."
+            )
+        return _ok(result, warnings=warns or None)
     except Exception as e:
         return _error(str(e))
 
@@ -81,8 +85,8 @@ def spawn_audio_emitter(
         name: Label for the emitter actor
         auto_play: Whether to start playing immediately (default True)
     """
-    if not sound.strip():
-        return _error("sound cannot be empty")
+    if err := _validate_asset_path(sound, "sound"):
+        return _error(err)
     if not location or len(location) < 3:
         return _error("location must be [x, y, z]")
 
@@ -115,10 +119,10 @@ def import_sound_file(
     """
     if not file_path.strip():
         return _error("file_path cannot be empty")
-    if not dest_folder.strip():
-        return _error("dest_folder cannot be empty")
-    if ".." in file_path or ".." in dest_folder:
-        return _error("paths must not contain '..'")
+    if ".." in file_path:
+        return _error("file_path must not contain '..'")
+    if err := _validate_asset_path(dest_folder, "dest_folder"):
+        return _error(err)
 
     conn = get_ue5_connection()
     try:
@@ -148,12 +152,10 @@ def set_physical_surface(
         material_path: Physical Material asset path (e.g. "/Game/Materials/PM_Grass")
         surface_type: Surface type name (e.g. "Grass", "Metal", "Wood", "SurfaceType1")
     """
-    if not material_path.strip():
-        return _error("material_path cannot be empty")
+    if err := _validate_asset_path(material_path, "material_path"):
+        return _error(err)
     if not surface_type.strip():
         return _error("surface_type cannot be empty")
-    if ".." in material_path:
-        return _error("material_path must not contain '..'")
 
     conn = get_ue5_connection()
     try:
@@ -164,7 +166,14 @@ def set_physical_surface(
         })
         if result.get("status") == "error":
             return _error(result.get("message", "set_physical_surface failed"))
-        return _ok(result)
+        warns = []
+        if result.get("surface_index", -1) == 0:
+            warns.append(
+                "Surface resolved to Default (index 0). Footstep raycasts "
+                "won't distinguish this material. Configure custom surface "
+                "types in Project Settings > Physics > Physical Surface."
+            )
+        return _ok(result, warnings=warns or None)
     except Exception as e:
         return _error(str(e))
 
@@ -231,10 +240,8 @@ def spawn_blueprint_actor(
         rotation: Rotation as [pitch, yaw, roll] in degrees (default zero)
         label: Optional display label for the spawned actor
     """
-    if not blueprint_path.strip():
-        return _error("blueprint_path cannot be empty")
-    if ".." in blueprint_path:
-        return _error("blueprint_path must not contain '..'")
+    if err := _validate_asset_path(blueprint_path, "blueprint_path"):
+        return _error(err)
 
     conn = get_ue5_connection()
     try:
