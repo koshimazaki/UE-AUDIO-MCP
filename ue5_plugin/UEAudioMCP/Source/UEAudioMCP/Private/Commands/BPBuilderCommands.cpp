@@ -54,9 +54,15 @@ TSharedPtr<FJsonObject> FBPOpenBlueprintCommand::Execute(
 		return BPError(Error);
 	}
 
+	// Collect auto-registered nodes for the response
+	TArray<TSharedPtr<FJsonValue>> NodeList;
+	Mgr->AutoRegisterNodes(NodeList);
+
 	TSharedPtr<FJsonObject> Resp = MakeShared<FJsonObject>();
 	Resp->SetStringField(TEXT("status"), TEXT("ok"));
 	Resp->SetStringField(TEXT("blueprint_name"), Mgr->GetActiveBlueprintName());
+	Resp->SetNumberField(TEXT("node_count"), NodeList.Num());
+	Resp->SetArrayField(TEXT("nodes"), NodeList);
 	return Resp;
 }
 

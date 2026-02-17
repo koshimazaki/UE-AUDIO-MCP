@@ -11,7 +11,7 @@ import logging
 
 from ue_audio_mcp.knowledge.db import get_knowledge_db
 from ue_audio_mcp.server import mcp
-from ue_audio_mcp.tools.utils import _error, _ok
+from ue_audio_mcp.tools.utils import _error, _ok, _validate_asset_path
 from ue_audio_mcp.ue5_connection import get_ue5_connection
 
 log = logging.getLogger(__name__)
@@ -173,6 +173,9 @@ def bp_list_assets(
         path: Path prefix to search under (default: /Game/)
         limit: Max results to return (default: 5000)
     """
+    path_err = _validate_asset_path(path, "path")
+    if path_err:
+        return _error(path_err)
     conn = get_ue5_connection()
     try:
         result = conn.send_command({
@@ -210,6 +213,8 @@ def bp_scan_blueprint(
     """
     if not asset_path.strip():
         return _error("asset_path cannot be empty")
+    if ".." in asset_path:
+        return _error("asset_path must not contain '..'")
 
     conn = get_ue5_connection()
     try:
@@ -241,6 +246,8 @@ def bp_export_audio(asset_path: str) -> str:
     """
     if not asset_path.strip():
         return _error("asset_path cannot be empty")
+    if ".." in asset_path:
+        return _error("asset_path must not contain '..'")
 
     conn = get_ue5_connection()
     try:

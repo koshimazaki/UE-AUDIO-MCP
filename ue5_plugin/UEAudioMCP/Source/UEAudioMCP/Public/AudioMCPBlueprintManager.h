@@ -79,6 +79,9 @@ public:
 	bool ListPins(const FString& NodeId, TArray<TSharedPtr<FJsonValue>>& OutPins,
 		FString& OutError);
 
+	/** Auto-register all existing EventGraph nodes by title. Returns node info. */
+	int32 AutoRegisterNodes(TArray<TSharedPtr<FJsonValue>>& OutNodes);
+
 private:
 	/** The single global instance — set by Module startup/shutdown. */
 	static FAudioMCPBlueprintManager* Instance;

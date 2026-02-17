@@ -13,7 +13,7 @@ import logging
 from typing import Any
 
 from ue_audio_mcp.server import mcp
-from ue_audio_mcp.tools.utils import _error, _ok
+from ue_audio_mcp.tools.utils import _check_ue5_result, _error, _ok
 from ue_audio_mcp.ue5_connection import get_ue5_connection
 
 log = logging.getLogger(__name__)
@@ -26,9 +26,13 @@ def _is_connected() -> bool:
 
 
 def _send(cmd: dict) -> dict:
-    """Send a command to UE5 plugin."""
+    """Send a command to UE5 plugin. Raises on error status."""
     conn = get_ue5_connection()
-    return conn.send_command(cmd)
+    result = conn.send_command(cmd)
+    err = _check_ue5_result(result)
+    if err:
+        raise RuntimeError(err)
+    return result
 
 
 @mcp.tool()
@@ -60,6 +64,8 @@ def ms_preset_swap(
 
     if not asset_path.startswith("/Game/"):
         return _error("asset_path must start with /Game/")
+    if ".." in asset_path or ".." in referenced_asset:
+        return _error("Paths must not contain '..'")
 
     # Build command sequence
     commands: list[dict[str, Any]] = [

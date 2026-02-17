@@ -105,12 +105,13 @@ exports/                   → Engine sync outputs (JSON)
 
 ### Build & Deploy
 ```bash
-./scripts/build_plugin.sh              # Sync source + compile (UE Editor must be closed)
-./scripts/build_plugin.sh --sync-only  # Sync only (UE recompiles on open)
-./scripts/build_plugin.sh --clean      # Clean build (stale intermediates)
-# Engine:  /Volumes/Koshi_T7/UN5.3/UE_5.7/
-# Project: ~/Documents/Unreal Projects/UEIntroProject/
+./scripts/build_plugin.sh              # Sync source + compile
+./scripts/build_plugin.sh --clean      # Force recompile (removes Intermediate/)
+./scripts/build_plugin.sh --sync-only  # Sync only, UE recompiles on open
+./scripts/build_plugin.sh --build-only # Compile only, skip source sync
 ```
+Set `UE_ENGINE_ROOT` and `UE_PROJECT_DIR` env vars (or edit script defaults).
+Close UE Editor before building (dylibs locked). Use `--clean` for "Action graph is invalid" or stale PCH.
 
 ### Engine Sync (requires UE Editor running with plugin)
 ```bash

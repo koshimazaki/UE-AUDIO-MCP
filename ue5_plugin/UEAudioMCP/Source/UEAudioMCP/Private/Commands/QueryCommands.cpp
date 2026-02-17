@@ -1645,3 +1645,59 @@ TSharedPtr<FJsonObject> FListBlueprintFunctionsCommand::Execute(
 	Response->SetNumberField(TEXT("offset"), Offset);
 	return Response;
 }
+
+// ---------------------------------------------------------------------------
+// duplicate_asset — copy an asset from source to destination
+// ---------------------------------------------------------------------------
+
+#include "EditorAssetLibrary.h"
+
+TSharedPtr<FJsonObject> FDuplicateAssetCommand::Execute(
+	const TSharedPtr<FJsonObject>& Params,
+	FAudioMCPBuilderManager& BuilderManager)
+{
+	FString SourcePath;
+	if (!Params->TryGetStringField(TEXT("source_path"), SourcePath))
+	{
+		return AudioMCP::MakeErrorResponse(TEXT("Missing required param 'source_path'"));
+	}
+
+	FString DestPath;
+	if (!Params->TryGetStringField(TEXT("dest_path"), DestPath))
+	{
+		return AudioMCP::MakeErrorResponse(TEXT("Missing required param 'dest_path'"));
+	}
+
+	// Validate paths
+	if (!SourcePath.StartsWith(TEXT("/Game/")) && !SourcePath.StartsWith(TEXT("/Engine/")))
+	{
+		return AudioMCP::MakeErrorResponse(
+			FString::Printf(TEXT("source_path must start with /Game/ or /Engine/ (got '%s')"), *SourcePath));
+	}
+	if (!DestPath.StartsWith(TEXT("/Game/")))
+	{
+		return AudioMCP::MakeErrorResponse(
+			FString::Printf(TEXT("dest_path must start with /Game/ (got '%s')"), *DestPath));
+	}
+	if (SourcePath.Contains(TEXT("..")) || DestPath.Contains(TEXT("..")))
+	{
+		return AudioMCP::MakeErrorResponse(TEXT("Paths must not contain '..'"));
+	}
+
+	// Perform the duplication
+	UObject* NewAsset = UEditorAssetLibrary::DuplicateAsset(SourcePath, DestPath);
+	if (!NewAsset)
+	{
+		return AudioMCP::MakeErrorResponse(
+			FString::Printf(TEXT("Failed to duplicate '%s' to '%s'. Source may not exist or destination may be invalid."),
+				*SourcePath, *DestPath));
+	}
+
+	TSharedPtr<FJsonObject> Response = AudioMCP::MakeOkResponse(
+		FString::Printf(TEXT("Duplicated '%s' to '%s'"), *SourcePath, *DestPath));
+	Response->SetStringField(TEXT("source_path"), SourcePath);
+	Response->SetStringField(TEXT("dest_path"), DestPath);
+	Response->SetStringField(TEXT("asset_name"), NewAsset->GetName());
+	Response->SetStringField(TEXT("asset_class"), NewAsset->GetClass()->GetName());
+	return Response;
+}

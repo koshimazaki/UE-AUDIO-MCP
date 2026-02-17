@@ -84,3 +84,12 @@ public:
 		const TSharedPtr<FJsonObject>& Params,
 		FAudioMCPBuilderManager& BuilderManager) override;
 };
+
+/** duplicate_asset: Copy an asset from source to destination path. */
+class FDuplicateAssetCommand : public IAudioMCPCommand
+{
+public:
+	virtual TSharedPtr<FJsonObject> Execute(
+		const TSharedPtr<FJsonObject>& Params,
+		FAudioMCPBuilderManager& BuilderManager) override;
+};

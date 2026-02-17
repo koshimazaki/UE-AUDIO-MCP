@@ -590,6 +590,7 @@ void FAudioMCPBlueprintManager::BuildAllowlist()
 	AllowedFunctions.Add(TEXT("PlaySound2D"));
 	AllowedFunctions.Add(TEXT("PlaySoundAtLocation"));
 	AllowedFunctions.Add(TEXT("SpawnSoundAtLocation"));
+	AllowedFunctions.Add(TEXT("SpawnSoundAttached"));
 	AllowedFunctions.Add(TEXT("SpawnSound2D"));
 	AllowedFunctions.Add(TEXT("Play"));
 	AllowedFunctions.Add(TEXT("Stop"));
@@ -632,6 +633,61 @@ void FAudioMCPBlueprintManager::BuildAllowlist()
 	AllowedFunctions.Add(TEXT("Lerp"));
 	AllowedFunctions.Add(TEXT("FClamp"));
 
+	// Timers (footstep loops, delayed triggers)
+	AllowedFunctions.Add(TEXT("K2_SetTimerDelegate"));
+	AllowedFunctions.Add(TEXT("K2_SetTimer"));
+	AllowedFunctions.Add(TEXT("K2_ClearTimerHandle"));
+	AllowedFunctions.Add(TEXT("K2_ClearAndInvalidateTimerHandle"));
+	AllowedFunctions.Add(TEXT("SetTimerByFunctionName"));
+	AllowedFunctions.Add(TEXT("ClearTimerByFunctionName"));
+	AllowedFunctions.Add(TEXT("K2_IsTimerActive"));
+	AllowedFunctions.Add(TEXT("Delay"));
+
+	// Character movement (velocity checks for audio triggers)
+	AllowedFunctions.Add(TEXT("GetVelocity"));
+	AllowedFunctions.Add(TEXT("VSize"));
+	AllowedFunctions.Add(TEXT("GetCharacterMovement"));
+	AllowedFunctions.Add(TEXT("IsMovingOnGround"));
+	AllowedFunctions.Add(TEXT("IsFalling"));
+
+	// Raycast / surface detection (footstep surface switching)
+	AllowedFunctions.Add(TEXT("LineTraceSingle"));
+	AllowedFunctions.Add(TEXT("K2_LineTraceSingle"));
+	AllowedFunctions.Add(TEXT("LineTraceSingleByChannel"));
+	AllowedFunctions.Add(TEXT("BreakHitResult"));
+	AllowedFunctions.Add(TEXT("GetSurfaceType"));
+	AllowedFunctions.Add(TEXT("GetPhysicalMaterial"));
+
+	// Comparison / branching helpers
+	AllowedFunctions.Add(TEXT("Greater_FloatFloat"));
+	AllowedFunctions.Add(TEXT("Less_FloatFloat"));
+	AllowedFunctions.Add(TEXT("EqualEqual_ObjectObject"));
+	AllowedFunctions.Add(TEXT("NotEqual_ObjectObject"));
+	AllowedFunctions.Add(TEXT("IsValid"));
+	AllowedFunctions.Add(TEXT("Conv_FloatToString"));
+
+	// Actor / component queries
+	AllowedFunctions.Add(TEXT("GetOwner"));
+	AllowedFunctions.Add(TEXT("K2_GetActorLocation"));
+	AllowedFunctions.Add(TEXT("GetRootComponent"));
+	AllowedFunctions.Add(TEXT("K2_GetComponentLocation"));
+	AllowedFunctions.Add(TEXT("GetMesh"));
+	AllowedFunctions.Add(TEXT("GetCapsuleComponent"));
+
+	// Animation playback (fireball, attacks, emotes with sound)
+	AllowedFunctions.Add(TEXT("PlayAnimMontage"));
+	AllowedFunctions.Add(TEXT("StopAnimMontage"));
+	AllowedFunctions.Add(TEXT("GetCurrentMontage"));
+	AllowedFunctions.Add(TEXT("Montage_Play"));
+	AllowedFunctions.Add(TEXT("Montage_Stop"));
+	AllowedFunctions.Add(TEXT("Montage_IsPlaying"));
+
+	// Spawning (projectiles, VFX paired with audio)
+	AllowedFunctions.Add(TEXT("SpawnActor"));
+	AllowedFunctions.Add(TEXT("K2_SpawnActor"));
+	AllowedFunctions.Add(TEXT("SpawnEmitterAtLocation"));
+	AllowedFunctions.Add(TEXT("SpawnEmitterAttached"));
+
 	// Debug
 	AllowedFunctions.Add(TEXT("PrintString"));
 
@@ -642,6 +698,69 @@ void FAudioMCPBlueprintManager::BuildAllowlist()
 void FAudioMCPBlueprintManager::ResetHandles()
 {
 	NodeHandles.Empty();
+}
+
+int32 FAudioMCPBlueprintManager::AutoRegisterNodes(TArray<TSharedPtr<FJsonValue>>& OutNodes)
+{
+	if (!HasActiveBlueprint()) return 0;
+
+	int32 Count = 0;
+	TSet<FString> UsedIds;
+
+	// Iterate all graphs (UbergraphPages + FunctionGraphs)
+	auto RegisterFromGraph = [&](UEdGraph* Graph, const FString& GraphName)
+	{
+		if (!Graph) return;
+		for (UEdGraphNode* Node : Graph->Nodes)
+		{
+			if (!Node) continue;
+
+			FString Title = Node->GetNodeTitle(ENodeTitleType::ListView).ToString();
+			FString GuidStr = Node->NodeGuid.ToString();
+
+			// Build a clean ID: lowercase, spaces→underscores, deduplicate
+			FString BaseId = Title.ToLower().Replace(TEXT(" "), TEXT("_"))
+				.Replace(TEXT("("), TEXT("")).Replace(TEXT(")"), TEXT(""))
+				.Replace(TEXT(","), TEXT("")).Replace(TEXT("."), TEXT("_"));
+			FString Id = BaseId;
+			int32 Suffix = 2;
+			while (UsedIds.Contains(Id))
+			{
+				Id = FString::Printf(TEXT("%s_%d"), *BaseId, Suffix++);
+			}
+			UsedIds.Add(Id);
+
+			NodeHandles.Add(Id, Node);
+			Count++;
+
+			// Build JSON info for the response
+			TSharedPtr<FJsonObject> Info = MakeShared<FJsonObject>();
+			Info->SetStringField(TEXT("id"), Id);
+			Info->SetStringField(TEXT("title"), Title);
+			Info->SetStringField(TEXT("guid"), GuidStr);
+			Info->SetStringField(TEXT("class"), Node->GetClass()->GetName());
+			Info->SetStringField(TEXT("graph"), GraphName);
+			Info->SetNumberField(TEXT("x"), Node->NodePosX);
+			Info->SetNumberField(TEXT("y"), Node->NodePosY);
+			OutNodes.Add(MakeShared<FJsonValueObject>(Info));
+		}
+	};
+
+	UBlueprint* BP = ActiveBlueprint.Get();
+
+	// EventGraph (UbergraphPages)
+	for (UEdGraph* Graph : BP->UbergraphPages)
+	{
+		RegisterFromGraph(Graph, Graph->GetName());
+	}
+
+	// Function graphs (Received_Notify, etc.)
+	for (UEdGraph* Graph : BP->FunctionGraphs)
+	{
+		RegisterFromGraph(Graph, Graph->GetName());
+	}
+
+	return Count;
 }
 
 #undef LOCTEXT_NAMESPACE

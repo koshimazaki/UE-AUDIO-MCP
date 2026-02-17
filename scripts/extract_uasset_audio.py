@@ -453,7 +453,7 @@ def build_knowledge_entries(scan_results):
 def main():
     if len(sys.argv) < 2:
         print("Usage: python extract_uasset_audio.py <path_to_Content/Audio>")
-        print("Example: python extract_uasset_audio.py '/Volumes/Koshi_T7 1/UN5.3/AmbientandProceduralSound/Content/Audio'")
+        print("Example: python extract_uasset_audio.py '/path/to/YourProject/Content/Audio'")
         sys.exit(1)
 
     audio_path = sys.argv[1]
