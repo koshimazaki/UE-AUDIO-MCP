@@ -190,17 +190,19 @@ def test_my_command_empty_param(ue5_conn):
 ## Build & Verify
 
 ```bash
-# 1. Run Python tests
+# 1. Tests first
 python -m pytest tests/ -v
 
-# 2. Sync + clean build
-./scripts/build_plugin.sh --clean
+# 2. Build plugin (close UE Editor first — dylibs locked)
+./scripts/build_plugin.sh              # sync + compile
+./scripts/build_plugin.sh --clean      # force recompile (removes Intermediate/)
 
-# 3. Update docs
-# - TOOLS_AND_COMMANDS.md — add to tool/command tables
-# - README.md — update counts
-# - MEMORY.md — update stats
+# 3. Open UE, check: "UE Audio MCP ready — listening on port 9877 (N commands)"
+
+# 4. Update docs: TOOLS_AND_COMMANDS.md, README.md, MEMORY.md
 ```
+
+Use `--clean` when: "Action graph is invalid", stale PCH, or mysterious errors.
 
 ## Security Rules
 
