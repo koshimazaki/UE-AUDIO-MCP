@@ -68,6 +68,48 @@ def place_anim_notify(
 
 
 @mcp.tool()
+def place_bp_anim_notify(
+    animation_path: str,
+    time: float,
+    notify_blueprint_path: str,
+    notify_name: str = "BPNotify",
+) -> str:
+    """Place a Blueprint-based AnimNotify on an animation at a specific time.
+
+    Unlike place_anim_notify (which creates engine AnimNotify_PlaySound),
+    this places BP AnimNotify classes that can do surface detection, line
+    traces, and material-based sound selection — the Lyra footstep pattern.
+
+    Args:
+        animation_path: Animation asset path (e.g. "/Game/Characters/Anims/Walk")
+        time: Time in seconds where the notify fires
+        notify_blueprint_path: Blueprint AnimNotify asset path (e.g. "/Game/Blueprints/AnimNotifies/BP_AnimNotify_FoleyEvent_Walk_L")
+        notify_name: Name for the notify event (default "BPNotify")
+    """
+    if err := _validate_asset_path(animation_path, "animation_path"):
+        return _error(err)
+    if err := _validate_asset_path(notify_blueprint_path, "notify_blueprint_path"):
+        return _error(err)
+    if time < 0:
+        return _error("time must be >= 0")
+
+    conn = get_ue5_connection()
+    try:
+        result = conn.send_command({
+            "action": "place_bp_anim_notify",
+            "animation_path": animation_path,
+            "time": time,
+            "notify_blueprint_path": notify_blueprint_path,
+            "notify_name": notify_name,
+        })
+        if result.get("status") == "error":
+            return _error(result.get("message", "place_bp_anim_notify failed"))
+        return _ok(result)
+    except Exception as e:
+        return _error(str(e))
+
+
+@mcp.tool()
 def spawn_audio_emitter(
     sound: str,
     location: list[float],

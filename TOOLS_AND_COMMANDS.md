@@ -1,6 +1,6 @@
 # Tools & Commands Reference
 
-69 MCP tools + 41 C++ TCP commands for game audio pipeline automation.
+70 MCP tools + 42 C++ TCP commands for game audio pipeline automation.
 
 ---
 
@@ -79,11 +79,12 @@
 | `bp_wire_audio_param` | High-level: wire audio parameter end-to-end |
 | `bp_sync_from_engine` | Sync 979 engine functions to knowledge DB |
 
-### World Setup (6 tools) -- NEW
+### World Setup (7 tools) -- NEW
 
 | Tool | What It Does |
 |------|-------------|
 | `place_anim_notify` | Place AnimNotify_PlaySound on animation at exact frame time |
+| `place_bp_anim_notify` | Place BP AnimNotify on animation (surface-detecting footsteps) |
 | `spawn_audio_emitter` | Spawn AmbientSound actor at world location (spatial audio) |
 | `import_sound_file` | Import .wav/.ogg from disk into Content/ |
 | `set_physical_surface` | Set surface type on Physical Material (creates if needed) |
@@ -102,7 +103,7 @@
 
 ---
 
-## C++ TCP Commands (41)
+## C++ TCP Commands (42)
 
 Wire protocol: 4-byte length-prefix + UTF-8 JSON on port 9877. All commands execute on the game thread.
 
@@ -156,7 +157,7 @@ Wire protocol: 4-byte length-prefix + UTF-8 JSON on port 9877. All commands exec
 | 34 | `bp_register_existing_node` | id, node_guid |
 | 35 | `bp_list_pins` | node_id |
 
-### World Setup (6 commands) -- NEW
+### World Setup (7 commands) -- NEW
 
 | # | Command | Params |
 |---|---------|--------|
@@ -167,8 +168,9 @@ Wire protocol: 4-byte length-prefix + UTF-8 JSON on port 9877. All commands exec
 | 40 | `set_physical_surface` | material_path, surface_type |
 | 41 | `place_audio_volume` | location[x,y,z], extent[x,y,z], name, reverb_effect, priority |
 | -- | `spawn_blueprint_actor` | blueprint_path, location[x,y,z], rotation[p,y,r], label |
+| 42 | `place_bp_anim_notify` | animation_path, time, notify_blueprint_path, notify_name |
 
-Note: `spawn_blueprint_actor` shares slot with the world commands (registered as #41 alongside `place_audio_volume`).
+Note: `spawn_blueprint_actor` shares slot with the world commands (registered alongside `place_audio_volume`).
 
 ---
 

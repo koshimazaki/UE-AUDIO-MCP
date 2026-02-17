@@ -36,7 +36,7 @@ void FUEAudioMCPModule::StartupModule()
 	if (TcpServer->StartListening(AudioMCP::DEFAULT_PORT))
 	{
 		UE_LOG(LogAudioMCPModule, Log,
-			TEXT("UE Audio MCP ready — listening on port %d (41 commands registered)"),
+			TEXT("UE Audio MCP ready — listening on port %d (42 commands registered)"),
 			AudioMCP::DEFAULT_PORT);
 	}
 	else
@@ -194,6 +194,10 @@ void FUEAudioMCPModule::RegisterCommands()
 		MakeShared<FPlaceAudioVolumeCommand>());
 	Dispatcher->RegisterCommand(TEXT("spawn_blueprint_actor"),
 		MakeShared<FSpawnBlueprintActorCommand>());
+
+	// 42. Place BP-based AnimNotify on animation (surface-detecting footsteps)
+	Dispatcher->RegisterCommand(TEXT("place_bp_anim_notify"),
+		MakeShared<FPlaceBPAnimNotifyCommand>());
 }
 
 IMPLEMENT_MODULE(FUEAudioMCPModule, UEAudioMCP)

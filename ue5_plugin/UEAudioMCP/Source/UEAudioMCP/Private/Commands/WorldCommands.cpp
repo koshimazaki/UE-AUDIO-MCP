@@ -9,6 +9,7 @@
 
 // AnimNotify
 #include "Animation/AnimSequenceBase.h"
+#include "Animation/AnimNotifies/AnimNotify.h"
 #include "Animation/AnimNotifies/AnimNotify_PlaySound.h"
 #include "Sound/SoundBase.h"
 
@@ -155,6 +156,134 @@ TSharedPtr<FJsonObject> FPlaceAnimNotifyCommand::Execute(
 	{
 		Resp->SetStringField(TEXT("sound"), SoundPath);
 	}
+	return Resp;
+}
+
+// ==========================================================================
+// place_bp_anim_notify
+// ==========================================================================
+
+TSharedPtr<FJsonObject> FPlaceBPAnimNotifyCommand::Execute(
+	const TSharedPtr<FJsonObject>& Params,
+	FAudioMCPBuilderManager& /*BuilderManager*/)
+{
+	FString AnimPath;
+	if (!Params->TryGetStringField(TEXT("animation_path"), AnimPath))
+	{
+		return AudioMCP::MakeErrorResponse(TEXT("Missing required param 'animation_path'"));
+	}
+
+	double Time = 0.0;
+	if (!Params->TryGetNumberField(TEXT("time"), Time))
+	{
+		return AudioMCP::MakeErrorResponse(TEXT("Missing required param 'time'"));
+	}
+
+	FString NotifyBPPath;
+	if (!Params->TryGetStringField(TEXT("notify_blueprint_path"), NotifyBPPath))
+	{
+		return AudioMCP::MakeErrorResponse(TEXT("Missing required param 'notify_blueprint_path'"));
+	}
+
+	FString NotifyName;
+	if (!Params->TryGetStringField(TEXT("notify_name"), NotifyName))
+	{
+		NotifyName = TEXT("BPNotify");
+	}
+
+	// Validate animation path
+	if (!AnimPath.StartsWith(TEXT("/Game/")) && !AnimPath.StartsWith(TEXT("/Engine/")))
+	{
+		return AudioMCP::MakeErrorResponse(
+			FString::Printf(TEXT("animation_path must start with /Game/ or /Engine/ (got '%s')"), *AnimPath));
+	}
+	if (AnimPath.Contains(TEXT("..")))
+	{
+		return AudioMCP::MakeErrorResponse(TEXT("animation_path must not contain '..'"));
+	}
+
+	// Validate notify blueprint path
+	if (!NotifyBPPath.StartsWith(TEXT("/Game/")) && !NotifyBPPath.StartsWith(TEXT("/Engine/")))
+	{
+		return AudioMCP::MakeErrorResponse(
+			FString::Printf(TEXT("notify_blueprint_path must start with /Game/ or /Engine/ (got '%s')"), *NotifyBPPath));
+	}
+	if (NotifyBPPath.Contains(TEXT("..")))
+	{
+		return AudioMCP::MakeErrorResponse(TEXT("notify_blueprint_path must not contain '..'"));
+	}
+
+	// Load the animation asset
+	UAnimSequenceBase* AnimSeq = LoadObject<UAnimSequenceBase>(nullptr, *AnimPath);
+	if (!AnimSeq)
+	{
+		return AudioMCP::MakeErrorResponse(
+			FString::Printf(TEXT("Could not load AnimSequence at '%s'"), *AnimPath));
+	}
+
+	// Validate time is within animation length
+	float AnimLength = AnimSeq->GetPlayLength();
+	if (Time < 0.0 || Time > AnimLength)
+	{
+		return AudioMCP::MakeErrorResponse(
+			FString::Printf(TEXT("Time %.3f is out of range [0, %.3f] for '%s'"),
+				Time, AnimLength, *AnimPath));
+	}
+
+	// Load the Blueprint asset
+	UBlueprint* Blueprint = LoadObject<UBlueprint>(nullptr, *NotifyBPPath);
+	if (!Blueprint)
+	{
+		return AudioMCP::MakeErrorResponse(
+			FString::Printf(TEXT("Could not load Blueprint at '%s'"), *NotifyBPPath));
+	}
+
+	// Validate the Blueprint is an AnimNotify subclass
+	UClass* NotifyClass = Blueprint->GeneratedClass;
+	if (!NotifyClass)
+	{
+		return AudioMCP::MakeErrorResponse(
+			FString::Printf(TEXT("Blueprint '%s' has no GeneratedClass — is it compiled?"), *NotifyBPPath));
+	}
+	if (!NotifyClass->IsChildOf(UAnimNotify::StaticClass()))
+	{
+		return AudioMCP::MakeErrorResponse(
+			FString::Printf(TEXT("Blueprint '%s' is not an AnimNotify subclass (class: %s)"),
+				*NotifyBPPath, *NotifyClass->GetName()));
+	}
+
+	// Create the notify instance
+	UAnimNotify* Notify = NewObject<UAnimNotify>(AnimSeq, NotifyClass);
+	if (!Notify)
+	{
+		return AudioMCP::MakeErrorResponse(TEXT("Failed to create AnimNotify instance"));
+	}
+
+	// Add the notify event to the animation
+	FAnimNotifyEvent& NewEvent = AnimSeq->Notifies.AddDefaulted_GetRef();
+	NewEvent.NotifyName = FName(*NotifyName);
+	NewEvent.Notify = Notify;
+	NewEvent.SetTime(static_cast<float>(Time));
+	NewEvent.TriggerTimeOffset = GetTriggerTimeOffsetForType(EAnimEventTriggerOffsets::OffsetBefore);
+
+	// Link the notify to the animation
+	NewEvent.Link(AnimSeq, static_cast<float>(Time));
+
+	// Mark the animation as modified
+	AnimSeq->Modify();
+	AnimSeq->PostEditChange();
+	AnimSeq->RefreshCacheData();
+
+	UE_LOG(LogWorldCmds, Log, TEXT("Placed BP AnimNotify '%s' (%s) at %.3fs on '%s'"),
+		*NotifyName, *NotifyClass->GetName(), Time, *AnimPath);
+
+	TSharedPtr<FJsonObject> Resp = AudioMCP::MakeOkResponse();
+	Resp->SetStringField(TEXT("animation"), AnimPath);
+	Resp->SetStringField(TEXT("notify_name"), NotifyName);
+	Resp->SetStringField(TEXT("notify_blueprint"), NotifyBPPath);
+	Resp->SetStringField(TEXT("notify_class"), NotifyClass->GetName());
+	Resp->SetNumberField(TEXT("time"), Time);
+	Resp->SetNumberField(TEXT("animation_length"), AnimLength);
 	return Resp;
 }
 

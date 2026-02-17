@@ -49,6 +49,15 @@ public:
 		FAudioMCPBuilderManager& BuilderManager) override;
 };
 
+/** place_bp_anim_notify: Place a Blueprint-based AnimNotify on an animation (e.g. surface-detecting footsteps). */
+class FPlaceBPAnimNotifyCommand : public IAudioMCPCommand
+{
+public:
+	virtual TSharedPtr<FJsonObject> Execute(
+		const TSharedPtr<FJsonObject>& Params,
+		FAudioMCPBuilderManager& BuilderManager) override;
+};
+
 /** spawn_blueprint_actor: Spawn an instance of a Blueprint class into the editor level. */
 class FSpawnBlueprintActorCommand : public IAudioMCPCommand
 {

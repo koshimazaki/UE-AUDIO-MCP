@@ -6,6 +6,7 @@ import json
 
 from ue_audio_mcp.tools.world_setup import (
     place_anim_notify,
+    place_bp_anim_notify,
     spawn_audio_emitter,
     import_sound_file,
     set_physical_surface,
@@ -108,6 +109,70 @@ def test_place_anim_notify_not_connected():
     assert result["status"] == "error"
     assert "Not connected" in result["message"]
     ue5_module._connection = None
+
+
+# -- place_bp_anim_notify ---------------------------------------------------
+
+def test_place_bp_anim_notify_valid(ue5_conn, mock_ue5_plugin):
+    mock_ue5_plugin.set_response("place_bp_anim_notify", {
+        "status": "ok",
+        "animation": "/Game/Anims/Walk",
+        "notify_name": "WalkL",
+        "notify_blueprint": "/Game/BP/BP_AnimNotify_Walk_L",
+        "notify_class": "BP_AnimNotify_Walk_L_C",
+        "time": 0.25,
+        "animation_length": 1.0,
+    })
+    result = json.loads(place_bp_anim_notify(
+        animation_path="/Game/Anims/Walk",
+        time=0.25,
+        notify_blueprint_path="/Game/BP/BP_AnimNotify_Walk_L",
+        notify_name="WalkL",
+    ))
+    assert result["status"] == "ok"
+    assert result["notify_class"] == "BP_AnimNotify_Walk_L_C"
+    cmd = mock_ue5_plugin.commands[-1]
+    assert cmd["action"] == "place_bp_anim_notify"
+    assert cmd["time"] == 0.25
+    assert cmd["notify_blueprint_path"] == "/Game/BP/BP_AnimNotify_Walk_L"
+
+
+def test_place_bp_anim_notify_empty_path(ue5_conn):
+    result = json.loads(place_bp_anim_notify(
+        animation_path="", time=0.5,
+        notify_blueprint_path="/Game/BP/BP_Notify",
+    ))
+    assert result["status"] == "error"
+    assert "empty" in result["message"]
+
+
+def test_place_bp_anim_notify_empty_bp_path(ue5_conn):
+    result = json.loads(place_bp_anim_notify(
+        animation_path="/Game/Anims/Walk", time=0.5,
+        notify_blueprint_path="",
+    ))
+    assert result["status"] == "error"
+    assert "empty" in result["message"]
+
+
+def test_place_bp_anim_notify_traversal(ue5_conn):
+    result = json.loads(place_bp_anim_notify(
+        animation_path="/Game/" + ".." + "/etc/passwd",
+        time=0.5,
+        notify_blueprint_path="/Game/BP/BP_Notify",
+    ))
+    assert result["status"] == "error"
+    assert ".." in result["message"]
+
+
+def test_place_bp_anim_notify_negative_time(ue5_conn):
+    result = json.loads(place_bp_anim_notify(
+        animation_path="/Game/Anims/Walk",
+        time=-1.0,
+        notify_blueprint_path="/Game/BP/BP_Notify",
+    ))
+    assert result["status"] == "error"
+    assert "time" in result["message"].lower()
 
 
 # -- spawn_audio_emitter -----------------------------------------------------
