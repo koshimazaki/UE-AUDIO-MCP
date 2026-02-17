@@ -12,7 +12,11 @@ set -euo pipefail
 # --- Paths (override with env vars) ---
 ENGINE_ROOT="${UE_ENGINE_ROOT:-/Volumes/Koshi_T7/UN5.3/UE_5.7}"
 PROJECT_DIR="${UE_PROJECT_DIR:-/Users/radek/Documents/Unreal Projects/Koshi 5.7}"
-PROJECT_FILE="${PROJECT_DIR}/$(ls "${PROJECT_DIR}"/*.uproject 2>/dev/null | head -1 | xargs basename 2>/dev/null || echo "*.uproject")"
+PROJECT_FILE="$(find "${PROJECT_DIR}" -maxdepth 1 -name '*.uproject' ! -name '._*' 2>/dev/null | head -1)"
+if [ -z "${PROJECT_FILE}" ]; then
+    echo "ERROR: No .uproject file found in ${PROJECT_DIR}"
+    exit 1
+fi
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 GIT_PLUGIN_DIR="${SCRIPT_DIR}/../ue5_plugin/UEAudioMCP"
@@ -57,14 +61,17 @@ fi
 if $SYNC; then
     echo "=== Syncing source: git -> project ==="
 
-    # Copy Source/ directory
-    rsync -av --delete \
+    # Copy Source/ directory (exclude macOS resource forks — breaks UBT on exFAT)
+    rsync -av --delete --exclude '._*' \
         "${GIT_PLUGIN_DIR}/Source/" \
         "${DEPLOY_PLUGIN_DIR}/Source/"
 
     # Copy .uplugin
     cp "${GIT_PLUGIN_DIR}/UEAudioMCP.uplugin" \
        "${DEPLOY_PLUGIN_DIR}/UEAudioMCP.uplugin"
+
+    # Remove any macOS resource fork files in the entire Plugins tree
+    find "${PROJECT_DIR}/Plugins" -name '._*' -type f -delete 2>/dev/null || true
 
     echo "Source synced."
     echo ""
@@ -89,8 +96,14 @@ if $BUILD; then
     # UE 5.7 UBT has action graph conflicts when building generic UnrealEditor
     # with a project — both UnrealEditor and ProjectEditor targets compile
     # plugin modules to the same output dir with different PCH prerequisites.
-    PROJECT_NAME=$(basename "$PROJECT_FILE" .uproject)
-    "$UBT" "${PROJECT_NAME}Editor" Mac Development \
+    # Allow override for projects where target name != .uproject name (e.g. Lyra).
+    if [ -n "${UE_EDITOR_TARGET:-}" ]; then
+        EDITOR_TARGET="$UE_EDITOR_TARGET"
+    else
+        PROJECT_NAME=$(basename "$PROJECT_FILE" .uproject)
+        EDITOR_TARGET="${PROJECT_NAME}Editor"
+    fi
+    "$UBT" "$EDITOR_TARGET" Mac Development \
         -Project="$PROJECT_FILE" \
         2>&1 | tee /tmp/ue_plugin_build.log
 
