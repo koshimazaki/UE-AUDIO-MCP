@@ -6,7 +6,7 @@ import logging
 
 from ue_audio_mcp.connection import get_wwise_connection
 from ue_audio_mcp.server import mcp
-from ue_audio_mcp.tools.utils import _error, _ok
+from ue_audio_mcp.tools.utils import _error, _ok, _validate_asset_path
 from ue_audio_mcp.ue5_connection import get_ue5_connection
 
 log = logging.getLogger(__name__)
@@ -61,12 +61,10 @@ def ue5_duplicate_asset(source_path: str, dest_path: str) -> str:
         source_path: Source asset path (e.g. /Game/Audio/Foley/MetaSounds/MSS_FoleySound_Walk)
         dest_path: Destination asset path (e.g. /Game/Audio/Creatures/MSS_Creature_Walk)
     """
-    if not source_path.startswith("/Game/") and not source_path.startswith("/Engine/"):
-        return _error("source_path must start with /Game/ or /Engine/")
-    if not dest_path.startswith("/Game/"):
-        return _error("dest_path must start with /Game/")
-    if ".." in source_path or ".." in dest_path:
-        return _error("Paths must not contain '..'")
+    if err := _validate_asset_path(source_path, "source_path"):
+        return _error(err)
+    if err := _validate_asset_path(dest_path, "dest_path"):
+        return _error(err)
 
     conn = get_ue5_connection()
     try:

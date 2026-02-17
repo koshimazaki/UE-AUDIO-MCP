@@ -500,6 +500,10 @@ TSharedPtr<FJsonObject> FSetPhysicalSurfaceCommand::Execute(
 	}
 
 	// Validate path
+	if (MaterialPath.Contains(TEXT("..")))
+	{
+		return AudioMCP::MakeErrorResponse(TEXT("material_path must not contain '..'"));
+	}
 	if (!MaterialPath.StartsWith(TEXT("/Game/")) && !MaterialPath.StartsWith(TEXT("/Engine/")))
 	{
 		return AudioMCP::MakeErrorResponse(
@@ -718,6 +722,7 @@ TSharedPtr<FJsonObject> FPlaceAudioVolumeCommand::Execute(
 		}
 		else
 		{
+			Volume->Destroy();
 			return AudioMCP::MakeErrorResponse(
 				FString::Printf(TEXT("Could not load ReverbEffect at '%s'"), *ReverbPath));
 		}

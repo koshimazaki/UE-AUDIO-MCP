@@ -580,5 +580,4 @@ def _seed_engine_plugins(db: KnowledgeDB) -> int:
     for asset in assets:
         db.insert_project_asset(asset, project="__engine__", source="TechAudioTools")
         count += 1
-    db._conn.commit()
     return count

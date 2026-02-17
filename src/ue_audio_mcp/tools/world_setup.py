@@ -254,6 +254,8 @@ def place_audio_volume(
         if extent and len(extent) >= 3:
             cmd["extent"] = extent
         if reverb_effect:
+            if err := _validate_asset_path(reverb_effect, "reverb_effect"):
+                return _error(err)
             cmd["reverb_effect"] = reverb_effect
         result = conn.send_command(cmd)
         if result.get("status") == "error":
