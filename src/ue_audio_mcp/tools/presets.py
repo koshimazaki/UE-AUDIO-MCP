@@ -64,6 +64,8 @@ def ms_preset_swap(
 
     if not asset_path.startswith("/Game/"):
         return _error("asset_path must start with /Game/")
+    if ".." in asset_path or ".." in referenced_asset:
+        return _error("Paths must not contain '..'")
 
     # Build command sequence
     commands: list[dict[str, Any]] = [

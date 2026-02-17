@@ -56,6 +56,11 @@ def ms_build_graph(graph_spec: str) -> str:
     for i, cmd in enumerate(commands):
         try:
             result = conn.send_command(cmd)
+            err = _check_ue5_result(result)
+            if err:
+                return _error("Command {} ({}) failed: {}".format(
+                    i + 1, cmd.get("action", "?"), err
+                ))
             results.append(result)
         except Exception as e:
             return _error("Command {} ({}) failed: {}".format(

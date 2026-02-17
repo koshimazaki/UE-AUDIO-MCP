@@ -271,6 +271,8 @@ def bp_wire_audio_param(
     """
     if not asset_path.strip():
         return _error("asset_path cannot be empty")
+    if ".." in asset_path:
+        return _error("asset_path must not contain '..'")
     if not param_name.strip():
         return _error("param_name cannot be empty")
 
