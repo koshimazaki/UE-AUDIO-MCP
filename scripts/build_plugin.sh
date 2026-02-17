@@ -11,8 +11,8 @@ set -euo pipefail
 
 # --- Paths ---
 ENGINE_ROOT="/Volumes/Koshi_T7/UN5.3/UE_5.7"
-PROJECT_DIR="/Users/radek/Documents/Unreal Projects/UEIntroProject"
-PROJECT_FILE="${PROJECT_DIR}/UEIntroProject.uproject"
+PROJECT_DIR="/Users/radek/Documents/Unreal Projects/Koshi 5.7"
+PROJECT_FILE="${PROJECT_DIR}/Koshi.uproject"
 
 GIT_PLUGIN_DIR="/Users/radek/Documents/GIthub/UE5-WWISE/ue5_plugin/UEAudioMCP"
 DEPLOY_PLUGIN_DIR="${PROJECT_DIR}/Plugins/UEAudioMCP"

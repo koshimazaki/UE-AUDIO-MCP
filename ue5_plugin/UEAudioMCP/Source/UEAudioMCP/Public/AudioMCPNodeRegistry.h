@@ -34,16 +34,18 @@ namespace AudioMCPNodeRegistry
 		// Wave Players (MetasoundEngine)
 		// =================================================================
 		Map.Add(TEXT("Wave Player"),         TEXT("UE::Wave Player::Audio"));
-		Map.Add(TEXT("Wave Player (Mono)"),  TEXT("UE::Wave Player::Audio (Mono)"));
-		Map.Add(TEXT("Wave Player (Stereo)"),TEXT("UE::Wave Player::Audio (Stereo)"));
+		Map.Add(TEXT("Wave Player (Mono)"),  TEXT("UE::Wave Player::Mono"));
+		Map.Add(TEXT("Wave Player (Stereo)"),TEXT("UE::Wave Player::Stereo"));
 
 		// =================================================================
 		// Envelopes (MetasoundADEnvelopeNode.cpp, MetasoundADSREnvelopeNode.cpp)
 		// =================================================================
-		Map.Add(TEXT("AD Envelope"),          TEXT("UE::AD Envelope::Audio"));
-		Map.Add(TEXT("AD Envelope (Float)"),  TEXT("UE::AD Envelope::Float"));
-		Map.Add(TEXT("ADSR Envelope"),        TEXT("UE::ADSR Envelope::Audio"));
-		Map.Add(TEXT("ADSR Envelope (Float)"),TEXT("UE::ADSR Envelope::Float"));
+		Map.Add(TEXT("AD Envelope"),          TEXT("AD Envelope::AD Envelope::Audio"));
+		Map.Add(TEXT("AD Envelope (Audio)"),  TEXT("AD Envelope::AD Envelope::Audio"));
+		Map.Add(TEXT("AD Envelope (Float)"),  TEXT("AD Envelope::AD Envelope::Float"));
+		Map.Add(TEXT("ADSR Envelope"),        TEXT("ADSR Envelope::ADSR Envelope::Audio"));
+		Map.Add(TEXT("ADSR Envelope (Audio)"),TEXT("ADSR Envelope::ADSR Envelope::Audio"));
+		Map.Add(TEXT("ADSR Envelope (Float)"),TEXT("ADSR Envelope::ADSR Envelope::Float"));
 
 		// =================================================================
 		// Filters (MetasoundBasicFilters.cpp)
@@ -106,6 +108,12 @@ namespace AudioMCPNodeRegistry
 		// =================================================================
 		Map.Add(TEXT("Random (Float)"),      TEXT("UE::Random::Float"));
 		Map.Add(TEXT("Random Get (Float)"),  TEXT("UE::Random Get::Float"));
+		Map.Add(TEXT("Random Get (WaveAsset:Array)"), TEXT("Array::Random Get::WaveAsset:Array"));
+		Map.Add(TEXT("Random Get (WaveAssetArray)"),  TEXT("Array::Random Get::WaveAsset:Array"));
+		Map.Add(TEXT("Random Get (Int32:Array)"),     TEXT("Array::Random Get::Int32:Array"));
+		Map.Add(TEXT("Random Get (Bool:Array)"),      TEXT("Array::Random Get::Bool:Array"));
+		Map.Add(TEXT("RandomFloat"),         TEXT("UE::RandomFloat::None"));
+		Map.Add(TEXT("RandomInt32"),          TEXT("UE::RandomInt32::None"));
 
 		// =================================================================
 		// Mixing / Routing
@@ -170,9 +178,12 @@ namespace AudioMCPNodeRegistry
 		Map.Add(TEXT("MIDI To Freq"),                  TEXT("UE::MIDI To Freq::Float"));
 		Map.Add(TEXT("Semitones To Freq Multiplier"),  TEXT("UE::Semitones To Frequency Multiplier::Float"));
 		Map.Add(TEXT("dB To Linear"),                  TEXT("UE::Decibels To Linear Gain::Float"));
+		Map.Add(TEXT("Decibels to Linear Gain"),       TEXT("UE::Decibels to Linear Gain::Float"));
 		Map.Add(TEXT("Linear To dB"),                  TEXT("UE::Linear Gain To Decibels::Float"));
 		Map.Add(TEXT("Linear To Log Frequency"),       TEXT("UE::Linear To Log Frequency::Float"));
 		Map.Add(TEXT("Convert Filter Q To Bandwidth"), TEXT("UE::Convert Filter Q To Bandwidth::"));
+		Map.Add(TEXT("Frequency Multiplier to Semitone"), TEXT("UE::Frequency Multiplier to Semitone::Float"));
+		Map.Add(TEXT("Audio Mixer (Stereo, 2)"),       TEXT("AudioMixer::Audio Mixer (Stereo, 2)::None"));
 
 		// =================================================================
 		// Spatialization (MetasoundStereopannerNode.cpp, MetasoundITDPannerNode.cpp)

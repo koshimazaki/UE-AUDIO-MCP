@@ -35,6 +35,7 @@ def seed_database(db: KnowledgeDB) -> dict[str, int]:
     counts["attenuation_subsystems"] = _seed_attenuation(db)
     counts["pin_mappings"] = _seed_pin_mappings(db)
     counts["node_aliases"] = _seed_node_aliases(db)
+    counts["engine_plugins"] = _seed_engine_plugins(db)
 
     total = sum(counts.values())
     log.info("Seeded knowledge DB: %d total entries %s", total, counts)
@@ -399,3 +400,184 @@ def _seed_node_aliases(db: KnowledgeDB) -> int:
             aliases.append((display_name, canonical, "display"))
 
     return db.insert_node_aliases_batch(aliases)
+
+
+def _seed_engine_plugins(db: KnowledgeDB) -> int:
+    """Seed always-available engine plugin assets (TechAudioTools etc.).
+
+    These are in Engine/Plugins/ and available in every project — no migration needed.
+    Stored with project='__engine__' so agents can discover them.
+    """
+    assets = [
+        # --- SFX Generator: main source ---
+        {
+            "name": "MSS_SFXGenerator",
+            "category": "MetaSoundSource",
+            "path": "/TechAudioToolsContent/Tools/SoundGenerator/MSS_SFXGenerator",
+            "properties": ["7-stage procedural SFX", "oscillator→FM→AM→effects→output",
+                           "UI widget with knobs and toggles"],
+        },
+        # --- Generators (oscillator patches) ---
+        {
+            "name": "MSP_SG_Generator_Sine",
+            "category": "MetaSoundPatch",
+            "path": "/TechAudioToolsContent/Tools/SoundGenerator/Patches/MSP_SG_Generator_Sine",
+            "properties": ["sine oscillator", "generator stage"],
+        },
+        {
+            "name": "MSP_SG_Generator_Saw",
+            "category": "MetaSoundPatch",
+            "path": "/TechAudioToolsContent/Tools/SoundGenerator/Patches/MSP_SG_Generator_Saw",
+            "properties": ["sawtooth oscillator", "generator stage"],
+        },
+        {
+            "name": "MSP_SG_Generator_Square",
+            "category": "MetaSoundPatch",
+            "path": "/TechAudioToolsContent/Tools/SoundGenerator/Patches/MSP_SG_Generator_Square",
+            "properties": ["square wave oscillator", "generator stage"],
+        },
+        {
+            "name": "MSP_SG_Generator_Triangle",
+            "category": "MetaSoundPatch",
+            "path": "/TechAudioToolsContent/Tools/SoundGenerator/Patches/MSP_SG_Generator_Triangle",
+            "properties": ["triangle wave oscillator", "generator stage"],
+        },
+        {
+            "name": "MSP_SG_Generator_Noise",
+            "category": "MetaSoundPatch",
+            "path": "/TechAudioToolsContent/Tools/SoundGenerator/Patches/MSP_SG_Generator_Noise",
+            "properties": ["noise generator", "generator stage"],
+        },
+        # --- FM modulation ---
+        {
+            "name": "MSP_SG_FM_Vibrato",
+            "category": "MetaSoundPatch",
+            "path": "/TechAudioToolsContent/Tools/SoundGenerator/Patches/MSP_SG_FM_Vibrato",
+            "properties": ["FM vibrato", "modulation stage"],
+        },
+        {
+            "name": "MSP_SG_FM_PitchSlide",
+            "category": "MetaSoundPatch",
+            "path": "/TechAudioToolsContent/Tools/SoundGenerator/Patches/MSP_SG_FM_PitchSlide",
+            "properties": ["FM pitch slide", "modulation stage"],
+        },
+        # --- AM modulation ---
+        {
+            "name": "MSP_SG_AM_LFO",
+            "category": "MetaSoundPatch",
+            "path": "/TechAudioToolsContent/Tools/SoundGenerator/Patches/MSP_SG_AM_LFO",
+            "properties": ["AM LFO modulation", "modulation stage"],
+        },
+        # --- Inline effects (serial chain) ---
+        {
+            "name": "MSP_SG_FX_InlineFilter",
+            "category": "MetaSoundPatch",
+            "path": "/TechAudioToolsContent/Tools/SoundGenerator/Patches/MSP_SG_FX_InlineFilter",
+            "properties": ["inline filter", "effect stage"],
+        },
+        {
+            "name": "MSP_SG_FX_InlineBitcrusher",
+            "category": "MetaSoundPatch",
+            "path": "/TechAudioToolsContent/Tools/SoundGenerator/Patches/MSP_SG_FX_InlineBitcrusher",
+            "properties": ["inline bitcrusher", "effect stage"],
+        },
+        {
+            "name": "MSP_SG_FX_InlineRingmod",
+            "category": "MetaSoundPatch",
+            "path": "/TechAudioToolsContent/Tools/SoundGenerator/Patches/MSP_SG_FX_InlineRingmod",
+            "properties": ["inline ring modulation", "effect stage"],
+        },
+        {
+            "name": "MSP_SG_FX_InlineWaveShaper",
+            "category": "MetaSoundPatch",
+            "path": "/TechAudioToolsContent/Tools/SoundGenerator/Patches/MSP_SG_FX_InlineWaveShaper",
+            "properties": ["inline wave shaper distortion", "effect stage"],
+        },
+        # --- Send effects (parallel) ---
+        {
+            "name": "MSP_SG_FX_SendDelay",
+            "category": "MetaSoundPatch",
+            "path": "/TechAudioToolsContent/Tools/SoundGenerator/Patches/MSP_SG_FX_SendDelay",
+            "properties": ["send delay", "effect stage"],
+        },
+        {
+            "name": "MSP_SG_FX_SendReverb",
+            "category": "MetaSoundPatch",
+            "path": "/TechAudioToolsContent/Tools/SoundGenerator/Patches/MSP_SG_FX_SendReverb",
+            "properties": ["send reverb", "effect stage"],
+        },
+        {
+            "name": "MSP_SG_FX_SendFlanger",
+            "category": "MetaSoundPatch",
+            "path": "/TechAudioToolsContent/Tools/SoundGenerator/Patches/MSP_SG_FX_SendFlanger",
+            "properties": ["send flanger", "effect stage"],
+        },
+        # --- Game SFX ---
+        {
+            "name": "MSP_SG_MultiStageJump",
+            "category": "MetaSoundPatch",
+            "path": "/TechAudioToolsContent/Tools/SoundGenerator/Patches/MSP_SG_MultiStageJump",
+            "properties": ["multi-stage jump SFX", "attack→sustain→release"],
+        },
+        # --- Audio buses ---
+        {
+            "name": "AB_SFXG_Osc",
+            "category": "AudioBus",
+            "path": "/TechAudioToolsContent/Tools/SoundGenerator/AudioBuses/AB_SFXG_Osc",
+            "properties": ["oscillator bus"],
+        },
+        {
+            "name": "AB_SFXG_Filter",
+            "category": "AudioBus",
+            "path": "/TechAudioToolsContent/Tools/SoundGenerator/AudioBuses/AB_SFXG_Filter",
+            "properties": ["filter bus"],
+        },
+        {
+            "name": "AB_SFXG_BitCrusher",
+            "category": "AudioBus",
+            "path": "/TechAudioToolsContent/Tools/SoundGenerator/AudioBuses/AB_SFXG_BitCrusher",
+            "properties": ["bitcrusher bus"],
+        },
+        {
+            "name": "AB_SFXG_RingMod",
+            "category": "AudioBus",
+            "path": "/TechAudioToolsContent/Tools/SoundGenerator/AudioBuses/AB_SFXG_RingMod",
+            "properties": ["ring mod bus"],
+        },
+        {
+            "name": "AB_SFXG_WaveShaper",
+            "category": "AudioBus",
+            "path": "/TechAudioToolsContent/Tools/SoundGenerator/AudioBuses/AB_SFXG_WaveShaper",
+            "properties": ["wave shaper bus"],
+        },
+        {
+            "name": "AB_SFXG_Delay",
+            "category": "AudioBus",
+            "path": "/TechAudioToolsContent/Tools/SoundGenerator/AudioBuses/AB_SFXG_Delay",
+            "properties": ["delay bus"],
+        },
+        {
+            "name": "AB_SFXG_Reverb",
+            "category": "AudioBus",
+            "path": "/TechAudioToolsContent/Tools/SoundGenerator/AudioBuses/AB_SFXG_Reverb",
+            "properties": ["reverb bus"],
+        },
+        {
+            "name": "AB_SFXG_Vibrato",
+            "category": "AudioBus",
+            "path": "/TechAudioToolsContent/Tools/SoundGenerator/AudioBuses/AB_SFXG_Vibrato",
+            "properties": ["vibrato bus"],
+        },
+        {
+            "name": "AB_SFXG_PitchBend",
+            "category": "AudioBus",
+            "path": "/TechAudioToolsContent/Tools/SoundGenerator/AudioBuses/AB_SFXG_PitchBend",
+            "properties": ["pitch bend bus"],
+        },
+    ]
+
+    count = 0
+    for asset in assets:
+        db.insert_project_asset(asset, project="__engine__", source="TechAudioTools")
+        count += 1
+    return count

@@ -33,6 +33,10 @@ public class UEAudioMCP : ModuleRules
 			"BlueprintGraph",    // UK2Node_CallFunction, UK2Node_Event — Blueprint graph inspection
 			"ToolMenus",         // UToolMenus — editor menu bar integration
 			"ContentBrowser",    // IContentBrowserSingleton — selected asset queries
+			"EditorScriptingUtilities", // UEditorAssetLibrary — asset duplication
+			"AssetTools",              // IAssetTools — sound file import
+			"PhysicsCore",             // UPhysicalMaterial — surface types
+			"AssetRegistry",           // FAssetRegistryModule — asset creation notifications
 		});
 	}
 }

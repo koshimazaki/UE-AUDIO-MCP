@@ -13,6 +13,7 @@
 #include "Commands/PresetCommands.h"
 #include "Commands/QueryCommands.h"
 #include "Commands/BPBuilderCommands.h"
+#include "Commands/WorldCommands.h"
 #include "AudioMCPBlueprintManager.h"
 #include "AudioMCPEditorMenu.h"
 #include "Modules/ModuleManager.h"
@@ -35,7 +36,7 @@ void FUEAudioMCPModule::StartupModule()
 	if (TcpServer->StartListening(AudioMCP::DEFAULT_PORT))
 	{
 		UE_LOG(LogAudioMCPModule, Log,
-			TEXT("UE Audio MCP ready — listening on port %d (35 commands registered)"),
+			TEXT("UE Audio MCP ready — listening on port %d (41 commands registered)"),
 			AudioMCP::DEFAULT_PORT);
 	}
 	else
@@ -175,6 +176,24 @@ void FUEAudioMCPModule::RegisterCommands()
 		MakeShared<FBPRegisterExistingNodeCommand>());
 	Dispatcher->RegisterCommand(TEXT("bp_list_pins"),
 		MakeShared<FBPListPinsCommand>());
+
+	// 35. Asset duplication
+	Dispatcher->RegisterCommand(TEXT("duplicate_asset"),
+		MakeShared<FDuplicateAssetCommand>());
+
+	// 36-41. World audio commands
+	Dispatcher->RegisterCommand(TEXT("place_anim_notify"),
+		MakeShared<FPlaceAnimNotifyCommand>());
+	Dispatcher->RegisterCommand(TEXT("spawn_audio_emitter"),
+		MakeShared<FSpawnAudioEmitterCommand>());
+	Dispatcher->RegisterCommand(TEXT("import_sound_file"),
+		MakeShared<FImportSoundFileCommand>());
+	Dispatcher->RegisterCommand(TEXT("set_physical_surface"),
+		MakeShared<FSetPhysicalSurfaceCommand>());
+	Dispatcher->RegisterCommand(TEXT("place_audio_volume"),
+		MakeShared<FPlaceAudioVolumeCommand>());
+	Dispatcher->RegisterCommand(TEXT("spawn_blueprint_actor"),
+		MakeShared<FSpawnBlueprintActorCommand>());
 }
 
 IMPLEMENT_MODULE(FUEAudioMCPModule, UEAudioMCP)

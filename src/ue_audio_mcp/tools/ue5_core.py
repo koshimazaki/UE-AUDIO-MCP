@@ -48,3 +48,38 @@ def ue5_status() -> str:
         "wwise_connected": wwise.is_connected(),
         "ue5_connected": ue5.is_connected(),
     })
+
+
+@mcp.tool()
+def ue5_duplicate_asset(source_path: str, dest_path: str) -> str:
+    """Duplicate a UE5 asset from source to destination path.
+
+    Copies any asset (MetaSounds, Blueprints, SoundWaves, etc.) to a new location.
+    Useful for cloning existing assets as starting points for modification.
+
+    Args:
+        source_path: Source asset path (e.g. /Game/Audio/Foley/MetaSounds/MSS_FoleySound_Walk)
+        dest_path: Destination asset path (e.g. /Game/Audio/Creatures/MSS_Creature_Walk)
+    """
+    if not source_path.startswith("/Game/") and not source_path.startswith("/Engine/"):
+        return _error("source_path must start with /Game/ or /Engine/")
+    if not dest_path.startswith("/Game/"):
+        return _error("dest_path must start with /Game/")
+    if ".." in source_path or ".." in dest_path:
+        return _error("Paths must not contain '..'")
+
+    conn = get_ue5_connection()
+    try:
+        result = conn.send_command({
+            "action": "duplicate_asset",
+            "source_path": source_path,
+            "dest_path": dest_path,
+        })
+        if result.get("status") != "ok":
+            return _error(result.get("message", "Duplication failed"))
+        return _ok({
+            "message": "Duplicated '{}' to '{}'".format(source_path, dest_path),
+            "result": result,
+        })
+    except Exception as e:
+        return _error(str(e))
