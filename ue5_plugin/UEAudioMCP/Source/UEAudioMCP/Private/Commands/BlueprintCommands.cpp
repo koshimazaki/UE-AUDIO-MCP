@@ -224,8 +224,8 @@ TSharedPtr<FJsonObject> FCallFunctionCommand::Execute(
 					}
 					else
 					{
-						UE_LOG(LogAudioMCPBlueprint, Warning,
-							TEXT("Could not load asset '%s' for param '%s'"), *AssetPath, *PropName);
+						return AudioMCP::MakeErrorResponse(
+							FString::Printf(TEXT("Could not load asset '%s' for param '%s'"), *AssetPath, *PropName));
 					}
 				}
 			}

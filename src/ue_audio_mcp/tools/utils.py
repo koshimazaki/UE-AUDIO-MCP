@@ -30,6 +30,16 @@ def _error(message: str, data: dict | None = None) -> str:
     return json.dumps(result)
 
 
+def _check_ue5_result(result: dict) -> str | None:
+    """Check a send_command() result dict for errors.
+
+    Returns an error string if result has status=="error", else None.
+    """
+    if isinstance(result, dict) and result.get("status") == "error":
+        return result.get("message", "Unknown plugin error")
+    return None
+
+
 def _validate_asset_path(path: str, param_name: str = "path") -> str | None:
     """Validate a UE asset path. Returns error string or None if valid."""
     if not path.strip():

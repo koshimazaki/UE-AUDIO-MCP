@@ -69,11 +69,19 @@ TSharedPtr<FJsonObject> FPlaceAnimNotifyCommand::Execute(
 		NotifyName = TEXT("Footstep");
 	}
 
-	// Validate path
+	// Validate paths
 	if (!AnimPath.StartsWith(TEXT("/Game/")) && !AnimPath.StartsWith(TEXT("/Engine/")))
 	{
 		return AudioMCP::MakeErrorResponse(
 			FString::Printf(TEXT("animation_path must start with /Game/ or /Engine/ (got '%s')"), *AnimPath));
+	}
+	if (AnimPath.Contains(TEXT("..")))
+	{
+		return AudioMCP::MakeErrorResponse(TEXT("animation_path must not contain '..'"));
+	}
+	if (!SoundPath.IsEmpty() && SoundPath.Contains(TEXT("..")))
+	{
+		return AudioMCP::MakeErrorResponse(TEXT("sound path must not contain '..'"));
 	}
 
 	// Load the animation asset
@@ -193,6 +201,10 @@ TSharedPtr<FJsonObject> FSpawnAudioEmitterCommand::Execute(
 		return AudioMCP::MakeErrorResponse(
 			FString::Printf(TEXT("sound path must start with /Game/ or /Engine/ (got '%s')"), *SoundPath));
 	}
+	if (SoundPath.Contains(TEXT("..")))
+	{
+		return AudioMCP::MakeErrorResponse(TEXT("sound path must not contain '..'"));
+	}
 
 	// Load the sound asset
 	USoundBase* Sound = LoadObject<USoundBase>(nullptr, *SoundPath);
@@ -227,14 +239,15 @@ TSharedPtr<FJsonObject> FSpawnAudioEmitterCommand::Execute(
 
 	// Set the sound on the audio component
 	UAudioComponent* AudioComp = Emitter->GetAudioComponent();
-	if (AudioComp)
+	if (!AudioComp)
 	{
-		AudioComp->SetSound(Sound);
-		if (bAutoPlay)
-		{
-			AudioComp->bAutoActivate = true;
-			AudioComp->Play();
-		}
+		return AudioMCP::MakeErrorResponse(TEXT("AmbientSound spawned but AudioComponent is null"));
+	}
+	AudioComp->SetSound(Sound);
+	if (bAutoPlay)
+	{
+		AudioComp->bAutoActivate = true;
+		AudioComp->Play();
 	}
 
 	// Set a label
@@ -512,6 +525,10 @@ TSharedPtr<FJsonObject> FPlaceAudioVolumeCommand::Execute(
 	// Optional reverb effect path
 	FString ReverbPath;
 	Params->TryGetStringField(TEXT("reverb_effect"), ReverbPath);
+	if (!ReverbPath.IsEmpty() && ReverbPath.Contains(TEXT("..")))
+	{
+		return AudioMCP::MakeErrorResponse(TEXT("reverb_effect path must not contain '..'"));
+	}
 
 	// Optional name
 	FString VolumeName;
@@ -572,8 +589,8 @@ TSharedPtr<FJsonObject> FPlaceAudioVolumeCommand::Execute(
 		}
 		else
 		{
-			UE_LOG(LogWorldCmds, Warning, TEXT("Could not load ReverbEffect at '%s', skipping reverb"),
-				*ReverbPath);
+			return AudioMCP::MakeErrorResponse(
+				FString::Printf(TEXT("Could not load ReverbEffect at '%s'"), *ReverbPath));
 		}
 	}
 

@@ -493,6 +493,14 @@ def _build_metasounds_layer(
     for i, cmd in enumerate(commands):
         try:
             result = ue5.send_command(cmd)
+            if isinstance(result, dict) and result.get("status") == "error":
+                return {
+                    "mode": "error",
+                    "reason": "Command {} ({}) returned error: {}".format(
+                        i + 1, cmd.get("action", "?"), result.get("message", "unknown")),
+                    "commands_sent": i,
+                    "commands_total": len(commands),
+                }
             results.append(result)
         except Exception as e:
             return {

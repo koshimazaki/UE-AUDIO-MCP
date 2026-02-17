@@ -20,7 +20,7 @@ from ue_audio_mcp.knowledge.metasound_nodes import (
     infer_class_type,
 )
 from ue_audio_mcp.server import mcp
-from ue_audio_mcp.tools.utils import _error, _ok
+from ue_audio_mcp.tools.utils import _check_ue5_result, _error, _ok
 from ue_audio_mcp.ue5_connection import get_ue5_connection
 
 log = logging.getLogger(__name__)
@@ -88,6 +88,9 @@ def ms_create_source(name: str, asset_type: str = "Source") -> str:
             "asset_type": asset_type,
             "name": name,
         })
+        err = _check_ue5_result(result)
+        if err:
+            return _error(err)
         return _ok({"message": "Created {} '{}'".format(asset_type, name), "result": result})
     except Exception as e:
         return _error(str(e))
@@ -120,6 +123,9 @@ def ms_add_node(
             "node_type": node_type,
             "position": [position_x, position_y],
         })
+        err = _check_ue5_result(result)
+        if err:
+            return _error(err)
         return _ok({"message": "Added node '{}' ({})".format(node_id, node_type), "result": result})
     except Exception as e:
         return _error(str(e))
@@ -149,6 +155,9 @@ def ms_connect_pins(
             "to_node": to_node,
             "to_pin": to_pin,
         })
+        err = _check_ue5_result(result)
+        if err:
+            return _error(err)
         return _ok({
             "message": "Connected {}.{} -> {}.{}".format(from_node, from_pin, to_node, to_pin),
             "result": result,
@@ -180,6 +189,9 @@ def ms_set_default(node_id: str, input_name: str, value: str) -> str:
             "input": input_name,
             "value": parsed,
         })
+        err = _check_ue5_result(result)
+        if err:
+            return _error(err)
         return _ok({
             "message": "Set {}.{} = {}".format(node_id, input_name, parsed),
             "result": result,
@@ -207,6 +219,9 @@ def ms_save_asset(name: str, path: str = "/Game/Audio/Generated/") -> str:
             "name": name,
             "path": path,
         })
+        err = _check_ue5_result(result)
+        if err:
+            return _error(err)
         return _ok({
             "message": "Saved asset '{}' to {}".format(name, path),
             "result": result,
@@ -225,6 +240,9 @@ def ms_open_in_editor() -> str:
     conn = get_ue5_connection()
     try:
         result = conn.send_command({"action": "open_in_editor"})
+        err = _check_ue5_result(result)
+        if err:
+            return _error(err)
         return _ok({
             "message": "Opened MetaSound asset in editor",
             "result": result,
@@ -251,6 +269,9 @@ def ms_convert_to_preset(referenced_asset: str) -> str:
             "action": "convert_to_preset",
             "referenced_asset": referenced_asset,
         })
+        err = _check_ue5_result(result)
+        if err:
+            return _error(err)
         return _ok({
             "message": "Converted to preset of '{}'".format(referenced_asset),
             "result": result,
@@ -272,6 +293,9 @@ def ms_audition(name: str = "") -> str:
             "action": "audition",
             "name": name,
         })
+        err = _check_ue5_result(result)
+        if err:
+            return _error(err)
         return _ok({"message": "Auditioning" + (" '{}'".format(name) if name else ""), "result": result})
     except Exception as e:
         return _error(str(e))
@@ -283,6 +307,9 @@ def ms_stop_audition() -> str:
     conn = get_ue5_connection()
     try:
         result = conn.send_command({"action": "stop_audition"})
+        err = _check_ue5_result(result)
+        if err:
+            return _error(err)
         return _ok({"message": "Audition stopped", "result": result})
     except Exception as e:
         return _error(str(e))
@@ -410,15 +437,15 @@ def ms_sync_from_engine(
     db_updated = 0
     if update_db:
         try:
-            from ue_audio_mcp.knowledge.db import get_db
-            db = get_db()
+            from ue_audio_mcp.knowledge.db import get_knowledge_db
+            db = get_knowledge_db()
             for enode in engine_nodes:
                 node_def = _engine_node_to_nodedef(enode)
                 if node_def:
                     db.insert_node(node_def)
                     db_updated += 1
         except Exception as e:
-            log.warning("DB update failed: %s", e)
+            return _error("DB update failed: {}".format(e))
 
     # Reset search index so it rebuilds with new nodes
     try:

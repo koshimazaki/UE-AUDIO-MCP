@@ -11,7 +11,7 @@ import logging
 
 from ue_audio_mcp.knowledge.metasound_data_types import PIN_TYPES
 from ue_audio_mcp.server import mcp
-from ue_audio_mcp.tools.utils import _error, _ok
+from ue_audio_mcp.tools.utils import _check_ue5_result, _error, _ok
 from ue_audio_mcp.ue5_connection import get_ue5_connection
 
 log = logging.getLogger(__name__)
@@ -44,6 +44,9 @@ def ms_add_variable(name: str, type: str, default_value: str = "") -> str:
             "type": type,
             "default": default_value,
         })
+        err = _check_ue5_result(result)
+        if err:
+            return _error(err)
         return _ok({
             "message": "Added graph variable '{}' ({})".format(name, type),
             "result": result,
@@ -89,6 +92,9 @@ def ms_add_variable_node(
     conn = get_ue5_connection()
     try:
         result = conn.send_command(cmd)
+        err = _check_ue5_result(result)
+        if err:
+            return _error(err)
         return _ok({
             "message": "Added {} variable node '{}' for '{}'".format(mode, node_id, variable_name),
             "result": result,

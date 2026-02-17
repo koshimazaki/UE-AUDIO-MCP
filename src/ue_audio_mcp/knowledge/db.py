@@ -803,6 +803,7 @@ class KnowledgeDB:
                 source or asset.get("source", ""),
             ),
         )
+        self._conn.commit()
 
     def insert_project_blueprint(self, bp: dict, project: str, source: str = "") -> None:
         self._conn.execute(
@@ -822,6 +823,7 @@ class KnowledgeDB:
                 source or bp.get("source", ""),
             ),
         )
+        self._conn.commit()
 
     def import_uasset_entries(self, entries: list[dict], project: str) -> int:
         """Bulk-import entries from uasset extraction. Returns count."""
@@ -964,6 +966,7 @@ class KnowledgeDB:
             "(alias, canonical, alias_type) VALUES (?, ?, ?)",
             (alias, canonical, alias_type),
         )
+        self._conn.commit()
 
     def insert_node_aliases_batch(self, aliases: list[tuple[str, str, str]]) -> int:
         """Bulk-insert (alias, canonical, alias_type) tuples."""
@@ -1003,6 +1006,7 @@ class KnowledgeDB:
             "VALUES (?, ?, ?, ?, ?)",
             (graph_name, project, node_class, node_display, usage_count),
         )
+        self._conn.commit()
 
     def insert_graph_node_usage_batch(
         self, rows: list[tuple[str, str, str, str, int]]
@@ -1071,6 +1075,7 @@ class KnowledgeDB:
             (bp_name, project, trigger_type, function_name,
              target_asset, json.dumps(details or {})),
         )
+        self._conn.commit()
 
     def insert_bp_audio_triggers_batch(self, rows: list[dict]) -> int:
         """Bulk-insert bp_audio_triggers dicts."""

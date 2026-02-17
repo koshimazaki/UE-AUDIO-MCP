@@ -124,19 +124,21 @@ def ms_search_nodes(query: str) -> str:
                 "tags": node.get("tags", []),
             })
         return _ok({"query": query, "count": len(ranked), "results": ranked})
-    except Exception:
+    except Exception as e:
         # Fallback to substring search if embeddings unavailable
+        log.warning("TF-IDF search failed, falling back to substring: %s", e)
         results = search_nodes(query)[:10]
         ranked = []
         for node in results:
             ranked.append({
                 "name": node["name"],
-                "score": 1.0,
+                "score": 0.5,
                 "category": node["category"],
                 "description": node["description"],
                 "tags": node.get("tags", []),
             })
-        return _ok({"query": query, "count": len(ranked), "results": ranked})
+        return _ok({"query": query, "count": len(ranked), "results": ranked,
+                     "search_mode": "substring_fallback"})
 
 
 @mcp.tool()
