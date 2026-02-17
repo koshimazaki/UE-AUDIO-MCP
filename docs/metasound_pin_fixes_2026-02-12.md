@@ -153,7 +153,7 @@ python3 scripts/verify_templates.py
 
 - Ground truth: `/exports/all_metasound_nodes.json`
 - Verification: `scripts/verify_templates.py`
-- Memory: `~/.claude/projects/-Users-radek-Documents-GIthub-UE5-WWISE/memory/MEMORY.md`
+- Memory: project MEMORY.md (Claude Code auto-memory)
 
 ---
 

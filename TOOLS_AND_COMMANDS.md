@@ -230,7 +230,7 @@ The MCP lets sound designers focus on creative work without learning engine plum
 ### Import Sounds from Disk
 
 ```
-1. import_sound_file("/Users/radek/Sounds/explosion.wav", dest_folder="/Game/Audio/SFX")
+1. import_sound_file("/path/to/explosion.wav", dest_folder="/Game/Audio/SFX")
    → asset appears in Content Browser, ready to use
 ```
 

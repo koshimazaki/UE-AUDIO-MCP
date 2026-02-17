@@ -39,10 +39,10 @@ Git Repo (ue5_plugin/UEAudioMCP/)     UE Project (Plugins/UEAudioMCP/)
 ./scripts/build_plugin.sh --build-only # just compile, no source copy
 ```
 
-**Paths (hardcoded in script):**
-- Engine: `/Volumes/Koshi_T7/UN5.3/UE_5.7/`
-- Project: `/Users/radek/Documents/Unreal Projects/UEIntroProject/`
-- Plugin source: `/Users/radek/Documents/GIthub/UE5-WWISE/ue5_plugin/UEAudioMCP/`
+**Paths (set via env vars or edit `build_plugin.sh`):**
+- `UE_ENGINE_ROOT` — path to UE 5.7 engine install
+- `UE_PROJECT_DIR` — path to your .uproject directory
+- Plugin source is auto-detected relative to the script
 
 **Gotchas:**
 - UE Editor must be **closed** during build (dylibs are locked)

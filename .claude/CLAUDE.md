@@ -110,7 +110,8 @@ exports/                   → Engine sync outputs (JSON)
 ./scripts/build_plugin.sh --sync-only  # Sync only, UE recompiles on open
 ./scripts/build_plugin.sh --build-only # Compile only, skip source sync
 ```
-**Rules**: Close UE Editor before building (dylibs locked). Use `--clean` when build errors mention "Action graph is invalid" or stale PCH.
+Set `UE_ENGINE_ROOT` and `UE_PROJECT_DIR` env vars (or edit script defaults).
+Close UE Editor before building (dylibs locked). Use `--clean` for "Action graph is invalid" or stale PCH.
 
 ### Engine Sync (requires UE Editor running with plugin)
 ```bash

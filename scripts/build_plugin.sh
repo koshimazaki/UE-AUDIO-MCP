@@ -9,12 +9,13 @@
 #
 set -euo pipefail
 
-# --- Paths ---
-ENGINE_ROOT="/Volumes/Koshi_T7/UN5.3/UE_5.7"
-PROJECT_DIR="/Users/radek/Documents/Unreal Projects/Koshi 5.7"
-PROJECT_FILE="${PROJECT_DIR}/Koshi.uproject"
+# --- Paths (override with env vars) ---
+ENGINE_ROOT="${UE_ENGINE_ROOT:-/Volumes/Koshi_T7/UN5.3/UE_5.7}"
+PROJECT_DIR="${UE_PROJECT_DIR:-/Users/radek/Documents/Unreal Projects/Koshi 5.7}"
+PROJECT_FILE="${PROJECT_DIR}/$(ls "${PROJECT_DIR}"/*.uproject 2>/dev/null | head -1 | xargs basename 2>/dev/null || echo "*.uproject")"
 
-GIT_PLUGIN_DIR="/Users/radek/Documents/GIthub/UE5-WWISE/ue5_plugin/UEAudioMCP"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+GIT_PLUGIN_DIR="${SCRIPT_DIR}/../ue5_plugin/UEAudioMCP"
 DEPLOY_PLUGIN_DIR="${PROJECT_DIR}/Plugins/UEAudioMCP"
 
 UBT="${ENGINE_ROOT}/Engine/Build/BatchFiles/Mac/Build.sh"
