@@ -31,9 +31,10 @@ The repo is well-structured with solid architecture. Five parallel review agents
 All three docs (CLAUDE.md, README.md, ue5_plugin/README.md) had stale numbers after recent world_setup and blueprint-spawning features were added.
 
 **Files changed:**
-- `.claude/CLAUDE.md` — Updated tool counts (74), command counts (43), template counts (33/34/6), test count (456), research doc count (6)
+- `.claude/CLAUDE.md` — Updated tool counts (74), command counts (43), template counts (33/34/6), test count (456), research doc count (6), fixed `verify_pins.py` reference (doesn't exist) to `verify_blueprint_nodes.py`
 - `README.md` — Updated tool counts (74 total, 21/24/16/7/4/2 breakdown), command count (43)
 - `ue5_plugin/README.md` — Updated command count (43)
+- `TOOLS_AND_COMMANDS.md` — Updated all section counts (74 tools, 43 commands, per-category breakdowns), fixed `spawn_blueprint_actor` numbering gap, added `ue5_duplicate_asset` to tool listing
 
 ### 2. CLAUDE.md File Tree Inaccuracies (FIXED)
 

@@ -1,12 +1,12 @@
 # Tools & Commands Reference
 
-70 MCP tools + 42 C++ TCP commands for game audio pipeline automation.
+74 MCP tools + 43 C++ TCP commands for game audio pipeline automation.
 
 ---
 
-## MCP Tools (69)
+## MCP Tools (74)
 
-### Wwise (20 tools)
+### Wwise (21 tools)
 
 | Tool | What It Does |
 |------|-------------|
@@ -31,7 +31,7 @@
 | `wwise_state_system` | Create state groups + states |
 | `build_aaa_project` | Full AAA game audio infrastructure |
 
-### MetaSounds (23 tools)
+### MetaSounds (24 tools)
 
 | Tool | What It Does |
 |------|-------------|
@@ -59,7 +59,7 @@
 | `ms_macro_trigger` | Trigger sequence of parameter changes |
 | `ms_sync_from_engine` | Sync 842 engine nodes to knowledge DB |
 
-### Blueprint (15 tools)
+### Blueprint (16 tools)
 
 | Tool | What It Does |
 |------|-------------|
@@ -91,19 +91,20 @@
 | `place_audio_volume` | Place AudioVolume with reverb settings |
 | `spawn_blueprint_actor` | Spawn BP actor into level (see it while you wire it) |
 
-### Connection & Orchestration (5 tools)
+### UE5 Core & Orchestration (6 tools)
 
 | Tool | What It Does |
 |------|-------------|
 | `ue5_connect` | Connect to UE5 plugin (TCP:9877) |
 | `ue5_status` | Check plugin connection status |
 | `ue5_info` | Get plugin version and command list |
+| `ue5_duplicate_asset` | Duplicate any UE5 asset to a new path |
 | `build_audio_system` | Generate complete 3-layer audio system from pattern name |
 | `build_aaa_project` | Generate full AAA game audio infrastructure |
 
 ---
 
-## C++ TCP Commands (42)
+## C++ TCP Commands (43)
 
 Wire protocol: 4-byte length-prefix + UTF-8 JSON on port 9877. All commands execute on the game thread.
 
@@ -157,7 +158,7 @@ Wire protocol: 4-byte length-prefix + UTF-8 JSON on port 9877. All commands exec
 | 34 | `bp_register_existing_node` | id, node_guid |
 | 35 | `bp_list_pins` | node_id |
 
-### World Setup (7 commands) -- NEW
+### World Setup (8 commands)
 
 | # | Command | Params |
 |---|---------|--------|
@@ -167,10 +168,8 @@ Wire protocol: 4-byte length-prefix + UTF-8 JSON on port 9877. All commands exec
 | 39 | `import_sound_file` | file_path, dest_folder |
 | 40 | `set_physical_surface` | material_path, surface_type |
 | 41 | `place_audio_volume` | location[x,y,z], extent[x,y,z], name, reverb_effect, priority |
-| -- | `spawn_blueprint_actor` | blueprint_path, location[x,y,z], rotation[p,y,r], label |
-| 42 | `place_bp_anim_notify` | animation_path, time, notify_blueprint_path, notify_name |
-
-Note: `spawn_blueprint_actor` shares slot with the world commands (registered alongside `place_audio_volume`).
+| 42 | `spawn_blueprint_actor` | blueprint_path, location[x,y,z], rotation[p,y,r], label |
+| 43 | `place_bp_anim_notify` | animation_path, time, notify_blueprint_path, notify_name |
 
 ---
 
@@ -309,10 +308,11 @@ src/ue_audio_mcp/
   connection.py                WaapiConnection singleton
   ue5_connection.py            UE5PluginConnection singleton
   tools/
-    wwise_*.py                 20 Wwise tools
-    ms_*.py                    23 MetaSounds tools
-    bp_*.py                    15 Blueprint tools
-    world_setup.py             6 World Setup tools
+    core.py, objects.py, events.py, preview.py, templates.py  21 Wwise tools
+    metasounds.py, ms_graph.py, ms_builder.py, presets.py, variables.py  24 MetaSounds tools
+    blueprints.py, bp_builder.py  16 Blueprint tools
+    ue5_core.py                4 UE5 Core tools
+    world_setup.py             7 World Setup tools
     systems.py                 2 Orchestration tools
     utils.py                   _ok() / _error() helpers
   knowledge/
@@ -345,6 +345,6 @@ ue5_plugin/UEAudioMCP/
       AudioMCPCommandDispatcher.cpp Command routing
       Commands/*.cpp           All command implementations
 
-tests/                         461 tests across 21 files
+tests/                         456 tests across 24 files
 scripts/                       Build, sync, verify, export scripts
 ```

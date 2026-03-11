@@ -150,7 +150,7 @@ python scripts/export_catalogues.py --bp-only   # Blueprints only
 | `test_plugin_live.py` | Live TCP plugin smoke test |
 | `convert_export_to_template.py` | Convert MS graph export → template JSON |
 | `parse_metasound_export.py` | Parse raw MS export data |
-| `verify_pins.py` | Pin-level verification against engine |
+| `verify_blueprint_nodes.py` | Blueprint node catalogue verification |
 
 ## Common Patterns (6 Game Audio Systems)
 1. **Gunshot** — RandomSequenceContainer + variations + pitch randomisation + ADSR
