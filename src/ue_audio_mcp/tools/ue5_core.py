@@ -6,7 +6,7 @@ import logging
 
 from ue_audio_mcp.connection import get_wwise_connection
 from ue_audio_mcp.server import mcp
-from ue_audio_mcp.tools.utils import _error, _ok, _validate_asset_path
+from ue_audio_mcp.tools.utils import _check_ue5_result, _error, _ok, _validate_asset_path
 from ue_audio_mcp.ue5_connection import get_ue5_connection
 
 log = logging.getLogger(__name__)
@@ -73,8 +73,8 @@ def ue5_duplicate_asset(source_path: str, dest_path: str) -> str:
             "source_path": source_path,
             "dest_path": dest_path,
         })
-        if result.get("status") != "ok":
-            return _error(result.get("message", "Duplication failed"))
+        if err := _check_ue5_result(result):
+            return _error(err)
         return _ok({
             "message": "Duplicated '{}' to '{}'".format(source_path, dest_path),
             "result": result,

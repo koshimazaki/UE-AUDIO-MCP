@@ -15,9 +15,9 @@ MCP server for game audio — generating complete Wwise + MetaSounds + Blueprint
 |-----------|-----------|-------|
 | MCP Server | Python (FastMCP) | Main server, stdio transport |
 | Wwise Bridge | `waapi-client` | Official Audiokinetic Python lib, WebSocket :8080 |
-| UE5 Bridge | C++ plugin + TCP (port 9877) | JSON command protocol, 35 commands |
-| Knowledge | Local SQLite + TF-IDF | 195 nodes, 1027 entries, 20 tables, semantic search |
-| Templates | Parameterised JSON | 25 MetaSounds + 30 Blueprint + 6 Wwise |
+| UE5 Bridge | C++ plugin + TCP (port 9877) | JSON command protocol, 43 commands |
+| Knowledge | Local SQLite + TF-IDF | 195 nodes, 1053 entries, 20 tables, semantic search |
+| Templates | Parameterised JSON | 33 MetaSounds + 34 Blueprint + 6 Wwise |
 
 ## Key APIs
 - **WAAPI**: 87 functions, WAMP/WebSocket on :8080, HTTP on :8090. Wwise MUST be running.
@@ -75,29 +75,32 @@ These break every major UE update — check first when compile fails:
 ```
 src/ue_audio_mcp/
 ├── server.py              → FastMCP entry point + lifespan
-├── connection.py          → WaapiConnection + UE5PluginConnection singletons
+├── connection.py          → WaapiConnection singleton (WAAPI WebSocket)
+├── ue5_connection.py      → UE5PluginConnection singleton (TCP :9877)
 ├── tools/
-│   ├── wwise_*.py         → WAAPI tool implementations (20 tools)
-│   ├── ms_*.py            → MetaSounds tools (knowledge + builder + sync, 19 tools)
-│   ├── bp_*.py            → Blueprint tools (builder + knowledge + sync, 15 tools)
-│   └── systems.py         → Orchestrator (build_audio_system, build_aaa_project)
+│   ├── core.py, objects.py, events.py, preview.py, templates.py → Wwise/WAAPI tools (21 tools)
+│   ├── metasounds.py, ms_graph.py, ms_builder.py, presets.py, variables.py → MetaSounds tools (24 tools)
+│   ├── blueprints.py, bp_builder.py → Blueprint tools (16 tools)
+│   ├── ue5_core.py        → UE5 connection + asset tools (4 tools)
+│   ├── world_setup.py     → World audio setup: emitters, volumes, anim notify (7 tools)
+│   └── systems.py         → Orchestrator (build_audio_system, build_aaa_project, 2 tools)
 ├── knowledge/
 │   ├── db.py              → SQLite knowledge DB (20 tables, schema v2, singleton)
 │   ├── node_schema.py     → Shared TypedDicts (MSPin, MSNode) + normalize_pin_type()
 │   ├── embeddings.py      → TF-IDF + cosine similarity search
 │   ├── wwise_types.py     → Object types, properties, defaults
 │   ├── metasound_nodes.py → 195 nodes, 23 categories, 145 class_name mappings
-│   └── tutorials.py       → Builder API catalogue, patterns, conversions
+│   ├── tutorials.py       → Builder API catalogue, patterns, conversions
+│   └── graph_schema.py    → Graph spec format + 7-stage validator
 ├── templates/
-│   ├── metasounds/        → 25 MS graph templates (JSON, 25/25 validated)
-│   ├── blueprints/        → 30 BP templates (JSON)
+│   ├── metasounds/        → 33 MS graph templates (JSON, 33/33 validated)
+│   ├── blueprints/        → 34 BP templates (JSON)
 │   └── wwise/             → 6 Wwise hierarchy templates (JSON)
-└── graph_schema.py        → Graph spec format + 7-stage validator
-ue5_plugin/UEAudioMCP/     → C++ plugin (35 commands, TCP:9877)
+ue5_plugin/UEAudioMCP/     → C++ plugin (43 commands, TCP:9877)
 ue5_plugin/SIDMetaSoundNodes/ → ReSID SID chip nodes (5 custom nodes)
 scripts/                   → Key scripts (see below)
-research/                  → 3 core reference docs (WAAPI, MetaSounds, MCP landscape)
-tests/                     → 432 tests across 20+ files
+research/                  → 6 reference docs (WAAPI, MetaSounds, MCP landscape, AudioLink, node registry, Lyra)
+tests/                     → 456 tests across 24 files
 exports/                   → Engine sync outputs (JSON)
 ```
 
@@ -163,4 +166,4 @@ python scripts/export_catalogues.py --bp-only   # Blueprints only
 - `/ue-agent` — Launch UE5 specialist for MetaSounds/Blueprint/DSP tasks
 - `/wwise-agent` — Launch Wwise specialist for WAAPI/mixing/routing tasks
 - `/build-system` — Full pipeline audio system generator
-- `/mcp-plugin` — UE5 plugin TCP control (35 commands)
+- `/mcp-plugin` — UE5 plugin TCP control (43 commands)

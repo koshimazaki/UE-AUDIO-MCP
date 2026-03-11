@@ -25,7 +25,7 @@ Git Repo (ue5_plugin/UEAudioMCP/)     UE Project (Plugins/UEAudioMCP/)
 ```
 
 **Two modules:**
-- `UEAudioMCP` (Editor) — TCP server, 35 commands, Blueprint/MetaSounds builders
+- `UEAudioMCP` (Editor) — TCP server, 43 commands, Blueprint/MetaSounds builders
 - `SIDMetaSoundNodes` (Runtime) — 5 custom ReSID SID chip MetaSounds nodes
 
 ## Build Script
@@ -122,7 +122,7 @@ python scripts/sync_bp_from_engine.py --diff-only
 **Allowlist** (in `AudioMCPBlueprintManager.cpp`): security gate — only allowlisted
 functions can be called via Blueprint builder MCP tools.
 
-## C++ Plugin Commands (35 total)
+## C++ Plugin Commands (43 total)
 
 | Group | Commands |
 |-------|----------|
