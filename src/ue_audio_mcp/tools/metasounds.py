@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import json
+import logging
 
 from ue_audio_mcp.server import mcp
 from ue_audio_mcp.tools.utils import _ok, _error
@@ -16,6 +17,8 @@ from ue_audio_mcp.knowledge.metasound_nodes import (
     get_nodes_by_tag,
     search_nodes,
 )
+
+log = logging.getLogger(__name__)
 
 _search_index = None
 
