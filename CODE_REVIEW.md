@@ -103,13 +103,19 @@ All three docs (CLAUDE.md, README.md, ue5_plugin/README.md) had stale numbers af
 **Strengths:**
 - Clean command dispatch pattern via `FAudioMCPCommandDispatcher`
 - Each command group in separate files (`WorldCommands.cpp`, `BPBuilderCommands.cpp`, etc.)
-- Path validation with `..` traversal checks
+- Path validation with `..` traversal checks on all asset paths
 - JSON parsing with error responses
+- Thread safety: proper `FCriticalSection` locking on TCP client socket
+- Memory safety: `TStrongObjectPtr<>`, `TWeakObjectPtr<>`, `TUniquePtr<>` used correctly
+- TCP protocol: 16MB max message size, partial recv loops, graceful shutdown
+- UE5 coding standards followed (PascalCase, F-prefix, proper macros)
 
-**Observations:**
+**Issues found:**
+- `UEAudioMCPModule.cpp:39` — Log said "42 commands registered" but 43 are actually registered (FIXED)
+- `BPBuilderCommands.cpp` — Uses `GetStringField()` instead of `TryGetStringField()` for JSON params. `GetStringField()` returns empty string for missing fields (caught by subsequent `IsEmpty()` checks), but asserts in dev builds if the field exists with a non-string type. Recommend migrating to `TryGetStringField()` for full robustness against malformed JSON.
+- `BlueprintCommands.cpp:241-243` — Uses `GetNumberField()` for FVector parsing without `TryGetNumberField()` fallbacks. Same category of issue.
+- `AudioMCPBlueprintManager.cpp:183` — Accesses `BP->SkeletonGeneratedClass` after `HasActiveBlueprint()` check but without null-checking `SkeletonGeneratedClass` itself. Low risk (editor guarantees this exists for valid BPs).
 - `WorldCommands.cpp` is 885 lines — largest single command file. Consider splitting if more world commands are added.
-- `AudioMCPNodeRegistry.h` changed to use templates (`TNodeFacade<Op>`) for UE 5.7 compat — well handled
-- `UEAudioMCP.Build.cs` has appropriate module dependencies
 
 ### 9. Template/Knowledge Integrity
 
@@ -125,8 +131,10 @@ All three docs (CLAUDE.md, README.md, ue5_plugin/README.md) had stale numbers af
 ## Improvement Suggestions (Future Work)
 
 1. **Automated count tracking**: Add a CI script that verifies documented counts match reality (prevents drift)
-2. **Type stubs for C++ commands**: A shared enum/constant for command action strings used in both Python tools and C++ registration
-3. **BP tool naming alignment**: Consider renaming `blueprints.py` → `bp_knowledge.py` for consistency with `ms_builder.py` / `bp_builder.py` pattern
-4. **Connection health check**: Add a lightweight ping-based `is_connected()` for Wwise (vs current `getInfo` call)
-5. **ue5_plugin/README.md command table**: Update the command table (currently shows 35-era grouping, missing world/BP-notify commands)
-6. **Seed tests**: Add test coverage for `knowledge/seed.py` DB seeding
+2. **C++ JSON safety**: Migrate `BPBuilderCommands.cpp` from `GetStringField()` to `TryGetStringField()` for robustness against malformed JSON type mismatches. Same for `GetNumberField()` in `BlueprintCommands.cpp` FVector parsing.
+3. **Type stubs for C++ commands**: A shared enum/constant for command action strings used in both Python tools and C++ registration
+4. **BP tool naming alignment**: Consider renaming `blueprints.py` → `bp_knowledge.py` for consistency with `ms_builder.py` / `bp_builder.py` pattern
+5. **Connection health check**: Add a lightweight ping-based `is_connected()` for Wwise (vs current `getInfo` call)
+6. **ue5_plugin/README.md command table**: Update the command table (currently shows 35-era grouping, missing world/BP-notify commands)
+7. **Seed tests**: Add test coverage for `knowledge/seed.py` DB seeding
+8. **Blueprint null guard**: Add `SkeletonGeneratedClass` null check in `AudioMCPBlueprintManager.cpp:183`

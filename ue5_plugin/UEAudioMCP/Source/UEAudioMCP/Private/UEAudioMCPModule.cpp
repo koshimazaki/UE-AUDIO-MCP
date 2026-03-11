@@ -36,7 +36,7 @@ void FUEAudioMCPModule::StartupModule()
 	if (TcpServer->StartListening(AudioMCP::DEFAULT_PORT))
 	{
 		UE_LOG(LogAudioMCPModule, Log,
-			TEXT("UE Audio MCP ready — listening on port %d (42 commands registered)"),
+			TEXT("UE Audio MCP ready — listening on port %d (43 commands registered)"),
 			AudioMCP::DEFAULT_PORT);
 	}
 	else
