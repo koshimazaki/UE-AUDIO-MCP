@@ -9,7 +9,7 @@ import json
 import logging
 
 from ue_audio_mcp.server import mcp
-from ue_audio_mcp.tools.utils import _ok, _error
+from ue_audio_mcp.tools.utils import _ok, _error, logged_tool
 from ue_audio_mcp.knowledge.metasound_nodes import (
     METASOUND_NODES,
     get_all_categories,
@@ -39,6 +39,7 @@ def _reset_search_index():
 
 
 @mcp.tool()
+@logged_tool
 def ms_list_nodes(
     category: str = "",
     tag: str = "",
@@ -79,6 +80,7 @@ def ms_list_nodes(
 
 
 @mcp.tool()
+@logged_tool
 def ms_node_info(node_name: str) -> str:
     """Get full details for a specific MetaSounds node.
 
@@ -101,6 +103,7 @@ def ms_node_info(node_name: str) -> str:
 
 
 @mcp.tool()
+@logged_tool
 def ms_search_nodes(query: str) -> str:
     """Semantic search for MetaSounds nodes by description or purpose.
 
@@ -145,6 +148,7 @@ def ms_search_nodes(query: str) -> str:
 
 
 @mcp.tool()
+@logged_tool
 def ms_list_categories() -> str:
     """List all MetaSounds node categories with counts.
 

@@ -20,7 +20,7 @@ from ue_audio_mcp.knowledge.metasound_nodes import (
     infer_class_type,
 )
 from ue_audio_mcp.server import mcp
-from ue_audio_mcp.tools.utils import _check_ue5_result, _error, _ok
+from ue_audio_mcp.tools.utils import _check_ue5_result, _error, _ok, logged_tool
 from ue_audio_mcp.ue5_connection import get_ue5_connection
 
 log = logging.getLogger(__name__)
@@ -29,6 +29,7 @@ VALID_ASSET_TYPES = {"Source", "Patch", "Preset"}
 
 
 @mcp.tool()
+@logged_tool
 def ms_build_graph(graph_spec: str) -> str:
     """Validate a graph spec, convert to Builder commands, and send all to UE5.
 
@@ -60,12 +61,12 @@ def ms_build_graph(graph_spec: str) -> str:
             if err:
                 return _error("Command {} ({}) failed: {}".format(
                     i + 1, cmd.get("action", "?"), err
-                ))
+                ), {"commands_completed": i, "commands_total": len(commands)})
             results.append(result)
         except Exception as e:
             return _error("Command {} ({}) failed: {}".format(
                 i + 1, cmd.get("action", "?"), e
-            ))
+            ), {"commands_completed": i, "commands_total": len(commands)})
 
     return _ok({
         "message": "Graph '{}' built successfully".format(spec["name"]),
@@ -75,6 +76,7 @@ def ms_build_graph(graph_spec: str) -> str:
 
 
 @mcp.tool()
+@logged_tool
 def ms_create_source(name: str, asset_type: str = "Source") -> str:
     """Create a new MetaSounds source builder in UE5.
 
@@ -102,6 +104,7 @@ def ms_create_source(name: str, asset_type: str = "Source") -> str:
 
 
 @mcp.tool()
+@logged_tool
 def ms_add_node(
     node_type: str,
     node_id: str,
@@ -137,6 +140,7 @@ def ms_add_node(
 
 
 @mcp.tool()
+@logged_tool
 def ms_connect_pins(
     from_node: str,
     from_pin: str,
@@ -172,6 +176,7 @@ def ms_connect_pins(
 
 
 @mcp.tool()
+@logged_tool
 def ms_set_default(node_id: str, input_name: str, value: str) -> str:
     """Set a default value for a node input pin.
 
@@ -206,6 +211,7 @@ def ms_set_default(node_id: str, input_name: str, value: str) -> str:
 
 
 @mcp.tool()
+@logged_tool
 def ms_save_asset(name: str, path: str = "/Game/Audio/Generated/") -> str:
     """Build the current MetaSounds graph to a UE5 asset.
 
@@ -236,6 +242,7 @@ def ms_save_asset(name: str, path: str = "/Game/Audio/Generated/") -> str:
 
 
 @mcp.tool()
+@logged_tool
 def ms_open_in_editor() -> str:
     """Open the last built MetaSound asset in the UE5 MetaSounds editor.
 
@@ -257,6 +264,7 @@ def ms_open_in_editor() -> str:
 
 
 @mcp.tool()
+@logged_tool
 def ms_convert_to_preset(referenced_asset: str) -> str:
     """Convert the current MetaSounds builder to a preset of a referenced asset.
 
@@ -286,6 +294,7 @@ def ms_convert_to_preset(referenced_asset: str) -> str:
 
 
 @mcp.tool()
+@logged_tool
 def ms_audition(name: str = "") -> str:
     """Preview/audition the current MetaSounds graph in the editor.
 
@@ -307,6 +316,7 @@ def ms_audition(name: str = "") -> str:
 
 
 @mcp.tool()
+@logged_tool
 def ms_stop_audition() -> str:
     """Stop any currently playing MetaSounds audition preview."""
     conn = get_ue5_connection()
@@ -321,6 +331,7 @@ def ms_stop_audition() -> str:
 
 
 @mcp.tool()
+@logged_tool
 def ms_export_graph(asset_path: str, convert_to_template: bool = False) -> str:
     """Export a complete MetaSounds graph from UE5 — nodes, pin types, defaults, variables, interfaces.
 
@@ -367,6 +378,7 @@ def ms_export_graph(asset_path: str, convert_to_template: bool = False) -> str:
 
 
 @mcp.tool()
+@logged_tool
 def ms_sync_from_engine(
     update_db: bool = False,
     filter: str = "",
@@ -417,9 +429,9 @@ def ms_sync_from_engine(
         if node_def is None:
             continue
 
-        cat = node_def["category"]
+        cat = node_def.get("category", "Other")
         categories[cat] = categories.get(cat, 0) + 1
-        name = node_def["name"]
+        name = node_def.get("name", "")
 
         if name in METASOUND_NODES:
             # Update existing: replace pins (engine is ground truth)
@@ -456,8 +468,8 @@ def ms_sync_from_engine(
     try:
         from ue_audio_mcp.tools.metasounds import _reset_search_index
         _reset_search_index()
-    except Exception:
-        pass
+    except Exception as exc:
+        log.warning("Failed to reset search index after sync: %s", exc)
 
     return _ok({
         "message": "Synced {} nodes from engine ({} new, {} updated)".format(
@@ -501,6 +513,8 @@ def _engine_node_to_nodedef(enode: dict) -> dict | None:
     # Build pins
     inputs = []
     for pin in enode.get("inputs", []):
+        if not isinstance(pin, dict) or "name" not in pin:
+            continue
         pin_type = _normalize_pin_type(pin.get("type", ""))
         inp: dict = {"name": pin["name"], "type": pin_type, "required": True}
         if "default" in pin and pin["default"] is not None:
@@ -509,6 +523,8 @@ def _engine_node_to_nodedef(enode: dict) -> dict | None:
 
     outputs = []
     for pin in enode.get("outputs", []):
+        if not isinstance(pin, dict) or "name" not in pin:
+            continue
         pin_type = _normalize_pin_type(pin.get("type", ""))
         outputs.append({"name": pin["name"], "type": pin_type})
 
@@ -629,17 +645,17 @@ def _inline_convert(export_data: dict) -> dict:
     if export_data.get("graph_inputs"):
         template["inputs"] = [
             {k: v for k, v in gi.items() if v is not None}
-            for gi in export_data["graph_inputs"]
+            for gi in export_data.get("graph_inputs", [])
         ]
     if export_data.get("graph_outputs"):
         template["outputs"] = [
-            {"name": go["name"], "type": go["type"]}
-            for go in export_data["graph_outputs"]
+            {"name": go.get("name", ""), "type": go.get("type", "")}
+            for go in export_data.get("graph_outputs", [])
         ]
     if export_data.get("variables"):
         template["variables"] = [
             {k: v for k, v in var.items() if k != "id" and v is not None}
-            for var in export_data["variables"]
+            for var in export_data.get("variables", [])
         ]
 
     # Map nodes — Input/Output class_types become __graph__ boundary

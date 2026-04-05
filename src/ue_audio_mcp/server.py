@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 from mcp.server.fastmcp import FastMCP
 
 from ue_audio_mcp.connection import get_wwise_connection
+from ue_audio_mcp.session_log import get_session_logger
 from ue_audio_mcp.ue5_connection import get_ue5_connection
 
 log = logging.getLogger(__name__)
@@ -15,23 +16,28 @@ log = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(server: FastMCP) -> AsyncIterator[None]:
     """Try connecting to Wwise on startup; warn if unavailable."""
+    session_logger = get_session_logger()
+    session_logger.start_session()
+    session_logger.rotate_logs()
+
     wwise = get_wwise_connection()
     try:
         info = wwise.connect()
         log.info("Wwise ready: %s", info.get("version", {}).get("displayName", "?"))
-    except Exception:
-        log.warning("Wwise not available — use wwise_connect to connect later")
+    except Exception as exc:
+        log.warning("Wwise not available — use wwise_connect to connect later: %s", exc)
 
     ue5 = get_ue5_connection()
     try:
         ue5.connect()
         log.info("UE5 plugin ready")
-    except Exception:
-        log.warning("UE5 plugin not available — use ue5_connect to connect later")
+    except Exception as exc:
+        log.warning("UE5 plugin not available — use ue5_connect to connect later: %s", exc)
 
     try:
         yield None
     finally:
+        session_logger.end_session()
         wwise.disconnect()
         ue5.disconnect()
 
@@ -60,6 +66,7 @@ import ue_audio_mcp.tools.presets  # noqa: E402, F401
 import ue_audio_mcp.tools.bp_builder  # noqa: E402, F401
 import ue_audio_mcp.tools.systems  # noqa: E402, F401
 import ue_audio_mcp.tools.world_setup  # noqa: E402, F401
+import ue_audio_mcp.tools.audit  # noqa: E402, F401
 
 
 def main():

@@ -11,7 +11,7 @@ import logging
 from ue_audio_mcp.connection import get_wwise_connection
 from ue_audio_mcp.knowledge.wwise_types import DEFAULT_PATHS, EVENT_ACTION_TYPES
 from ue_audio_mcp.server import mcp
-from ue_audio_mcp.tools.utils import _error, _ok
+from ue_audio_mcp.tools.utils import _error, _ok, logged_tool
 
 log = logging.getLogger(__name__)
 
@@ -31,8 +31,8 @@ def _end_undo(conn) -> None:
 def _cancel_undo(conn) -> None:
     try:
         conn.call("ak.wwise.core.undo.cancelGroup")
-    except Exception:
-        pass
+    except Exception as exc:
+        log.warning("Failed to cancel undo group: %s", exc)
 
 
 def _create(conn, parent: str, obj_type: str, name: str) -> dict:
@@ -165,6 +165,7 @@ def _create_bus_tree(conn, parent_path: str, tree: dict, created: dict) -> None:
 
 
 @mcp.tool()
+@logged_tool
 def template_aaa_setup(
     bus_structure: str = "",
     actor_work_units: str = "",
@@ -300,6 +301,7 @@ def template_aaa_setup(
 
 
 @mcp.tool()
+@logged_tool
 def template_gunshot(
     weapon_name: str = "Rifle",
     num_variations: int = 3,
@@ -358,6 +360,7 @@ def template_gunshot(
 
 
 @mcp.tool()
+@logged_tool
 def template_footsteps(
     surface_types: str = '["Concrete", "Wood", "Grass", "Metal", "Gravel", "Water"]',
     with_switch_group: bool = True,
@@ -437,6 +440,7 @@ def template_footsteps(
 
 
 @mcp.tool()
+@logged_tool
 def template_ambient(
     layer_names: str = '["Wind_Light", "Wind_Medium", "Wind_Heavy"]',
     rtpc_parameter_name: str = "Wind_Intensity",
@@ -497,6 +501,7 @@ def template_ambient(
 
 
 @mcp.tool()
+@logged_tool
 def template_ui_sound(
     sound_name: str = "Click",
     bus_path: str = "",
@@ -547,6 +552,7 @@ def template_ui_sound(
 
 
 @mcp.tool()
+@logged_tool
 def template_weather_states(
     weather_states: str = '["Clear", "Cloudy", "LightRain", "HeavyRain", "Storm", "Snow"]',
 ) -> str:

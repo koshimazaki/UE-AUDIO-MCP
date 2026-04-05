@@ -14,13 +14,14 @@ import logging
 from typing import Any
 
 from ue_audio_mcp.server import mcp
-from ue_audio_mcp.tools.utils import _error, _ok
+from ue_audio_mcp.tools.utils import _error, _ok, logged_tool
 from ue_audio_mcp.ue5_connection import get_ue5_connection
 
 log = logging.getLogger(__name__)
 
 
 @mcp.tool()
+@logged_tool
 def bp_open_blueprint(asset_path: str) -> str:
     """Open a Blueprint asset for editing via the UE5 plugin.
 
@@ -49,6 +50,7 @@ def bp_open_blueprint(asset_path: str) -> str:
 
 
 @mcp.tool()
+@logged_tool
 def bp_add_bp_node(
     node_id: str,
     node_kind: str,
@@ -114,6 +116,7 @@ def bp_add_bp_node(
 
 
 @mcp.tool()
+@logged_tool
 def bp_connect_bp_pins(
     from_node: str,
     from_pin: str,
@@ -150,6 +153,7 @@ def bp_connect_bp_pins(
 
 
 @mcp.tool()
+@logged_tool
 def bp_set_bp_pin(node_id: str, pin_name: str, value: str) -> str:
     """Set a default value on a Blueprint node's input pin.
 
@@ -179,6 +183,7 @@ def bp_set_bp_pin(node_id: str, pin_name: str, value: str) -> str:
 
 
 @mcp.tool()
+@logged_tool
 def bp_compile_blueprint() -> str:
     """Compile the active Blueprint.
 
@@ -196,6 +201,7 @@ def bp_compile_blueprint() -> str:
 
 
 @mcp.tool()
+@logged_tool
 def bp_register_existing(node_id: str, node_guid: str) -> str:
     """Register an existing Blueprint node by its GUID so it can be wired to.
 
@@ -226,6 +232,7 @@ def bp_register_existing(node_id: str, node_guid: str) -> str:
 
 
 @mcp.tool()
+@logged_tool
 def bp_list_node_pins(node_id: str) -> str:
     """List all pins on a registered Blueprint node.
 
@@ -251,6 +258,7 @@ def bp_list_node_pins(node_id: str) -> str:
 
 
 @mcp.tool()
+@logged_tool
 def bp_wire_audio_param(
     asset_path: str,
     param_name: str,
@@ -409,6 +417,7 @@ def _engine_func_to_bp_scraped(func: dict) -> dict | None:
 
 
 @mcp.tool()
+@logged_tool
 def bp_sync_from_engine(
     audio_only: bool = True,
     update_db: bool = False,

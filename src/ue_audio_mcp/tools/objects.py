@@ -14,7 +14,7 @@ from ue_audio_mcp.knowledge.wwise_types import (
     OBJECT_TYPES,
 )
 from ue_audio_mcp.server import mcp
-from ue_audio_mcp.tools.utils import _error, _ok
+from ue_audio_mcp.tools.utils import _error, _ok, logged_tool
 
 log = logging.getLogger(__name__)
 
@@ -22,6 +22,7 @@ BATCH_LIMIT = 100
 
 
 @mcp.tool()
+@logged_tool
 def wwise_create_object(
     parent_path: str,
     object_type: str,
@@ -61,6 +62,7 @@ def wwise_create_object(
 
 
 @mcp.tool()
+@logged_tool
 def wwise_set_property(object_path: str, property_name: str, value: str) -> str:
     """Set a property on a Wwise object.
 
@@ -90,6 +92,7 @@ def wwise_set_property(object_path: str, property_name: str, value: str) -> str:
 
 
 @mcp.tool()
+@logged_tool
 def wwise_set_reference(object_path: str, reference: str, value: str) -> str:
     """Set a reference on a Wwise object (e.g. OutputBus, Attenuation).
 
@@ -114,6 +117,7 @@ def wwise_set_reference(object_path: str, reference: str, value: str) -> str:
 
 
 @mcp.tool()
+@logged_tool
 def wwise_import_audio(
     audio_files: str,
     import_operation: str = "useExisting",

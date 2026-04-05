@@ -7,12 +7,13 @@ import logging
 
 from ue_audio_mcp.connection import get_wwise_connection
 from ue_audio_mcp.server import mcp
-from ue_audio_mcp.tools.utils import _error, _ok
+from ue_audio_mcp.tools.utils import _error, _ok, logged_tool
 
 log = logging.getLogger(__name__)
 
 
 @mcp.tool()
+@logged_tool
 def wwise_connect(url: str = "") -> str:
     """Connect to Wwise via WAAPI.
 
@@ -29,6 +30,7 @@ def wwise_connect(url: str = "") -> str:
 
 
 @mcp.tool()
+@logged_tool
 def wwise_get_info() -> str:
     """Get Wwise application info (version, platform, project)."""
     conn = get_wwise_connection()
@@ -40,6 +42,7 @@ def wwise_get_info() -> str:
 
 
 @mcp.tool()
+@logged_tool
 def wwise_query(waql: str, return_fields: str = '["id", "name", "type", "path"]') -> str:
     """Query Wwise objects using WAQL.
 
@@ -52,6 +55,9 @@ def wwise_query(waql: str, return_fields: str = '["id", "name", "type", "path"]'
         fields = json.loads(return_fields)
     except json.JSONDecodeError:
         return _error(f"Invalid return_fields JSON: {return_fields}")
+
+    if not isinstance(fields, list):
+        return _error("return_fields must be a JSON array of strings")
 
     try:
         result = conn.call(
@@ -66,6 +72,7 @@ def wwise_query(waql: str, return_fields: str = '["id", "name", "type", "path"]'
 
 
 @mcp.tool()
+@logged_tool
 def wwise_save() -> str:
     """Save the current Wwise project."""
     conn = get_wwise_connection()
@@ -77,6 +84,7 @@ def wwise_save() -> str:
 
 
 @mcp.tool()
+@logged_tool
 def execute_waapi(uri: str, args_json: str = "{}", options_json: str = "{}") -> str:
     """Execute any WAAPI call directly (escape hatch).
 

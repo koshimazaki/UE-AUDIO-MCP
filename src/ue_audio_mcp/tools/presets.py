@@ -13,7 +13,7 @@ import logging
 from typing import Any
 
 from ue_audio_mcp.server import mcp
-from ue_audio_mcp.tools.utils import _check_ue5_result, _error, _ok
+from ue_audio_mcp.tools.utils import _check_ue5_result, _error, _ok, logged_tool
 from ue_audio_mcp.ue5_connection import get_ue5_connection
 
 log = logging.getLogger(__name__)
@@ -36,6 +36,7 @@ def _send(cmd: dict) -> dict:
 
 
 @mcp.tool()
+@logged_tool
 def ms_preset_swap(
     preset_name: str,
     referenced_asset: str,
@@ -122,6 +123,7 @@ def ms_preset_swap(
 
 
 @mcp.tool()
+@logged_tool
 def ms_preset_morph(
     name: str,
     param_set_a_json: str,
@@ -245,6 +247,7 @@ def ms_preset_morph(
 
 
 @mcp.tool()
+@logged_tool
 def ms_macro_trigger(
     name: str,
     steps_json: str,

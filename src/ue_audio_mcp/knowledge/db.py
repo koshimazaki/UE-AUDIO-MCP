@@ -224,6 +224,25 @@ CREATE TABLE IF NOT EXISTS bp_audio_triggers (
 CREATE INDEX IF NOT EXISTS idx_bat_bp ON bp_audio_triggers(bp_name, project);
 CREATE INDEX IF NOT EXISTS idx_bat_type ON bp_audio_triggers(trigger_type);
 CREATE INDEX IF NOT EXISTS idx_bat_target ON bp_audio_triggers(target_asset);
+
+CREATE TABLE IF NOT EXISTS session_logs (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp       TEXT NOT NULL,
+    session_id      TEXT NOT NULL,
+    event_type      TEXT NOT NULL,
+    tool_name       TEXT DEFAULT '',
+    action          TEXT DEFAULT '',
+    uri             TEXT DEFAULT '',
+    params          TEXT DEFAULT '{}',
+    result_status   TEXT DEFAULT '',
+    duration_ms     REAL DEFAULT 0,
+    error_message   TEXT DEFAULT '',
+    project_context TEXT DEFAULT ''
+);
+CREATE INDEX IF NOT EXISTS idx_sl_session ON session_logs(session_id);
+CREATE INDEX IF NOT EXISTS idx_sl_type ON session_logs(event_type);
+CREATE INDEX IF NOT EXISTS idx_sl_tool ON session_logs(tool_name);
+CREATE INDEX IF NOT EXISTS idx_sl_ts ON session_logs(timestamp);
 """
 
 
@@ -294,13 +313,16 @@ class KnowledgeDB:
 
         self._conn.commit()
 
+    # Tables safe to use in dynamic SQL (whitelist for format-interpolated queries)
+    _SAFE_TABLES = frozenset({"blueprint_audio", "blueprint_core"})
+
     def _parse_json_fields(self, d: dict) -> dict:
         for key, val in d.items():
             if isinstance(val, str) and val and val[0] in ("{", "["):
                 try:
                     d[key] = json.loads(val)
                 except (json.JSONDecodeError, ValueError):
-                    pass
+                    log.debug("Failed to parse JSON field %r, keeping as string", key)
         return d
 
     def _rows_to_dicts(self, rows: list[sqlite3.Row]) -> list[dict[str, Any]]:
@@ -566,6 +588,8 @@ class KnowledgeDB:
         like = _like_param(query)
         results: list[dict] = []
         for table in ("blueprint_audio", "blueprint_core"):
+            if table not in self._SAFE_TABLES:
+                continue
             sql = (
                 "SELECT name, category, description, '{}' as _table "
                 "FROM {} WHERE (name LIKE ? ESCAPE '\\' "
@@ -582,6 +606,8 @@ class KnowledgeDB:
     def query_blueprint_curated_by_name(self, name: str) -> list[dict]:
         """Look up a curated blueprint node by exact name."""
         for table in ("blueprint_audio", "blueprint_core"):
+            if table not in self._SAFE_TABLES:
+                continue
             rows = self._fetch(
                 "SELECT * FROM {} WHERE name = ?".format(table), (name,)
             )
@@ -593,6 +619,8 @@ class KnowledgeDB:
         """Get category counts from curated blueprint tables."""
         results: list[dict] = []
         for table in ("blueprint_audio", "blueprint_core"):
+            if table not in self._SAFE_TABLES:
+                continue
             rows = self._fetch(
                 "SELECT category, COUNT(*) as cnt FROM {} "
                 "GROUP BY category ORDER BY category".format(table)
@@ -826,15 +854,53 @@ class KnowledgeDB:
         self._conn.commit()
 
     def import_uasset_entries(self, entries: list[dict], project: str) -> int:
-        """Bulk-import entries from uasset extraction. Returns count."""
+        """Bulk-import entries atomically in a single transaction. Returns count."""
         count = 0
-        for entry in entries:
-            if entry["category"] == "blueprint_audio_pattern":
-                self.insert_project_blueprint(entry, project)
-            else:
-                self.insert_project_asset(entry, project)
-            count += 1
-        self._conn.commit()
+        try:
+            for entry in entries:
+                if entry.get("category") == "blueprint_audio_pattern":
+                    self._conn.execute(
+                        "INSERT OR REPLACE INTO project_blueprints "
+                        "(name, project, description, functions, variables, "
+                        "components, events, refs, source) "
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                        (
+                            entry["name"],
+                            project,
+                            entry.get("description", ""),
+                            json.dumps(entry.get("functions", [])),
+                            json.dumps(entry.get("variables", [])),
+                            json.dumps(entry.get("components", [])),
+                            json.dumps(entry.get("events", [])),
+                            json.dumps(entry.get("references", [])),
+                            entry.get("source", ""),
+                        ),
+                    )
+                else:
+                    self._conn.execute(
+                        "INSERT OR REPLACE INTO project_audio_assets "
+                        "(name, project, asset_type, path, refs, properties, details, source) "
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                        (
+                            entry["name"],
+                            project,
+                            entry.get("category", ""),
+                            entry.get("path", ""),
+                            json.dumps(entry.get("references", [])),
+                            json.dumps(entry.get("properties", [])),
+                            json.dumps({
+                                k: v for k, v in entry.items()
+                                if k not in ("name", "category", "path", "references",
+                                             "properties", "source")
+                            }),
+                            entry.get("source", ""),
+                        ),
+                    )
+                count += 1
+            self._conn.commit()
+        except Exception:
+            self._conn.rollback()
+            raise
         return count
 
     def query_project_assets(
@@ -1183,6 +1249,9 @@ class KnowledgeDB:
             ).fetchone()["cnt"],
             "bp_audio_triggers": self._conn.execute(
                 "SELECT COUNT(*) as cnt FROM bp_audio_triggers"
+            ).fetchone()["cnt"],
+            "session_logs": self._conn.execute(
+                "SELECT COUNT(*) as cnt FROM session_logs"
             ).fetchone()["cnt"],
         }
 

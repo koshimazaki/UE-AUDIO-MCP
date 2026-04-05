@@ -12,12 +12,13 @@ from ue_audio_mcp.knowledge.wwise_types import (
     EVENT_ACTION_TYPES,
 )
 from ue_audio_mcp.server import mcp
-from ue_audio_mcp.tools.utils import _error, _ok
+from ue_audio_mcp.tools.utils import _error, _ok, logged_tool
 
 log = logging.getLogger(__name__)
 
 
 @mcp.tool()
+@logged_tool
 def wwise_create_event(
     name: str,
     target_path: str,
@@ -63,6 +64,7 @@ def wwise_create_event(
 
 
 @mcp.tool()
+@logged_tool
 def wwise_create_game_parameter(
     name: str,
     min_value: float = 0.0,
@@ -90,35 +92,41 @@ def wwise_create_game_parameter(
     conn = get_wwise_connection()
     try:
         conn.call("ak.wwise.core.undo.beginGroup")
-        try:
-            gp_result = conn.call("ak.wwise.core.object.create", {
-                "parent": DEFAULT_PATHS["game_parameters"],
-                "type": "GameParameter",
-                "name": name,
-                "onNameConflict": "merge",
-            })
-            gp_id = gp_result.get("id")
 
-            # Set range properties
-            conn.call("ak.wwise.core.object.setProperty", {
-                "object": gp_id,
-                "property": "RangeMin",
-                "value": min_value,
-            })
-            conn.call("ak.wwise.core.object.setProperty", {
-                "object": gp_id,
-                "property": "RangeMax",
-                "value": max_value,
-            })
-            conn.call("ak.wwise.core.object.setProperty", {
-                "object": gp_id,
-                "property": "InitialValue",
-                "value": default_value,
-            })
-        finally:
-            conn.call("ak.wwise.core.undo.endGroup", {
-                "displayName": "Create GameParameter: {}".format(name),
-            })
+        gp_result = conn.call("ak.wwise.core.object.create", {
+            "parent": DEFAULT_PATHS["game_parameters"],
+            "type": "GameParameter",
+            "name": name,
+            "onNameConflict": "merge",
+        })
+        gp_id = gp_result.get("id")
+        if not gp_id:
+            try:
+                conn.call("ak.wwise.core.undo.cancelGroup")
+            except Exception:
+                pass
+            return _error("No ID in GameParameter response")
+
+        # Set range properties
+        conn.call("ak.wwise.core.object.setProperty", {
+            "object": gp_id,
+            "property": "RangeMin",
+            "value": min_value,
+        })
+        conn.call("ak.wwise.core.object.setProperty", {
+            "object": gp_id,
+            "property": "RangeMax",
+            "value": max_value,
+        })
+        conn.call("ak.wwise.core.object.setProperty", {
+            "object": gp_id,
+            "property": "InitialValue",
+            "value": default_value,
+        })
+
+        conn.call("ak.wwise.core.undo.endGroup", {
+            "displayName": "Create GameParameter: {}".format(name),
+        })
 
         return _ok({
             "game_parameter_id": gp_id,
@@ -127,10 +135,15 @@ def wwise_create_game_parameter(
             "default": default_value,
         })
     except Exception as e:
+        try:
+            conn.call("ak.wwise.core.undo.cancelGroup")
+        except Exception:
+            pass
         return _error(str(e))
 
 
 @mcp.tool()
+@logged_tool
 def wwise_assign_switch(
     switch_container_path: str,
     child_path: str,
@@ -159,6 +172,7 @@ def wwise_assign_switch(
 
 
 @mcp.tool()
+@logged_tool
 def wwise_set_attenuation(
     name: str,
     curve_type: str,
@@ -190,6 +204,8 @@ def wwise_set_attenuation(
 
     conn = get_wwise_connection()
     try:
+        conn.call("ak.wwise.core.undo.beginGroup")
+
         # Create the Attenuation ShareSet
         att_result = conn.call("ak.wwise.core.object.create", {
             "parent": parent,
@@ -198,6 +214,12 @@ def wwise_set_attenuation(
             "onNameConflict": "merge",
         })
         att_id = att_result.get("id")
+        if not att_id:
+            try:
+                conn.call("ak.wwise.core.undo.cancelGroup")
+            except Exception:
+                pass
+            return _error("No ID in Attenuation response")
 
         # Set the curve
         conn.call("ak.wwise.core.object.setAttenuationCurve", {
@@ -207,6 +229,14 @@ def wwise_set_attenuation(
             "points": points,
         })
 
+        conn.call("ak.wwise.core.undo.endGroup", {
+            "displayName": "Create Attenuation: {}".format(name),
+        })
+
         return _ok({"attenuation_id": att_id, "name": name, "curve_type": curve_type})
     except Exception as e:
+        try:
+            conn.call("ak.wwise.core.undo.cancelGroup")
+        except Exception:
+            pass
         return _error(str(e))

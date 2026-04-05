@@ -9,10 +9,11 @@ import json
 import os
 
 from ue_audio_mcp.server import mcp
-from ue_audio_mcp.tools.utils import _ok, _error
+from ue_audio_mcp.tools.utils import _ok, _error, logged_tool
 
 
 @mcp.tool()
+@logged_tool
 def ms_validate_graph(graph_spec: str) -> str:
     """Validate a MetaSounds graph specification.
 
@@ -39,6 +40,7 @@ def ms_validate_graph(graph_spec: str) -> str:
 
 
 @mcp.tool()
+@logged_tool
 def ms_graph_to_commands(graph_spec: str) -> str:
     """Convert a validated graph spec to Builder API command sequence.
 
@@ -68,6 +70,7 @@ def ms_graph_to_commands(graph_spec: str) -> str:
 
 
 @mcp.tool()
+@logged_tool
 def ms_graph_from_template(
     template_name: str,
     params: str = "{}",

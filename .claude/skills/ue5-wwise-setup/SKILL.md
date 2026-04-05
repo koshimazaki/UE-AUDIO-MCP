@@ -1,5 +1,5 @@
 ---
-name: wwise-setup
+name: ue5-wwise-setup
 description: Wwise project setup via WAAPI HTTP API. Use when creating bus hierarchies, RTPCs, switches, states, events, SoundBanks, AudioLink containers, or any Wwise authoring automation. Covers the full WAAPI HTTP workflow on port 8090.
 allowed-tools: Read, Grep, Glob, Bash
 argument-hint: [wwise-setup-task]

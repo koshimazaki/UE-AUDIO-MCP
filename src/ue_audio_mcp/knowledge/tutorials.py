@@ -44,8 +44,8 @@ METASOUND_PIN_TYPES = {
     "Float": {
         "description": "32-bit floating point number",
         "color": "green",
-        "connectable_to": ["Float", "Audio"],
-        "note": "Float->Audio is control-rate, not sample-rate",
+        "connectable_to": ["Float", "Time"],
+        "note": "Float connects to Time inputs (seconds); use explicit converters for Audio",
     },
     "Int32": {
         "description": "32-bit signed integer",
@@ -82,7 +82,7 @@ METASOUND_PIN_TYPES = {
 # Implicit conversions allowed
 METASOUND_TYPE_CONVERSIONS = [
     ("Int32", "Float"),
-    ("Float", "Audio"),
+    ("Float", "Time"),
     ("Time", "Float"),
     ("Bool", "Int32"),
 ]

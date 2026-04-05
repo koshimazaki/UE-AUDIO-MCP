@@ -11,6 +11,7 @@ import json
 import logging
 import socket
 import struct
+import time
 from typing import Any
 
 log = logging.getLogger(__name__)
@@ -49,16 +50,16 @@ class UE5PluginConnection:
             if self._sock is not None:
                 try:
                     self._sock.close()
-                except Exception:
-                    pass
+                except Exception as close_exc:
+                    log.debug("Socket close error during connect cleanup: %s", close_exc)
                 self._sock = None
             raise ConnectionError(f"Cannot connect to UE5 plugin at {host}:{port}: {e}") from e
         except Exception:
             if self._sock is not None:
                 try:
                     self._sock.close()
-                except Exception:
-                    pass
+                except Exception as close_exc:
+                    log.debug("Socket close error during connect cleanup: %s", close_exc)
                 self._sock = None
             raise
 
@@ -67,8 +68,8 @@ class UE5PluginConnection:
         if self._sock is not None:
             try:
                 self._sock.close()
-            except Exception:
-                pass
+            except Exception as exc:
+                log.debug("UE5 socket close error (ignored): %s", exc)
             self._sock = None
             log.info("Disconnected from UE5 plugin")
 
@@ -76,7 +77,8 @@ class UE5PluginConnection:
         """Check if connected to the UE5 plugin.
 
         Verifies the socket is still alive via getpeername() when
-        a real socket is present.
+        a real socket is present. Cleans up stale sockets as a side
+        effect to prevent stale True on next call.
         """
         if self._sock is None:
             return False
@@ -86,7 +88,9 @@ class UE5PluginConnection:
             self._sock.getpeername()
             return True
         except OSError:
-            self._sock = None
+            # Socket is dead — clean up to avoid stale state
+            log.debug("UE5 socket stale, cleaning up")
+            self.disconnect()
             return False
 
     def send_command(self, command: dict[str, Any]) -> dict[str, Any]:
@@ -98,14 +102,32 @@ class UE5PluginConnection:
         """
         if self._sock is None:
             raise RuntimeError("Not connected to UE5 plugin. Use ue5_connect first.")
+        action = command.get("action", "")
+        t0 = time.monotonic()
         try:
             payload = json.dumps(command).encode("utf-8")
             header = struct.pack(">I", len(payload))
             self._sock.sendall(header + payload)
-            return self._recv_response()
+            result = self._recv_response()
+            ms = (time.monotonic() - t0) * 1000
+            status = result.get("status", "ok") if isinstance(result, dict) else "ok"
+            try:
+                from ue_audio_mcp.session_log import get_session_logger
+                get_session_logger().log_tcp_command(action, command, status, ms)
+            except Exception:
+                pass
+            return result
         except (OSError, ConnectionError, json.JSONDecodeError, struct.error) as e:
-            log.warning("UE5 plugin communication failed, disconnecting: %s", e)
-            self.disconnect()
+            ms = (time.monotonic() - t0) * 1000
+            try:
+                from ue_audio_mcp.session_log import get_session_logger
+                get_session_logger().log_tcp_command(action, command, "error", ms, str(e))
+            except Exception:
+                pass
+            try:
+                log.warning("UE5 plugin communication failed, disconnecting: %s", e)
+            finally:
+                self.disconnect()
             raise
 
     def _recv_response(self) -> dict[str, Any]:

@@ -23,7 +23,7 @@ from typing import Any
 from ue_audio_mcp.connection import get_wwise_connection
 from ue_audio_mcp.knowledge.graph_schema import graph_to_builder_commands, validate_graph
 from ue_audio_mcp.server import mcp
-from ue_audio_mcp.tools.utils import _error, _ok
+from ue_audio_mcp.tools.utils import _error, _ok, logged_tool
 from ue_audio_mcp.ue5_connection import get_ue5_connection
 
 log = logging.getLogger(__name__)
@@ -582,6 +582,7 @@ def _build_connection_map(
 # ---------------------------------------------------------------------------
 
 @mcp.tool()
+@logged_tool
 def build_audio_system(
     pattern: str,
     name: str = "",
@@ -800,6 +801,7 @@ def _move_to_work_unit(conn, object_ref: str, work_unit_path: str) -> dict[str, 
 
 
 @mcp.tool()
+@logged_tool
 def build_aaa_project(
     categories: str = "",
     setup_params: str = "{}",

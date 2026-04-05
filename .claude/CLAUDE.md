@@ -29,11 +29,14 @@ MCP server for game audio — generating complete Wwise + MetaSounds + Blueprint
 
 ## Agent Specialisations
 
-### /ue-agent — Unreal Engine 5 Specialist
-Handles: MetaSounds patches, Builder API, Blueprint audio logic, DSP node graphs, UE5 plugin C++ code, Remote Control API.
+### /ue5-metasound-dsp — MetaSounds DSP Specialist
+Handles: MetaSounds patches, Builder API, DSP node graphs, signal flow patterns, graph templates, 195 nodes across 23 categories.
 
-### /wwise-agent — Wwise & WAAPI Specialist
-Handles: WAAPI calls, Wwise object hierarchy, RTPC curves, switch containers, bus routing, SoundBank generation, AudioLink bridge, sound synthesis concepts.
+### /ue5-blueprint-audio — Blueprint Audio Specialist
+Handles: Blueprint audio logic, game event detection, parameter wiring, audio components, asset scanning, game state → audio connections.
+
+### /ue5-wwise-setup — Wwise & WAAPI Specialist
+Handles: WAAPI calls, Wwise object hierarchy, RTPC curves, switch containers, bus routing, SoundBank generation, AudioLink bridge.
 
 ---
 
@@ -163,7 +166,9 @@ python scripts/export_catalogues.py --bp-only   # Blueprints only
 ---
 
 ## Quick Commands
-- `/ue-agent` — Launch UE5 specialist for MetaSounds/Blueprint/DSP tasks
-- `/wwise-agent` — Launch Wwise specialist for WAAPI/mixing/routing tasks
-- `/build-system` — Full pipeline audio system generator
-- `/mcp-plugin` — UE5 plugin TCP control (43 commands)
+- `/ue5-metasound-dsp` — MetaSounds DSP specialist (195 nodes, 23 categories)
+- `/ue5-blueprint-audio` — Blueprint audio logic, game events, parameter wiring
+- `/ue5-audio-builder` — Full pipeline audio system generator
+- `/ue5-audio-mcp` — UE5 plugin TCP control (43 commands)
+- `/ue5-wwise-setup` — Wwise project automation via WAAPI
+- `/ue5-plugin-dev` — Add new C++ commands to the plugin

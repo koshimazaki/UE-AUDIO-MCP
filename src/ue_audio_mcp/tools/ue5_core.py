@@ -6,13 +6,14 @@ import logging
 
 from ue_audio_mcp.connection import get_wwise_connection
 from ue_audio_mcp.server import mcp
-from ue_audio_mcp.tools.utils import _check_ue5_result, _error, _ok, _validate_asset_path
+from ue_audio_mcp.tools.utils import _check_ue5_result, _error, _ok, _validate_asset_path, logged_tool
 from ue_audio_mcp.ue5_connection import get_ue5_connection
 
 log = logging.getLogger(__name__)
 
 
 @mcp.tool()
+@logged_tool
 def ue5_connect(host: str = "127.0.0.1", port: int = 9877) -> str:
     """Connect to the UE5 audio plugin via TCP.
 
@@ -29,6 +30,7 @@ def ue5_connect(host: str = "127.0.0.1", port: int = 9877) -> str:
 
 
 @mcp.tool()
+@logged_tool
 def ue5_get_info() -> str:
     """Get UE5 engine info (version, project, features)."""
     conn = get_ue5_connection()
@@ -40,6 +42,7 @@ def ue5_get_info() -> str:
 
 
 @mcp.tool()
+@logged_tool
 def ue5_status() -> str:
     """Get combined status of Wwise and UE5 plugin connections."""
     wwise = get_wwise_connection()
@@ -51,6 +54,7 @@ def ue5_status() -> str:
 
 
 @mcp.tool()
+@logged_tool
 def ue5_duplicate_asset(source_path: str, dest_path: str) -> str:
     """Duplicate a UE5 asset from source to destination path.
 

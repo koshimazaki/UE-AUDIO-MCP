@@ -11,7 +11,7 @@ import logging
 
 from ue_audio_mcp.knowledge.db import get_knowledge_db
 from ue_audio_mcp.server import mcp
-from ue_audio_mcp.tools.utils import _error, _ok, _validate_asset_path
+from ue_audio_mcp.tools.utils import _error, _ok, _validate_asset_path, logged_tool
 from ue_audio_mcp.ue5_connection import get_ue5_connection
 
 log = logging.getLogger(__name__)
@@ -21,6 +21,7 @@ _VALID_SOURCES = {"all", "curated", "scraped"}
 
 
 @mcp.tool()
+@logged_tool
 def bp_search(query: str, category: str = "", source: str = "all") -> str:
     """Search Blueprint nodes by name or description.
 
@@ -76,6 +77,7 @@ def bp_search(query: str, category: str = "", source: str = "all") -> str:
 
 
 @mcp.tool()
+@logged_tool
 def bp_node_info(node_name: str) -> str:
     """Get full Blueprint node info including pin specs.
 
@@ -119,6 +121,7 @@ def bp_node_info(node_name: str) -> str:
 
 
 @mcp.tool()
+@logged_tool
 def bp_list_categories(source: str = "all") -> str:
     """List Blueprint node categories with counts.
 
@@ -155,6 +158,7 @@ def bp_list_categories(source: str = "all") -> str:
 
 
 @mcp.tool()
+@logged_tool
 def bp_list_assets(
     class_filter: str = "Blueprint",
     path: str = "/Game/",
@@ -193,6 +197,7 @@ def bp_list_assets(
 
 
 @mcp.tool()
+@logged_tool
 def bp_scan_blueprint(
     asset_path: str,
     audio_only: bool = False,
@@ -232,6 +237,7 @@ def bp_scan_blueprint(
 
 
 @mcp.tool()
+@logged_tool
 def bp_export_audio(asset_path: str) -> str:
     """Export the audio-relevant subgraph from a Blueprint with full edge wiring.
 
@@ -263,6 +269,7 @@ def bp_export_audio(asset_path: str) -> str:
 
 
 @mcp.tool()
+@logged_tool
 def bp_call_function(function_name: str, args_json: str = "{}") -> str:
     """Execute a Blueprint function via the UE5 plugin.
 

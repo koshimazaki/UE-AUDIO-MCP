@@ -14,13 +14,14 @@ import logging
 from typing import Any
 
 from ue_audio_mcp.server import mcp
-from ue_audio_mcp.tools.utils import _check_ue5_result, _error, _ok, _validate_asset_path
+from ue_audio_mcp.tools.utils import _check_ue5_result, _error, _ok, _validate_asset_path, logged_tool
 from ue_audio_mcp.ue5_connection import get_ue5_connection
 
 log = logging.getLogger(__name__)
 
 
 @mcp.tool()
+@logged_tool
 def place_anim_notify(
     animation_path: str,
     time: float,
@@ -68,6 +69,7 @@ def place_anim_notify(
 
 
 @mcp.tool()
+@logged_tool
 def place_bp_anim_notify(
     animation_path: str,
     time: float,
@@ -110,6 +112,7 @@ def place_bp_anim_notify(
 
 
 @mcp.tool()
+@logged_tool
 def spawn_audio_emitter(
     sound: str,
     location: list[float],
@@ -149,6 +152,7 @@ def spawn_audio_emitter(
 
 
 @mcp.tool()
+@logged_tool
 def import_sound_file(
     file_path: str,
     dest_folder: str,
@@ -181,6 +185,7 @@ def import_sound_file(
 
 
 @mcp.tool()
+@logged_tool
 def set_physical_surface(
     material_path: str,
     surface_type: str,
@@ -221,6 +226,7 @@ def set_physical_surface(
 
 
 @mcp.tool()
+@logged_tool
 def place_audio_volume(
     location: list[float],
     extent: list[float] | None = None,
@@ -266,6 +272,7 @@ def place_audio_volume(
 
 
 @mcp.tool()
+@logged_tool
 def spawn_blueprint_actor(
     blueprint_path: str,
     location: list[float] | None = None,

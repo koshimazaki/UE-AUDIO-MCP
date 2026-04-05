@@ -11,7 +11,7 @@ import logging
 
 from ue_audio_mcp.knowledge.metasound_data_types import PIN_TYPES
 from ue_audio_mcp.server import mcp
-from ue_audio_mcp.tools.utils import _check_ue5_result, _error, _ok
+from ue_audio_mcp.tools.utils import _check_ue5_result, _error, _ok, logged_tool
 from ue_audio_mcp.ue5_connection import get_ue5_connection
 
 log = logging.getLogger(__name__)
@@ -20,6 +20,7 @@ VALID_VARIABLE_NODE_MODES = {"get", "set", "get_delayed"}
 
 
 @mcp.tool()
+@logged_tool
 def ms_add_variable(name: str, type: str, default_value: str = "") -> str:
     """Add a graph variable to the current MetaSounds builder (UE 5.7+).
 
@@ -56,6 +57,7 @@ def ms_add_variable(name: str, type: str, default_value: str = "") -> str:
 
 
 @mcp.tool()
+@logged_tool
 def ms_add_variable_node(
     node_id: str,
     variable_name: str,

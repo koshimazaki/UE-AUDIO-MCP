@@ -8,12 +8,13 @@ import logging
 from ue_audio_mcp.connection import get_wwise_connection
 from ue_audio_mcp.knowledge.wwise_types import TRANSPORT_ACTIONS
 from ue_audio_mcp.server import mcp
-from ue_audio_mcp.tools.utils import _error, _ok
+from ue_audio_mcp.tools.utils import _error, _ok, logged_tool
 
 log = logging.getLogger(__name__)
 
 
 @mcp.tool()
+@logged_tool
 def wwise_preview(object_path: str, action: str = "play") -> str:
     """Preview a Wwise object (Event, Sound, Container) via transport.
 
@@ -75,11 +76,21 @@ def wwise_preview(object_path: str, action: str = "play") -> str:
             "object": object_path,
         })
         transport_id = transport.get("transport")
+        if not transport_id:
+            return _error("No transport ID in create response")
 
-        conn.call("ak.wwise.core.transport.executeAction", {
-            "transport": transport_id,
-            "action": action,
-        })
+        try:
+            conn.call("ak.wwise.core.transport.executeAction", {
+                "transport": transport_id,
+                "action": action,
+            })
+        except Exception:
+            # Clean up the created transport before re-raising
+            try:
+                conn.call("ak.wwise.core.transport.destroy", {"transport": transport_id})
+            except Exception:
+                pass
+            raise
 
         return _ok({
             "action": action,
@@ -91,6 +102,7 @@ def wwise_preview(object_path: str, action: str = "play") -> str:
 
 
 @mcp.tool()
+@logged_tool
 def wwise_generate_banks(bank_names: str) -> str:
     """Generate Wwise SoundBanks.
 

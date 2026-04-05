@@ -138,9 +138,9 @@ NODE_CATEGORIES: list[str] = [
 # Pin compatibility — which types can connect to which
 # ---------------------------------------------------------------------------
 PIN_COMPATIBILITY: dict[str, set[str]] = {
-    "Audio": {"Audio", "Float"},
+    "Audio": {"Audio"},  # Audio is a buffer type — no implicit conversion to/from Float
     "Trigger": {"Trigger"},
-    "Float": {"Float", "Audio", "Time"},  # Float can connect to Time inputs (seconds)
+    "Float": {"Float", "Time"},  # Float can connect to Time inputs (seconds)
     "Int32": {"Int32", "Float"},  # Int32 can connect to Float inputs
     "Bool": {"Bool"},
     "Time": {"Time", "Float"},  # Time can connect to Float inputs
