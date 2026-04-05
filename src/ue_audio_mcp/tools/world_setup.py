@@ -14,7 +14,7 @@ import logging
 from typing import Any
 
 from ue_audio_mcp.server import mcp
-from ue_audio_mcp.tools.utils import _error, _ok, _validate_asset_path
+from ue_audio_mcp.tools.utils import _check_ue5_result, _error, _ok, _validate_asset_path
 from ue_audio_mcp.ue5_connection import get_ue5_connection
 
 log = logging.getLogger(__name__)
@@ -54,8 +54,8 @@ def place_anim_notify(
         if sound:
             cmd["sound"] = sound
         result = conn.send_command(cmd)
-        if result.get("status") == "error":
-            return _error(result.get("message", "place_anim_notify failed"))
+        if err := _check_ue5_result(result):
+            return _error(err)
         warns = []
         if not sound:
             warns.append(
@@ -102,8 +102,8 @@ def place_bp_anim_notify(
             "notify_blueprint_path": notify_blueprint_path,
             "notify_name": notify_name,
         })
-        if result.get("status") == "error":
-            return _error(result.get("message", "place_bp_anim_notify failed"))
+        if err := _check_ue5_result(result):
+            return _error(err)
         return _ok(result)
     except Exception as e:
         return _error(str(e))
@@ -141,8 +141,8 @@ def spawn_audio_emitter(
             "name": name,
             "auto_play": auto_play,
         })
-        if result.get("status") == "error":
-            return _error(result.get("message", "spawn_audio_emitter failed"))
+        if err := _check_ue5_result(result):
+            return _error(err)
         return _ok(result)
     except Exception as e:
         return _error(str(e))
@@ -173,8 +173,8 @@ def import_sound_file(
             "file_path": file_path,
             "dest_folder": dest_folder,
         })
-        if result.get("status") == "error":
-            return _error(result.get("message", "import_sound_file failed"))
+        if err := _check_ue5_result(result):
+            return _error(err)
         return _ok(result)
     except Exception as e:
         return _error(str(e))
@@ -206,8 +206,8 @@ def set_physical_surface(
             "material_path": material_path,
             "surface_type": surface_type,
         })
-        if result.get("status") == "error":
-            return _error(result.get("message", "set_physical_surface failed"))
+        if err := _check_ue5_result(result):
+            return _error(err)
         warns = []
         if result.get("surface_index", -1) == 0:
             warns.append(
@@ -258,8 +258,8 @@ def place_audio_volume(
                 return _error(err)
             cmd["reverb_effect"] = reverb_effect
         result = conn.send_command(cmd)
-        if result.get("status") == "error":
-            return _error(result.get("message", "place_audio_volume failed"))
+        if err := _check_ue5_result(result):
+            return _error(err)
         return _ok(result)
     except Exception as e:
         return _error(str(e))
@@ -300,8 +300,8 @@ def spawn_blueprint_actor(
         if label:
             cmd["label"] = label
         result = conn.send_command(cmd)
-        if result.get("status") == "error":
-            return _error(result.get("message", "spawn_blueprint_actor failed"))
+        if err := _check_ue5_result(result):
+            return _error(err)
         return _ok(result)
     except Exception as e:
         return _error(str(e))
