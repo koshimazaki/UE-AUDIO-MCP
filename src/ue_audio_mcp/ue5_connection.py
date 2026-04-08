@@ -11,6 +11,7 @@ import json
 import logging
 import socket
 import struct
+import threading
 import time
 from typing import Any
 
@@ -32,46 +33,49 @@ class UE5PluginConnection:
         self._sock: socket.socket | None = None
         self._host: str = DEFAULT_HOST
         self._port: int = DEFAULT_PORT
+        self._lock = threading.RLock()
 
     def connect(self, host: str = DEFAULT_HOST, port: int = DEFAULT_PORT) -> dict[str, Any]:
         """Connect to the UE5 plugin. Returns engine info on success."""
-        self._host = host
-        self._port = port
-        if self._sock is not None:
-            self.disconnect()
-        try:
-            self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self._sock.settimeout(TIMEOUT)
-            self._sock.connect((self._host, self._port))
-            info = self.send_command({"action": "ping"})
-            log.info("Connected to UE5 plugin at %s:%d", self._host, self._port)
-            return info
-        except (OSError, ConnectionError) as e:
+        with self._lock:
+            self._host = host
+            self._port = port
             if self._sock is not None:
-                try:
-                    self._sock.close()
-                except Exception as close_exc:
-                    log.debug("Socket close error during connect cleanup: %s", close_exc)
-                self._sock = None
-            raise ConnectionError(f"Cannot connect to UE5 plugin at {host}:{port}: {e}") from e
-        except Exception:
-            if self._sock is not None:
-                try:
-                    self._sock.close()
-                except Exception as close_exc:
-                    log.debug("Socket close error during connect cleanup: %s", close_exc)
-                self._sock = None
-            raise
+                self.disconnect()
+            try:
+                self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self._sock.settimeout(TIMEOUT)
+                self._sock.connect((self._host, self._port))
+                info = self.send_command({"action": "ping"})
+                log.info("Connected to UE5 plugin at %s:%d", self._host, self._port)
+                return info
+            except (OSError, ConnectionError) as e:
+                if self._sock is not None:
+                    try:
+                        self._sock.close()
+                    except Exception as close_exc:
+                        log.debug("Socket close error during connect cleanup: %s", close_exc)
+                    self._sock = None
+                raise ConnectionError(f"Cannot connect to UE5 plugin at {host}:{port}: {e}") from e
+            except Exception:
+                if self._sock is not None:
+                    try:
+                        self._sock.close()
+                    except Exception as close_exc:
+                        log.debug("Socket close error during connect cleanup: %s", close_exc)
+                    self._sock = None
+                raise
 
     def disconnect(self) -> None:
         """Disconnect from the UE5 plugin."""
-        if self._sock is not None:
-            try:
-                self._sock.close()
-            except Exception as exc:
-                log.debug("UE5 socket close error (ignored): %s", exc)
-            self._sock = None
-            log.info("Disconnected from UE5 plugin")
+        with self._lock:
+            if self._sock is not None:
+                try:
+                    self._sock.close()
+                except Exception as exc:
+                    log.debug("UE5 socket close error (ignored): %s", exc)
+                self._sock = None
+                log.info("Disconnected from UE5 plugin")
 
     def is_connected(self) -> bool:
         """Check if connected to the UE5 plugin.
@@ -80,18 +84,19 @@ class UE5PluginConnection:
         a real socket is present. Cleans up stale sockets as a side
         effect to prevent stale True on next call.
         """
-        if self._sock is None:
-            return False
-        if not isinstance(self._sock, socket.socket):
-            return True  # mock / test stub
-        try:
-            self._sock.getpeername()
-            return True
-        except OSError:
-            # Socket is dead — clean up to avoid stale state
-            log.debug("UE5 socket stale, cleaning up")
-            self.disconnect()
-            return False
+        with self._lock:
+            if self._sock is None:
+                return False
+            if not isinstance(self._sock, socket.socket):
+                return True  # mock / test stub
+            try:
+                self._sock.getpeername()
+                return True
+            except OSError:
+                # Socket is dead — clean up to avoid stale state
+                log.debug("UE5 socket stale, cleaning up")
+                self.disconnect()
+                return False
 
     def send_command(self, command: dict[str, Any]) -> dict[str, Any]:
         """Send a JSON command and return the response dict.
@@ -100,35 +105,36 @@ class UE5PluginConnection:
         Cleans up the socket on communication failure so is_connected()
         won't return a stale True.
         """
-        if self._sock is None:
-            raise RuntimeError("Not connected to UE5 plugin. Use ue5_connect first.")
-        action = command.get("action", "")
-        t0 = time.monotonic()
-        try:
-            payload = json.dumps(command).encode("utf-8")
-            header = struct.pack(">I", len(payload))
-            self._sock.sendall(header + payload)
-            result = self._recv_response()
-            ms = (time.monotonic() - t0) * 1000
-            status = result.get("status", "ok") if isinstance(result, dict) else "ok"
+        with self._lock:
+            if self._sock is None:
+                raise RuntimeError("Not connected to UE5 plugin. Use ue5_connect first.")
+            action = command.get("action", "")
+            t0 = time.monotonic()
             try:
-                from ue_audio_mcp.session_log import get_session_logger
-                get_session_logger().log_tcp_command(action, command, status, ms)
-            except Exception:
-                pass
-            return result
-        except (OSError, ConnectionError, json.JSONDecodeError, struct.error) as e:
-            ms = (time.monotonic() - t0) * 1000
-            try:
-                from ue_audio_mcp.session_log import get_session_logger
-                get_session_logger().log_tcp_command(action, command, "error", ms, str(e))
-            except Exception:
-                pass
-            try:
-                log.warning("UE5 plugin communication failed, disconnecting: %s", e)
-            finally:
-                self.disconnect()
-            raise
+                payload = json.dumps(command).encode("utf-8")
+                header = struct.pack(">I", len(payload))
+                self._sock.sendall(header + payload)
+                result = self._recv_response()
+                ms = (time.monotonic() - t0) * 1000
+                status = result.get("status", "ok") if isinstance(result, dict) else "ok"
+                try:
+                    from ue_audio_mcp.session_log import get_session_logger
+                    get_session_logger().log_tcp_command(action, command, status, ms)
+                except Exception:
+                    pass
+                return result
+            except (OSError, ConnectionError, json.JSONDecodeError, struct.error) as e:
+                ms = (time.monotonic() - t0) * 1000
+                try:
+                    from ue_audio_mcp.session_log import get_session_logger
+                    get_session_logger().log_tcp_command(action, command, "error", ms, str(e))
+                except Exception:
+                    pass
+                try:
+                    log.warning("UE5 plugin communication failed, disconnecting: %s", e)
+                finally:
+                    self.disconnect()
+                raise
 
     def _recv_response(self) -> dict[str, Any]:
         """Read a length-prefixed JSON response from the socket."""

@@ -664,7 +664,7 @@ def build_audio_system(
         if result.get("mode") == "error":
             layer_errors.append("{}: {}".format(layer_name, result.get("reason", "unknown error")))
 
-    return _ok({
+    result_data = {
         "pattern": pattern,
         "name": asset_name,
         "mode": mode,
@@ -675,8 +675,13 @@ def build_audio_system(
         },
         "connections": connections,
         "integration": integration,
-        "errors": layer_errors,
-    })
+    }
+
+    if layer_errors:
+        result_data["errors"] = layer_errors
+        return _error("Partial failure: {}".format("; ".join(layer_errors)), data=result_data)
+
+    return _ok(result_data)
 
 
 # ---------------------------------------------------------------------------

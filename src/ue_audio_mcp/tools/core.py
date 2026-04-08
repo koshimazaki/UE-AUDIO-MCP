@@ -104,7 +104,7 @@ def execute_waapi(uri: str, args_json: str = "{}", options_json: str = "{}") -> 
         return _error(f"Invalid options_json: {options_json}")
 
     try:
-        result = conn.call(uri, args or None, options or None)
+        result = conn.call(uri, args if args is not None else None, options if options is not None else None)
         return _ok({"result": result})
     except Exception as e:
         return _error(str(e))
