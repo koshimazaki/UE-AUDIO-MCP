@@ -373,7 +373,7 @@
     },
     {
       "id": "ms_encode",
-      "node_type": "Mid-Side Encode/Decode",
+      "node_type": "Mid-Side Encode",
       "position": [
         1600,
         400
@@ -385,7 +385,7 @@
     },
     {
       "id": "ms_decode",
-      "node_type": "Mid-Side Encode/Decode",
+      "node_type": "Mid-Side Decode",
       "position": [
         1800,
         400
@@ -752,23 +752,23 @@
       "from_node": "stereo_mixer",
       "from_pin": "Out L",
       "to_node": "ms_encode",
-      "to_pin": "In Mid"
+      "to_pin": "In Left"
     },
     {
       "from_node": "stereo_mixer",
       "from_pin": "Out R",
       "to_node": "ms_encode",
-      "to_pin": "In Side"
+      "to_pin": "In Right"
     },
     {
       "from_node": "ms_encode",
-      "from_pin": "Out Left",
+      "from_pin": "Out Mid",
       "to_node": "ms_decode",
       "to_pin": "In Mid"
     },
     {
       "from_node": "ms_encode",
-      "from_pin": "Out Right",
+      "from_pin": "Out Side",
       "to_node": "ms_decode",
       "to_pin": "In Side"
     },

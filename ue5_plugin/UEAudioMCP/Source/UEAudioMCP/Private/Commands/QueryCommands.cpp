@@ -367,8 +367,10 @@ TSharedPtr<FJsonObject> FListNodeClassesCommand::Execute(
 			// --- Pin serialization ---
 			if (bIncludePins)
 			{
+				const FMetasoundFrontendClassInterface& DefaultInterface = FrontendClass.GetDefaultInterface();
+
 				TArray<TSharedPtr<FJsonValue>> InputPins;
-				for (const FMetasoundFrontendClassInput& Input : FrontendClass.Interface.Inputs)
+				for (const FMetasoundFrontendClassInput& Input : DefaultInterface.Inputs)
 				{
 					TSharedPtr<FJsonObject> PinObj = MakeShared<FJsonObject>();
 					PinObj->SetStringField(TEXT("name"), Input.Name.ToString());
@@ -385,7 +387,7 @@ TSharedPtr<FJsonObject> FListNodeClassesCommand::Execute(
 				NodeObj->SetArrayField(TEXT("inputs"), InputPins);
 
 				TArray<TSharedPtr<FJsonValue>> OutputPins;
-				for (const FMetasoundFrontendClassOutput& Output : FrontendClass.Interface.Outputs)
+				for (const FMetasoundFrontendClassOutput& Output : DefaultInterface.Outputs)
 				{
 					TSharedPtr<FJsonObject> PinObj = MakeShared<FJsonObject>();
 					PinObj->SetStringField(TEXT("name"), Output.Name.ToString());
@@ -439,7 +441,8 @@ TSharedPtr<FJsonObject> FListNodeClassesCommand::Execute(
 					NodeObj->SetArrayField(TEXT("keywords"), KwArray);
 				}
 
-				NodeObj->SetBoolField(TEXT("deprecated"), Metadata.GetIsDeprecated());
+				NodeObj->SetBoolField(TEXT("deprecated"),
+					EnumHasAnyFlags(Metadata.GetAccessFlags(), EMetasoundFrontendClassAccessFlags::Deprecated));
 			}
 
 			NodeArray.Add(MakeShared<FJsonValueObject>(NodeObj));

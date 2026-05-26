@@ -67,9 +67,13 @@ namespace AudioMCPNodeRegistry
 		// =================================================================
 		// Float variants (default)
 		Map.Add(TEXT("Add"),                 TEXT("UE::Add::Float"));
+		Map.Add(TEXT("Add (Float)"),         TEXT("UE::Add::Float"));
 		Map.Add(TEXT("Subtract"),            TEXT("UE::Subtract::Float"));
+		Map.Add(TEXT("Subtract (Float)"),    TEXT("UE::Subtract::Float"));
 		Map.Add(TEXT("Multiply"),            TEXT("UE::Multiply::Float"));
+		Map.Add(TEXT("Multiply (Float)"),    TEXT("UE::Multiply::Float"));
 		Map.Add(TEXT("Divide"),              TEXT("UE::Divide::Float"));
+		Map.Add(TEXT("Divide (Float)"),      TEXT("UE::Divide::Float"));
 		Map.Add(TEXT("Power"),               TEXT("UE::Power::Float"));
 		Map.Add(TEXT("Logarithm"),           TEXT("UE::Logarithm::Float"));
 		Map.Add(TEXT("Modulo"),              TEXT("UE::Modulo::Int32"));
@@ -94,10 +98,12 @@ namespace AudioMCPNodeRegistry
 		Map.Add(TEXT("Gain"),                TEXT("UE::Multiply::Audio by Float"));
 
 		// Control math
-		Map.Add(TEXT("Clamp"),               TEXT("UE::Clamp::Float"));
-		Map.Add(TEXT("Clamp (Audio)"),       TEXT("UE::Clamp::Audio"));
-		Map.Add(TEXT("Map Range"),           TEXT("UE::Map Range::Float"));
-		Map.Add(TEXT("Map Range (Audio)"),   TEXT("UE::Map Range::Audio"));
+		Map.Add(TEXT("Clamp"),               TEXT("Clamp::Clamp::Float"));
+		Map.Add(TEXT("Clamp (Float)"),       TEXT("Clamp::Clamp::Float"));
+		Map.Add(TEXT("Clamp (Audio)"),       TEXT("Clamp::Clamp::Audio"));
+		Map.Add(TEXT("Map Range"),           TEXT("MapRange::MapRange::Float"));
+		Map.Add(TEXT("Map Range (Float)"),   TEXT("MapRange::MapRange::Float"));
+		Map.Add(TEXT("Map Range (Audio)"),   TEXT("MapRange::MapRange::Audio"));
 		Map.Add(TEXT("InterpTo"),            TEXT("UE::InterpTo::Float"));
 		Map.Add(TEXT("InterpTo (Audio)"),    TEXT("UE::InterpTo::Audio"));
 		Map.Add(TEXT("Interpolate"),         TEXT("UE::InterpTo::Float"));
@@ -113,7 +119,9 @@ namespace AudioMCPNodeRegistry
 		Map.Add(TEXT("Random Get (Int32:Array)"),     TEXT("Array::Random Get::Int32:Array"));
 		Map.Add(TEXT("Random Get (Bool:Array)"),      TEXT("Array::Random Get::Bool:Array"));
 		Map.Add(TEXT("RandomFloat"),         TEXT("UE::RandomFloat::None"));
-		Map.Add(TEXT("RandomInt32"),          TEXT("UE::RandomInt32::None"));
+		Map.Add(TEXT("Random Float"),        TEXT("UE::RandomFloat::None"));
+		Map.Add(TEXT("RandomInt32"),         TEXT("UE::RandomInt32::None"));
+		Map.Add(TEXT("Random Time"),         TEXT("UE::RandomTime::None"));
 
 		// =================================================================
 		// Mixing / Routing
@@ -122,7 +130,13 @@ namespace AudioMCPNodeRegistry
 		Map.Add(TEXT("Mono To Stereo"),      TEXT("UE::Mono To Stereo::Audio"));
 		Map.Add(TEXT("Stereo To Mono"),      TEXT("UE::Stereo To Mono::Audio"));
 		Map.Add(TEXT("Crossfade"),           TEXT("UE::Crossfade::Audio"));
+		Map.Add(TEXT("Crossfade (Audio, 2)"), TEXT("Crossfade::Trigger Route (Audio, 2)::Audio"));
 		Map.Add(TEXT("Mix"),                 TEXT("UE::Mix::Audio"));
+		Map.Add(TEXT("Audio Mixer (Mono, 2)"), TEXT("AudioMixer::Audio Mixer (Mono, 2)::None"));
+		Map.Add(TEXT("Audio Mixer (Mono, 3)"), TEXT("AudioMixer::Audio Mixer (Mono, 3)::None"));
+		Map.Add(TEXT("Audio Mixer (Mono, 4)"), TEXT("AudioMixer::Audio Mixer (Mono, 4)::None"));
+		Map.Add(TEXT("Audio Mixer (Stereo, 2)"), TEXT("AudioMixer::Audio Mixer (Stereo, 2)::None"));
+		Map.Add(TEXT("Audio Mixer (Stereo, 3)"), TEXT("AudioMixer::Audio Mixer (Stereo, 3)::None"));
 
 		// =================================================================
 		// Effects
@@ -148,7 +162,9 @@ namespace AudioMCPNodeRegistry
 		Map.Add(TEXT("Bitcrusher"),          TEXT("UE::Bitcrusher::Audio"));
 		Map.Add(TEXT("BitCrusher"),          TEXT("UE::Bitcrusher::Audio"));
 		Map.Add(TEXT("Ring Modulator"),      TEXT("UE::RingMod::Audio"));
+		Map.Add(TEXT("Ring Mod"),            TEXT("UE::RingMod::Audio"));
 		Map.Add(TEXT("WaveShaper"),          TEXT("UE::WaveShaper::Audio"));
+		Map.Add(TEXT("Wave Shaper"),         TEXT("UE::WaveShaper::Audio"));
 
 		// =================================================================
 		// Noise (MetasoundLowFrequencyNoise.cpp)
@@ -156,6 +172,7 @@ namespace AudioMCPNodeRegistry
 		Map.Add(TEXT("Noise"),               TEXT("UE::Noise::Audio"));
 		Map.Add(TEXT("White Noise"),         TEXT("UE::White Noise::Audio"));
 		Map.Add(TEXT("Perlin Noise"),        TEXT("UE::Perlin Noise::Audio"));
+		Map.Add(TEXT("Low-Frequency Oscillator"), TEXT("UE::LFO::Audio"));
 		Map.Add(TEXT("LFO Noise"),           TEXT("UE::Lfo Frequency Noise::Audio"));
 
 		// =================================================================
@@ -167,23 +184,33 @@ namespace AudioMCPNodeRegistry
 		Map.Add(TEXT("Trigger On Threshold"), TEXT("UE::Trigger On Threshold::"));
 		Map.Add(TEXT("Trigger Control"),      TEXT("UE::Trigger Control::"));
 		Map.Add(TEXT("Trigger Route"),        TEXT("UE::Trigger Route::"));
+		Map.Add(TEXT("Trigger Route (Float, 2)"), TEXT("TriggerRoute::Trigger Route (Float, 2)::Float"));
 		Map.Add(TEXT("Trigger Toggle"),       TEXT("UE::Trigger Toggle::"));
 		Map.Add(TEXT("Trigger Filter"),       TEXT("UE::Trigger Filter::"));
+		Map.Add(TEXT("Trigger Any"),          TEXT("TriggerAny::Trigger Any (2)::None"));
+		Map.Add(TEXT("Trigger Accumulate"),   TEXT("TriggerAccumulator::Trigger Accumulate (2)::None"));
+		Map.Add(TEXT("Trigger Compare (Float)"), TEXT("TriggerCompare::Clamp::Float"));
+		Map.Add(TEXT("Trigger Compare (Int32)"), TEXT("TriggerCompare::Clamp::Int32"));
+		Map.Add(TEXT("Trigger Once"),         TEXT("UE::Trigger Once::None"));
+		Map.Add(TEXT("Trigger Sequence"),     TEXT("UE::Trigger Sequence (2)::None"));
 
 		// =================================================================
 		// Conversions / Utility
 		// =================================================================
 		Map.Add(TEXT("BPM To Seconds"),                TEXT("UE::BPM To Seconds::Float"));
 		Map.Add(TEXT("Freq To MIDI"),                  TEXT("UE::Freq To MIDI::Float"));
-		Map.Add(TEXT("MIDI To Freq"),                  TEXT("UE::MIDI To Freq::Float"));
+		Map.Add(TEXT("MIDI To Freq"),                  TEXT("UE::MIDI To Frequency::Float"));
+		Map.Add(TEXT("MIDI To Frequency"),             TEXT("UE::MIDI To Frequency::Float"));
 		Map.Add(TEXT("Semitones To Freq Multiplier"),  TEXT("UE::Semitones To Frequency Multiplier::Float"));
+		Map.Add(TEXT("Semitone To Freq Multiplier"),   TEXT("UE::Semitone to Frequency Multiplier::Float"));
 		Map.Add(TEXT("dB To Linear"),                  TEXT("UE::Decibels To Linear Gain::Float"));
 		Map.Add(TEXT("Decibels to Linear Gain"),       TEXT("UE::Decibels to Linear Gain::Float"));
 		Map.Add(TEXT("Linear To dB"),                  TEXT("UE::Linear Gain To Decibels::Float"));
 		Map.Add(TEXT("Linear To Log Frequency"),       TEXT("UE::Linear To Log Frequency::Float"));
 		Map.Add(TEXT("Convert Filter Q To Bandwidth"), TEXT("UE::Convert Filter Q To Bandwidth::"));
 		Map.Add(TEXT("Frequency Multiplier to Semitone"), TEXT("UE::Frequency Multiplier to Semitone::Float"));
-		Map.Add(TEXT("Audio Mixer (Stereo, 2)"),       TEXT("AudioMixer::Audio Mixer (Stereo, 2)::None"));
+		Map.Add(TEXT("Array Get (Int32)"),             TEXT("Array::Get::Int32:Array"));
+		Map.Add(TEXT("SuperOscillator"),               TEXT("UE::SuperOscillatorMono::Audio"));
 
 		// =================================================================
 		// Spatialization (MetasoundStereopannerNode.cpp, MetasoundITDPannerNode.cpp)
@@ -191,11 +218,12 @@ namespace AudioMCPNodeRegistry
 		Map.Add(TEXT("Stereo Panner"),       TEXT("UE::Stereo Panner::Audio"));
 		Map.Add(TEXT("ITD Panner"),          TEXT("UE::ITD Panner::Audio"));
 
-		// =================================================================
-		// Mid-Side (MetasoundMidSideNodes.cpp)
-		// =================================================================
-		Map.Add(TEXT("Mid-Side Encode"),     TEXT("UE::Mid-Side Encode::Audio"));
-		Map.Add(TEXT("Mid-Side Decode"),     TEXT("UE::Mid-Side Decode::Audio"));
+			// =================================================================
+			// Mid-Side (MetasoundMidSideNodes.cpp)
+			// =================================================================
+			// UE 5.7's internal class names are reversed relative to display names.
+			Map.Add(TEXT("Mid-Side Encode"),     TEXT("UE::Mid-Side Decode::Audio"));
+			Map.Add(TEXT("Mid-Side Decode"),     TEXT("UE::Mid-Side Encode::Audio"));
 
 		// =================================================================
 		// Envelope Follower

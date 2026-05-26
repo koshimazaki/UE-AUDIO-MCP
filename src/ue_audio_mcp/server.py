@@ -46,7 +46,7 @@ mcp = FastMCP(
     "ue-audio-mcp",
     instructions="MCP server for game audio — Wwise (WAAPI) + MetaSounds (Builder API) + UE5 Blueprints. "
     "Create objects, events, mix buses, generate soundbanks, query nodes, validate graphs, "
-    "build MetaSounds patches, search Blueprint nodes, execute functions via UE5 plugin.",
+    "build MetaSounds patches, search Blueprint nodes, stage actors/cameras, execute functions via UE5 plugin.",
     lifespan=lifespan,
 )
 
@@ -66,6 +66,7 @@ import ue_audio_mcp.tools.presets  # noqa: E402, F401
 import ue_audio_mcp.tools.bp_builder  # noqa: E402, F401
 import ue_audio_mcp.tools.systems  # noqa: E402, F401
 import ue_audio_mcp.tools.world_setup  # noqa: E402, F401
+import ue_audio_mcp.tools.camera  # noqa: E402, F401
 import ue_audio_mcp.tools.audit  # noqa: E402, F401
 
 

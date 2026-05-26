@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from ue_audio_mcp.knowledge import graph_schema
 from ue_audio_mcp.knowledge.graph_schema import (
     validate_graph,
     graph_to_builder_commands,
@@ -128,6 +129,33 @@ def test_builder_commands_order():
     assert "add_interface" in actions
     assert "add_node" in actions
     assert "connect" in actions
+
+
+def test_builder_commands_use_class_name_and_keep_display_name():
+    spec = _valid_spec()
+    cmds = graph_to_builder_commands(spec)
+    add_node = next(c for c in cmds if c["action"] == "add_node")
+    assert add_node["node_type"] == "UE::Sine::Audio"
+    assert add_node["display_name"] == "Sine"
+
+
+def test_builder_commands_fallback_to_display_name_without_class_name(monkeypatch):
+    monkeypatch.setitem(graph_schema.METASOUND_NODES, "No Class Test", {
+        "name": "No Class Test",
+        "category": "Test",
+        "description": "Node without a known engine class name.",
+        "inputs": [],
+        "outputs": [{"name": "Out", "type": "Audio"}],
+        "class_name": "",
+    })
+    spec = _valid_spec()
+    spec["nodes"] = [{"id": "custom", "node_type": "No Class Test", "defaults": {}, "position": [0, 0]}]
+    spec["connections"] = []
+
+    cmds = graph_to_builder_commands(spec)
+    add_node = next(c for c in cmds if c["action"] == "add_node")
+    assert add_node["node_type"] == "No Class Test"
+    assert add_node["display_name"] == "No Class Test"
 
 
 def test_builder_commands_set_default():

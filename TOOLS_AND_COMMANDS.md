@@ -1,10 +1,10 @@
 # Tools & Commands Reference
 
-74 MCP tools + 43 C++ TCP commands for game audio pipeline automation.
+81 MCP tools + 48 C++ TCP commands for game audio pipeline automation.
 
 ---
 
-## MCP Tools (74)
+## MCP Tools (81)
 
 ### Wwise (21 tools)
 
@@ -91,6 +91,16 @@
 | `place_audio_volume` | Place AudioVolume with reverb settings |
 | `spawn_blueprint_actor` | Spawn BP actor into level (see it while you wire it) |
 
+### Actor & Camera Control (5 tools) -- NEW
+
+| Tool | What It Does |
+|------|-------------|
+| `find_actor` | Find actors by label/name/path/class in the editor or PIE world |
+| `set_actor_transform` | Move and/or rotate an actor or character |
+| `focus_editor_camera` | Frame an actor in the Unreal Editor viewport camera |
+| `set_view_target` | Set the runtime player camera to an actor during PIE/simulation |
+| `possess_pawn` | Possess a Pawn/Character with a runtime player controller |
+
 ### UE5 Core & Orchestration (6 tools)
 
 | Tool | What It Does |
@@ -102,9 +112,16 @@
 | `build_audio_system` | Generate complete 3-layer audio system from pattern name |
 | `build_aaa_project` | Generate full AAA game audio infrastructure |
 
+### Audit & Session History (2 tools)
+
+| Tool | What It Does |
+|------|-------------|
+| `audit_history` | Query recent MCP tool, WAAPI, and TCP command activity |
+| `audit_session_stats` | Summarize current session counts and timing |
+
 ---
 
-## C++ TCP Commands (43)
+## C++ TCP Commands (48)
 
 Wire protocol: 4-byte length-prefix + UTF-8 JSON on port 9877. All commands execute on the game thread.
 
@@ -171,6 +188,16 @@ Wire protocol: 4-byte length-prefix + UTF-8 JSON on port 9877. All commands exec
 | 42 | `spawn_blueprint_actor` | blueprint_path, location[x,y,z], rotation[p,y,r], label |
 | 43 | `place_bp_anim_notify` | animation_path, time, notify_blueprint_path, notify_name |
 
+### Actor & Camera Control (5 commands)
+
+| # | Command | Params |
+|---|---------|--------|
+| 44 | `find_actor` | query, class_filter, limit |
+| 45 | `set_actor_transform` | actor, location[x,y,z], rotation[p,y,r] |
+| 46 | `focus_editor_camera` | actor, active_viewport_only |
+| 47 | `set_view_target` | actor, blend_time, player_index |
+| 48 | `possess_pawn` | actor, player_index, set_view_target |
+
 ---
 
 ## Sound Designer Workflow
@@ -218,6 +245,22 @@ The MCP lets sound designers focus on creative work without learning engine plum
 ```
 1. spawn_audio_emitter("/Game/Audio/Ambient/Campfire", location=[500, 200, 0], name="CampfireSound")
    → persistent sound source, gets louder as player approaches
+```
+
+### Camera Staging for Capture
+
+```
+1. find_actor("Hero", class_filter="Character")
+   → locate the playable character or camera rig
+
+2. set_actor_transform("Hero", location=[0, 0, 100], rotation=[0, 90, 0], focus_camera=True)
+   → place the character and frame it in the editor viewport
+
+3. set_view_target("CameraRig", blend_time=0.25)
+   → during PIE/simulation, switch the player camera to a capture rig
+
+4. possess_pawn("Hero")
+   → control the character from the player controller for repeatable footage capture
 ```
 
 ### Audio Zones with Reverb
@@ -313,11 +356,13 @@ src/ue_audio_mcp/
     blueprints.py, bp_builder.py  16 Blueprint tools
     ue5_core.py                4 UE5 Core tools
     world_setup.py             7 World Setup tools
+    camera.py                  5 Actor/Camera tools
+    audit.py                   2 Audit/session tools
     systems.py                 2 Orchestration tools
     utils.py                   _ok() / _error() helpers
   knowledge/
     db.py                      SQLite DB (20 tables, v2 schema)
-    metasound_nodes.py         195 nodes, 145 class_name mappings
+    metasound_nodes.py         195 nodes, 175 nodes with class_name mappings
     node_schema.py             MSPin/MSNode TypedDicts
     embeddings.py              TF-IDF search
   templates/
@@ -339,12 +384,13 @@ ue5_plugin/UEAudioMCP/
         QueryCommands.h        Query/export/sync commands
         BPBuilderCommands.h    Blueprint builder commands
         WorldCommands.h        World setup commands (NEW)
+        CameraCommands.h       Actor/camera staging commands (NEW)
     Private/
       UEAudioMCPModule.cpp     Plugin startup, command registration
       AudioMCPTcpServer.cpp    TCP server (FRunnable)
       AudioMCPCommandDispatcher.cpp Command routing
       Commands/*.cpp           All command implementations
 
-tests/                         456 tests across 24 files
+tests/                         512 tests across 24 files
 scripts/                       Build, sync, verify, export scripts
 ```

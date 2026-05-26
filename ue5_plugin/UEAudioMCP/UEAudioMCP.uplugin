@@ -29,6 +29,10 @@
 		{
 			"Name": "MetaSound",
 			"Enabled": true
+		},
+		{
+			"Name": "EditorScriptingUtilities",
+			"Enabled": true
 		}
 	]
 }

@@ -12,7 +12,7 @@
 
 **AI-powered game audio toolkit — MetaSounds graph generation & export, project scanning, and Wwise/Blueprint knowledge base via MCP for Unreal Engine 5.7.**
 
-One MCP server. UE5 Plugin, three audio engines, five custom nodes for SID chip emulation. 74 tools. 195 engine-verified MetaSounds nodes. Optimised for Unreal Engine 5.7 and Wwise 2025.
+One MCP server. UE5 Plugin, three audio engines, five custom nodes for SID chip emulation. 81 tools. 195 engine-verified MetaSounds nodes. Optimised for Unreal Engine 5.7 and Wwise 2025.
 
 > "Create a footsteps sound setup for my character -- use MetaSounds noise and filter in the patch, Blueprint trigger on anim notify"
 >
@@ -29,7 +29,7 @@ One MCP server. UE5 Plugin, three audio engines, five custom nodes for SID chip 
                                 v
                     +---------------------------+
                     |      UE Audio MCP         |
-                    |      74 tools             |
+                    |      81 tools             |
                     |      1053 knowledge entries|
                     +---------------------------+
                             |
@@ -44,7 +44,7 @@ One MCP server. UE5 Plugin, three audio engines, five custom nodes for SID chip 
              v               v                   v
      +----------------+ +---------------------------+
      | Wwise App      | | UE5 C++ Plugin             |
-     | WAAPI :8080    | | TCP:9877 (43 commands)     |
+     | WAAPI :8080    | | TCP:9877 (48 commands)     |
      +----------------+ | MetaSounds Builder API     |
                         | Blueprint Graph Scanner    |
                         | Editor Menu Integration    |
@@ -93,7 +93,7 @@ ue-audio-mcp
 
 ```
 // 3. UE5 Plugin — copy to project Plugins/ folder, enable in plugin manager
-ue5_plugin/UEAudioMCP/        → Editor module (TCP server, 43 commands)
+ue5_plugin/UEAudioMCP/        → Editor module (TCP server, 48 commands)
 ue5_plugin/SIDMetaSoundNodes/  → Runtime module (SID chip nodes)
 ```
 
@@ -109,10 +109,10 @@ Works without Wwise or UE5 running -- knowledge base, templates, and offline mod
 
 ## What's Included
 
-- **74 MCP tools** -- Wwise (21), MetaSounds (24), Blueprint (16), World Setup (7), UE5 Core (4), orchestration (2)
+- **81 MCP tools** -- Wwise (21), MetaSounds (24), Blueprint (16), World Setup (7), Actor/Camera (5), UE5 Core (4), orchestration (2), audit (2)
 - **1053 knowledge entries** -- 195 MetaSounds nodes, 347 aliases, 66 WAAPI functions, 55 BP audio functions, TF-IDF search
 - **73 templates** -- 33 MetaSounds DSP + 34 Blueprint logic + 6 Wwise hierarchy (33/33 MS validated)
-- **43 C++ TCP commands** -- MetaSounds Builder API, Blueprint builder, world setup, graph scanning, asset queries
+- **48 C++ TCP commands** -- MetaSounds Builder API, Blueprint builder, world setup, actor/camera staging, graph scanning, asset queries
 - **5 custom C++ nodes** -- ReSID SID chip emulator (oscillator, envelope, filter, voice, full chip)
 - **11 audio system patterns** -- gunshot, footsteps, ambient, vehicle, weather, UI, SID synth...
 - **Editor menu** -- Scan Project, Export MetaSounds, Server Status from UE5 menu bar
@@ -150,7 +150,7 @@ npx skills add koshimazaki/ue-audio-skills
 
 | Skill | What it does |
 |-------|-------------|
-| `/mcp-plugin` | TCP plugin control -- 43 commands for building MetaSounds graphs, scanning blueprints, world setup |
+| `/mcp-plugin` | TCP plugin control -- 48 commands for building MetaSounds graphs, scanning blueprints, world setup, actor/camera staging |
 | `/metasound-dsp` | MetaSounds DSP specialist -- 195 nodes, Builder API, signal flow patterns, graph templates |
 | `/unreal-bp` | Blueprint audio logic -- game event detection, parameter wiring, asset scanning |
 | `/build-system` | Full pipeline orchestrator -- generates complete 3-layer audio systems from a single description |

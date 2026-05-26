@@ -133,7 +133,7 @@
     },
     {
       "id": "synth_gain",
-      "node_type": "Multiply (Audio)",
+      "node_type": "Multiply (Audio by Float)",
       "position": [
         1000,
         0

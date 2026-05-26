@@ -25,7 +25,7 @@ Git Repo (ue5_plugin/UEAudioMCP/)     UE Project (Plugins/UEAudioMCP/)
 ```
 
 **Two modules:**
-- `UEAudioMCP` (Editor) — TCP server, 43 commands, Blueprint/MetaSounds builders
+- `UEAudioMCP` (Editor) — TCP server, 48 commands, Blueprint/MetaSounds builders, actor/camera staging
 - `SIDMetaSoundNodes` (Runtime) — 5 custom ReSID SID chip MetaSounds nodes
 
 ## Build Script
@@ -96,15 +96,15 @@ python scripts/sync_bp_from_engine.py --diff-only
 
 | Metric | Count |
 |--------|-------|
-| Node definitions | 170 |
-| CLASS_NAME_TO_DISPLAY entries | 124 (all engine-verified) |
-| Nodes with class_name | 145/170 |
+| Node definitions | 195 |
+| CLASS_NAME_TO_DISPLAY entries | 154 (all forward mappings resolve) |
+| Nodes with class_name | 175/195 |
 | Broken forward mappings | 0 |
 
-**25 nodes without class_name (expected):**
-- 5 SID plugin nodes, 4 MSP patch nodes (custom — need plugin loaded)
-- 3 infrastructure (Get/Set Variable, Send) — sentinel nodes
-- 6 removed in UE 5.7, 7 catalogue-only aliases
+**20 nodes without class_name (expected):**
+- MSP patch nodes and catalogue-only helper aliases
+- Infrastructure/sentinel nodes such as Get/Set Variable and Send
+- Legacy or removed nodes kept for template compatibility
 
 **Class_name format:** `Namespace::DisplayName::Variant`
 - Examples: `UE::Sine::Audio`, `Clamp::Clamp::Float`, `AD Envelope::AD Envelope::Audio`
@@ -122,7 +122,7 @@ python scripts/sync_bp_from_engine.py --diff-only
 **Allowlist** (in `AudioMCPBlueprintManager.cpp`): security gate — only allowlisted
 functions can be called via Blueprint builder MCP tools.
 
-## C++ Plugin Commands (43 total)
+## C++ Plugin Commands (48 total)
 
 | Group | Commands |
 |-------|----------|
@@ -133,6 +133,7 @@ functions can be called via Blueprint builder MCP tools.
 | BP Builder | `bp_add_node`, `bp_connect_pins`, `bp_compile`, `bp_set_pin` etc. |
 | Variables | `add_variable`, `set_variable_default` |
 | Presets | `create_preset`, `set_preset_value` |
+| Actor/Camera | `find_actor`, `set_actor_transform`, `focus_editor_camera`, `set_view_target`, `possess_pawn` |
 
 ### `list_metasound_nodes` params:
 - `include_pins` (bool) — include input/output pin specs

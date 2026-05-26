@@ -991,6 +991,7 @@ _register(_node(
      _out("False", "Trigger")],
     ["trigger", "compare", "int32", "equals", "switch", "condition", "gate"],
     complexity=2,
+    class_name="TriggerCompare::Clamp::Int32",
 ))
 
 
@@ -1215,6 +1216,7 @@ _register(_node(
     [_out("Element", "Int32")],
     ["array", "get", "index", "element", "int32"],
     complexity=1,
+    class_name="Array::Get::Int32:Array",
 ))
 
 _register(_node(
@@ -1618,6 +1620,7 @@ _register(_node(
     [_out("Out", "Audio")],
     ["mix", "mixer", "mono", "sum", "combine", "audio mixer"],
     complexity=1,
+    class_name="AudioMixer::Audio Mixer (Mono, 2)::None",
 ))
 
 _register(_node(
@@ -1633,6 +1636,7 @@ _register(_node(
     [_out("Out", "Audio")],
     ["mix", "mixer", "mono", "sum", "combine", "audio mixer"],
     complexity=1,
+    class_name="AudioMixer::Audio Mixer (Mono, 3)::None",
 ))
 
 _register(_node(
@@ -1649,6 +1653,7 @@ _register(_node(
     [_out("Out", "Audio")],
     ["mix", "mixer", "mono", "sum", "combine", "audio mixer"],
     complexity=1,
+    class_name="AudioMixer::Audio Mixer (Mono, 4)::None",
 ))
 
 _register(_node(
@@ -1682,6 +1687,7 @@ _register(_node(
      _out("Out R", "Audio")],
     ["mix", "mixer", "stereo", "sum", "combine", "audio mixer"],
     complexity=2,
+    class_name="AudioMixer::Audio Mixer (Stereo, 2)::None",
 ))
 
 
@@ -1821,7 +1827,8 @@ _register(_node(
 
 _register(_node(
     "Mid-Side Encode/Decode", "Spatialization",
-    "Converts between stereo L/R and mid/side representation for width control.",
+    "Legacy mid/side decode-shaped node kept for older templates. Prefer explicit "
+    "Mid-Side Encode or Mid-Side Decode nodes for Builder API output.",
     [     _in("In Mid", "Audio"),
      _in("In Side", "Audio"),
      _in("Spread Amount", "Float", default=0.5),
@@ -2513,8 +2520,8 @@ _register(_node(
 ))
 
 _register(_node(
-    "Mid-Side Decode", "Spatialization",
-    "The Mid-Side Decode node converts a stereo signal with mid and side channels to left and right channels.",
+    "Mid-Side Encode", "Spatialization",
+    "The Mid-Side Encode node converts a stereo left/right signal to mid and side channels.",
     [     _in("In Left", "Audio"),
      _in("In Right", "Audio"),
      _in("Spread Amount", "Float", default=0.5),
@@ -2526,8 +2533,8 @@ _register(_node(
 ))
 
 _register(_node(
-    "Mid-Side Encode", "Spatialization",
-    "The Mid-Side Encode node converts a stereo signal with left and right channels to mid and side channels.",
+    "Mid-Side Decode", "Spatialization",
+    "The Mid-Side Decode node converts mid and side channels back to stereo left/right.",
     [     _in("In Mid", "Audio"),
      _in("In Side", "Audio"),
      _in("Spread Amount", "Float", default=0.5),
@@ -2653,6 +2660,7 @@ _register(_node(
     [_out("Out", "Audio")],
     ["sid", "oscillator", "c64", "chiptune", "retro", "waveform"],
     complexity=2,
+    class_name="UE::SID Oscillator::Audio",
 ))
 
 _register(_node(
@@ -2663,9 +2671,10 @@ _register(_node(
      _in("Decay", "Int32", default=9),
      _in("Sustain", "Int32", default=0),
      _in("Release", "Int32", default=9)],
-    [_out("Out", "Audio")],
+    [_out("Out", "Float")],
     ["sid", "envelope", "adsr", "c64", "chiptune", "retro"],
     complexity=2,
+    class_name="UE::SID Envelope::Float",
 ))
 
 _register(_node(
@@ -2680,6 +2689,7 @@ _register(_node(
     [_out("Out", "Audio")],
     ["sid", "filter", "analog", "c64", "chiptune", "retro", "lo-fi"],
     complexity=2,
+    class_name="UE::SID Filter::Audio",
 ))
 
 _register(_node(
@@ -2697,6 +2707,7 @@ _register(_node(
     [_out("Out", "Audio")],
     ["sid", "voice", "c64", "chiptune", "retro", "oscillator", "envelope"],
     complexity=2,
+    class_name="UE::SID Voice::Audio",
 ))
 
 _register(_node(
@@ -2730,6 +2741,7 @@ _register(_node(
      _out("Voice 3 Out", "Audio")],
     ["sid", "chip", "c64", "chiptune", "retro", "fm", "filter", "3-voice"],
     complexity=4,
+    class_name="UE::SID Chip::Audio",
 ))
 
 
@@ -2824,6 +2836,7 @@ CLASS_NAME_TO_DISPLAY: dict[str, str] = {
     "UE::Multiply::Audio": "Multiply (Audio)",
     "UE::Multiply::Float": "Multiply (Float)",
     "UE::Divide::Float": "Divide (Float)",
+    "UE::Modulo::Int32": "Modulo",
     # --- Mix ---
     "AudioMixer::Audio Mixer (Mono, 2)::None": "Audio Mixer (Mono, 2)",
     "AudioMixer::Audio Mixer (Stereo, 2)::None": "Audio Mixer (Stereo, 2)",
@@ -2922,9 +2935,11 @@ CLASS_NAME_TO_DISPLAY: dict[str, str] = {
     "Print Log::Print Log::Float": "Print Log",
     # Mix
     "AudioMixer::Audio Mixer (Mono, 3)::None": "Audio Mixer (Mono, 3)",
+    "AudioMixer::Audio Mixer (Mono, 4)::None": "Audio Mixer (Mono, 4)",
     # Spatialization
-    "UE::Mid-Side Decode::Audio": "Mid-Side Decode",
-    "UE::Mid-Side Encode::Audio": "Mid-Side Encode",
+    # UE 5.7's class names are reversed internally; map by public display/pin shape.
+    "UE::Mid-Side Decode::Audio": "Mid-Side Encode",
+    "UE::Mid-Side Encode::Audio": "Mid-Side Decode",
     # General
     "UE::ConversionAudioToFloat::None": "Audio To Float",
     "UE::RingMod::Audio": "Ring Mod",
@@ -2960,7 +2975,9 @@ CLASS_NAME_TO_DISPLAY: dict[str, str] = {
     "TriggerRoute::Trigger Route (Float, 2)::Float": "Trigger Route (Float, 2)",
     "AudioMixer::Audio Mixer (Stereo, 3)::None": "Audio Mixer (Stereo, 3)",
     "TriggerCompare::Clamp::Float": "Trigger Compare (Float)",
+    "TriggerCompare::Clamp::Int32": "Trigger Compare (Int32)",
     "TriggerCompare::Clamp::Bool": "Trigger Compare (Bool)",
+    "Array::Get::Int32:Array": "Array Get (Int32)",
     # --- Variant nodes (2026-02-12 schema v2) ---
     "AudioMixer::Audio Mixer (Mono, 5)::None": "Audio Mixer (Mono, 5)",
     "AudioMixer::Audio Mixer (Stereo, 4)::None": "Audio Mixer (Stereo, 4)",
@@ -2979,6 +2996,12 @@ CLASS_NAME_TO_DISPLAY: dict[str, str] = {
     "Array::Random Get::Int32:Array": "Array Random Get (Int32)",
     "Array::Concat::WaveAsset:Array": "Array Concat (WaveAsset)",
     "UE::Pipe::None": "Pipe",
+    # SIDKIT custom nodes
+    "UE::SID Oscillator::Audio": "SID Oscillator",
+    "UE::SID Envelope::Float": "SID Envelope",
+    "UE::SID Filter::Audio": "SID Filter",
+    "UE::SID Voice::Audio": "SID Voice",
+    "UE::SID Chip::Audio": "SID Chip",
 }
 
 # ===================================================================
@@ -3014,7 +3037,6 @@ _EXTRA_DISPLAY_TO_CLASS: dict[str, str] = {
     "Noise (Pink)": "UE::Noise::Audio",
     "Noise (White)": "UE::Noise::Audio",
     "Divide (Audio)": "UE::Divide::Float",  # No Audio variant; closest is Float
-    "Mid-Side Encode/Decode": "UE::Mid-Side Encode::Audio",
     # Duplicate catalogue name for same engine node
     "Musical Scale To Note Array": "UE::Musical Scale To Note Array::Audio",
     # Short array aliases (same engine node as Array X variants)

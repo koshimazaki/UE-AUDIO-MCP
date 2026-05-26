@@ -6,7 +6,12 @@ engine sync scripts so pin schemas stay consistent.
 
 from __future__ import annotations
 
-from typing import TypedDict, NotRequired
+from typing import TypedDict
+
+try:
+    from typing import NotRequired
+except ImportError:  # Python 3.10 compatibility
+    from typing_extensions import NotRequired
 
 
 class MSPin(TypedDict):

@@ -9,7 +9,6 @@
 #include "MetasoundNodeRegistrationMacro.h"
 #include "MetasoundParamHelper.h"
 #include "MetasoundPrimitives.h"
-#include "MetasoundAudioBuffer.h"
 #include "MetasoundOperatorSettings.h"
 #include "MetasoundTrigger.h"
 #include "MetasoundFacade.h"
@@ -70,7 +69,7 @@ namespace Metasound
 					TInputDataVertex<int32>(METASOUND_GET_PARAM_NAME_AND_METADATA(InRelease), 9),
 				}),
 				FOutputVertexInterface({
-					TOutputDataVertex<FAudioBuffer>(METASOUND_GET_PARAM_NAME_AND_METADATA(OutEnv)),
+					TOutputDataVertex<float>(METASOUND_GET_PARAM_NAME_AND_METADATA(OutEnv)),
 				})
 			);
 			return Interface;
@@ -102,7 +101,7 @@ namespace Metasound
 			, DecayInput(InDecay)
 			, SustainInput(InSustain)
 			, ReleaseInput(InRelease)
-			, EnvOutput(FAudioBufferWriteRef::CreateNew(InSettings))
+			, EnvOutput(FFloatWriteRef::CreateNew(0.0f))
 			, SampleRate(InSettings.GetSampleRate())
 		{
 			EnvGen.set_chip_model(MOS6581);
@@ -134,9 +133,6 @@ namespace Metasound
 
 		void Execute()
 		{
-			FAudioBuffer& OutBuffer = *EnvOutput;
-			const int32 NumSamples = OutBuffer.Num();
-
 			// Update ADSR registers
 			int32 A = FMath::Clamp(*AttackInput, 0, 15);
 			int32 D = FMath::Clamp(*DecayInput, 0, 15);
@@ -147,25 +143,29 @@ namespace Metasound
 
 			const float SIDClockRate = 985248.0f;
 			const float CyclesPerSampleF = SIDClockRate / SampleRate;
-			float* OutputData = OutBuffer.GetData();
+			float EnvelopeValue = *EnvOutput;
+
+			auto ClockEnvelope = [this, CyclesPerSampleF, &EnvelopeValue](int32 StartFrame, int32 EndFrame)
+			{
+				for (int32 i = StartFrame; i < EndFrame; ++i)
+				{
+					CycleAccumulator += CyclesPerSampleF;
+					int32 WholeCycles = static_cast<int32>(CycleAccumulator);
+					CycleAccumulator -= static_cast<float>(WholeCycles);
+
+					EnvGen.clock(WholeCycles);
+					EnvelopeValue = static_cast<float>(EnvGen.output()) / 255.0f;
+				}
+			};
 
 			// Process trigger events for gate on/off
 			// Gate on = trigger received, gate off = next trigger toggles off
 			GateInput->ExecuteBlock(
-				[this, &OutputData, &CyclesPerSampleF, NumSamples](int32 StartFrame, int32 EndFrame)
+				[&ClockEnvelope](int32 StartFrame, int32 EndFrame)
 				{
-					// No trigger in this range — just clock the envelope
-					for (int32 i = StartFrame; i < EndFrame; ++i)
-					{
-						CycleAccumulator += CyclesPerSampleF;
-						int32 WholeCycles = static_cast<int32>(CycleAccumulator);
-						CycleAccumulator -= static_cast<float>(WholeCycles);
-
-						EnvGen.clock(WholeCycles);
-						OutputData[i] = static_cast<float>(EnvGen.output()) / 255.0f;
-					}
+					ClockEnvelope(StartFrame, EndFrame);
 				},
-				[this, &OutputData, &CyclesPerSampleF, NumSamples](int32 StartFrame, int32 EndFrame)
+				[this, &ClockEnvelope](int32 StartFrame, int32 EndFrame)
 				{
 					// Trigger received — toggle gate
 					bGateOn = !bGateOn;
@@ -180,17 +180,11 @@ namespace Metasound
 						EnvGen.writeCONTROL_REG(0x00);
 					}
 
-					for (int32 i = StartFrame; i < EndFrame; ++i)
-					{
-						CycleAccumulator += CyclesPerSampleF;
-						int32 WholeCycles = static_cast<int32>(CycleAccumulator);
-						CycleAccumulator -= static_cast<float>(WholeCycles);
-
-						EnvGen.clock(WholeCycles);
-						OutputData[i] = static_cast<float>(EnvGen.output()) / 255.0f;
-					}
+					ClockEnvelope(StartFrame, EndFrame);
 				}
 			);
+
+			*EnvOutput = EnvelopeValue;
 		}
 
 		void Reset(const IOperator::FResetParams& InParams)
@@ -198,6 +192,7 @@ namespace Metasound
 			EnvGen.reset();
 			CycleAccumulator = 0.0f;
 			bGateOn = false;
+			*EnvOutput = 0.0f;
 		}
 
 	private:
@@ -206,7 +201,7 @@ namespace Metasound
 		FInt32ReadRef DecayInput;
 		FInt32ReadRef SustainInput;
 		FInt32ReadRef ReleaseInput;
-		FAudioBufferWriteRef EnvOutput;
+		FFloatWriteRef EnvOutput;
 
 		EnvelopeGenerator EnvGen;
 		float SampleRate;

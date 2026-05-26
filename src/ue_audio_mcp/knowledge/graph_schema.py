@@ -409,10 +409,15 @@ def graph_to_builder_commands(
                 "variable_name": node["variable_name"],
             })
         else:
+            node_type = ntype
+            node_def = METASOUND_NODES.get(ntype)
+            if node_def and node_def.get("class_name"):
+                node_type = node_def["class_name"]
             commands.append({
                 "action": "add_node",
                 "id": node["id"],
-                "node_type": ntype,
+                "node_type": node_type,
+                "display_name": ntype,
                 "position": node.get("position", [0, 0]),
             })
 

@@ -14,6 +14,7 @@
 #include "Commands/QueryCommands.h"
 #include "Commands/BPBuilderCommands.h"
 #include "Commands/WorldCommands.h"
+#include "Commands/CameraCommands.h"
 #include "AudioMCPBlueprintManager.h"
 #include "AudioMCPEditorMenu.h"
 #include "Modules/ModuleManager.h"
@@ -36,7 +37,7 @@ void FUEAudioMCPModule::StartupModule()
 	if (TcpServer->StartListening(AudioMCP::DEFAULT_PORT))
 	{
 		UE_LOG(LogAudioMCPModule, Log,
-			TEXT("UE Audio MCP ready — listening on port %d (43 commands registered)"),
+			TEXT("UE Audio MCP ready — listening on port %d (48 commands registered)"),
 			AudioMCP::DEFAULT_PORT);
 	}
 	else
@@ -181,7 +182,7 @@ void FUEAudioMCPModule::RegisterCommands()
 	Dispatcher->RegisterCommand(TEXT("duplicate_asset"),
 		MakeShared<FDuplicateAssetCommand>());
 
-	// 36-41. World audio commands
+	// 37-42. World audio commands
 	Dispatcher->RegisterCommand(TEXT("place_anim_notify"),
 		MakeShared<FPlaceAnimNotifyCommand>());
 	Dispatcher->RegisterCommand(TEXT("spawn_audio_emitter"),
@@ -195,9 +196,21 @@ void FUEAudioMCPModule::RegisterCommands()
 	Dispatcher->RegisterCommand(TEXT("spawn_blueprint_actor"),
 		MakeShared<FSpawnBlueprintActorCommand>());
 
-	// 42. Place BP-based AnimNotify on animation (surface-detecting footsteps)
+	// 43. Place BP-based AnimNotify on animation (surface-detecting footsteps)
 	Dispatcher->RegisterCommand(TEXT("place_bp_anim_notify"),
 		MakeShared<FPlaceBPAnimNotifyCommand>());
+
+	// 44-48. Actor/camera control for staging capture-ready scenes
+	Dispatcher->RegisterCommand(TEXT("find_actor"),
+		MakeShared<FFindActorCommand>());
+	Dispatcher->RegisterCommand(TEXT("set_actor_transform"),
+		MakeShared<FSetActorTransformCommand>());
+	Dispatcher->RegisterCommand(TEXT("focus_editor_camera"),
+		MakeShared<FFocusEditorCameraCommand>());
+	Dispatcher->RegisterCommand(TEXT("set_view_target"),
+		MakeShared<FSetViewTargetCommand>());
+	Dispatcher->RegisterCommand(TEXT("possess_pawn"),
+		MakeShared<FPossessPawnCommand>());
 }
 
 IMPLEMENT_MODULE(FUEAudioMCPModule, UEAudioMCP)
