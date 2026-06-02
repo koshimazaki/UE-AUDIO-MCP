@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 
+import ue_audio_mcp.knowledge.db as db_module
 from ue_audio_mcp.knowledge.db import KnowledgeDB
 
 
@@ -114,7 +115,8 @@ def test_is_seeded():
         "name": "Test", "category": "Test", "description": "Test",
         "inputs": [], "outputs": [], "tags": [], "complexity": 1,
     })
-    assert db.is_seeded() is True
+    assert db.is_seeded() is False
+    assert "waapi_functions" in db.seed_status()["missing"]
     db.close()
 
 
@@ -128,8 +130,50 @@ def test_seed_database():
     assert counts["audio_patterns"] == 6
     assert counts["blueprint_audio"] >= 20
     assert counts["blueprint_nodes_scraped"] >= 40  # 55 curated audio functions
+    assert counts["pin_mappings"] == db.table_counts(["pin_mappings"])["pin_mappings"]
+    assert counts["node_aliases"] == db.table_counts(["node_aliases"])["node_aliases"]
     assert sum(counts.values()) >= 300
     db.close()
+
+
+def test_seed_database_is_idempotent():
+    from ue_audio_mcp.knowledge.seed import seed_database
+
+    db = KnowledgeDB(":memory:")
+    counts = seed_database(db)
+    table_counts = db.table_counts()
+    counts_again = seed_database(db)
+
+    assert counts_again == counts
+    assert db.table_counts() == table_counts
+    assert table_counts["pin_mappings"] == counts["pin_mappings"]
+    assert table_counts["node_aliases"] == counts["node_aliases"]
+    db.close()
+
+
+def test_ensure_seeded_populates_missing_catalogue_data():
+    db = KnowledgeDB(":memory:")
+    assert db.is_seeded() is False
+
+    counts = db.ensure_seeded()
+
+    assert counts["metasound_nodes"] >= 100
+    assert db.is_seeded() is True
+    assert db.ensure_seeded() == {}
+    assert db.catalogue_counts()["engine_plugin_assets"] == counts["engine_plugins"]
+    db.close()
+
+
+def test_get_knowledge_db_auto_seeds(tmp_path):
+    db_module._db = None
+    db_path = str(tmp_path / "knowledge.db")
+    db = db_module.get_knowledge_db(db_path)
+    try:
+        assert db.is_seeded() is True
+        assert db.table_counts(["metasound_nodes"])["metasound_nodes"] >= 100
+    finally:
+        db.close()
+        db_module._db = None
 
 
 def test_wwise_type_descriptions_not_generic():

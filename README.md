@@ -30,7 +30,7 @@ One MCP server. UE5 Plugin, three audio engines, five custom nodes for SID chip 
                     +---------------------------+
                     |      UE Audio MCP         |
                     |      81 tools             |
-                    |      1053 knowledge entries|
+                    |      1042 catalogue rows   |
                     +---------------------------+
                             |
               +-------------+-------------------+
@@ -110,17 +110,17 @@ Works without Wwise or UE5 running -- knowledge base, templates, and offline mod
 ## What's Included
 
 - **81 MCP tools** -- Wwise (21), MetaSounds (24), Blueprint (16), World Setup (7), Actor/Camera (5), UE5 Core (4), orchestration (2), audit (2)
-- **1053 knowledge entries** -- 195 MetaSounds nodes, 347 aliases, 66 WAAPI functions, 55 BP audio functions, TF-IDF search
+- **1042 seeded catalogue rows** -- 195 MetaSounds nodes, 356 aliases, 66 WAAPI functions, 55 BP audio functions, 130 pin mappings, 26 engine plugin assets
 - **73 templates** -- 33 MetaSounds DSP + 34 Blueprint logic + 6 Wwise hierarchy (33/33 MS validated)
 - **48 C++ TCP commands** -- MetaSounds Builder API, Blueprint builder, world setup, actor/camera staging, graph scanning, asset queries
 - **5 custom C++ nodes** -- ReSID SID chip emulator (oscillator, envelope, filter, voice, full chip)
 - **11 audio system patterns** -- gunshot, footsteps, ambient, vehicle, weather, UI, SID synth...
 - **Editor menu** -- Scan Project, Export MetaSounds, Server Status from UE5 menu bar
-- **Engine sync** -- 842 MS nodes + 979 BP functions synced from live UE5 editor
+- **Engine sync snapshots** -- 897 MS nodes + 1173 audio BP functions exported from live UE5 editor
 
 12 templates from shipped games: **Lyra** (random EQ, whizby, stereo balance, gameplay cues, anim notify audio) and **StackOBot** (array player, looped sound, EQ+delay).
 
-See **[TOOLS_AND_COMMANDS.md](TOOLS_AND_COMMANDS.md)** for full tool listing, command reference, sound designer workflows, template catalogue, and knowledge base details.
+See **[TOOLS_AND_COMMANDS.md](TOOLS_AND_COMMANDS.md)** for full tool listing, command reference, sound designer workflows, template catalogue, and knowledge base details. Run `python scripts/db_inventory.py` to reconcile source catalogue, SQLite, and engine export counts.
 
 ---
 

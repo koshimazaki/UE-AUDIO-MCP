@@ -2,7 +2,7 @@
 
 Schema v2 (2026-02-12): 21 tables. Adds class_name/variant_group/source/mcp_note
 to metasound_nodes, plus node_aliases, graph_node_usage, bp_audio_triggers.
-Default location: ~/.ue-audio-mcp/knowledge.db (persistent, auto-seeded on first run).
+Default location: ~/.ue-audio-mcp/knowledge.db (persistent, seeded on first open).
 """
 
 from __future__ import annotations
@@ -11,6 +11,7 @@ import json
 import logging
 import os
 import sqlite3
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
@@ -18,6 +19,58 @@ log = logging.getLogger(__name__)
 
 DEFAULT_DB_DIR = os.path.expanduser("~/.ue-audio-mcp")
 DEFAULT_DB_PATH = os.path.join(DEFAULT_DB_DIR, "knowledge.db")
+
+TABLES = (
+    "metasound_nodes",
+    "waapi_functions",
+    "wwise_types",
+    "audio_patterns",
+    "error_patterns",
+    "ue_game_examples",
+    "blueprint_audio",
+    "blueprint_core",
+    "blueprint_nodes_scraped",
+    "builder_api_functions",
+    "tutorial_workflows",
+    "audio_console_commands",
+    "spatialization_methods",
+    "attenuation_subsystems",
+    "project_audio_assets",
+    "project_blueprints",
+    "pin_mappings",
+    "node_aliases",
+    "graph_node_usage",
+    "bp_audio_triggers",
+    "session_logs",
+)
+
+CATALOGUE_TABLES = (
+    "metasound_nodes",
+    "waapi_functions",
+    "wwise_types",
+    "audio_patterns",
+    "ue_game_examples",
+    "blueprint_audio",
+    "blueprint_nodes_scraped",
+    "builder_api_functions",
+    "tutorial_workflows",
+    "audio_console_commands",
+    "spatialization_methods",
+    "attenuation_subsystems",
+    "pin_mappings",
+    "node_aliases",
+)
+
+RUNTIME_TABLES = (
+    "error_patterns",
+    "project_audio_assets",
+    "project_blueprints",
+    "graph_node_usage",
+    "bp_audio_triggers",
+    "session_logs",
+)
+
+_SEED_REQUIRED_TABLES = CATALOGUE_TABLES
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS metasound_nodes (
@@ -969,8 +1022,16 @@ class KnowledgeDB:
         )
         self._conn.commit()
 
-    def insert_pin_mappings_batch(self, mappings: list[dict]) -> int:
-        """Bulk-insert pin mappings. Returns count inserted."""
+    def insert_pin_mappings_batch(
+        self, mappings: list[dict], replace_existing: bool = True
+    ) -> int:
+        """Bulk-insert pin mappings. Returns persisted row count.
+
+        Pin mappings are a derived catalogue table with no natural primary key
+        in schema v2, so seeding replaces the derived set to stay idempotent.
+        """
+        if replace_existing:
+            self._conn.execute("DELETE FROM pin_mappings")
         self._conn.executemany(
             "INSERT INTO pin_mappings "
             "(bp_function, bp_pin, ms_node, ms_pin, data_type, direction, description) "
@@ -986,7 +1047,7 @@ class KnowledgeDB:
             ],
         )
         self._conn.commit()
-        return len(mappings)
+        return self._count_table("pin_mappings")
 
     def query_pin_mappings(
         self,
@@ -1035,14 +1096,19 @@ class KnowledgeDB:
         self._conn.commit()
 
     def insert_node_aliases_batch(self, aliases: list[tuple[str, str, str]]) -> int:
-        """Bulk-insert (alias, canonical, alias_type) tuples."""
+        """Bulk-insert (alias, canonical, alias_type) tuples.
+
+        Returns actual persisted rows, not attempted inserts. Some generated
+        aliases intentionally collide on the table primary key.
+        """
+        self._conn.execute("DELETE FROM node_aliases")
         self._conn.executemany(
             "INSERT OR REPLACE INTO node_aliases "
             "(alias, canonical, alias_type) VALUES (?, ?, ?)",
             aliases,
         )
         self._conn.commit()
-        return len(aliases)
+        return self._count_table("node_aliases")
 
     def resolve_node_alias(self, name: str) -> str | None:
         """Resolve any alias to its canonical node name."""
@@ -1187,79 +1253,79 @@ class KnowledgeDB:
 
     # -- Utility -----------------------------------------------------------
 
-    def table_counts(self) -> dict[str, int]:
-        """Return row count for each table."""
+    def _count_table(self, table: str) -> int:
+        if table not in TABLES:
+            raise ValueError("Unknown table: {}".format(table))
+        row = self._conn.execute(
+            "SELECT COUNT(*) as cnt FROM {}".format(table)
+        ).fetchone()
+        return row["cnt"]
+
+    def table_counts(self, tables: Iterable[str] | None = None) -> dict[str, int]:
+        """Return row count for each requested table.
+
+        Table names are checked against a static whitelist before interpolation.
+        """
+        selected = tuple(tables) if tables is not None else TABLES
+        return {table: self._count_table(table) for table in selected}
+
+    def catalogue_counts(self) -> dict[str, int]:
+        """Return counts for derived/static knowledge, excluding runtime logs."""
+        counts = self.table_counts(CATALOGUE_TABLES)
+        row = self._conn.execute(
+            "SELECT COUNT(*) as cnt FROM project_audio_assets WHERE project = ?",
+            ("__engine__",),
+        ).fetchone()
+        counts["engine_plugin_assets"] = row["cnt"]
+        return counts
+
+    def runtime_counts(self) -> dict[str, int]:
+        """Return counts for runtime/project data that grows during use."""
+        counts = {
+            table: self._count_table(table)
+            for table in RUNTIME_TABLES
+            if table != "project_audio_assets"
+        }
+        row = self._conn.execute(
+            "SELECT COUNT(*) as cnt FROM project_audio_assets WHERE project != ?",
+            ("__engine__",),
+        ).fetchone()
+        counts["project_audio_assets"] = row["cnt"]
+        return counts
+
+    def seed_status(self) -> dict[str, Any]:
+        """Return seed completeness details for the derived catalogue data."""
+        counts = self.table_counts(_SEED_REQUIRED_TABLES)
+        missing = [table for table, count in counts.items() if count == 0]
+
+        engine_assets = self._conn.execute(
+            "SELECT COUNT(*) as cnt FROM project_audio_assets WHERE project = ?",
+            ("__engine__",),
+        ).fetchone()["cnt"]
+        if engine_assets == 0:
+            missing.append("project_audio_assets(__engine__)")
+
         return {
-            "metasound_nodes": self._conn.execute(
-                "SELECT COUNT(*) as cnt FROM metasound_nodes"
-            ).fetchone()["cnt"],
-            "waapi_functions": self._conn.execute(
-                "SELECT COUNT(*) as cnt FROM waapi_functions"
-            ).fetchone()["cnt"],
-            "wwise_types": self._conn.execute(
-                "SELECT COUNT(*) as cnt FROM wwise_types"
-            ).fetchone()["cnt"],
-            "audio_patterns": self._conn.execute(
-                "SELECT COUNT(*) as cnt FROM audio_patterns"
-            ).fetchone()["cnt"],
-            "error_patterns": self._conn.execute(
-                "SELECT COUNT(*) as cnt FROM error_patterns"
-            ).fetchone()["cnt"],
-            "ue_game_examples": self._conn.execute(
-                "SELECT COUNT(*) as cnt FROM ue_game_examples"
-            ).fetchone()["cnt"],
-            "blueprint_audio": self._conn.execute(
-                "SELECT COUNT(*) as cnt FROM blueprint_audio"
-            ).fetchone()["cnt"],
-            "blueprint_core": self._conn.execute(
-                "SELECT COUNT(*) as cnt FROM blueprint_core"
-            ).fetchone()["cnt"],
-            "blueprint_nodes_scraped": self._conn.execute(
-                "SELECT COUNT(*) as cnt FROM blueprint_nodes_scraped"
-            ).fetchone()["cnt"],
-            "builder_api_functions": self._conn.execute(
-                "SELECT COUNT(*) as cnt FROM builder_api_functions"
-            ).fetchone()["cnt"],
-            "tutorial_workflows": self._conn.execute(
-                "SELECT COUNT(*) as cnt FROM tutorial_workflows"
-            ).fetchone()["cnt"],
-            "audio_console_commands": self._conn.execute(
-                "SELECT COUNT(*) as cnt FROM audio_console_commands"
-            ).fetchone()["cnt"],
-            "spatialization_methods": self._conn.execute(
-                "SELECT COUNT(*) as cnt FROM spatialization_methods"
-            ).fetchone()["cnt"],
-            "attenuation_subsystems": self._conn.execute(
-                "SELECT COUNT(*) as cnt FROM attenuation_subsystems"
-            ).fetchone()["cnt"],
-            "project_audio_assets": self._conn.execute(
-                "SELECT COUNT(*) as cnt FROM project_audio_assets"
-            ).fetchone()["cnt"],
-            "project_blueprints": self._conn.execute(
-                "SELECT COUNT(*) as cnt FROM project_blueprints"
-            ).fetchone()["cnt"],
-            "pin_mappings": self._conn.execute(
-                "SELECT COUNT(*) as cnt FROM pin_mappings"
-            ).fetchone()["cnt"],
-            "node_aliases": self._conn.execute(
-                "SELECT COUNT(*) as cnt FROM node_aliases"
-            ).fetchone()["cnt"],
-            "graph_node_usage": self._conn.execute(
-                "SELECT COUNT(*) as cnt FROM graph_node_usage"
-            ).fetchone()["cnt"],
-            "bp_audio_triggers": self._conn.execute(
-                "SELECT COUNT(*) as cnt FROM bp_audio_triggers"
-            ).fetchone()["cnt"],
-            "session_logs": self._conn.execute(
-                "SELECT COUNT(*) as cnt FROM session_logs"
-            ).fetchone()["cnt"],
+            "seeded": not missing,
+            "missing": missing,
+            "counts": counts,
+            "engine_plugin_assets": engine_assets,
         }
 
     def is_seeded(self) -> bool:
-        row = self._conn.execute(
-            "SELECT COUNT(*) as cnt FROM metasound_nodes"
-        ).fetchone()
-        return row["cnt"] > 0
+        return bool(self.seed_status()["seeded"])
+
+    def ensure_seeded(self, force: bool = False) -> dict[str, int]:
+        """Seed derived catalogue data if required.
+
+        Returns seed counts when seeding ran, or an empty dict when the DB was
+        already complete.
+        """
+        if force or not self.is_seeded():
+            from ue_audio_mcp.knowledge.seed import seed_database
+
+            return seed_database(self)
+        return {}
 
     def close(self) -> None:
         self._conn.close()
@@ -1268,11 +1334,20 @@ class KnowledgeDB:
 _db: KnowledgeDB | None = None
 
 
-def get_knowledge_db(db_path: str | None = None) -> KnowledgeDB:
-    """Return the global KnowledgeDB singleton."""
+def get_knowledge_db(db_path: str | None = None, auto_seed: bool = True) -> KnowledgeDB:
+    """Return the global KnowledgeDB singleton.
+
+    The persistent default DB is a derived cache over source-controlled
+    catalogues plus runtime audit/project data. Keep it ready for tools by
+    seeding missing derived catalogue rows on first open.
+    """
     global _db
     if _db is None:
         path = db_path or DEFAULT_DB_PATH
         _db = KnowledgeDB(path)
+        if auto_seed:
+            seeded = _db.ensure_seeded()
+            if seeded:
+                log.info("Knowledge DB seeded: %s", seeded)
         log.info("Knowledge DB opened at %s", path)
     return _db

@@ -57,7 +57,7 @@
 | `ms_convert_from_preset` | Convert Preset back to Source |
 | `ms_preset_morph` | Crossfade between preset parameter sets |
 | `ms_macro_trigger` | Trigger sequence of parameter changes |
-| `ms_sync_from_engine` | Sync 842 engine nodes to knowledge DB |
+| `ms_sync_from_engine` | Sync live engine MetaSound nodes to knowledge DB |
 
 ### Blueprint (16 tools)
 
@@ -77,7 +77,7 @@
 | `bp_register_existing` | Register existing node by GUID for wiring |
 | `bp_list_node_pins` | List all pins on a registered node |
 | `bp_wire_audio_param` | High-level: wire audio parameter end-to-end |
-| `bp_sync_from_engine` | Sync 979 engine functions to knowledge DB |
+| `bp_sync_from_engine` | Sync live engine Blueprint functions to knowledge DB |
 
 ### World Setup (7 tools) -- NEW
 
@@ -308,20 +308,22 @@ ambient, footsteps, gunshot, ui_sound, vehicle_engine, weather
 
 ---
 
-## Knowledge Base (20 tables, 1053 rows)
+## Knowledge Base (21 tables, 1042 seeded catalogue rows)
 
 | Table | Rows | Content |
 |-------|------|---------|
 | metasound_nodes | 195 | Node definitions with pins, types, class_names |
-| node_aliases | 347 | Display/class/short name → canonical lookup |
+| node_aliases | 356 | Display/class/short name -> canonical lookup |
 | graph_node_usage | -- | Per-graph node usage (populated on project scan) |
 | bp_audio_triggers | -- | Audio trigger functions from BP scans |
 | blueprint_nodes_scraped | 55 | Curated audio Blueprint functions |
 | project_audio_assets | -- | Scanned project assets with source field |
 | project_blueprints | -- | Scanned project Blueprint metadata |
-| ... | ... | 20 tables total (see db.py for full schema) |
+| ... | ... | 21 tables total (see db.py for full schema) |
 
-Engine sync: 842 MetaSounds nodes, 979 audio Blueprint functions from 165 classes.
+Runtime tables (`session_logs`, project scan rows, graph usage, trigger scans) are counted separately from seeded catalogue data. Run `python scripts/db_inventory.py` for the current split.
+
+Current engine export snapshots in `exports/`: 897 MetaSounds nodes, 1173 audio Blueprint functions, 10851 all Blueprint functions.
 
 ---
 
@@ -361,8 +363,8 @@ src/ue_audio_mcp/
     systems.py                 2 Orchestration tools
     utils.py                   _ok() / _error() helpers
   knowledge/
-    db.py                      SQLite DB (20 tables, v2 schema)
-    metasound_nodes.py         195 nodes, 175 nodes with class_name mappings
+    db.py                      SQLite DB (21 tables, v2 schema)
+    metasound_nodes.py         195 nodes, 154 class_name mappings
     node_schema.py             MSPin/MSNode TypedDicts
     embeddings.py              TF-IDF search
   templates/

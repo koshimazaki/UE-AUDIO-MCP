@@ -388,7 +388,7 @@ def main() -> None:
         )
 
     print("\nDone. Next steps:")
-    print("  1. Reseed DB:  python -c \"from ue_audio_mcp.knowledge.db import get_knowledge_db; from ue_audio_mcp.knowledge.seed import seed_database; db = get_knowledge_db(); seed_database(db)\"")
+    print("  1. Reseed DB:  python -c \"from ue_audio_mcp.knowledge.db import get_knowledge_db; db = get_knowledge_db(); db.ensure_seeded(force=True)\"")
     print("  2. Cross-ref:  python scripts/cross_reference.py --metasounds")
     print("  3. Templates:  python scripts/verify_templates.py")
     print("  4. Tests:      python -m pytest tests/ -x -q")
