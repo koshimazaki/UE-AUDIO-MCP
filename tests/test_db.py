@@ -104,7 +104,27 @@ def test_table_counts():
     assert all(v == 0 for v in counts.values())
     assert "metasound_nodes" in counts
     assert "blueprint_audio" in counts
+    assert "blueprint_core" in counts
     assert "blueprint_nodes_scraped" in counts
+    db.close()
+
+
+def test_catalogue_and_runtime_tables_cover_schema():
+    grouped_tables = set(db_module.CATALOGUE_TABLES) | set(db_module.RUNTIME_TABLES)
+    assert set(db_module.TABLES) == grouped_tables
+    assert set(db_module.CATALOGUE_TABLES).isdisjoint(db_module.RUNTIME_TABLES)
+
+
+def test_catalogue_counts_include_optional_blueprint_core():
+    db = KnowledgeDB(":memory:")
+    db.insert_blueprint_core({
+        "name": "Branch",
+        "class_name": "K2Node_IfThenElse",
+        "category": "Flow Control",
+        "description": "Branch on a boolean condition",
+    })
+    assert db.catalogue_counts()["blueprint_core"] == 1
+    assert "blueprint_core" not in db.runtime_counts()
     db.close()
 
 

@@ -51,6 +51,7 @@ CATALOGUE_TABLES = (
     "audio_patterns",
     "ue_game_examples",
     "blueprint_audio",
+    "blueprint_core",
     "blueprint_nodes_scraped",
     "builder_api_functions",
     "tutorial_workflows",
@@ -70,7 +71,14 @@ RUNTIME_TABLES = (
     "session_logs",
 )
 
-_SEED_REQUIRED_TABLES = CATALOGUE_TABLES
+OPTIONAL_CATALOGUE_TABLES = (
+    "blueprint_core",
+)
+
+_SEED_REQUIRED_TABLES = tuple(
+    table for table in CATALOGUE_TABLES
+    if table not in OPTIONAL_CATALOGUE_TABLES
+)
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS metasound_nodes (
