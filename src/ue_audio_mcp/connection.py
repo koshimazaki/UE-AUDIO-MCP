@@ -5,9 +5,10 @@ from __future__ import annotations
 import logging
 import threading
 import time
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from waapi import CannotConnectToWaapiException, WaapiClient
+if TYPE_CHECKING:
+    from waapi import WaapiClient
 
 log = logging.getLogger(__name__)
 
@@ -30,6 +31,14 @@ class WwiseConnection:
 
     def connect(self, url: str | None = None) -> dict[str, Any]:
         """Connect to Wwise. Returns getInfo result on success."""
+        try:
+            from waapi import CannotConnectToWaapiException, WaapiClient
+        except Exception as exc:
+            raise RuntimeError(
+                "waapi-client is required to connect to Wwise. "
+                "Install the project dependencies with pip install -e '.[dev]'."
+            ) from exc
+
         with self._lock:
             self._url = url or self.DEFAULT_URL
             if self._client is not None:
