@@ -64,4 +64,12 @@ const char* resid_version_string = VERSION;
 #define RESID_INLINING 1
 #define RESID_INLINE inline
 
+// Force-inline hint. GCC/Clang use __attribute__((always_inline)), which MSVC
+// does not implement at all; __forceinline is the MSVC equivalent.
+#if defined(_MSC_VER) && !defined(__clang__)
+  #define RESID_FORCE_INLINE __forceinline
+#else
+  #define RESID_FORCE_INLINE __attribute__((always_inline)) inline
+#endif
+
 #endif // not __SIDDEFS_H__

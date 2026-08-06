@@ -200,7 +200,7 @@ void EnvelopeGenerator::clock()
 // SID clocking - delta_t cycles.
 // ----------------------------------------------------------------------------
 //RESID_INLINE
-__attribute__( ( always_inline ) ) inline
+RESID_FORCE_INLINE
 void EnvelopeGenerator::clock( cycle_count delta_t )
 {
     // NB! Any pipelined envelope counter decrement from single cycle clocking
