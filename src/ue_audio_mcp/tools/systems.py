@@ -313,7 +313,7 @@ def _load_wwise_json(template_name: str) -> dict[str, Any] | None:
     )
     if not os.path.isfile(template_path):
         return None
-    with open(template_path) as f:
+    with open(template_path, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -325,7 +325,7 @@ def _load_ms_template(template_name: str, ms_params: dict) -> dict[str, Any]:
     if not os.path.isfile(template_path):
         return {"error": "MetaSounds template not found: {}".format(template_name)}
 
-    with open(template_path) as f:
+    with open(template_path, encoding="utf-8") as f:
         spec = json.load(f)
 
     # Apply node-level overrides: {"node_id.input_name": value}
@@ -352,7 +352,7 @@ def _load_bp_template(template_name: str, bp_params: dict) -> dict[str, Any] | N
     if not os.path.isfile(template_path):
         return None
 
-    with open(template_path) as f:
+    with open(template_path, encoding="utf-8") as f:
         spec = json.load(f)
 
     # Apply overrides to node defaults

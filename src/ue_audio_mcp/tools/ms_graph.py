@@ -110,7 +110,7 @@ def ms_graph_from_template(
     if not os.path.isfile(template_path):
         return _error("Template file not found: {}".format(template_name))
 
-    with open(template_path) as f:
+    with open(template_path, encoding="utf-8") as f:
         spec = json.load(f)
 
     # Apply JSON-level param overrides: {"node_id.input_name": value}
