@@ -1,179 +1,44 @@
-# UE Audio MCP - Project Instructions
+# UE Audio MCP
 
-## Project Overview
-MCP server for game audio — generating complete Wwise + MetaSounds + Blueprint audio systems from natural language.
+An MCP server (Python) and an Unreal Editor plugin (C++) that build game audio from natural language. Three layers: Blueprints decide *when* (game events), MetaSounds *what* (procedural DSP), Wwise *how* (mixing, buses, spatialisation). The server drives Wwise through WAAPI, and MetaSounds and Blueprints through the plugin's TCP commands.
 
-**Architecture**: Three-layer system
-- **Blueprint (WHEN)** — Game event detection, parameter setting via Remote Control API
-- **MetaSounds (WHAT)** — Procedural DSP synthesis via Builder API (UE 5.4+)
-- **Wwise (HOW)** — Mixing, buses, spatialization, RTPC via WAAPI (ws://127.0.0.1:8080/waapi)
+- Python 3.10+, MCP Python SDK 2.x (`MCPServer`), stdio transport
+- Unreal Engine 5.7.2+ for the plugin; Wwise 2025.1.4+ with WAAPI enabled for the Wwise tools
+- Knowledge, template and validation tools work offline; Wwise and UE5 tools need those apps running
 
----
+## Layout
 
-## Tech Stack
-| Component | Technology | Notes |
-|-----------|-----------|-------|
-| MCP Server | Python (MCP SDK v2, `MCPServer`) | Main server, stdio transport |
-| Wwise Bridge | `waapi-client` | Official Audiokinetic Python lib, WebSocket :8080 |
-| UE5 Bridge | C++ plugin + TCP (port 9877) | JSON command protocol, 48 commands |
-| Knowledge | Local SQLite + TF-IDF | 195 nodes, 1053 entries, 20 tables, semantic search |
-| Templates | Parameterised JSON | 33 MetaSounds + 34 Blueprint + 6 Wwise |
+- `src/ue_audio_mcp/server.py`: the `MCPServer` instance and lifespan; imports every tool module
+- `src/ue_audio_mcp/tools/`: MCP tools, one module per area (Wwise, MetaSounds, Blueprints, world setup, camera, audit, orchestration)
+- `src/ue_audio_mcp/connection.py`, `ue5_connection.py`: WAAPI (WebSocket :8080) and UE5 TCP (:9877) singletons
+- `src/ue_audio_mcp/knowledge/`: SQLite knowledge DB, TF-IDF search, node catalogues, graph validator (`graph_schema.py`)
+- `src/ue_audio_mcp/templates/`: MetaSounds, Blueprint and Wwise JSON templates
+- `ue5_plugin/`: the C++ plugin. Its own `CLAUDE.md` has the build notes and the UE breaking-changes checklist
+- `scripts/`: engine sync, catalogue pipeline, verification and plugin build. See `scripts/CLAUDE.md`
+- `tests/`: pytest suite with mock WAAPI and UE5 fixtures in `tests/conftest.py`
+- `research/`: background research (WAAPI, MetaSounds, AudioLink, Lyra patterns, the MCP landscape)
+- `TOOLS_AND_COMMANDS.md`: every MCP tool and TCP command
 
-## Key APIs
-- **WAAPI**: 87 functions, WAMP/WebSocket on :8080, HTTP on :8090. Wwise MUST be running.
-- **MetaSounds Builder API**: Experimental (UE 5.4+). CreateSourceBuilder, AddNode, ConnectNodes, Audition, BuildToAsset.
-- **UE5 Remote Control**: Blueprint parameter wiring, game state connections.
-- **AudioLink (UE 5.1+)**: One-way MetaSounds → Wwise routing.
+Domain guides live in `.claude/skills/`: MetaSounds DSP, Blueprint audio, Wwise setup, driving the plugin, adding plugin commands, and full-system builds.
 
----
+## Commands
 
-## Agent Specialisations
-
-### /ue5-metasound-dsp — MetaSounds DSP Specialist
-Handles: MetaSounds patches, Builder API, DSP node graphs, signal flow patterns, graph templates, 195 nodes across 23 categories.
-
-### /ue5-blueprint-audio — Blueprint Audio Specialist
-Handles: Blueprint audio logic, game event detection, parameter wiring, audio components, asset scanning, game state → audio connections.
-
-### /ue5-wwise-setup — Wwise & WAAPI Specialist
-Handles: WAAPI calls, Wwise object hierarchy, RTPC curves, switch containers, bus routing, SoundBank generation, AudioLink bridge.
-
----
-
-## Critical Rules
-
-### Wwise/WAAPI
-- Object paths use **backslashes** `\Actor-Mixer Hierarchy\Default Work Unit\MySound`
-- Always use `onNameConflict` param: "merge", "rename", "replace", or "fail"
-- Wrap batch operations in **undo groups** (`ak.wwise.core.undo.beginGroup/endGroup`)
-- Wwise is single-threaded — batch max 100 items per call
-- No authentication (localhost only) — no headless mode
-- Key object types: Sound, RandomSequenceContainer, SwitchContainer, BlendContainer, ActorMixer, Event, Bus, AuxBus, GameParameter, Switch, State
-
-### MetaSounds
-- Builder API is **experimental** — API may change between UE versions
-- Node class names are NOT publicly documented — discover via Shift+hover in Editor
-- Data types: Audio, Trigger, Float, Int32, Bool, Time, String, WaveAsset, UObject, Enum
-- Asset types: Source (playable), Patch (reusable subgraph), Preset (parameter overrides)
-- WaveAsset references require actual .wav files in project Content folder
-- Use `SetNodeLocation()` for editor visibility
-
-### UE 5.7 Breaking Changes (C++ Plugin)
-These break every major UE update — check first when compile fails:
-- **`Document.RootGraph.Interface`** → `Document.RootGraph.GetDefaultInterface()` (inputs/outputs access)
-- **`ClassInput.Default`** (removed) → `ClassInput.FindConstDefault(FGuid())` returns `FMetasoundFrontendLiteral*` (null if no default). `FGuid()` = default page.
-- **`FNodeFacade`** → `TNodeFacade<Op>` (templated in 5.7)
-- **`GetOrConstructDataReadReference`** → `GetOrCreateDefaultDataReadReference` (deprecated 5.6)
-- **`bEnableUndefinedIdentifierWarnings`** → `CppCompileWarningSettings.UndefinedIdentifierWarningLevel = WarningLevel.Off` (deprecated 5.5; moved under `CppCompileWarningSettings` in 5.6, old path emits CS0618)
-- **`__attribute__((optimize))`** — Clang doesn't support it, wrap with `#if !defined(__clang__)`
-- **`__attribute__((always_inline))`** — MSVC has no `__attribute__`; use `RESID_FORCE_INLINE` from `siddefs.h`
-- **MetaSound node registration (5.7+)** — nodes and enums register only via a per-module list: `METASOUND_PLUGIN`/`METASOUND_MODULE` private definitions in Build.cs, `METASOUND_IMPLEMENT_MODULE_REGISTRATION_LIST` in the module .cpp, `METASOUND_REGISTER_ITEMS_IN_MODULE`/`METASOUND_UNREGISTER_ITEMS_IN_MODULE` in Startup/Shutdown. Without them the module compiles and loads, but the nodes silently never appear.
-- **`SIDMetaSoundNodes` stays non-unity** (`bUseUnity = false`) — node .cpp files define `RESID_HEADER_ONLY`; in a unity blob that stops `ReSIDLib.cpp` compiling the reSID implementations (unresolved externals, clean checkout only)
-
-### Code Standards
-- Python: MCP SDK v2 (`MCPServer`) patterns. Sync tools run on SDK worker threads, serialised by `logged_tool` (see `tools/utils.py`)
-- C++: UE5 coding standards for plugin code (UCLASS, UPROPERTY, etc.)
-- JSON: All knowledge base entries validated against schema
-- Tests: Every tool gets integration test with mock WAAPI/Builder responses
-- Security: No secrets in code, validate all inputs, parameterised queries only
-
-### File Locations
-```
-src/ue_audio_mcp/
-├── server.py              → MCPServer entry point + lifespan
-├── connection.py          → WaapiConnection singleton (WAAPI WebSocket)
-├── ue5_connection.py      → UE5PluginConnection singleton (TCP :9877)
-├── tools/
-│   ├── core.py, objects.py, events.py, preview.py, templates.py → Wwise/WAAPI tools (21 tools)
-│   ├── metasounds.py, ms_graph.py, ms_builder.py, presets.py, variables.py → MetaSounds tools (24 tools)
-│   ├── blueprints.py, bp_builder.py → Blueprint tools (16 tools)
-│   ├── ue5_core.py        → UE5 connection + asset tools (4 tools)
-│   ├── world_setup.py     → World audio setup: emitters, volumes, anim notify (7 tools)
-│   ├── camera.py          → Actor/camera staging and control tools (5 tools)
-│   ├── audit.py           → Session audit/history tools (2 tools)
-│   └── systems.py         → Orchestrator (build_audio_system, build_aaa_project, 2 tools)
-├── knowledge/
-│   ├── db.py              → SQLite knowledge DB (20 tables, schema v2, singleton)
-│   ├── node_schema.py     → Shared TypedDicts (MSPin, MSNode) + normalize_pin_type()
-│   ├── embeddings.py      → TF-IDF + cosine similarity search
-│   ├── wwise_types.py     → Object types, properties, defaults
-│   ├── metasound_nodes.py → 195 nodes, 23 categories, 145 class_name mappings
-│   ├── tutorials.py       → Builder API catalogue, patterns, conversions
-│   └── graph_schema.py    → Graph spec format + 7-stage validator
-├── templates/
-│   ├── metasounds/        → 33 MS graph templates (JSON, 33/33 validated)
-│   ├── blueprints/        → 34 BP templates (JSON)
-│   └── wwise/             → 6 Wwise hierarchy templates (JSON)
-ue5_plugin/UEAudioMCP/     → C++ plugin (48 commands, TCP:9877)
-ue5_plugin/UEAudioMCP/Source/SIDMetaSoundNodes/ → ReSID SID chip nodes (5 custom nodes, runtime module)
-scripts/                   → Key scripts (see below)
-research/                  → 6 reference docs (WAAPI, MetaSounds, MCP landscape, AudioLink, node registry, Lyra)
-tests/                     → 521 tests across 25 files
-exports/                   → Engine sync outputs (JSON)
-```
-
-## Key Scripts
-
-### Build & Deploy
 ```bash
-./scripts/build_plugin.sh              # Sync source + compile
-./scripts/build_plugin.sh --clean      # Force recompile (removes Intermediate/)
-./scripts/build_plugin.sh --sync-only  # Sync only, UE recompiles on open
-./scripts/build_plugin.sh --build-only # Compile only, skip source sync
-```
-Set `UE_ENGINE_ROOT` and `UE_PROJECT_DIR` env vars (or edit script defaults).
-Close UE Editor before building (dylibs locked). Use `--clean` for "Action graph is invalid" or stale PCH.
-
-### Engine Sync (requires UE Editor running with plugin)
-```bash
-python scripts/sync_nodes_from_engine.py       # Sync 842 MS nodes → exports/all_metasound_nodes.json
-python scripts/sync_bp_from_engine.py --audio-only  # Sync 1173 BP audio funcs → exports/blueprint_functions_audio.json
-python scripts/scan_project.py --full-export -o exports/project_scan.json  # Full project scan: BPs + MS graphs + audio assets + cross-refs
+pip install -e ".[dev]"
+pytest                               # tests never touch ~/.ue-audio-mcp
+python scripts/verify_templates.py   # after changing templates or node catalogues
+ue-audio-mcp                         # run the server over stdio (python -m ue_audio_mcp.server also works)
 ```
 
-### Pin Update Pipeline (engine → catalogue)
-```bash
-python scripts/update_catalogue_pins.py                    # Dry-run: show pin mismatches
-python scripts/update_catalogue_pins.py --apply            # Patch catalogue JSON with engine pins
-python scripts/update_catalogue_pins.py --apply --export   # Patch + regenerate JSON catalogues
-python scripts/update_catalogue_pins.py --apply --update-source  # Also patch metasound_nodes.py
-```
+## Conventions
 
-### Verification & Cross-Reference
-```bash
-python scripts/verify_templates.py     # 4-check: CLASS_NAME_TO_DISPLAY, MS templates, engine pins, BP templates
-python scripts/cross_reference.py --all  # Cross-ref engine exports vs catalogue (finds pin mismatches)
-```
+- Tools are sync functions decorated `@mcp.tool()` then `@logged_tool`, returning `_ok(...)` or `_error(...)` JSON strings from `tools/utils.py`. `logged_tool` records each call in the audit log and holds a lock: the SDK runs sync tools on worker threads, and all tools share one SQLite connection, UE5 socket and WAAPI client.
+- Open text files with `encoding="utf-8"`; Windows defaults to cp1252.
+- No secrets in code. SQL uses parameterised queries only. Validate UE asset paths with `_validate_asset_path` (`/Game/` or `/Engine/`, no `..`).
+- Every tool gets a test built on the mock fixtures in `tests/conftest.py`.
+- MetaSound class and pin names come from the engine-synced catalogue, `knowledge/metasound_catalogue.json`. Node entries follow the `MSNode`/`MSPin` TypedDicts in `knowledge/node_schema.py`. Check graphs with `validate_graph()`.
+- Don't hard-code counts in docs; they drift. Tools are the `@mcp.tool()` functions in `tools/`; TCP commands are the `RegisterCommand` calls in the plugin.
 
-### Catalogue Management
-```bash
-python scripts/export_catalogues.py    # Regenerate JSON catalogues from Python source
-python scripts/export_catalogues.py --ms-only   # MetaSounds only
-python scripts/export_catalogues.py --bp-only   # Blueprints only
-```
+## Runtime data
 
-### Utility
-| Script | Purpose |
-|--------|---------|
-| `test_plugin_live.py` | Live TCP plugin smoke test |
-| `convert_export_to_template.py` | Convert MS graph export → template JSON |
-| `parse_metasound_export.py` | Parse raw MS export data |
-| `verify_blueprint_nodes.py` | Blueprint node catalogue verification |
-
-## Common Patterns (6 Game Audio Systems)
-1. **Gunshot** — RandomSequenceContainer + variations + pitch randomisation + ADSR
-2. **Footsteps** — SwitchContainer by surface + per-surface RandomSequence + AD envelope
-3. **Ambient** — BlendContainer + RTPC-driven layer volumes + zone triggers
-4. **UI Sounds** — Procedural sine+envelope or sample, non-spatial, UI bus
-5. **Weather/States** — StateGroup-driven SwitchContainer + crossfade transitions
-6. **Spatial/3D** — ITD Panner + distance attenuation + HRTF
-
----
-
-## Quick Commands
-- `/ue5-metasound-dsp` — MetaSounds DSP specialist (195 nodes, 23 categories)
-- `/ue5-blueprint-audio` — Blueprint audio logic, game events, parameter wiring
-- `/ue5-audio-builder` — Full pipeline audio system generator
-- `/ue5-audio-mcp` — UE5 plugin TCP control (48 commands)
-- `/ue5-wwise-setup` — Wwise project automation via WAAPI
-- `/ue5-plugin-dev` — Add new C++ commands to the plugin
+The server keeps its knowledge DB and session logs in `~/.ue-audio-mcp/`. The DB is a cache built from the catalogues in `src/` plus audit and project-scan data; missing catalogue rows are re-seeded when it opens.

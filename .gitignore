@@ -42,6 +42,7 @@ memories.json
 project_scan.json
 .agent-handoff/
 .claude/plans/
+/research_*.md
 
 # Local agent mirror of .claude/skills and automated review reports
 .agents/

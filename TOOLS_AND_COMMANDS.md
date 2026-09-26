@@ -130,45 +130,45 @@ Wire protocol: 4-byte length-prefix + UTF-8 JSON on port 9877. All commands exec
 | # | Command | Params |
 |---|---------|--------|
 | 1 | `ping` | -- |
-| 2 | `create_builder` | name, type(Source/Patch) |
-| 3 | `add_interface` | interface_name |
-| 4 | `add_graph_input` | name, type, default |
+| 2 | `create_builder` | asset_type (Source/Patch/Preset), name |
+| 3 | `add_interface` | interface |
+| 4 | `add_graph_input` | name, type, default? |
 | 5 | `add_graph_output` | name, type |
-| 6 | `add_node` | node_class, name |
-| 7 | `set_default` | node, pin, value |
+| 6 | `add_node` | id, node_type, position? [x,y] |
+| 7 | `set_default` | node_id, input, value |
 | 8 | `connect` | from_node, from_pin, to_node, to_pin |
-| 9 | `build_to_asset` | asset_path |
-| 10 | `audition` | -- |
+| 9 | `build_to_asset` | name, path |
+| 10 | `audition` | name? |
 | 11 | `stop_audition` | -- |
-| 12 | `open_in_editor` | asset_path |
-| 13 | `add_graph_variable` | name, type, default |
-| 14 | `add_variable_get_node` | variable_name |
-| 15 | `add_variable_set_node` | variable_name |
-| 16 | `convert_to_preset` | source_path |
-| 17 | `convert_from_preset` | preset_path |
-| 18 | `set_live_updates` | enabled(bool) |
+| 12 | `open_in_editor` | -- |
+| 13 | `add_graph_variable` | name, type, default? |
+| 14 | `add_variable_get_node` | id, variable_name, delayed? |
+| 15 | `add_variable_set_node` | id, variable_name |
+| 16 | `convert_to_preset` | referenced_asset |
+| 17 | `convert_from_preset` | -- |
+| 18 | `set_live_updates` | enabled |
 
 ### Query & Export (10 commands)
 
 | # | Command | Params |
 |---|---------|--------|
 | 19 | `get_graph_input_names` | -- |
-| 20 | `list_node_classes` | include_pins, include_metadata, limit, page |
-| 21 | `list_metasound_nodes` | (alias for list_node_classes) |
+| 20 | `list_node_classes` | filter?, limit? (200), offset?, include_pins?, include_metadata? |
+| 21 | `list_metasound_nodes` | alias of `list_node_classes`, same params |
 | 22 | `get_node_locations` | asset_path |
-| 23 | `scan_blueprint` | asset_path |
-| 24 | `list_assets` | class_name, path, recursive |
+| 23 | `scan_blueprint` | asset_path, audio_only?, include_pins?, graph_name?, list_graphs_only? |
+| 24 | `list_assets` | class_filter?, path?, recursive_classes?, limit? |
 | 25 | `export_metasound` | asset_path |
 | 26 | `export_audio_blueprint` | asset_path |
-| 27 | `list_blueprint_functions` | filter, class_filter, audio_only, limit, include_pins |
-| 28 | `call_function` | function, args |
+| 27 | `list_blueprint_functions` | filter?, class_filter?, audio_only?, list_classes_only?, include_pins?, limit?, offset? |
+| 28 | `call_function` | function, args? |
 
 ### Blueprint Builder (7 commands)
 
 | # | Command | Params |
 |---|---------|--------|
-| 29 | `bp_open_blueprint` | asset_path (auto-registers all nodes) |
-| 30 | `bp_add_node` | id, node_kind, function_name/event_name/variable_name, position |
+| 29 | `bp_open_blueprint` | asset_path (auto-registers the Blueprint's existing nodes) |
+| 30 | `bp_add_node` | id, node_kind (CallFunction/CustomEvent/VariableGet/VariableSet), function_name / event_name / variable_name (per kind), position? [x,y] |
 | 31 | `bp_connect_pins` | from_node, from_pin, to_node, to_pin |
 | 32 | `bp_set_pin_default` | node_id, pin_name, value |
 | 33 | `bp_compile` | -- |
@@ -180,23 +180,23 @@ Wire protocol: 4-byte length-prefix + UTF-8 JSON on port 9877. All commands exec
 | # | Command | Params |
 |---|---------|--------|
 | 36 | `duplicate_asset` | source_path, dest_path |
-| 37 | `place_anim_notify` | animation_path, time, sound, notify_name |
-| 38 | `spawn_audio_emitter` | sound, location[x,y,z], name, auto_play |
+| 37 | `place_anim_notify` | animation_path, time, sound?, notify_name? (Footstep) |
+| 38 | `spawn_audio_emitter` | sound, location [x,y,z], auto_play?, name? (MCP_AudioEmitter) |
 | 39 | `import_sound_file` | file_path, dest_folder |
 | 40 | `set_physical_surface` | material_path, surface_type |
-| 41 | `place_audio_volume` | location[x,y,z], extent[x,y,z], name, reverb_effect, priority |
-| 42 | `spawn_blueprint_actor` | blueprint_path, location[x,y,z], rotation[p,y,r], label |
-| 43 | `place_bp_anim_notify` | animation_path, time, notify_blueprint_path, notify_name |
+| 41 | `place_audio_volume` | location [x,y,z], extent? [x,y,z], reverb_effect?, name? (MCP_AudioVolume), priority? |
+| 42 | `spawn_blueprint_actor` | blueprint_path, location? [x,y,z], rotation? [pitch,yaw,roll], label? |
+| 43 | `place_bp_anim_notify` | animation_path, time, notify_blueprint_path, notify_name? (BPNotify) |
 
 ### Actor & Camera Control (5 commands)
 
 | # | Command | Params |
 |---|---------|--------|
-| 44 | `find_actor` | query, class_filter, limit |
-| 45 | `set_actor_transform` | actor, location[x,y,z], rotation[p,y,r] |
-| 46 | `focus_editor_camera` | actor, active_viewport_only |
-| 47 | `set_view_target` | actor, blend_time, player_index |
-| 48 | `possess_pawn` | actor, player_index, set_view_target |
+| 44 | `find_actor` | query?, class_filter?, limit? |
+| 45 | `set_actor_transform` | actor, location? [x,y,z], rotation? [pitch,yaw,roll] (at least one) |
+| 46 | `focus_editor_camera` | actor, active_viewport_only? |
+| 47 | `set_view_target` | actor, player_index?, blend_time? |
+| 48 | `possess_pawn` | actor, player_index?, set_view_target? |
 
 ---
 

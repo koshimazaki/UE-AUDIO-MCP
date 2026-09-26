@@ -2,7 +2,7 @@
 name: ue5-audio-builder
 description: Full pipeline audio system generator. Use when building complete game audio systems that span MetaSounds + Blueprint + Wwise layers, generating AAA project structures, or orchestrating multi-layer audio from a natural language description.
 allowed-tools: Read, Grep, Glob, Bash
-argument-hint: [audio-system-description]
+argument-hint: "[audio-system-description]"
 ---
 
 # Build System — Full Pipeline Audio Generator
@@ -103,7 +103,7 @@ Master Audio Bus
 
 - Orchestrator: `src/ue_audio_mcp/tools/systems.py`
 - Templates: `src/ue_audio_mcp/templates/` (22 JSON)
-- Wwise templates: `src/ue_audio_mcp/tools/wwise_templates.py`
+- Wwise templates: `src/ue_audio_mcp/tools/templates.py`
 - Graph validator: `src/ue_audio_mcp/knowledge/graph_schema.py`
 
 $ARGUMENTS

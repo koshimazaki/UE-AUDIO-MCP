@@ -1,8 +1,8 @@
 ---
 name: ue5-metasound-dsp
-description: MetaSounds DSP specialist for Unreal Engine 5. Use when designing MetaSounds graphs, choosing DSP nodes, configuring filters/oscillators/envelopes, building signal chains, working with the Builder API, or creating audio templates. Covers 144 nodes across 20 categories.
+description: MetaSounds DSP specialist for Unreal Engine 5. Use when designing MetaSounds graphs, choosing DSP nodes, configuring filters/oscillators/envelopes, building signal chains, working with the Builder API, or creating audio templates.
 allowed-tools: Read, Grep, Glob
-argument-hint: [dsp-task-or-question]
+argument-hint: "[dsp-task-or-question]"
 ---
 
 # MetaSounds DSP — Node Graphs & Signal Design
@@ -30,7 +30,14 @@ Audio, Trigger, Float, Int32, Bool, Time, String, WaveAsset, UObject, Enum (+ Ar
 - `UE.Attenuation` — Distance input for volume falloff
 - `UE.Spatialization` — Azimuth/Elevation for 3D positioning
 
-## Node Categories (144 nodes, 20 categories)
+## Finding Nodes and Pins
+
+- Look nodes up in the engine-synced catalogue, `src/ue_audio_mcp/knowledge/metasound_catalogue.json`, or with the `ms_search_nodes` and `ms_node_info` tools. They give the class name (e.g. `UE::Biquad Filter::Audio`) and the exact, typed pin names that `connect` expects.
+- With the editor running, `list_node_classes` (TCP) lists everything the engine has registered, including plugin nodes.
+- The Builder API is experimental: node classes and pins can change between UE versions, so re-sync the catalogue after an engine upgrade (`scripts/update_catalogue_pins.py`).
+- `WaveAsset` inputs need a real imported sound in the project's Content folder.
+
+## Node Categories
 
 ### Generators
 Sine, Saw, Square, Triangle, Noise, LFO, Additive Synth, SuperOscillator, WaveTable, Perlin Noise
@@ -103,29 +110,30 @@ OnPlay → Wave Player → Biquad Filter → Compressor → Out
 LFO → Map Range(0-1 → 200-2000) → Biquad Filter Cutoff
 ```
 
-## Key Pin Names (Authoritative)
+## Key Pin Names
+
+From the engine-synced catalogue. Use `ms_node_info` for any other node.
 
 | Node | Inputs | Outputs |
 |------|--------|---------|
-| Sine/Saw/Square/Triangle | Frequency, Phase Offset, Glide, Bias | Audio |
-| Noise | Seed | Audio |
-| AD Envelope | Trigger, Attack Time, Decay Time | Out Envelope |
-| ADSR Envelope | Trigger Attack, Trigger Release, Attack Time, Decay Time, Sustain Level, Release Time | Out Envelope |
-| Biquad Filter | In, Cutoff Frequency, Bandwidth, Filter Type | Out |
-| State Variable Filter | In, Cutoff Frequency, Resonance, Band Stop Gain | HPF, LPF, BPF, BSF |
-| Wave Player | Play, Stop, Wave Asset, Start Time, Loop, Pitch Shift | Out Audio, On Finished |
-| Multiply/Add (Audio) | Primary Operand, Operand | Out |
-| Map Range | Value, In Range A, In Range B, Out Range A, Out Range B, Clamped | Out |
-| InterpTo | Target, Current, Speed, Interp Delta Time | Value |
-| Clamp | In, Min, Max | Value |
-| Compressor | Audio, Ratio, Threshold dB, Attack Time, Release Time, Sidechain, Wet, Knee | Audio |
-| ITD Panner | Audio, Angle, Interaural Delay, Head Width | Left, Right |
-| Trigger Repeat | Start, Stop, Period | RepeatOut |
-| Trigger Sequence | Trigger, Reset | Out 0, Out 1, ... |
+| Sine / Saw / Triangle | Enabled, Bi Polar, Frequency, Modulation, Sync, Phase Offset, Glide, Type | Audio |
+| Square | Enabled, Bi Polar, Frequency, Modulation, Sync, Phase Offset, Glide, Type, Pulse Width | Audio |
+| Noise | Seed, Type | Audio |
+| AD Envelope (Audio/Float) | Trigger, Attack Time, Decay Time, Attack Curve, Decay Curve, Looping, Hard Reset | On Trigger, On Done, Out Envelope |
+| ADSR Envelope (Audio/Float) | Trigger Attack, Trigger Release, Attack Time, Decay Time, Sustain Level, Release Time, Attack Curve, Decay Curve, Release Curve, Hard Reset | On Attack Triggered, On Decay Triggered, On Sustain Triggered, On Release Triggered, On Done, Out Envelope |
+| Biquad Filter | In, Cutoff Frequency, Bandwidth, Gain, Type | Out |
+| State Variable Filter | Cutoff Frequency, Resonance, In, Band Stop Control | Band Pass, Low Pass Filter, High Pass Filter, Band Stop |
+| Wave Player (Mono) | Play, Stop, Wave Asset, Start Time, Pitch Shift, Loop, Loop Start, Loop Duration, Maintain Audio Sync | On Play, On Finished, On Nearly Finished, On Looped, On Cue Point, Cue Point ID, Cue Point Label, Loop Percent, Playback Location, Playback Time, Out Mono |
+| Multiply / Add (Audio) | PrimaryOperand, AdditionalOperands | Out |
+| Map Range (Float) | In, In Range A, In Range B, Out Range A, Out Range B, Clamped | Out Value |
+| InterpTo | Interp Time, Target | Value |
+| Clamp (Float) | In, Min, Max | Value |
+| Compressor | Bypass, Audio, Ratio, Threshold dB, Attack Time, Release Time, Lookahead Time, Knee, Sidechain, Envelope Mode, Analog Mode, Upwards Mode, Wet/Dry | Audio, Gain Envelope |
+| ITD Panner | In, Angle, Distance Factor, Head Width | Out Left, Out Right |
+| Trigger Repeat | Start, Stop, Period, Num Repeats | RepeatOut |
+| Trigger Sequence | In, Reset, Loop | Out 0, Out 1 |
 
-Full reference: `scripts/ms_node_specs.json` (93 nodes, 464 pins from Epic docs)
-
-## Builder API Functions (68+)
+## Builder API Functions
 
 ### Core
 CreateSourceBuilder, CreatePatchBuilder, AddNode, FindNodeInputHandle, FindNodeOutputHandle, ConnectNodes, SetNodeInputDefault, Audition, BuildToAsset
@@ -201,18 +209,15 @@ Validated by 7-stage validator: required fields, asset_type, interfaces, node ty
 ## Gotchas
 
 - AD Envelope (Float) for modulation chains, AD Envelope (Audio) for amplitude
-- InterpTo requires `Current` default value
-- Float→Audio connections are invalid — use Biquad Filter Bandwidth, not Multiply Audio
-- Dynamic Filter needs Audio-rate cutoff input; use Biquad for Float cutoff
-- Pin names from Epic docs may use shorthand — always verify against `ms_node_specs.json`
+- Float→Audio connections are invalid. To scale audio by a float, use `Multiply (Audio by Float)`
+- Pin names from Epic docs may use shorthand — always verify against the catalogue (`ms_node_info`)
 - Node class names: use display names from knowledge DB, or full `Namespace::Name::Variant` for direct lookup
 
 ## Source Files
 
-- Node catalogue: `src/ue_audio_mcp/knowledge/metasound_nodes.py` (144 nodes, 798 pins)
-- Templates: `src/ue_audio_mcp/templates/` (22 JSON graphs)
-- Graph schema: `src/ue_audio_mcp/knowledge/graph_schema.py`
-- Builder tools: `src/ue_audio_mcp/tools/metasounds.py`
-- Scraped pins: `scripts/ms_node_specs.json`
+- Node catalogue: `src/ue_audio_mcp/knowledge/metasound_catalogue.json` (engine-synced) and `metasound_nodes.py`
+- Templates: `src/ue_audio_mcp/templates/metasounds/`
+- Graph schema and validator: `src/ue_audio_mcp/knowledge/graph_schema.py`
+- Tools: `src/ue_audio_mcp/tools/metasounds.py` (catalogue search), `ms_graph.py` (templates, validation), `ms_builder.py` (live Builder API)
 
 $ARGUMENTS

@@ -2,7 +2,7 @@
 name: ue5-blueprint-audio
 description: Unreal Engine 5 Blueprint audio specialist. Use when working with Blueprint audio logic, game event detection, parameter wiring, audio components, scanning blueprints for audio nodes, listing project assets, or connecting game state to audio systems via UE5.
 allowed-tools: Read, Grep, Glob, Bash
-argument-hint: [blueprint-task-or-question]
+argument-hint: "[blueprint-task-or-question]"
 ---
 
 # Unreal Engine Blueprint — Audio Logic & Asset Management
@@ -228,7 +228,7 @@ AudioComponent → SetTriggerParameter("Fire")
 - Knowledge DB: `src/ue_audio_mcp/knowledge/db.py` (tables: blueprint_audio, blueprint_core, blueprint_nodes_scraped, project_blueprints)
 - Tutorials: `src/ue_audio_mcp/knowledge/tutorials.py`
 - Scan script: `scripts/scan_project.py`
-- BP scraper: `scripts/scrape_blueprint_api.py`
+- BP function sync (editor running): `scripts/sync_bp_from_engine.py`
 - C++ scan command: `ue5_plugin/UEAudioMCP/Source/UEAudioMCP/Private/Commands/QueryCommands.cpp`
 
 $ARGUMENTS
