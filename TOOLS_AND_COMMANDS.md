@@ -349,7 +349,7 @@ gunshot, footsteps, ambient, spatial, ui_sound, weather, vehicle_engine, sfx_gen
 
 ```
 src/ue_audio_mcp/
-  server.py                    FastMCP entry + lifespan
+  server.py                    MCPServer entry + lifespan
   connection.py                WaapiConnection singleton
   ue5_connection.py            UE5PluginConnection singleton
   tools/

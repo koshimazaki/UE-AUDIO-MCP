@@ -5,6 +5,7 @@ from __future__ import annotations
 import functools
 import inspect
 import json
+import threading
 import time
 
 
@@ -54,10 +55,19 @@ def _validate_asset_path(path: str, param_name: str = "path") -> str | None:
     return None
 
 
+# MCP SDK v2 runs sync tool handlers on worker threads, so calls can overlap.
+# Tools share one SQLite connection, one UE5 socket and one WAAPI client, so
+# keep v1's one-call-at-a-time behaviour. Reentrant so a tool that calls
+# another tool on the same thread can't deadlock.
+_TOOL_LOCK = threading.RLock()
+
+
 def logged_tool(fn):
     """Decorator that logs every MCP tool invocation to the session logger.
 
-    Place BELOW ``@mcp.tool()`` so FastMCP sees the original signature::
+    Calls are serialised through ``_TOOL_LOCK``.
+
+    Place BELOW ``@mcp.tool()`` so the MCP server sees the original signature::
 
         @mcp.tool()
         @logged_tool
@@ -65,8 +75,7 @@ def logged_tool(fn):
     """
     sig = inspect.signature(fn)
 
-    @functools.wraps(fn)
-    def wrapper(*args, **kwargs):
+    def logged_call(*args, **kwargs):
         # Capture params from the call
         bound = sig.bind(*args, **kwargs)
         bound.apply_defaults()
@@ -101,5 +110,10 @@ def logged_tool(fn):
             except Exception:
                 pass
             raise
+
+    @functools.wraps(fn)
+    def wrapper(*args, **kwargs):
+        with _TOOL_LOCK:
+            return logged_call(*args, **kwargs)
 
     return wrapper

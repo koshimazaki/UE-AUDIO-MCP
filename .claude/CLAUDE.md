@@ -13,7 +13,7 @@ MCP server for game audio — generating complete Wwise + MetaSounds + Blueprint
 ## Tech Stack
 | Component | Technology | Notes |
 |-----------|-----------|-------|
-| MCP Server | Python (FastMCP) | Main server, stdio transport |
+| MCP Server | Python (MCP SDK v2, `MCPServer`) | Main server, stdio transport |
 | Wwise Bridge | `waapi-client` | Official Audiokinetic Python lib, WebSocket :8080 |
 | UE5 Bridge | C++ plugin + TCP (port 9877) | JSON command protocol, 43 commands |
 | Knowledge | Local SQLite + TF-IDF | 195 nodes, 1053 entries, 20 tables, semantic search |
@@ -71,7 +71,7 @@ These break every major UE update — check first when compile fails:
 - **`SIDMetaSoundNodes` stays non-unity** (`bUseUnity = false`) — node .cpp files define `RESID_HEADER_ONLY`; in a unity blob that stops `ReSIDLib.cpp` compiling the reSID implementations (unresolved externals, clean checkout only)
 
 ### Code Standards
-- Python: FastMCP patterns, async where needed for WebSocket
+- Python: MCP SDK v2 (`MCPServer`) patterns. Sync tools run on SDK worker threads, serialised by `logged_tool` (see `tools/utils.py`)
 - C++: UE5 coding standards for plugin code (UCLASS, UPROPERTY, etc.)
 - JSON: All knowledge base entries validated against schema
 - Tests: Every tool gets integration test with mock WAAPI/Builder responses
@@ -80,7 +80,7 @@ These break every major UE update — check first when compile fails:
 ### File Locations
 ```
 src/ue_audio_mcp/
-├── server.py              → FastMCP entry point + lifespan
+├── server.py              → MCPServer entry point + lifespan
 ├── connection.py          → WaapiConnection singleton (WAAPI WebSocket)
 ├── ue5_connection.py      → UE5PluginConnection singleton (TCP :9877)
 ├── tools/
@@ -106,7 +106,7 @@ ue5_plugin/UEAudioMCP/     → C++ plugin (43 commands, TCP:9877)
 ue5_plugin/SIDMetaSoundNodes/ → ReSID SID chip nodes (5 custom nodes)
 scripts/                   → Key scripts (see below)
 research/                  → 6 reference docs (WAAPI, MetaSounds, MCP landscape, AudioLink, node registry, Lyra)
-tests/                     → 517 tests across 24 files
+tests/                     → 521 tests across 25 files
 exports/                   → Engine sync outputs (JSON)
 ```
 
