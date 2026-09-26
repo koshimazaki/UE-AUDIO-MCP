@@ -333,7 +333,10 @@ class KnowledgeDB:
         self._db_path = db_path
         if db_path != ":memory:":
             Path(db_path).parent.mkdir(parents=True, exist_ok=True)
-        self._conn = sqlite3.connect(db_path)
+        # The singleton is opened on the main thread (server lifespan) but used
+        # from the MCP SDK's tool worker threads. Tool calls are serialised by
+        # tools.utils._TOOL_LOCK, so tools never use it concurrently.
+        self._conn = sqlite3.connect(db_path, check_same_thread=False)
         self._conn.row_factory = sqlite3.Row
         self._conn.executescript(_SCHEMA)
         self._migrate_v2()
