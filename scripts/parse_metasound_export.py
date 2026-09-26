@@ -315,7 +315,7 @@ def main():
     args = ap.parse_args()
 
     if args.file:
-        text = Path(args.file).read_text()
+        text = Path(args.file).read_text(encoding="utf-8")
     elif args.text:
         text = args.text
     else:
@@ -337,7 +337,7 @@ def main():
     template = nodes_to_template(nodes, args.name)
 
     if args.output:
-        with open(args.output, "w") as f:
+        with open(args.output, "w", encoding="utf-8") as f:
             json.dump(template, f, indent=2)
         print(f"\nWritten to {args.output}")
     else:

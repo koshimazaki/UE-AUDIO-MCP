@@ -365,7 +365,7 @@ def import_from_files(
     for ms_name in ms_files:
         ms_path = os.path.join(export_dir, ms_name)
         if os.path.exists(ms_path):
-            with open(ms_path) as f:
+            with open(ms_path, encoding="utf-8") as f:
                 ms_data = json.load(f)
             # Lyra format: {"metasounds": [...]} or {"count": N, "metasounds": [...]}
             if isinstance(ms_data, dict) and "metasounds" in ms_data:
@@ -399,7 +399,7 @@ def import_from_files(
     for bp_name in bp_files:
         bp_path = os.path.join(export_dir, bp_name)
         if os.path.exists(bp_path):
-            with open(bp_path) as f:
+            with open(bp_path, encoding="utf-8") as f:
                 bp_data = json.load(f)
             # Lyra format: {"blueprints": [...]}
             if isinstance(bp_data, dict) and "blueprints" in bp_data:
@@ -997,7 +997,7 @@ def main():
         # --- Phase 5: Save results ---
         output_file = args.output or "project_scan.json"
         print(f"\n[{phase_total}/{phase_total}] Saving results to {output_file}...")
-        with open(output_file, "w") as f:
+        with open(output_file, "w", encoding="utf-8") as f:
             json.dump(results, f, indent=2)
         file_size = os.path.getsize(output_file)
         print(f"  Saved ({file_size / 1024:.1f} KB)")

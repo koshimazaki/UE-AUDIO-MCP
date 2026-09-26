@@ -171,7 +171,7 @@ def test_sid_templates_valid_json():
     """All SID templates must be valid JSON."""
     for tpl in SID_TEMPLATES:
         path = os.path.join(TEMPLATE_DIR, tpl)
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             data = json.load(f)
         assert "name" in data
         assert "nodes" in data
@@ -182,7 +182,7 @@ def test_sid_templates_valid_json():
 def test_sid_bass_template_structure():
     """SID Bass template must use SID Voice and SID Filter nodes."""
     path = os.path.join(TEMPLATE_DIR, "sid_bass.json")
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         data = json.load(f)
     node_types = {n["node_type"] for n in data["nodes"]}
     assert "SID Voice" in node_types
@@ -193,7 +193,7 @@ def test_sid_bass_template_structure():
 def test_sid_lead_template_structure():
     """SID Lead template must use two SID Oscillators and SID Filter."""
     path = os.path.join(TEMPLATE_DIR, "sid_lead.json")
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         data = json.load(f)
     node_types = [n["node_type"] for n in data["nodes"]]
     osc_count = sum(1 for t in node_types if t == "SID Oscillator")
@@ -205,7 +205,7 @@ def test_sid_lead_template_structure():
 def test_sid_chip_tune_template_structure():
     """SID Chip Tune template must use the full SID Chip node."""
     path = os.path.join(TEMPLATE_DIR, "sid_chip_tune.json")
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         data = json.load(f)
     node_types = {n["node_type"] for n in data["nodes"]}
     assert "SID Chip" in node_types
@@ -215,7 +215,7 @@ def test_sid_templates_connections_reference_valid_nodes():
     """All connections in SID templates must reference existing node IDs."""
     for tpl in SID_TEMPLATES:
         path = os.path.join(TEMPLATE_DIR, tpl)
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             data = json.load(f)
         node_ids = {n["id"] for n in data["nodes"]}
         node_ids.add("__graph__")
@@ -313,7 +313,7 @@ def test_resid_thirdparty_files_exist():
 def test_uplugin_has_sid_module():
     """The .uplugin must list SIDMetaSoundNodes as a Runtime module."""
     path = os.path.join(PLUGIN_DIR, "UEAudioMCP.uplugin")
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         data = json.load(f)
     modules = {m["Name"]: m for m in data["Modules"]}
     assert "SIDMetaSoundNodes" in modules
@@ -324,7 +324,7 @@ def test_uplugin_has_sid_module():
 def test_node_registry_has_sid_entries():
     """The AudioMCPNodeRegistry.h must contain SID node mappings."""
     path = os.path.join(PLUGIN_DIR, "Source", "UEAudioMCP", "Public", "AudioMCPNodeRegistry.h")
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         content = f.read()
     for node_name in ["SID Oscillator", "SID Envelope", "SID Filter", "SID Voice", "SID Chip"]:
         assert node_name in content, f"Node registry missing: {node_name}"

@@ -434,11 +434,11 @@ def main():
     args = ap.parse_args()
 
     if args.validate:
-        with open(args.validate) as f:
+        with open(args.validate, encoding="utf-8") as f:
             workflow = json.load(f)
         specs = None
         if args.specs:
-            with open(args.specs) as f:
+            with open(args.specs, encoding="utf-8") as f:
                 specs = json.load(f)
         issues = validate_workflow(workflow, specs)
         if issues:
@@ -450,7 +450,7 @@ def main():
             sys.exit(0)
 
     if args.file:
-        text = Path(args.file).read_text()
+        text = Path(args.file).read_text(encoding="utf-8")
     elif args.text:
         text = args.text
     else:
@@ -473,7 +473,7 @@ def main():
     result = wf.to_json()
 
     if args.output:
-        with open(args.output, "w") as f:
+        with open(args.output, "w", encoding="utf-8") as f:
             json.dump(result, f, indent=2)
         print(f"\nWritten to {args.output}")
     else:

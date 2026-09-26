@@ -30,7 +30,7 @@ def _load_template(name: str) -> dict:
         os.path.dirname(os.path.dirname(__file__)),
         "src", "ue_audio_mcp", "templates", "metasounds",
     )
-    with open(os.path.join(template_dir, f"{name}.json")) as f:
+    with open(os.path.join(template_dir, f"{name}.json"), encoding="utf-8") as f:
         return json.load(f)
 
 

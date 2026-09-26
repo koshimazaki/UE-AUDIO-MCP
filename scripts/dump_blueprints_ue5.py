@@ -326,7 +326,7 @@ def main():
     unreal.log("[AudioMCP] Scanning audio assets...")
     audio = scan_audio_assets()
     audio_path = os.path.join(OUTPUT_DIR, "audio_assets.json")
-    with open(audio_path, "w") as f:
+    with open(audio_path, "w", encoding="utf-8") as f:
         json.dump(audio, f, indent=2)
     unreal.log("[AudioMCP] Audio assets: {} total".format(audio["summary"]["total"]))
     for k, v in audio["summary"].items():
@@ -337,7 +337,7 @@ def main():
     unreal.log("[AudioMCP] Scanning animation notifies...")
     notifies = scan_anim_notifies()
     notifies_path = os.path.join(OUTPUT_DIR, "anim_notifies.json")
-    with open(notifies_path, "w") as f:
+    with open(notifies_path, "w", encoding="utf-8") as f:
         json.dump(notifies, f, indent=2)
     unreal.log("[AudioMCP] Anim assets with notifies: {}".format(len(notifies)))
 
@@ -365,7 +365,7 @@ def main():
             interaction_bps.append(bp_data)
 
     bp_path = os.path.join(OUTPUT_DIR, "blueprint_scan.json")
-    with open(bp_path, "w") as f:
+    with open(bp_path, "w", encoding="utf-8") as f:
         json.dump({
             "total_scanned": len(all_bps),
             "audio_relevant": len(audio_bps),

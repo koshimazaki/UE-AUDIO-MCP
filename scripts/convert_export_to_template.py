@@ -244,7 +244,7 @@ def convert_export_file(
     Returns:
         List of converted template dicts
     """
-    with open(export_path) as f:
+    with open(export_path, encoding="utf-8") as f:
         data = json.load(f)
 
     # Handle both single-asset and multi-asset formats
@@ -292,7 +292,7 @@ def convert_export_file(
 
             filename = re.sub(r"[^a-zA-Z0-9_]", "_", template["name"]).lower()
             out_path = os.path.join(template_dir, f"{filename}.json")
-            with open(out_path, "w") as f:
+            with open(out_path, "w", encoding="utf-8") as f:
                 json.dump(template, f, indent=2)
             print(f"  Saved: {out_path}")
 

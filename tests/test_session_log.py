@@ -97,7 +97,7 @@ class TestJSONLOutput:
         files = list(log_dir.glob("session_*.jsonl"))
         assert len(files) == 1
 
-        lines = files[0].read_text().strip().split("\n")
+        lines = files[0].read_text(encoding="utf-8").strip().split("\n")
         # session_start + tool_call = 2 lines
         assert len(lines) == 2
         record = json.loads(lines[1])
@@ -110,7 +110,7 @@ class TestJSONLOutput:
         session_logger.log_tool_call("t2", {}, "ok", 2.0)
 
         files = list((tmp_path / "logs").glob("session_*.jsonl"))
-        lines = files[0].read_text().strip().split("\n")
+        lines = files[0].read_text(encoding="utf-8").strip().split("\n")
         # session_start + 2 tool calls
         assert len(lines) == 3
 
@@ -145,10 +145,10 @@ class TestRotation:
         log_dir.mkdir(parents=True, exist_ok=True)
         # Create an "old" file
         old_file = log_dir / "session_2020-01-01.jsonl"
-        old_file.write_text('{"test": true}\n')
+        old_file.write_text('{"test": true}\n', encoding="utf-8")
         # Create a "recent" file
         recent_file = log_dir / "session_2099-12-31.jsonl"
-        recent_file.write_text('{"test": true}\n')
+        recent_file.write_text('{"test": true}\n', encoding="utf-8")
 
         deleted = session_logger.rotate_logs(max_age_days=30)
         assert deleted == 1

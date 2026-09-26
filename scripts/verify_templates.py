@@ -47,7 +47,7 @@ BP_TEMPLATE_DIR = os.path.join(
 
 def load_engine_nodes(path):
     """Load engine export and build lookup by display name."""
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         data = json.load(f)
     by_class = {}
     by_name = {}
@@ -94,7 +94,7 @@ def verify_ms_templates(verbose=False):
             continue
         total += 1
         path = os.path.join(TEMPLATE_DIR, fname)
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             spec = json.load(f)
 
         errors = validate_graph(spec)
@@ -124,7 +124,7 @@ def verify_engine_pins(verbose=False):
         if not fname.endswith(".json"):
             continue
         path = os.path.join(TEMPLATE_DIR, fname)
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             spec = json.load(f)
 
         for node in spec.get("nodes", []):
@@ -208,7 +208,7 @@ def verify_bp_templates(verbose=False):
     )
     allowlist = set()
     if os.path.exists(bp_cat_path):
-        with open(bp_cat_path) as f:
+        with open(bp_cat_path, encoding="utf-8") as f:
             bp_data = json.load(f)
         allowlist = set(bp_data.get("allowlist", []))
 
@@ -217,7 +217,7 @@ def verify_bp_templates(verbose=False):
             continue
         total += 1
         path = os.path.join(BP_TEMPLATE_DIR, fname)
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             spec = json.load(f)
 
         if "name" not in spec:

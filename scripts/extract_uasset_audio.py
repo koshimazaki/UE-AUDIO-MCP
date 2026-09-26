@@ -467,7 +467,7 @@ def main():
     results = scan_project(audio_path)
 
     raw_path = output_dir / "uasset_scan_results.json"
-    with open(raw_path, "w") as f:
+    with open(raw_path, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2)
     print("\nRaw scan saved to: {}".format(raw_path))
 
@@ -478,7 +478,7 @@ def main():
 
     entries = build_knowledge_entries(results)
     kb_path = output_dir / "uasset_knowledge_entries.json"
-    with open(kb_path, "w") as f:
+    with open(kb_path, "w", encoding="utf-8") as f:
         json.dump(entries, f, indent=2)
     print("\nKnowledge entries: {} -> {}".format(len(entries), kb_path))
 

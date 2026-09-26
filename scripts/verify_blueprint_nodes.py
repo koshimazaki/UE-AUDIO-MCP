@@ -208,7 +208,7 @@ def scrape_node_specs(
             specs[name] = None
 
         if i % 50 == 0:
-            with open(SPECS_PATH, "w") as f:
+            with open(SPECS_PATH, "w", encoding="utf-8") as f:
                 json.dump(specs, f, indent=2)
             print(f"  --- checkpoint ({found} found) ---")
 
@@ -232,7 +232,7 @@ def find_duplicates() -> dict[str, list[str]]:
     for py_file in sorted(base.glob("*.py")):
         if py_file.name == "__init__.py":
             continue
-        for line in py_file.read_text().splitlines():
+        for line in py_file.read_text(encoding="utf-8").splitlines():
             s = line.strip()
             if s.startswith("_n("):
                 try:
@@ -373,7 +373,7 @@ def main():
 
     if (args.cached or args.report) and CACHE_PATH.exists():
         print(f"Loading cache from {CACHE_PATH}...")
-        with open(CACHE_PATH) as f:
+        with open(CACHE_PATH, encoding="utf-8") as f:
             cache = json.load(f)
     elif args.report:
         print("No cache found. Run without --report first.")
@@ -386,7 +386,7 @@ def main():
             sys.exit(1)
         print(f"\nPass 1: Scraping {len(all_cats)} categories...")
         cache = scrape_categories(all_cats)
-        with open(CACHE_PATH, "w") as f:
+        with open(CACHE_PATH, "w", encoding="utf-8") as f:
             json.dump(cache, f, indent=2)
 
     official: set[str] = set()
@@ -396,7 +396,7 @@ def main():
 
     result = verify_nodes(our_nodes, official)
     report = generate_report(result, our_nodes, duplicates)
-    with open(REPORT_PATH, "w") as f:
+    with open(REPORT_PATH, "w", encoding="utf-8") as f:
         f.write(report)
     print(f"\nReport -> {REPORT_PATH}")
 
@@ -408,10 +408,10 @@ def main():
             sys.exit(1)
         existing = {}
         if SPECS_PATH.exists():
-            with open(SPECS_PATH) as f:
+            with open(SPECS_PATH, encoding="utf-8") as f:
                 existing = json.load(f)
         specs = scrape_node_specs(our_nodes, existing)
-        with open(SPECS_PATH, "w") as f:
+        with open(SPECS_PATH, "w", encoding="utf-8") as f:
             json.dump(specs, f, indent=2)
         found = sum(1 for v in specs.values() if v is not None)
         print(f"\nSpecs: {found}/{len(specs)} found -> {SPECS_PATH}")
