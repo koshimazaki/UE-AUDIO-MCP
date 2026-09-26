@@ -1,10 +1,10 @@
-"""FastMCP server for Wwise game audio via WAAPI."""
+"""MCP server for game audio: Wwise (WAAPI), MetaSounds and Blueprints (UE5 plugin)."""
 
 import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 from ue_audio_mcp.connection import get_wwise_connection
 from ue_audio_mcp.session_log import get_session_logger
@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(server: FastMCP) -> AsyncIterator[None]:
+async def lifespan(server: MCPServer) -> AsyncIterator[None]:
     """Try connecting to Wwise on startup; warn if unavailable."""
     session_logger = get_session_logger()
     session_logger.start_session()
@@ -42,7 +42,7 @@ async def lifespan(server: FastMCP) -> AsyncIterator[None]:
         ue5.disconnect()
 
 
-mcp = FastMCP(
+mcp = MCPServer(
     "ue-audio-mcp",
     instructions="MCP server for game audio — Wwise (WAAPI) + MetaSounds (Builder API) + UE5 Blueprints. "
     "Create objects, events, mix buses, generate soundbanks, query nodes, validate graphs, "
