@@ -9,6 +9,20 @@ public class SIDMetaSoundNodes : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
+		// The node .cpp files define RESID_HEADER_ONLY to get reSID declarations only,
+		// while ReSIDLib.cpp deliberately omits it to compile the implementations once.
+		// A unity build concatenates them into one TU, so the node files' define (and
+		// their header guards) leak into ReSIDLib.cpp and the implementations are never
+		// compiled, producing unresolved externals at link. Keep this module non-unity.
+		bUseUnity = false;
+
+		// Required for per-module MetaSound registration. Without these the module's
+		// METASOUND_REGISTER_NODE actions fall back to a global list that is only
+		// flushed during MetasoundEngine's own startup — which runs at PreDefault,
+		// before this module loads — so the nodes silently never register.
+		PrivateDefinitions.Add("METASOUND_PLUGIN=UEAudioMCP");
+		PrivateDefinitions.Add("METASOUND_MODULE=SIDMetaSoundNodes");
+
 		// reSID ThirdParty include path
 		string ReSIDPath = Path.Combine(ModuleDirectory, "..", "ThirdParty", "ReSID");
 		PublicIncludePaths.Add(ReSIDPath);

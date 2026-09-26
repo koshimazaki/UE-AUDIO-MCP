@@ -257,7 +257,7 @@ void WaveformGenerator::clock(cycle_count delta_t)
 // MSB is set high for hard sync to operate correctly. See SID::clock().
 // ----------------------------------------------------------------------------
 //RESID_INLINE
-__attribute__((always_inline)) inline
+RESID_FORCE_INLINE
 void WaveformGenerator::synchronize()
 {
   // A special case occurs when a sync source is synced itself on the same
@@ -325,7 +325,7 @@ void WaveformGenerator::synchronize()
 //
 
 //RESID_INLINE 
-__attribute__((always_inline)) inline
+RESID_FORCE_INLINE
 void WaveformGenerator::clock_shift_register()
 {
   // bit0 = (bit22 | test) ^ bit17
@@ -337,7 +337,7 @@ void WaveformGenerator::clock_shift_register()
 }
 
 //RESID_INLINE 
-__attribute__((always_inline)) inline
+RESID_FORCE_INLINE
 void WaveformGenerator::write_shift_register()
 {
   // Write changes to the shift register output caused by combined waveforms
@@ -364,7 +364,7 @@ void WaveformGenerator::write_shift_register()
 }
 
 //RESID_INLINE
-__attribute__((always_inline)) inline
+RESID_FORCE_INLINE
 void WaveformGenerator::reset_shift_register()
 {
   shift_register = 0x7fffff;
@@ -375,7 +375,7 @@ void WaveformGenerator::reset_shift_register()
 }
 
 //RESID_INLINE 
-__attribute__((always_inline)) inline
+RESID_FORCE_INLINE
 void WaveformGenerator::set_noise_output()
 {
   int sh = shift_register;
@@ -472,7 +472,7 @@ void WaveformGenerator::set_noise_output()
 // register outputs.
 
 //RESID_INLINE
-__attribute__((always_inline)) inline
+RESID_FORCE_INLINE
 void WaveformGenerator::set_waveform_output()
 {
   // Set output value.
@@ -554,7 +554,7 @@ void WaveformGenerator::set_waveform_output()
 }
 
 //RESID_INLINE
-__attribute__((always_inline)) inline
+RESID_FORCE_INLINE
 void WaveformGenerator::set_waveform_output(cycle_count delta_t)
 {
   // Set output value.
@@ -641,7 +641,7 @@ void WaveformGenerator::set_waveform_output(cycle_count delta_t)
 //
 
 //RESID_INLINE
-__attribute__((always_inline)) inline
+RESID_FORCE_INLINE
 short WaveformGenerator::output()
 {
   // DAC imperfections are emulated by using waveform_output as an index
