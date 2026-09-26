@@ -8,7 +8,18 @@ import pytest
 
 import ue_audio_mcp.connection as conn_module
 import ue_audio_mcp.knowledge.db as db_module
+import ue_audio_mcp.session_log as session_log_module
 import ue_audio_mcp.ue5_connection as ue5_module
+
+
+@pytest.fixture(autouse=True, scope="session")
+def _isolate_user_data(tmp_path_factory):
+    """Keep tests out of the real ~/.ue-audio-mcp (knowledge DB and session logs)."""
+    data_dir = tmp_path_factory.mktemp("ue-audio-mcp")
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr(db_module, "DEFAULT_DB_PATH", str(data_dir / "knowledge.db"))
+        mp.setattr(session_log_module, "_LOG_DIR", str(data_dir / "logs"))
+        yield
 
 
 class MockWaapiClient:
