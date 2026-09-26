@@ -64,8 +64,11 @@ These break every major UE update — check first when compile fails:
 - **`ClassInput.Default`** (removed) → `ClassInput.FindConstDefault(FGuid())` returns `FMetasoundFrontendLiteral*` (null if no default). `FGuid()` = default page.
 - **`FNodeFacade`** → `TNodeFacade<Op>` (templated in 5.7)
 - **`GetOrConstructDataReadReference`** → `GetOrCreateDefaultDataReadReference` (deprecated 5.6)
-- **`bEnableUndefinedIdentifierWarnings`** → `UndefinedIdentifierWarningLevel = WarningLevel.Off` (deprecated 5.5)
+- **`bEnableUndefinedIdentifierWarnings`** → `CppCompileWarningSettings.UndefinedIdentifierWarningLevel = WarningLevel.Off` (deprecated 5.5; moved under `CppCompileWarningSettings` in 5.6, old path emits CS0618)
 - **`__attribute__((optimize))`** — Clang doesn't support it, wrap with `#if !defined(__clang__)`
+- **`__attribute__((always_inline))`** — MSVC has no `__attribute__`; use `RESID_FORCE_INLINE` from `siddefs.h`
+- **MetaSound node registration (5.7+)** — nodes and enums register only via a per-module list: `METASOUND_PLUGIN`/`METASOUND_MODULE` private definitions in Build.cs, `METASOUND_IMPLEMENT_MODULE_REGISTRATION_LIST` in the module .cpp, `METASOUND_REGISTER_ITEMS_IN_MODULE`/`METASOUND_UNREGISTER_ITEMS_IN_MODULE` in Startup/Shutdown. Without them the module compiles and loads, but the nodes silently never appear.
+- **`SIDMetaSoundNodes` stays non-unity** (`bUseUnity = false`) — node .cpp files define `RESID_HEADER_ONLY`; in a unity blob that stops `ReSIDLib.cpp` compiling the reSID implementations (unresolved externals, clean checkout only)
 
 ### Code Standards
 - Python: FastMCP patterns, async where needed for WebSocket
@@ -103,7 +106,7 @@ ue5_plugin/UEAudioMCP/     → C++ plugin (43 commands, TCP:9877)
 ue5_plugin/SIDMetaSoundNodes/ → ReSID SID chip nodes (5 custom nodes)
 scripts/                   → Key scripts (see below)
 research/                  → 6 reference docs (WAAPI, MetaSounds, MCP landscape, AudioLink, node registry, Lyra)
-tests/                     → 456 tests across 24 files
+tests/                     → 517 tests across 24 files
 exports/                   → Engine sync outputs (JSON)
 ```
 

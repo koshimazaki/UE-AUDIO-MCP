@@ -31,7 +31,9 @@ public class SIDMetaSoundNodes : ModuleRules
 		PublicDefinitions.Add("USE_NEW_FILTER=1");
 
 		// Suppress reSID compiler warnings (C-style casts, signed/unsigned, etc.)
-		UndefinedIdentifierWarningLevel = WarningLevel.Off;
+		// UE 5.6+ moved this under CppCompileWarningSettings; the old top-level
+		// property still builds but emits CS0618.
+		CppCompileWarningSettings.UndefinedIdentifierWarningLevel = WarningLevel.Off;
 
 		PublicDependencyModuleNames.AddRange(new string[]
 		{
