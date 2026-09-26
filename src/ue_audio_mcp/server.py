@@ -76,4 +76,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # `python -m ue_audio_mcp.server` runs this file as __main__, but the tool
+    # modules register on the importable ue_audio_mcp.server module, so run that.
+    from ue_audio_mcp.server import main as _main
+
+    _main()
