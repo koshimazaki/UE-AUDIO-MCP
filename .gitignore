@@ -38,14 +38,14 @@ logs/
 # Internal planning
 TODO.md
 ROADMAP.md
-
-# Local agent mirror of .claude/skills and automated review reports
-.agents/
-CODE_REVIEW*.md
 memories.json
 project_scan.json
 .agent-handoff/
 .claude/plans/
+
+# Local agent mirror of .claude/skills and automated review reports
+.agents/
+CODE_REVIEW*.md
 
 # Generated data
 exports/
