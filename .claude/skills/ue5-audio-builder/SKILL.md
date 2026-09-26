@@ -103,7 +103,7 @@ Master Audio Bus
 
 - Orchestrator: `src/ue_audio_mcp/tools/systems.py`
 - Templates: `src/ue_audio_mcp/templates/` (22 JSON)
-- Wwise templates: `src/ue_audio_mcp/tools/wwise_templates.py`
+- Wwise templates: `src/ue_audio_mcp/tools/templates.py`
 - Graph validator: `src/ue_audio_mcp/knowledge/graph_schema.py`
 
 $ARGUMENTS

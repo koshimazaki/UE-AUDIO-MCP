@@ -114,9 +114,12 @@ TEXT("UE Audio MCP ready — listening on port %d (N+1 commands registered)"),
 **File**: `src/ue_audio_mcp/tools/<category>.py` (or new file)
 
 ```python
-from ue_audio_mcp.tools.utils import _error, _ok, _validate_asset_path
+from ue_audio_mcp.server import mcp
+from ue_audio_mcp.tools.utils import _error, _ok, _validate_asset_path, logged_tool
+from ue_audio_mcp.ue5_connection import get_ue5_connection
 
 @mcp.tool()
+@logged_tool
 def my_command_name(
     my_param: str,
     optional_param: int = 0,
@@ -151,6 +154,8 @@ def my_command_name(
     except Exception as e:
         return _error(str(e))
 ```
+
+`@logged_tool` goes directly under `@mcp.tool()` on every tool. It records the call in the session audit log and holds the tool lock: the MCP SDK runs sync tools on worker threads, and all tools share one UE5 socket, WAAPI client and SQLite connection.
 
 **Shared helpers** (from `utils.py`):
 - `_validate_asset_path(path, param_name)` — checks empty, `..`, `/Game/` or `/Engine/` prefix. Returns error string or `None`.
@@ -199,10 +204,10 @@ python -m pytest tests/ -v
 
 # 3. Open UE, check: "UE Audio MCP ready — listening on port 9877 (N commands)"
 
-# 4. Update docs: TOOLS_AND_COMMANDS.md, README.md, MEMORY.md
+# 4. Update docs: the command tables in TOOLS_AND_COMMANDS.md and the ue5-audio-mcp skill, then README.md
 ```
 
-Use `--clean` when: "Action graph is invalid", stale PCH, or mysterious errors.
+Use `--clean` when: "Action graph is invalid", stale PCH, or mysterious errors. If a UE upgrade breaks the build, check the breaking-changes list in `ue5_plugin/CLAUDE.md` first.
 
 ## Security Rules
 
