@@ -43,6 +43,10 @@ project_scan.json
 .agent-handoff/
 .claude/plans/
 
+# Local agent mirror of .claude/skills and automated review reports
+.agents/
+CODE_REVIEW*.md
+
 # Generated data
 exports/
 scripts/bp_*.json

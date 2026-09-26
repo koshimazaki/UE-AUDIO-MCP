@@ -31,6 +31,12 @@
       "name": "EndWave",
       "type": "WaveAsset",
       "description": "One-shot wave for end/tail phase"
+    },
+    {
+      "name": "PitchModDepth",
+      "type": "Float",
+      "default": 0.0,
+      "description": "Loop pitch bend at the envelope peak, in semitones (0 = no modulation)"
     }
   ],
   "outputs": [
@@ -95,7 +101,7 @@
       "id": "pitch_mod",
       "node_type": "Multiply (Float)",
       "position": [600, 200],
-      "comment": "Envelope × base pitch = modulated pitch for loop"
+      "comment": "Envelope × PitchModDepth (semitones) → loop Pitch Shift"
     },
     {
       "id": "mixer",
@@ -157,6 +163,24 @@
       "from_pin": "StopLoop",
       "to_node": "adsr",
       "to_pin": "Trigger Release"
+    },
+    {
+      "from_node": "adsr",
+      "from_pin": "Out Envelope",
+      "to_node": "pitch_mod",
+      "to_pin": "PrimaryOperand"
+    },
+    {
+      "from_node": "__graph__",
+      "from_pin": "PitchModDepth",
+      "to_node": "pitch_mod",
+      "to_pin": "AdditionalOperands"
+    },
+    {
+      "from_node": "pitch_mod",
+      "from_pin": "Out",
+      "to_node": "loop_player",
+      "to_pin": "Pitch Shift"
     },
     {
       "from_node": "__graph__",

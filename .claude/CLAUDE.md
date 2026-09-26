@@ -15,7 +15,7 @@ MCP server for game audio — generating complete Wwise + MetaSounds + Blueprint
 |-----------|-----------|-------|
 | MCP Server | Python (MCP SDK v2, `MCPServer`) | Main server, stdio transport |
 | Wwise Bridge | `waapi-client` | Official Audiokinetic Python lib, WebSocket :8080 |
-| UE5 Bridge | C++ plugin + TCP (port 9877) | JSON command protocol, 43 commands |
+| UE5 Bridge | C++ plugin + TCP (port 9877) | JSON command protocol, 48 commands |
 | Knowledge | Local SQLite + TF-IDF | 195 nodes, 1053 entries, 20 tables, semantic search |
 | Templates | Parameterised JSON | 33 MetaSounds + 34 Blueprint + 6 Wwise |
 
@@ -89,6 +89,8 @@ src/ue_audio_mcp/
 │   ├── blueprints.py, bp_builder.py → Blueprint tools (16 tools)
 │   ├── ue5_core.py        → UE5 connection + asset tools (4 tools)
 │   ├── world_setup.py     → World audio setup: emitters, volumes, anim notify (7 tools)
+│   ├── camera.py          → Actor/camera staging and control tools (5 tools)
+│   ├── audit.py           → Session audit/history tools (2 tools)
 │   └── systems.py         → Orchestrator (build_audio_system, build_aaa_project, 2 tools)
 ├── knowledge/
 │   ├── db.py              → SQLite knowledge DB (20 tables, schema v2, singleton)
@@ -102,8 +104,8 @@ src/ue_audio_mcp/
 │   ├── metasounds/        → 33 MS graph templates (JSON, 33/33 validated)
 │   ├── blueprints/        → 34 BP templates (JSON)
 │   └── wwise/             → 6 Wwise hierarchy templates (JSON)
-ue5_plugin/UEAudioMCP/     → C++ plugin (43 commands, TCP:9877)
-ue5_plugin/SIDMetaSoundNodes/ → ReSID SID chip nodes (5 custom nodes)
+ue5_plugin/UEAudioMCP/     → C++ plugin (48 commands, TCP:9877)
+ue5_plugin/UEAudioMCP/Source/SIDMetaSoundNodes/ → ReSID SID chip nodes (5 custom nodes, runtime module)
 scripts/                   → Key scripts (see below)
 research/                  → 6 reference docs (WAAPI, MetaSounds, MCP landscape, AudioLink, node registry, Lyra)
 tests/                     → 521 tests across 25 files
@@ -172,6 +174,6 @@ python scripts/export_catalogues.py --bp-only   # Blueprints only
 - `/ue5-metasound-dsp` — MetaSounds DSP specialist (195 nodes, 23 categories)
 - `/ue5-blueprint-audio` — Blueprint audio logic, game events, parameter wiring
 - `/ue5-audio-builder` — Full pipeline audio system generator
-- `/ue5-audio-mcp` — UE5 plugin TCP control (43 commands)
+- `/ue5-audio-mcp` — UE5 plugin TCP control (48 commands)
 - `/ue5-wwise-setup` — Wwise project automation via WAAPI
 - `/ue5-plugin-dev` — Add new C++ commands to the plugin
