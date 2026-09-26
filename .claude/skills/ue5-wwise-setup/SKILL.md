@@ -2,7 +2,7 @@
 name: ue5-wwise-setup
 description: Wwise project setup via WAAPI HTTP API. Use when creating bus hierarchies, RTPCs, switches, states, events, SoundBanks, AudioLink containers, or any Wwise authoring automation. Covers the full WAAPI HTTP workflow on port 8090.
 allowed-tools: Read, Grep, Glob, Bash
-argument-hint: [wwise-setup-task]
+argument-hint: "[wwise-setup-task]"
 ---
 
 # Wwise Setup — WAAPI HTTP Automation
@@ -152,9 +152,9 @@ curl -s -X POST http://127.0.0.1:8090/waapi -d '{
 
 Read these when the task needs them:
 
-- [recipes.md](recipes.md) — bus hierarchy, RTPCs, switches and states, events, SoundBanks, containers, and the full 8-phase build recipe
-- [ue5-integration.md](ue5-integration.md) — AudioLink routing, enabling Wwise in a UE5 project, and UE-side gotchas
-- [lyra-reference.md](lyra-reference.md) — bus and AudioLink IDs from the Lyra demo project
+- [recipes.md](references/recipes.md) — bus hierarchy, RTPCs, switches and states, events, SoundBanks, containers, and the full 8-phase build recipe
+- [ue5-integration.md](references/ue5-integration.md) — AudioLink routing, enabling Wwise in a UE5 project, and UE-side gotchas
+- [lyra-reference.md](references/lyra-reference.md) — bus and AudioLink IDs from the Lyra demo project
 
 ## Source Files
 

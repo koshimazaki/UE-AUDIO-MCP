@@ -2,7 +2,7 @@
 name: ue5-metasound-dsp
 description: MetaSounds DSP specialist for Unreal Engine 5. Use when designing MetaSounds graphs, choosing DSP nodes, configuring filters/oscillators/envelopes, building signal chains, working with the Builder API, or creating audio templates.
 allowed-tools: Read, Grep, Glob
-argument-hint: [dsp-task-or-question]
+argument-hint: "[dsp-task-or-question]"
 ---
 
 # MetaSounds DSP — Node Graphs & Signal Design

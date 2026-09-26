@@ -2,7 +2,7 @@
 name: ue5-blueprint-audio
 description: Unreal Engine 5 Blueprint audio specialist. Use when working with Blueprint audio logic, game event detection, parameter wiring, audio components, scanning blueprints for audio nodes, listing project assets, or connecting game state to audio systems via UE5.
 allowed-tools: Read, Grep, Glob, Bash
-argument-hint: [blueprint-task-or-question]
+argument-hint: "[blueprint-task-or-question]"
 ---
 
 # Unreal Engine Blueprint — Audio Logic & Asset Management
